@@ -2,7 +2,7 @@
 """Scalar 製品機能紹介デッキ(1機能=1スライド・図解付き)。
 
 developers.scalar-labs.com のドキュメント調査(2026-08-01)に基づき、各機能を
-「図解 / 機能概要 / ユースケース / Value Proposition」の共通レイアウトで並べる。
+「図解 / 機能概要 / ユースケース / 特長」の共通レイアウトで並べる。
 ScalarDB 15 機能 + ScalarDL 9 機能。
 """
 from __future__ import annotations
@@ -21,7 +21,7 @@ from diagrams import Canvas, lighten  # noqa: E402
 TEMPLATE = os.path.join(SKILL_DIR, "templates", "scalar-2026.json")
 
 TITLE = "Scalar 製品機能のご紹介"
-SUBTITLE = "ScalarDB / ScalarDL — 図解・機能概要・ユースケース・Value Proposition"
+SUBTITLE = "ScalarDB / ScalarDL — 図解・機能概要・ユースケース・特長"
 DATE = "2026年8月"
 
 # 図解エリア(左)。全ミニ図はこの枠内に描く
@@ -429,7 +429,7 @@ def fig_dl_proof(d, accent):
 # ---------------------------------------------------------------- レイアウト
 
 def draw_feature(d: Canvas, f: dict, accent) -> None:
-    """機能スライド共通: 左=図解 / 右=機能概要 / 下=ユースケース + Value Prop。"""
+    """機能スライド共通: 左=図解 / 右=機能概要 / 下=ユースケース + 特長。"""
     if f.get("edition"):
         d.label(5.0, 0.60, 4.5, 0.26, f["edition"], size=9, align="END",
                 color=d.P.muted)
@@ -461,8 +461,8 @@ def draw_feature(d: Canvas, f: dict, accent) -> None:
     vy = 4.40
     d.shape(0.5, vy, 9.0, 0.62, kind="RECTANGLE",
             fill=lighten(accent, 0.9), stroke=lighten(accent, 0.5))
-    d.label(0.68, vy, 1.5, 0.62, "Value\nProposition", size=9.5, bold=True,
-            align="START", valign="MIDDLE", color=accent, line_spacing=115)
+    d.label(0.68, vy, 1.5, 0.62, "特長", size=10, bold=True,
+            align="START", valign="MIDDLE", color=accent)
     d.label(2.3, vy + 0.05, 7.0, 0.52, f["value"], size=9.5, align="START",
             valign="MIDDLE", color=d.P.text, line_spacing=122)
 
@@ -806,7 +806,7 @@ def main() -> int:
                    body=f"{DATE}\n株式会社Scalar")
     deck.add_slide(
         "CONTENT", title="本資料の見方", body=[
-            "各機能を 1 スライドずつ「図解 / 機能概要 / ユースケース / Value Proposition」で整理",
+            "各機能を 1 スライドずつ「図解 / 機能概要 / ユースケース / 特長」で整理",
             "対象: ScalarDB 15 機能、ScalarDL 9 機能（各セクション冒頭に機能マップ）",
             "情報源: developers.scalar-labs.com の公式ドキュメント（2026年8月1日 調査）",
             "バージョン表記（3.15+ など）は機能が導入されたバージョン、右上はエディション",

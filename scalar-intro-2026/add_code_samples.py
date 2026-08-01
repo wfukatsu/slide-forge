@@ -48,7 +48,7 @@ PAGENUM_GEO = dict(x=9.333, y=5.378, w=0.5, h=0.219)  # 右端 9.833 を保っ�
 # 「本資料の見方」(slide_005) の本文プレースホルダ
 GUIDE_BODY_OID = "default_proposal_body_007"
 GUIDE_LINES = [
-    "各機能を 1 スライドずつ「図解 / 機能概要 / ユースケース / Value Proposition」で整理",
+    "各機能を 1 スライドずつ「図解 / 機能概要 / ユースケース / 特長」で整理",
     "対象: ScalarDB 15 機能、ScalarDL 9 機能（各セクション冒頭に機能マップ）",
     "コードが中心の 9 機能は、機能スライドの直後にコードサンプルを併載",
     "情報源: developers.scalar-labs.com の公式ドキュメント（2026年8月1日 調査）",
@@ -353,7 +353,7 @@ def draw_code_slide(d: Canvas, spec: dict, accent: str) -> None:
             "\n".join(f"・{p}" for p in spec["points"]), size=9,
             color=d.P.text, line_spacing=132)
 
-    # 下: ポイント帯（機能スライドの Value Proposition 帯と同じ体裁）
+    # 下: ポイント帯（機能スライドの「特長」帯と同じ体裁）
     d.shape(0.5, BY, 9.0, BH, kind="RECTANGLE",
             fill=lighten(accent, 0.9), stroke=lighten(accent, 0.5))
     d.label(0.68, BY, 1.5, BH, "ポイント", size=9.5, bold=True,
