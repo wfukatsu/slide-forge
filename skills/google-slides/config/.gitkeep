@@ -1,0 +1,3 @@
+# config/
+# GCP Console からダウンロードした credentials.json をこのディレクトリに配置してください。
+# token.json は初回実行時に自動生成されます。

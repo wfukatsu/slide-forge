@@ -1,0 +1,709 @@
+{
+  "name": "corporate",
+  "displayName": "Corporate Master Slide",
+  "sourceUrl": "1UWEXHoNfGMTokWjxlMusjlhYpDBXxIaUbPzTJ4igr6U",
+  "presentationId": "1UWEXHoNfGMTokWjxlMusjlhYpDBXxIaUbPzTJ4igr6U",
+  "generationMode": "copy",
+  "pageSize": {
+    "widthInches": 10.0,
+    "heightInches": 5.625,
+    "aspectRatio": "1.778:1"
+  },
+  "existingSlideIds": [],
+  "__existingSlideIds_note": "複製直後に削除するテンプレート同梱スライド。テンプレート側を編集したら再解析すること",
+  "colors": {
+    "dark1": "#0F172A",
+    "light1": "#FFFFFF",
+    "dark2": "#6B7280",
+    "light2": "#F9FAFB",
+    "accent1": "#63C045",
+    "accent2": "#EE2155",
+    "accent3": "#0985FD",
+    "accent4": "#FFEF24",
+    "accent5": "#2673BB",
+    "accent6": "#2673BB",
+    "hyperlink": "#0000FF",
+    "followed_hyperlink": "#FF00FF",
+    "text1": "#0F172A",
+    "background1": "#FFFFFF",
+    "text2": "#F9FAFB",
+    "background2": "#6B7280"
+  },
+  "__colors_note": "masters[0] の colorScheme。マスターが複数ある場合は masters[].colors も確認すること",
+  "masters": [
+    {
+      "objectId": "g1b3a74d17bb_0_0",
+      "displayName": "Scalar Master Slide",
+      "colors": {
+        "dark1": "#0F172A",
+        "light1": "#FFFFFF",
+        "dark2": "#6B7280",
+        "light2": "#F9FAFB",
+        "accent1": "#63C045",
+        "accent2": "#EE2155",
+        "accent3": "#0985FD",
+        "accent4": "#FFEF24",
+        "accent5": "#2673BB",
+        "accent6": "#2673BB",
+        "hyperlink": "#0000FF",
+        "followed_hyperlink": "#FF00FF",
+        "text1": "#0F172A",
+        "background1": "#FFFFFF",
+        "text2": "#F9FAFB",
+        "background2": "#6B7280"
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g1b3a74d17bb_0_4",
+          "x": 2.0,
+          "y": 5.378,
+          "w": 6.083,
+          "h": 0.219,
+          "fill": "#FFFFFF",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "image",
+          "objectId": "g1b3a74d17bb_0_5",
+          "x": 0.118,
+          "y": 5.197,
+          "w": 1.181,
+          "h": 0.342
+        }
+      ]
+    }
+  ],
+  "pageNumber": {
+    "font": "Arial",
+    "fontSize": 7,
+    "color": "#666666",
+    "align": "END",
+    "startAt": 1
+  },
+  "__pageNumber_note": "Slides API は SLIDE_NUMBER プレースホルダを生成できないため、build-deck.py がこのスタイルでテキストボックスを描画する",
+  "masterDecorations": [
+    {
+      "type": "shape",
+      "objectId": "g1b3a74d17bb_0_4",
+      "x": 2.0,
+      "y": 5.378,
+      "w": 6.083,
+      "h": 0.219,
+      "fill": "#FFFFFF",
+      "shapeType": "RECTANGLE"
+    },
+    {
+      "type": "image",
+      "objectId": "g1b3a74d17bb_0_5",
+      "x": 0.118,
+      "y": 5.197,
+      "w": 1.181,
+      "h": 0.342
+    }
+  ],
+  "__masterDecorations_note": "マスターが全ページに敷く要素（ロゴ・著作権表記等）。複製方式では自動継承されるので自前描画しないこと",
+  "roles": {
+    "COVER": "TITLE_SLIDE",
+    "SECTION": "TITLE_AND_2_COLUMNS_1",
+    "CONTENT": "TITLE_AND_BODY",
+    "TITLE_ONLY": "TITLE_ONLY",
+    "BLANK": "DEFAULT",
+    "TWO_COLUMN": "TITLE_AND_2_COLUMNS",
+    "TWO_COLUMN_LINE": "TITLE_AND_2_COLUMNS_CENTER_LINE",
+    "THREE_COLUMN": "TITLE_AND_3_COLUMNS",
+    "THREE_COLUMN_LINE": "TITLE_AND_3_COLUMNS_CENTER_LINE"
+  },
+  "__roles_note": "人間確認済み (2026-07-29)。AIxDevOps テンプレート (13QHfp9p…) から派生生成。AIxDevOps ワードマーク・区切り線・元デッキ固有画像を削除し、地色を corporate パレットの ネイビー #1E3A5F に、カラム区切り線を #BFDBFE に変更。SCALAR ロゴと著作権表記は残している。CLOSING は該当レイアウトが無いため未割当",
+  "roleCandidates": {
+    "COVER": [
+      "TITLE_SLIDE",
+      "TITLE_AND_2_COLUMNS_1"
+    ],
+    "TITLE_ONLY": [
+      "TITLE_ONLY"
+    ],
+    "CONTENT": [
+      "TITLE_AND_BODY",
+      "TITLE_AND_2_COLUMNS",
+      "TITLE_AND_2_COLUMNS_CENTER_LINE",
+      "TITLE_AND_3_COLUMNS",
+      "TITLE_AND_3_COLUMNS_CENTER_LINE"
+    ],
+    "BLANK": [
+      "DEFAULT"
+    ]
+  },
+  "layouts": {
+    "TITLE_SLIDE": {
+      "layoutId": "g1b3a74d17bb_0_6",
+      "displayName": "Title Slide",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "SUBTITLE",
+        "BODY"
+      ],
+      "hasPageNumber": false,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 1.292,
+          "w": 6.8,
+          "h": 1.208
+        },
+        "subtitle": {
+          "x": 0.533,
+          "y": 2.616,
+          "w": 6.767,
+          "h": 0.464
+        },
+        "body": {
+          "x": 0.5,
+          "y": 3.436,
+          "w": 6.8,
+          "h": 1.761
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Arial",
+          "fontSize": 30,
+          "bold": false,
+          "color": "theme:LIGHT1"
+        },
+        "subtitle": {
+          "fontFamily": "Arial",
+          "bold": false,
+          "color": "theme:LIGHT1"
+        },
+        "body": {
+          "fontFamily": "Arial",
+          "bold": false,
+          "color": "theme:LIGHT1"
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g3d398ad82b6_0_6",
+          "x": -0.05,
+          "y": -0.073,
+          "w": 10.05,
+          "h": 5.763,
+          "fill": "#1E3A5F",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "elementGroup",
+          "objectId": "g3d398ad82b6_0_14",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 0.0,
+          "h": 0.0,
+          "childCount": 2,
+          "childTypes": [
+            "shape"
+          ]
+        },
+        {
+          "type": "image",
+          "objectId": "g3d398ad82b6_0_9",
+          "x": 0.5,
+          "y": 0.472,
+          "w": 1.603,
+          "h": 0.41
+        }
+      ]
+    },
+    "TITLE_ONLY": {
+      "layoutId": "g3d3e62ccb52_0_0",
+      "displayName": "Title Only",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.126,
+          "w": 9.0,
+          "h": 0.523
+        },
+        "slideNumber": {
+          "x": 9.569,
+          "y": 5.378,
+          "w": 0.264,
+          "h": 0.219
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 30,
+          "bold": false
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g3d3e62ccb52_0_2",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT2",
+          "shapeType": "RECTANGLE"
+        }
+      ],
+      "__slideNumber_note": "レイアウトは SLIDE_NUMBER を持たないが、マスターがこの座標に枠を定義している"
+    },
+    "TITLE_AND_BODY": {
+      "layoutId": "g3dd14cbaf7b_0_3",
+      "displayName": "Title and body",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "BODY"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.126,
+          "w": 9.0,
+          "h": 0.523
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.825,
+          "w": 9.0,
+          "h": 4.244
+        },
+        "slideNumber": {
+          "x": 9.569,
+          "y": 5.378,
+          "w": 0.264,
+          "h": 0.219
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Arial",
+          "fontSize": 30,
+          "bold": false
+        },
+        "body": {
+          "fontFamily": "Arial",
+          "bold": false
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g3dd14cbaf7b_0_4",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT2",
+          "shapeType": "RECTANGLE"
+        }
+      ],
+      "__slideNumber_note": "レイアウトは SLIDE_NUMBER を持たないが、マスターがこの座標に枠を定義している"
+    },
+    "TITLE_AND_2_COLUMNS": {
+      "layoutId": "g3dd14cbaf7b_0_11",
+      "displayName": "Title and 2 columns",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "BODY",
+        "BODY#1"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.126,
+          "w": 9.0,
+          "h": 0.523
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.825,
+          "w": 4.46,
+          "h": 4.244
+        },
+        "body#1": {
+          "x": 5.121,
+          "y": 0.825,
+          "w": 4.46,
+          "h": 4.244
+        },
+        "slideNumber": {
+          "x": 9.569,
+          "y": 5.378,
+          "w": 0.264,
+          "h": 0.219
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 30,
+          "bold": false
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        },
+        "body#1": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g3dd14cbaf7b_0_12",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT2",
+          "shapeType": "RECTANGLE"
+        }
+      ],
+      "__slideNumber_note": "レイアウトは SLIDE_NUMBER を持たないが、マスターがこの座標に枠を定義している"
+    },
+    "TITLE_AND_2_COLUMNS_CENTER_LINE": {
+      "layoutId": "g3dd47841074_2_11",
+      "displayName": "Title and 2 columns center line",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "BODY",
+        "BODY#1"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.126,
+          "w": 9.0,
+          "h": 0.523
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.825,
+          "w": 4.46,
+          "h": 4.244
+        },
+        "body#1": {
+          "x": 5.121,
+          "y": 0.825,
+          "w": 4.46,
+          "h": 4.244
+        },
+        "slideNumber": {
+          "x": 9.569,
+          "y": 5.378,
+          "w": 0.264,
+          "h": 0.219
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 30,
+          "bold": false
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        },
+        "body#1": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g3dd47841074_2_12",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT2",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "line",
+          "objectId": "g3dd47841074_2_16",
+          "x": 5.04,
+          "y": 0.825,
+          "w": 3.281,
+          "h": 4.244,
+          "color": "#BFDBFE",
+          "weight": 0.75
+        }
+      ],
+      "__slideNumber_note": "レイアウトは SLIDE_NUMBER を持たないが、マスターがこの座標に枠を定義している"
+    },
+    "TITLE_AND_3_COLUMNS": {
+      "layoutId": "g3dd47841074_2_50",
+      "displayName": "Title and 3 columns",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "BODY",
+        "BODY#1",
+        "BODY#2"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.126,
+          "w": 9.0,
+          "h": 0.523
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.825,
+          "w": 2.929,
+          "h": 4.244
+        },
+        "body#1": {
+          "x": 3.535,
+          "y": 0.825,
+          "w": 2.929,
+          "h": 4.244
+        },
+        "body#2": {
+          "x": 6.571,
+          "y": 0.825,
+          "w": 2.929,
+          "h": 4.244
+        },
+        "slideNumber": {
+          "x": 9.569,
+          "y": 5.378,
+          "w": 0.264,
+          "h": 0.219
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 30,
+          "bold": false
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        },
+        "body#1": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        },
+        "body#2": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g3dd47841074_2_51",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT2",
+          "shapeType": "RECTANGLE"
+        }
+      ],
+      "__slideNumber_note": "レイアウトは SLIDE_NUMBER を持たないが、マスターがこの座標に枠を定義している"
+    },
+    "TITLE_AND_3_COLUMNS_CENTER_LINE": {
+      "layoutId": "g3dd47841074_2_55",
+      "displayName": "Title and 3 columns center line",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "BODY",
+        "BODY#1",
+        "BODY#2",
+        "TITLE"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "body": {
+          "x": 0.5,
+          "y": 0.825,
+          "w": 2.929,
+          "h": 4.244
+        },
+        "body#1": {
+          "x": 3.535,
+          "y": 0.825,
+          "w": 2.929,
+          "h": 4.244
+        },
+        "body#2": {
+          "x": 6.571,
+          "y": 0.825,
+          "w": 2.929,
+          "h": 4.244
+        },
+        "title": {
+          "x": 0.5,
+          "y": 0.126,
+          "w": 9.0,
+          "h": 0.523
+        },
+        "slideNumber": {
+          "x": 9.569,
+          "y": 5.378,
+          "w": 0.264,
+          "h": 0.219
+        }
+      },
+      "textStyles": {
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        },
+        "body#1": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        },
+        "body#2": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false
+        },
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 30,
+          "bold": false
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g3dd47841074_2_56",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT2",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "line",
+          "objectId": "g3dd47841074_2_60",
+          "x": 3.482,
+          "y": 0.825,
+          "w": 3.281,
+          "h": 4.244,
+          "color": "#BFDBFE",
+          "weight": 0.75
+        },
+        {
+          "type": "line",
+          "objectId": "g3dd47841074_2_65",
+          "x": 6.518,
+          "y": 0.825,
+          "w": 3.281,
+          "h": 4.244,
+          "color": "#BFDBFE",
+          "weight": 0.75
+        }
+      ],
+      "__slideNumber_note": "レイアウトは SLIDE_NUMBER を持たないが、マスターがこの座標に枠を定義している"
+    },
+    "TITLE_AND_2_COLUMNS_1": {
+      "layoutId": "g3dd14cbaf7b_0_30",
+      "displayName": "Title and 2 columns 1",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "SUBTITLE"
+      ],
+      "hasPageNumber": false,
+      "elements": {
+        "title": {
+          "x": 3.92,
+          "y": 2.45,
+          "w": 5.429,
+          "h": 0.531
+        },
+        "subtitle": {
+          "x": 3.92,
+          "y": 2.981,
+          "w": 5.429,
+          "h": 1.67
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 30,
+          "bold": false
+        },
+        "subtitle": {
+          "fontSize": 18
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g3dd14cbaf7b_0_43",
+          "x": -0.05,
+          "y": -0.073,
+          "w": 10.05,
+          "h": 5.763,
+          "fill": "#1E3A5F",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "elementGroup",
+          "objectId": "g3dd14cbaf7b_0_46",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 0.0,
+          "h": 0.0,
+          "childCount": 2,
+          "childTypes": [
+            "shape"
+          ]
+        },
+        {
+          "type": "image",
+          "objectId": "g3d41bc7065f_0_21",
+          "x": 0.5,
+          "y": 0.472,
+          "w": 1.603,
+          "h": 0.41
+        }
+      ]
+    },
+    "DEFAULT": {
+      "layoutId": "g50b70684e380feb_213",
+      "displayName": "DEFAULT",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [],
+      "hasPageNumber": false,
+      "elements": {},
+      "textStyles": {},
+      "decorations": []
+    }
+  },
+  "derivedFrom": {
+    "presentationId": "13QHfp9pgTYvuVJzjiNIhaWbUozHLYPJ4A67b1418RzM",
+    "note": "AIxDevOps テンプレートから派生。再生成する場合は同じ手順（複製→ブランド要素削除→配色上書き）を踏む"
+  }
+}

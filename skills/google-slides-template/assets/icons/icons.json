@@ -1,0 +1,896 @@
+{
+  "sourceColor": "#C7C9C9",
+  "viewBox": 24,
+  "icons": {
+    "account-link": {
+      "ja": "アカウント連携",
+      "en": "Account linking",
+      "tags": [
+        "アカウント連携",
+        "連携",
+        "link",
+        "接続",
+        "ユーザ"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "agent": {
+      "ja": "エージェント",
+      "en": "Agent",
+      "tags": [
+        "エージェント",
+        "agent",
+        "代理人",
+        "仲介"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "benefit": {
+      "ja": "便益",
+      "en": "Benefit",
+      "tags": [
+        "メリット",
+        "benefit",
+        "価値",
+        "ハート"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "certificate": {
+      "ja": "証明書登録",
+      "en": "Certificate registration",
+      "tags": [
+        "証明書",
+        "certificate",
+        "登録",
+        "発行"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "company": {
+      "ja": "会社",
+      "en": "Company",
+      "tags": [
+        "会社",
+        "企業",
+        "company",
+        "ビル",
+        "組織"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "consent": {
+      "ja": "同意文書",
+      "en": "Consent document",
+      "tags": [
+        "同意",
+        "consent",
+        "承諾",
+        "契約書"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "contact": {
+      "ja": "お問い合わせ",
+      "en": "Contact",
+      "tags": [
+        "問い合わせ",
+        "contact",
+        "質問",
+        "吹き出し",
+        "support"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "cookie": {
+      "ja": "Cookie（クッキー）",
+      "en": "Cookie",
+      "tags": [
+        "cookie",
+        "クッキー",
+        "トラッキング",
+        "追跡"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "data-bank": {
+      "ja": "情報銀行の仕組み",
+      "en": "Data bank",
+      "tags": [
+        "情報銀行",
+        "data bank",
+        "仕組み",
+        "銀行"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "data-bank-role": {
+      "ja": "情報銀行の役割",
+      "en": "Role of the data bank",
+      "tags": [
+        "情報銀行",
+        "data bank",
+        "役割",
+        "データベース"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "data-consumer": {
+      "ja": "情報利活用企業",
+      "en": "Data-using company",
+      "tags": [
+        "利活用企業",
+        "企業",
+        "company",
+        "事業者"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "data-operations": {
+      "ja": "データ運用",
+      "en": "Data operations",
+      "tags": [
+        "データ運用",
+        "運用",
+        "operations",
+        "グラフ",
+        "分析"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "data-subject": {
+      "ja": "データ主体",
+      "en": "Data subject",
+      "tags": [
+        "データ主体",
+        "data subject",
+        "本人",
+        "個人"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "data-usage": {
+      "ja": "自身の個人情報の利用状況の把握",
+      "en": "Personal data usage tracking",
+      "tags": [
+        "利用状況",
+        "可視化",
+        "usage",
+        "把握",
+        "透明性"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "data-use-case": {
+      "ja": "データ活用事例",
+      "en": "Data use case",
+      "tags": [
+        "活用事例",
+        "ユースケース",
+        "use case",
+        "事例"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "edit-profile": {
+      "ja": "会員情報の変更",
+      "en": "Edit member profile",
+      "tags": [
+        "会員情報",
+        "編集",
+        "edit",
+        "プロフィール"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "evidence-chain": {
+      "ja": "証拠チェーン",
+      "en": "Evidence chain",
+      "tags": [
+        "証拠チェーン",
+        "chain",
+        "台帳",
+        "改ざん検知",
+        "scalardl"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "evidence-chain-link": {
+      "ja": "証拠チェーンの接続定義",
+      "en": "Evidence chain linkage",
+      "tags": [
+        "証拠チェーン",
+        "接続",
+        "chain",
+        "リンク",
+        "改ざん検知"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "facebook": {
+      "ja": "フェイスブック",
+      "en": "Facebook",
+      "tags": [
+        "facebook",
+        "フェイスブック",
+        "sns",
+        "ソーシャル"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "faq": {
+      "ja": "FAQ",
+      "en": "FAQ",
+      "tags": [
+        "faq",
+        "よくある質問",
+        "質問",
+        "ヘルプ"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9",
+        "#FFFFFF"
+      ]
+    },
+    "file-history": {
+      "ja": "電子ファイルの更新履歴",
+      "en": "File update history",
+      "tags": [
+        "更新履歴",
+        "history",
+        "版",
+        "バージョン"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "glossary": {
+      "ja": "用語集",
+      "en": "Glossary",
+      "tags": [
+        "用語",
+        "glossary",
+        "辞書",
+        "定義"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "guide": {
+      "ja": "ご利用ガイド",
+      "en": "User guide",
+      "tags": [
+        "ガイド",
+        "guide",
+        "手引き",
+        "マニュアル",
+        "本"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "hiring-company": {
+      "ja": "募集企業",
+      "en": "Hiring company",
+      "tags": [
+        "採用企業",
+        "求人",
+        "hiring",
+        "ビル"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "id-card": {
+      "ja": "身分証明書（免許証を想定）",
+      "en": "ID card",
+      "tags": [
+        "身分証",
+        "免許証",
+        "id",
+        "本人確認",
+        "kyc"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "image-record": {
+      "ja": "電子帳簿保存法関連（画像ファイル）",
+      "en": "Image record",
+      "tags": [
+        "画像ファイル",
+        "image",
+        "電帳法",
+        "スキャン"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "interview": {
+      "ja": "面接",
+      "en": "Interview",
+      "tags": [
+        "面談",
+        "interview",
+        "採用",
+        "会話"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "invoice": {
+      "ja": "証憑関連　請求書",
+      "en": "Invoice",
+      "tags": [
+        "請求書",
+        "invoice",
+        "証憑",
+        "書類"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "ip-document": {
+      "ja": "発明関連文書、または知財関連文書",
+      "en": "IP document",
+      "tags": [
+        "知財",
+        "特許",
+        "発明",
+        "patent",
+        "ip"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "job-offer": {
+      "ja": "内定",
+      "en": "Job offer",
+      "tags": [
+        "内定",
+        "offer",
+        "採用",
+        "星"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "job-seeker": {
+      "ja": "求職者",
+      "en": "Job seeker",
+      "tags": [
+        "求職者",
+        "候補者",
+        "candidate",
+        "人物"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "joint-project": {
+      "ja": "共同研究開発プロジェクト",
+      "en": "Joint R&D project",
+      "tags": [
+        "共同研究",
+        "プロジェクト",
+        "project",
+        "協業"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "ledger": {
+      "ja": "電子帳簿保存法関連（帳簿）",
+      "en": "Ledger record",
+      "tags": [
+        "帳簿",
+        "ledger",
+        "電帳法",
+        "会計"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "mail": {
+      "ja": "メール",
+      "en": "Mail",
+      "tags": [
+        "メール",
+        "mail",
+        "email",
+        "封筒",
+        "通知"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "my-data": {
+      "ja": "マイデータ",
+      "en": "My data",
+      "tags": [
+        "マイデータ",
+        "my data",
+        "自分のデータ",
+        "本人"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "new-workflow": {
+      "ja": "新規ワークフロー作成",
+      "en": "New workflow",
+      "tags": [
+        "ワークフロー",
+        "workflow",
+        "新規作成",
+        "業務"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ],
+      "sameArtAs": "terms"
+    },
+    "notice": {
+      "ja": "お知らせ",
+      "en": "Notice",
+      "tags": [
+        "お知らせ",
+        "通知",
+        "notice",
+        "ベル",
+        "bell"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "notice-alert": {
+      "ja": "お知らせ2",
+      "en": "Notice (alert)",
+      "tags": [
+        "お知らせ",
+        "通知",
+        "アラート",
+        "alert",
+        "ベル"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "personal-data-management": {
+      "ja": "パーソナルデータ管理",
+      "en": "Personal data management",
+      "tags": [
+        "パーソナルデータ",
+        "管理",
+        "management",
+        "フォルダ"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "personal-info": {
+      "ja": "個人情報",
+      "en": "Personal information",
+      "tags": [
+        "個人情報",
+        "personal data",
+        "pii",
+        "プライバシー"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "privacy-policy": {
+      "ja": "プライバシーポリシー",
+      "en": "Privacy policy",
+      "tags": [
+        "プライバシーポリシー",
+        "privacy",
+        "方針",
+        "保護"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "private-key": {
+      "ja": "秘密鍵",
+      "en": "Private key",
+      "tags": [
+        "秘密鍵",
+        "private key",
+        "暗号",
+        "鍵"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ],
+      "sameArtAs": "public-key"
+    },
+    "public-key": {
+      "ja": "公開鍵",
+      "en": "Public key",
+      "tags": [
+        "公開鍵",
+        "public key",
+        "暗号",
+        "鍵"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "receipt": {
+      "ja": "電子帳簿保存法関連（領収書）",
+      "en": "Receipt record",
+      "tags": [
+        "領収書",
+        "receipt",
+        "電帳法",
+        "経費"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "recommended-env": {
+      "ja": "推奨環境",
+      "en": "Recommended environment",
+      "tags": [
+        "推奨環境",
+        "environment",
+        "動作環境",
+        "モニタ"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "recommender": {
+      "ja": "推薦人",
+      "en": "Recommender",
+      "tags": [
+        "推薦人",
+        "recommender",
+        "紹介者",
+        "人物"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "reference-check": {
+      "ja": "リファレンスチェックサービス",
+      "en": "Reference check service",
+      "tags": [
+        "リファレンスチェック",
+        "調査",
+        "reference",
+        "確認"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "referrer": {
+      "ja": "リファラー",
+      "en": "Referrer",
+      "tags": [
+        "リファラー",
+        "referrer",
+        "紹介元",
+        "流入"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "scalar-logo": {
+      "ja": "Scalar ロゴ",
+      "en": "Scalar logo (brand blue)",
+      "tags": [
+        "scalar",
+        "ロゴ",
+        "logo",
+        "ブランド"
+      ],
+      "recolorable": false,
+      "colors": [
+        "#2573BA"
+      ]
+    },
+    "scalar-logo-mono": {
+      "ja": "Scalar ロゴ",
+      "en": "Scalar logo (monotone)",
+      "tags": [
+        "scalar",
+        "ロゴ",
+        "logo",
+        "モノクロ"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "screening": {
+      "ja": "書類選考",
+      "en": "Document screening",
+      "tags": [
+        "書類選考",
+        "screening",
+        "審査",
+        "選考"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "search": {
+      "ja": "検索",
+      "en": "Search",
+      "tags": [
+        "検索",
+        "search",
+        "虫眼鏡",
+        "探す"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "security": {
+      "ja": "セキュリティー",
+      "en": "Security",
+      "tags": [
+        "セキュリティ",
+        "security",
+        "南京錠",
+        "保護",
+        "lock"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "service-detail": {
+      "ja": "サービス詳細",
+      "en": "Service detail",
+      "tags": [
+        "サービス詳細",
+        "詳細",
+        "info",
+        "案内",
+        "情報"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "settings": {
+      "ja": "設定",
+      "en": "Settings",
+      "tags": [
+        "設定",
+        "settings",
+        "歯車",
+        "config",
+        "gear"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "shared-key": {
+      "ja": "共通鍵",
+      "en": "Shared key",
+      "tags": [
+        "共通鍵",
+        "共有鍵",
+        "shared key",
+        "対称鍵"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "signup": {
+      "ja": "新規会員登録",
+      "en": "Sign up",
+      "tags": [
+        "会員登録",
+        "signup",
+        "登録",
+        "ユーザ追加"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "survey": {
+      "ja": "アンケート",
+      "en": "Survey",
+      "tags": [
+        "アンケート",
+        "survey",
+        "調査",
+        "回答",
+        "クリップボード"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "tamper-check": {
+      "ja": "改ざんされていないことを検証する",
+      "en": "Tamper verification",
+      "tags": [
+        "改ざん検知",
+        "検証",
+        "tamper",
+        "audit",
+        "scalardl"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "terms": {
+      "ja": "利用規約",
+      "en": "Terms of service",
+      "tags": [
+        "規約",
+        "terms",
+        "契約",
+        "document"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "timestamp": {
+      "ja": "タイムスタンプ",
+      "en": "Timestamp",
+      "tags": [
+        "タイムスタンプ",
+        "timestamp",
+        "時刻",
+        "証跡"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    },
+    "twitter": {
+      "ja": "ツイッター",
+      "en": "Twitter",
+      "tags": [
+        "twitter",
+        "ツイッター",
+        "x",
+        "sns",
+        "ソーシャル"
+      ],
+      "recolorable": true,
+      "colors": [
+        "#C7C9C9"
+      ]
+    }
+  }
+}

@@ -1,0 +1,608 @@
+{
+  "metadata": {
+    "deckPattern": "technical_deep_dive",
+    "theme": "scalar",
+    "product": "ScalarDB",
+    "language": "ja",
+    "copyright": "(C) 2026 Scalar, Inc."
+  },
+  "slides": [
+    {
+      "index": 0,
+      "type": "title",
+      "master": "COVER",
+      "content": {
+        "title": "ScalarDB 技術詳細",
+        "subtitle": "分散トランザクションエンジンのアーキテクチャと実装",
+        "presenter": "Scalar, Inc. エンジニアリングチーム",
+        "date": "2026-02-22",
+        "company": "Scalar, Inc."
+      },
+      "speakerNotes": "本日は ScalarDB の技術詳細をエンジニアの皆様向けにご説明します。アーキテクチャ、データフロー、各機能の実装詳細、デプロイメント方法について深く掘り下げます。"
+    },
+    {
+      "index": 1,
+      "type": "agenda",
+      "master": "SECTION",
+      "content": {
+        "title": "アジェンダ",
+        "items": [
+          "アーキテクチャ詳細",
+          "機能詳細",
+          "デプロイメントと運用",
+          "性能・信頼性",
+          "エコシステムとサポート"
+        ]
+      },
+      "speakerNotes": "5つのセクションに分けてご説明します。各セクション後に質疑応答の時間を設けています。技術的な質問は随時お受けいたします。"
+    },
+    {
+      "index": 2,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "アーキテクチャ",
+        "subtitle": "ScalarDB のコアアーキテクチャと設計思想",
+        "sectionNumber": 1
+      },
+      "speakerNotes": "まずセクション1として、ScalarDB のコアアーキテクチャを詳しく見ていきます。設計の根幹にある思想とその実装をご理解いただけます。"
+    },
+    {
+      "index": 3,
+      "type": "architecture",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は4層アーキテクチャで異種DB間トランザクションを実現する",
+        "layers": [
+          {
+            "name": "クライアント層",
+            "components": [
+              { "name": "JDBC Driver", "type": "scalar" },
+              { "name": "gRPC Client", "type": "scalar" },
+              { "name": "Spring Data Integration", "type": "scalar" }
+            ]
+          },
+          {
+            "name": "クラスタ層",
+            "components": [
+              { "name": "ScalarDB Cluster", "type": "scalar" },
+              { "name": "Coordinator", "type": "scalar" },
+              { "name": "Schema Manager", "type": "scalar" }
+            ]
+          },
+          {
+            "name": "トランザクション層",
+            "components": [
+              { "name": "Consensus Commit", "type": "scalar" },
+              { "name": "2PC Coordinator", "type": "scalar" },
+              { "name": "Recovery Manager", "type": "scalar" }
+            ]
+          },
+          {
+            "name": "ストレージ抽象化層",
+            "components": [
+              { "name": "DynamoDB Adapter", "type": "external" },
+              { "name": "PostgreSQL Adapter", "type": "external" },
+              { "name": "Cassandra Adapter", "type": "external" },
+              { "name": "Cosmos DB Adapter", "type": "external" }
+            ]
+          }
+        ],
+        "connections": [
+          { "from": "JDBC Driver", "to": "ScalarDB Cluster", "label": "JDBC", "style": "solid" },
+          { "from": "gRPC Client", "to": "ScalarDB Cluster", "label": "gRPC", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "Consensus Commit", "label": "TX API", "style": "solid" },
+          { "from": "Consensus Commit", "to": "DynamoDB Adapter", "label": "Storage API", "style": "solid" },
+          { "from": "Consensus Commit", "to": "PostgreSQL Adapter", "label": "Storage API", "style": "solid" },
+          { "from": "2PC Coordinator", "to": "Coordinator", "label": "状態管理", "style": "dashed" }
+        ]
+      },
+      "speakerNotes": "4層アーキテクチャの詳細です。クライアント層はJDBCとgRPCの2つのインターフェースを提供します。トランザクション層のConsensus Commitが核心技術で、独自のコンセンサスプロトコルを実装しています。"
+    },
+    {
+      "index": 4,
+      "type": "data_flow",
+      "master": "CONTENT",
+      "content": {
+        "title": "Consensus Commit は3フェーズで分散トランザクションの原子性を保証する",
+        "nodes": [
+          { "name": "Application", "type": "source" },
+          { "name": "ScalarDB Cluster", "type": "process" },
+          { "name": "Consensus Commit", "type": "process" },
+          { "name": "Coordinator Table", "type": "store" },
+          { "name": "DB-A (DynamoDB)", "type": "store" },
+          { "name": "DB-B (PostgreSQL)", "type": "store" },
+          { "name": "Response", "type": "output" }
+        ],
+        "flows": [
+          { "from": "Application", "to": "ScalarDB Cluster", "label": "BEGIN TX", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "Consensus Commit", "label": "Read/Write ops", "style": "solid" },
+          { "from": "Consensus Commit", "to": "DB-A (DynamoDB)", "label": "Phase 1: Prepare", "style": "solid" },
+          { "from": "Consensus Commit", "to": "DB-B (PostgreSQL)", "label": "Phase 1: Prepare", "style": "solid" },
+          { "from": "Consensus Commit", "to": "Coordinator Table", "label": "Phase 2: Commit Record", "style": "solid" },
+          { "from": "Consensus Commit", "to": "DB-A (DynamoDB)", "label": "Phase 3: Commit", "style": "dashed" },
+          { "from": "Consensus Commit", "to": "DB-B (PostgreSQL)", "label": "Phase 3: Commit", "style": "dashed" },
+          { "from": "ScalarDB Cluster", "to": "Response", "label": "COMMIT OK", "style": "solid" }
+        ]
+      },
+      "speakerNotes": "Consensus Commit の3フェーズプロトコルです。Phase 1で各DBにprepare、Phase 2でCoordinatorテーブルにcommitレコードを書き込み、Phase 3で各DBを最終コミットします。Phase 2完了時点でトランザクションは確定します。"
+    },
+    {
+      "index": 5,
+      "type": "tech_specs",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB はエンタープライズ要件を満たす技術仕様を備えている",
+        "categories": [
+          {
+            "name": "トランザクション",
+            "specs": [
+              { "item": "分離レベル", "value": "Serializable / Snapshot" },
+              { "item": "最大TX時間", "value": "設定可能（デフォルト60秒）" },
+              { "item": "デッドロック検知", "value": "あり（タイムアウトベース）" },
+              { "item": "リカバリ", "value": "自動（Lazy Recovery）" }
+            ]
+          },
+          {
+            "name": "スケーラビリティ",
+            "specs": [
+              { "item": "最大クラスタ", "value": "100ノード以上" },
+              { "item": "水平スケーリング", "value": "ステートレス設計で容易" },
+              { "item": "シャーディング", "value": "バックエンドDB依存" },
+              { "item": "レプリケーション", "value": "バックエンドDB依存" }
+            ]
+          },
+          {
+            "name": "互換性",
+            "specs": [
+              { "item": "対応DB", "value": "15種以上（RDB/NoSQL）" },
+              { "item": "API", "value": "JDBC 4.2 / gRPC / Java API" },
+              { "item": "Java版", "value": "Java 11以上" },
+              { "item": "Kubernetes", "value": "Helm Chart提供" }
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "主要な技術仕様です。分離レベルはSerializableとSnapshotの2つを選択可能です。クラスタはステートレス設計で水平スケーリングが容易です。JDBC 4.2互換により既存アプリからの移行コストを最小化しています。"
+    },
+    {
+      "index": 6,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "機能詳細",
+        "subtitle": "ScalarDB の主要機能と実装の深掘り",
+        "sectionNumber": 2
+      },
+      "speakerNotes": "セクション2では、ScalarDB の主要機能を3つ取り上げて詳しくご説明します。Consensus Commit、Cross-partition Transaction、Schema Managementです。"
+    },
+    {
+      "index": 7,
+      "type": "feature_detail",
+      "master": "CONTENT",
+      "content": {
+        "title": "Consensus Commit は楽観的並行制御で高スループットを両立する",
+        "featureName": "Consensus Commit Protocol",
+        "description": "ScalarDB 独自のコンセンサスプロトコル。楽観的並行制御（OCC）をベースに、異種DB間での原子性を保証する。各レコードにメタデータ列を追加し、コミット状態を管理する。",
+        "benefits": [
+          "ロックフリーのRead操作で高い読み取りスループット",
+          "Coordinator テーブルの単一書き込みでatomic commit",
+          "障害時のLazy Recoveryで自動リカバリ",
+          "バックエンドDBのトランザクション機能に非依存"
+        ],
+        "technicalDetail": "各レコードに tx_id, tx_state, tx_version, tx_prepared_at, tx_committed_at のメタデータ列を付与。Read時にtx_stateを確認し、未コミットレコードはLazy Recoveryを実行してから返却する。"
+      },
+      "speakerNotes": "Consensus Commit の実装詳細です。OCCベースのため、Read操作はロックフリーで高速です。各レコードにメタデータ列を追加してコミット状態を管理し、Coordinator テーブルへの単一書き込みで原子的コミットを実現します。"
+    },
+    {
+      "index": 8,
+      "type": "feature_detail",
+      "master": "CONTENT",
+      "content": {
+        "title": "Cross-partition Transaction はグローバル分散でもACIDを維持する",
+        "featureName": "Cross-partition Transaction",
+        "description": "異なるパーティション、異なるDB、異なるリージョンにまたがるトランザクションをACID保証付きで実行する機能。Two-Phase Commit Protocol のScalarDB実装。",
+        "benefits": [
+          "異種DB間（例: DynamoDB + PostgreSQL）のACIDトランザクション",
+          "クロスリージョンでのデータ整合性保証",
+          "アプリケーション透過的な分散トランザクション",
+          "コーディネーターの高可用性設計"
+        ],
+        "technicalDetail": "2PCコーディネーターはScalarDB Cluster内で冗長化。コーディネーターテーブルはバックエンドDBに格納し、障害時は他のクラスタノードがリカバリを引き継ぐ。"
+      },
+      "speakerNotes": "Cross-partition Transaction は2PCの拡張実装です。コーディネーターはクラスタ内で冗長化されており、単一障害点を排除しています。異種DB間トランザクションの具体的なコード例は後ほどデモでお見せします。"
+    },
+    {
+      "index": 9,
+      "type": "feature_detail",
+      "master": "CONTENT",
+      "content": {
+        "title": "Schema Manager は異種DB間でスキーマの統一的管理を可能にする",
+        "featureName": "Schema Manager",
+        "description": "異なるデータベース上のテーブルスキーマを、統一的なDDLで定義・管理する機能。JSON形式のスキーマ定義ファイルから各DBネイティブのスキーマを自動生成する。",
+        "benefits": [
+          "1つのスキーマ定義で複数DB上にテーブルを自動作成",
+          "メタデータ列の自動付与",
+          "スキーマバージョニングとマイグレーション支援",
+          "CLI / Java API / Kubernetes Job での実行"
+        ],
+        "technicalDetail": "スキーマ定義はJSON形式で、partition-key, clustering-key, columns, secondary-index を宣言的に記述。各DBアダプタが対応するCREATE TABLE文を生成し、Consensus Commit用メタデータ列を自動追加する。"
+      },
+      "speakerNotes": "Schema Manager により、DynamoDBとPostgreSQLで異なるスキーマ定義を個別に管理する必要がなくなります。1つのJSON定義から各DB用のスキーマが自動生成されます。"
+    },
+    {
+      "index": 10,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "デプロイメントと運用",
+        "subtitle": "Kubernetes ネイティブなデプロイメントと運用管理",
+        "sectionNumber": 3
+      },
+      "speakerNotes": "セクション3では、ScalarDB のデプロイメント方法と運用管理についてご説明します。Kubernetes ネイティブな設計により、クラウド環境での運用が容易です。"
+    },
+    {
+      "index": 11,
+      "type": "multi_cloud",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は3大クラウドとオンプレの統一データアクセスを実現する",
+        "clouds": [
+          {
+            "provider": "aws",
+            "services": [
+              { "name": "Amazon EKS" },
+              { "name": "Amazon DynamoDB" },
+              { "name": "Amazon Aurora" }
+            ]
+          },
+          {
+            "provider": "gcp",
+            "services": [
+              { "name": "Google GKE" },
+              { "name": "Cloud Spanner" },
+              { "name": "Cloud Bigtable" }
+            ]
+          },
+          {
+            "provider": "azure",
+            "services": [
+              { "name": "Azure AKS" },
+              { "name": "Cosmos DB" },
+              { "name": "Azure SQL" }
+            ]
+          },
+          {
+            "provider": "onpremise",
+            "services": [
+              { "name": "Kubernetes" },
+              { "name": "PostgreSQL" },
+              { "name": "MySQL" }
+            ]
+          }
+        ],
+        "scalarLayer": {
+          "components": [
+            "ScalarDB Cluster",
+            "ScalarDB Schema Manager",
+            "Scalar Admin Tool"
+          ]
+        }
+      },
+      "speakerNotes": "ScalarDB は AWS、GCP、Azure、オンプレミス環境のすべてで動作します。各クラウドのマネージドKubernetesとマネージドDBをバックエンドとして利用し、統一的なデータアクセス層を提供します。"
+    },
+    {
+      "index": 12,
+      "type": "deployment_steps",
+      "master": "CONTENT",
+      "content": {
+        "title": "Helm Chartで5ステップのデプロイメントが30分で完了する",
+        "phases": [
+          {
+            "name": "環境準備",
+            "duration": "10分",
+            "tasks": [
+              "Kubernetes クラスタの確認",
+              "バックエンドDBの接続情報取得",
+              "Helm リポジトリの追加"
+            ]
+          },
+          {
+            "name": "スキーマ作成",
+            "duration": "5分",
+            "tasks": [
+              "スキーマ定義JSON の作成",
+              "Schema Manager Job の実行",
+              "テーブル作成の確認"
+            ]
+          },
+          {
+            "name": "クラスタデプロイ",
+            "duration": "10分",
+            "tasks": [
+              "values.yaml のカスタマイズ",
+              "Helm install の実行",
+              "Pod の起動確認"
+            ]
+          },
+          {
+            "name": "動作確認",
+            "duration": "5分",
+            "tasks": [
+              "ヘルスチェックエンドポイントの確認",
+              "サンプルトランザクションの実行",
+              "メトリクス収集の確認"
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "デプロイメントは Helm Chart を使って4ステップで完了します。Kubernetes 環境が準備済みであれば、30分以内にクラスタを起動してサンプルトランザクションを実行できます。"
+    },
+    {
+      "index": 13,
+      "type": "migration_path",
+      "master": "CONTENT",
+      "content": {
+        "title": "既存アプリから段階的にScalarDB へ移行できる3ステップパスがある",
+        "from": {
+          "name": "既存システム（直接DB接続）"
+        },
+        "to": {
+          "name": "ScalarDB 統合環境"
+        },
+        "steps": [
+          {
+            "name": "Phase 1: 新規テーブルから開始",
+            "description": "新規作成するテーブルのみ ScalarDB 経由にする。既存テーブルは従来通り直接アクセス。",
+            "duration": "2-4週間"
+          },
+          {
+            "name": "Phase 2: 読み取りの移行",
+            "description": "既存テーブルの読み取りを ScalarDB 経由に切り替え。スキーマにメタデータ列を追加。",
+            "duration": "4-6週間"
+          },
+          {
+            "name": "Phase 3: 書き込みの移行",
+            "description": "書き込みも ScalarDB 経由に完全移行。分散トランザクションの恩恵をフル活用。",
+            "duration": "4-8週間"
+          }
+        ]
+      },
+      "speakerNotes": "既存システムからの移行は段階的に行えます。Phase 1では新規テーブルのみから開始し、リスクを最小化します。全フェーズを通じて、既存のDB接続を即座に停止する必要はありません。"
+    },
+    {
+      "index": 14,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "性能と信頼性",
+        "subtitle": "ベンチマーク結果とセキュリティ対策",
+        "sectionNumber": 4
+      },
+      "speakerNotes": "セクション4では、ScalarDB の性能ベンチマーク結果と、セキュリティ・コンプライアンス対応についてご説明します。"
+    },
+    {
+      "index": 15,
+      "type": "benchmark",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB はYCSBベンチマークで競合を上回るスループットを示す",
+        "metrics": [
+          {
+            "name": "Read Throughput",
+            "unit": "ops/sec",
+            "results": [
+              { "product": "ScalarDB", "value": 45000, "isOurs": true },
+              { "product": "CockroachDB", "value": 38000 },
+              { "product": "TiDB", "value": 35000 }
+            ]
+          },
+          {
+            "name": "Write Throughput",
+            "unit": "ops/sec",
+            "results": [
+              { "product": "ScalarDB", "value": 12000, "isOurs": true },
+              { "product": "CockroachDB", "value": 9500 },
+              { "product": "TiDB", "value": 8000 }
+            ]
+          },
+          {
+            "name": "P99 Latency (Read)",
+            "unit": "ms",
+            "results": [
+              { "product": "ScalarDB", "value": 3.2, "isOurs": true },
+              { "product": "CockroachDB", "value": 5.1 },
+              { "product": "TiDB", "value": 6.8 }
+            ]
+          }
+        ],
+        "source": "YCSB Workload A/B, 3ノードクラスタ, DynamoDB バックエンド, 2026年1月測定"
+      },
+      "speakerNotes": "YCSBベンチマークの結果です。Read Throughput は45,000 ops/secで競合を18%以上上回っています。OCCベースのため、Readが高速なのが特徴です。P99レイテンシも3.2msと低い値を維持しています。"
+    },
+    {
+      "index": 16,
+      "type": "security_compliance",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB はSOC 2/ISO 27001取得済みで金融規制にも対応する",
+        "certifications": [
+          "SOC 2 Type II",
+          "ISO 27001:2022",
+          "PCI DSS Level 1 対応",
+          "FISC 安全対策基準準拠"
+        ],
+        "securityFeatures": [
+          {
+            "icon": "🔐",
+            "name": "通信暗号化",
+            "description": "TLS 1.3によるクライアント-クラスタ間、クラスタ-DB間の暗号化"
+          },
+          {
+            "icon": "🔑",
+            "name": "認証・認可",
+            "description": "RBAC対応、LDAP/SAML連携、テーブル単位のアクセス制御"
+          },
+          {
+            "icon": "📋",
+            "name": "監査ログ",
+            "description": "全トランザクションの操作ログ記録、改ざん検知機能"
+          },
+          {
+            "icon": "🛡️",
+            "name": "データ保護",
+            "description": "保存時暗号化（バックエンドDB機能活用）、マスキング対応"
+          }
+        ]
+      },
+      "speakerNotes": "セキュリティ面では、SOC 2 Type II と ISO 27001を取得済みです。金融機関向けにはFISC安全対策基準への準拠も確認済みです。監査ログは全トランザクションを記録します。"
+    },
+    {
+      "index": 17,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "エコシステムとサポート",
+        "subtitle": "連携製品・パートナーとサポート体制",
+        "sectionNumber": 5
+      },
+      "speakerNotes": "最後のセクションとして、ScalarDB のエコシステムとサポート体制についてご説明します。"
+    },
+    {
+      "index": 18,
+      "type": "ecosystem",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は40以上のクラウドサービスとシームレスに連携する",
+        "center": {
+          "name": "ScalarDB Cluster",
+          "icon": "🔄"
+        },
+        "partners": [
+          {
+            "category": "Cloud Providers",
+            "items": [
+              { "name": "AWS" },
+              { "name": "Google Cloud" },
+              { "name": "Microsoft Azure" }
+            ]
+          },
+          {
+            "category": "Database",
+            "items": [
+              { "name": "PostgreSQL" },
+              { "name": "MySQL" },
+              { "name": "DynamoDB" },
+              { "name": "Cassandra" },
+              { "name": "Cosmos DB" }
+            ]
+          },
+          {
+            "category": "Monitoring",
+            "items": [
+              { "name": "Prometheus" },
+              { "name": "Grafana" },
+              { "name": "Datadog" }
+            ]
+          },
+          {
+            "category": "Orchestration",
+            "items": [
+              { "name": "Kubernetes" },
+              { "name": "Terraform" },
+              { "name": "ArgoCD" }
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "ScalarDB のエコシステムです。3大クラウド、15種以上のDB、主要なモニタリング・オーケストレーションツールと連携可能です。Helmチャートと Terraformモジュールを公式提供しています。"
+    },
+    {
+      "index": 19,
+      "type": "support_sla",
+      "master": "CONTENT",
+      "content": {
+        "title": "Enterprise プランでは24/7対応で15分以内の初期応答を保証する",
+        "tiers": [
+          {
+            "name": "Community",
+            "features": [
+              "GitHub Issues によるサポート",
+              "コミュニティフォーラム",
+              "公式ドキュメント"
+            ],
+            "sla": "ベストエフォート",
+            "responseTime": "ベストエフォート"
+          },
+          {
+            "name": "Standard",
+            "features": [
+              "ビジネスアワーサポート（9-18時）",
+              "メール・チャットサポート",
+              "四半期ごとのレビューミーティング"
+            ],
+            "sla": "99.9%",
+            "responseTime": "4時間以内"
+          },
+          {
+            "name": "Enterprise",
+            "features": [
+              "24/7プレミアムサポート",
+              "専任テクニカルアカウントマネージャー",
+              "月次レビュー・アーキテクチャ相談",
+              "オンサイト対応（年4回まで）"
+            ],
+            "sla": "99.99%",
+            "responseTime": "15分以内",
+            "highlighted": true
+          }
+        ]
+      },
+      "speakerNotes": "サポート体制は3段階です。Enterprise プランでは24/7対応で、P1障害は15分以内に初期応答します。専任TAMが技術的な相談窓口として常時対応します。"
+    },
+    {
+      "index": 20,
+      "type": "summary",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "ScalarDB は技術的に3つの独自優位性でエンタープライズ要件を満たす",
+        "keyPoints": [
+          "Consensus Commit プロトコルで異種DB間ACIDをロックフリーに実現",
+          "Kubernetes ネイティブ設計で30分デプロイ・段階的移行が可能",
+          "SOC 2/ISO 27001取得済み、24/7サポートでミッションクリティカル対応"
+        ],
+        "recommendation": "技術検証として4週間のPoC実施を推奨します",
+        "nextSteps": [
+          "PoC環境の構築（Scalarエンジニアが支援）",
+          "対象ユースケースでのベンチマーク実施",
+          "本番移行計画の策定"
+        ]
+      },
+      "speakerNotes": "技術的なまとめです。ScalarDB の3つの独自優位性をご理解いただけたかと思います。次のステップとして、実際の環境でのPoC検証をご提案いたします。"
+    },
+    {
+      "index": 21,
+      "type": "closing",
+      "master": "CLOSING",
+      "content": {
+        "message": "ご質問・技術検証のご相談はお気軽にどうぞ",
+        "contactInfo": {
+          "name": "Scalar, Inc. エンジニアリングチーム",
+          "email": "engineering@scalar-labs.com",
+          "url": "https://scalardb.scalar-labs.com/docs"
+        }
+      },
+      "speakerNotes": "ご清聴ありがとうございました。技術的なご質問やPoC検証のご相談は、記載の連絡先までお問い合わせください。公式ドキュメントもご参照いただけます。"
+    },
+    {
+      "index": 22,
+      "type": "appendix",
+      "master": "BLANK",
+      "content": {
+        "title": "Appendix",
+        "subtitle": "補足資料・技術リファレンス"
+      },
+      "speakerNotes": "以降は補足資料です。ベンチマーク詳細、設定パラメータ一覧、トラブルシューティングガイドなどをご用意しています。"
+    }
+  ]
+}

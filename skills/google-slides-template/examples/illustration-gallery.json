@@ -1,0 +1,518 @@
+{
+  "title": "イメージ図ギャラリー",
+  "slides": [
+    {
+      "layout": "COVER",
+      "title": "イメージ図ギャラリー",
+      "subtitle": "図形で描くピクトグラムと比喩図のカタログ",
+      "body": "google-slides-template スキル\nscripts/illustrations.py"
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "ピクトグラム 30 種（icon / icon_grid）",
+      "figures": [
+        {
+          "type": "icon_grid",
+          "x": 0.5,
+          "y": 0.82,
+          "w": 9.0,
+          "cols": 8,
+          "size": 0.54,
+          "rowGap": 0.16,
+          "labelSize": 7.5,
+          "items": [
+            [
+              "person",
+              "person"
+            ],
+            [
+              "people",
+              "people"
+            ],
+            [
+              "server",
+              "server"
+            ],
+            [
+              "database",
+              "database"
+            ],
+            [
+              "cloud",
+              "cloud"
+            ],
+            [
+              "document",
+              "document"
+            ],
+            [
+              "documents",
+              "documents"
+            ],
+            [
+              "gear",
+              "gear"
+            ],
+            [
+              "lock",
+              "lock"
+            ],
+            [
+              "shield",
+              "shield"
+            ],
+            [
+              "browser",
+              "browser"
+            ],
+            [
+              "mobile",
+              "mobile"
+            ],
+            [
+              "bot",
+              "bot"
+            ],
+            [
+              "chart",
+              "chart"
+            ],
+            [
+              "clock",
+              "clock"
+            ],
+            [
+              "check",
+              "check"
+            ],
+            [
+              "cross",
+              "cross"
+            ],
+            [
+              "warning",
+              "warning"
+            ],
+            [
+              "mail",
+              "mail"
+            ],
+            [
+              "key",
+              "key"
+            ],
+            [
+              "network",
+              "network"
+            ],
+            [
+              "code",
+              "code"
+            ],
+            [
+              "stack",
+              "stack"
+            ],
+            [
+              "folder",
+              "folder"
+            ],
+            [
+              "bulb",
+              "bulb"
+            ],
+            [
+              "search",
+              "search"
+            ],
+            [
+              "sync",
+              "sync"
+            ],
+            [
+              "flag",
+              "flag"
+            ],
+            [
+              "coin",
+              "coin"
+            ],
+            [
+              "chip",
+              "chip"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "処理の流れを絵で示す（icon_flow）",
+      "figures": [
+        {
+          "type": "icon_flow",
+          "x": 0.5,
+          "y": 1.3,
+          "w": 9.0,
+          "size": 0.92,
+          "labelSize": 10,
+          "items": [
+            [
+              "person",
+              "利用者"
+            ],
+            [
+              "browser",
+              "Web アプリ"
+            ],
+            [
+              "server",
+              "API"
+            ],
+            [
+              "database",
+              "台帳"
+            ],
+            [
+              "chart",
+              "分析"
+            ]
+          ]
+        },
+        {
+          "type": "icon_row",
+          "x": 0.5,
+          "y": 3.3,
+          "w": 9.0,
+          "size": 0.72,
+          "labelSize": 9.5,
+          "items": [
+            [
+              "lock",
+              "認証"
+            ],
+            [
+              "shield",
+              "認可"
+            ],
+            [
+              "key",
+              "鍵管理"
+            ],
+            [
+              "clock",
+              "監査ログ"
+            ],
+            [
+              "check",
+              "検証"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "階層と絞り込み（pyramid / funnel）",
+      "figures": [
+        {
+          "type": "pyramid",
+          "x": 0.6,
+          "y": 1.05,
+          "w": 3.3,
+          "h": 2.6,
+          "items": [
+            "経営指標",
+            "業務指標",
+            "システム指標"
+          ]
+        },
+        {
+          "type": "funnel",
+          "x": 5.1,
+          "y": 1.05,
+          "w": 2.7,
+          "h": 2.6,
+          "items": [
+            [
+              "認知",
+              "12,000"
+            ],
+            [
+              "検討",
+              "2,400"
+            ],
+            [
+              "導入",
+              "310"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "重なりと対比（venn / before_after）",
+      "figures": [
+        {
+          "type": "venn",
+          "x": 0.4,
+          "y": 0.95,
+          "w": 4.2,
+          "h": 3.3,
+          "items": [
+            "整合性",
+            "可用性",
+            "分断耐性"
+          ],
+          "center": "選べるのは2つ"
+        },
+        {
+          "type": "before_after",
+          "x": 4.9,
+          "y": 1.0,
+          "w": 4.6,
+          "h": 3.2,
+          "before": [
+            "手作業のレビュー",
+            "夜間の手動デプロイ",
+            "属人的な障害対応"
+          ],
+          "after": [
+            "自動レビュー",
+            "パイプライン化",
+            "Runbook 化"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "見えている部分と見えていない部分（iceberg）",
+      "figures": [
+        {
+          "type": "iceberg",
+          "x": 0.5,
+          "y": 0.95,
+          "w": 9.0,
+          "h": 3.6,
+          "above": [
+            "画面の使い勝手",
+            "レスポンス速度"
+          ],
+          "below": [
+            "データモデル",
+            "トランザクション境界",
+            "障害時の整合性",
+            "運用の手順"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "2 案の比較（balance）",
+      "figures": [
+        {
+          "type": "balance",
+          "x": 0.8,
+          "y": 0.9,
+          "w": 8.4,
+          "h": 3.7,
+          "left": [
+            "モノリス",
+            [
+              "変更の影響が読める",
+              "運用が単純"
+            ]
+          ],
+          "right": [
+            "マイクロサービス",
+            [
+              "独立してデプロイできる",
+              "障害を閉じ込められる"
+            ]
+          ],
+          "tilt": 1
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "段階と積層（steps / layers）",
+      "figures": [
+        {
+          "type": "steps",
+          "x": 0.5,
+          "y": 1.05,
+          "w": 4.3,
+          "h": 2.9,
+          "items": [
+            "可視化",
+            "自動化",
+            "自律化"
+          ]
+        },
+        {
+          "type": "layers",
+          "x": 5.3,
+          "y": 1.05,
+          "w": 4.2,
+          "h": 2.9,
+          "items": [
+            [
+              "アプリケーション",
+              "業務ロジック"
+            ],
+            [
+              "ScalarDB",
+              "トランザクション"
+            ],
+            [
+              "ストレージ",
+              "Cassandra / RDB"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "中心と放射（hub）",
+      "figures": [
+        {
+          "type": "hub",
+          "x": 1.4,
+          "y": 0.85,
+          "w": 7.2,
+          "h": 3.9,
+          "center": "共有台帳",
+          "items": [
+            "注文",
+            "在庫",
+            "決済",
+            "配送",
+            "会計"
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "4 象限で位置づける（matrix）",
+      "figures": [
+        {
+          "type": "matrix",
+          "x": 1.3,
+          "y": 0.9,
+          "w": 7.4,
+          "h": 3.7,
+          "items": [
+            "じっくり検討",
+            "最優先",
+            "見送り",
+            "すぐ着手"
+          ],
+          "xAxis": [
+            "小",
+            "大"
+          ],
+          "yAxis": [
+            "高",
+            "低"
+          ],
+          "xLabel": "効果",
+          "yLabel": "コスト"
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "道のりと時系列（journey / timeline）",
+      "figures": [
+        {
+          "type": "journey",
+          "x": 0.5,
+          "y": 0.85,
+          "w": 9.0,
+          "h": 2.3,
+          "items": [
+            [
+              "PoC",
+              "適用範囲を絞って検証"
+            ],
+            [
+              "先行導入",
+              "1 サービスで本番運用"
+            ],
+            [
+              "横展開",
+              "対象を広げる"
+            ],
+            [
+              "標準化",
+              "社内の既定手順に"
+            ]
+          ]
+        },
+        {
+          "type": "timeline",
+          "x": 0.5,
+          "y": 3.45,
+          "w": 9.0,
+          "rowH": 1.0,
+          "items": [
+            [
+              "2026 Q1",
+              "設計"
+            ],
+            [
+              "2026 Q2",
+              "実装"
+            ],
+            [
+              "2026 Q3",
+              "先行導入"
+            ],
+            [
+              "2026 Q4",
+              "全社展開"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY_PROPOSAL",
+      "title": "手持ちの画像を貼る（image）",
+      "figures": [
+        {
+          "type": "image",
+          "x": 0.5,
+          "y": 1.0,
+          "w": 4.3,
+          "h": 2.9,
+          "source": "examples/assets/sample.png",
+          "fit": "contain",
+          "caption": "fit=\"contain\" — 比率を保って枠内に収める",
+          "outline": "#D6E4F2",
+          "captionAt": "box"
+        },
+        {
+          "type": "image",
+          "x": 5.2,
+          "y": 1.0,
+          "w": 4.3,
+          "h": 2.9,
+          "source": "examples/assets/sample.png",
+          "fit": "cover",
+          "caption": "fit=\"cover\" — 枠を埋めてはみ出しを切る",
+          "captionAt": "box"
+        }
+      ]
+    },
+    {
+      "layout": "CLOSING"
+    }
+  ]
+}

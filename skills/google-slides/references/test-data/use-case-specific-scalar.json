@@ -1,0 +1,505 @@
+{
+  "metadata": {
+    "deckPattern": "use_case_specific",
+    "theme": "scalar",
+    "product": "ScalarDB",
+    "language": "ja",
+    "copyright": "(C) 2026 Scalar, Inc."
+  },
+  "slides": [
+    {
+      "index": 0,
+      "type": "title",
+      "master": "COVER",
+      "content": {
+        "title": "ScalarDB × 小売",
+        "subtitle": "在庫データ一貫性で EC と店舗の統合在庫管理を実現",
+        "presenter": "Scalar, Inc. インダストリーチーム",
+        "date": "2026-02-22",
+        "company": "Scalar, Inc."
+      },
+      "speakerNotes": "本日は小売・EC業界におけるScalarDBの活用方法をご紹介します。オムニチャネル時代の在庫管理における課題と、ScalarDBによる解決策を具体的にお話しします。"
+    },
+    {
+      "index": 1,
+      "type": "agenda",
+      "master": "SECTION",
+      "content": {
+        "title": "アジェンダ",
+        "items": [
+          "小売業界のデータ課題",
+          "ScalarDB による解決策",
+          "導入実績と効果",
+          "導入プラン"
+        ]
+      },
+      "speakerNotes": "4つのセクションでご説明します。業界課題の共有から、解決策、実績、そして具体的な導入プランまでをカバーします。"
+    },
+    {
+      "index": 2,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "小売業界のデータ課題",
+        "subtitle": "オムニチャネル時代の在庫データ一貫性",
+        "sectionNumber": 1
+      },
+      "speakerNotes": "セクション1では、小売・EC業界が直面する在庫データの一貫性課題について詳しく見ていきます。"
+    },
+    {
+      "index": 3,
+      "type": "usecase_overview",
+      "master": "CONTENT",
+      "content": {
+        "title": "オムニチャネル化で在庫データの不整合が売上機会損失を引き起こしている",
+        "industry": "小売・EC",
+        "challenge": "EC・店舗・倉庫間の在庫データ不整合により、欠品・過剰在庫・誤配送が頻発。セール時には在庫のオーバーセルが深刻化し、顧客満足度が低下。",
+        "solution": "ScalarDB により、異種DB（EC用DynamoDB、店舗用PostgreSQL、倉庫用Oracle）間の在庫トランザクションをACID保証付きでリアルタイム同期。",
+        "outcomes": [
+          "在庫データの不整合率を0.01%未満に低減",
+          "欠品による売上機会損失を年間15%削減",
+          "在庫回転率を1.3倍に改善"
+        ]
+      },
+      "speakerNotes": "小売業界では、EC・店舗・倉庫がそれぞれ異なるDBで在庫を管理しているケースが多く、データ不整合が深刻な問題です。特にセール時のオーバーセルは顧客クレームの主因になっています。"
+    },
+    {
+      "index": 4,
+      "type": "text_bullets",
+      "master": "CONTENT",
+      "content": {
+        "title": "在庫管理の分散化が3つの技術的課題を深刻化させている",
+        "bullets": [
+          "EC (DynamoDB) と店舗POS (PostgreSQL) の在庫同期遅延が最大30分",
+          "セール開始時のアクセス集中で在庫引き当ての競合が多発",
+          "倉庫管理 (Oracle) との連携がバッチ処理で翌朝反映",
+          "店舗受取（BOPIS）時の在庫引き当てが二重計上される",
+          "返品処理の在庫戻し入れが各システムで非同期に実行"
+        ]
+      },
+      "speakerNotes": "具体的な技術課題を5つ挙げています。最も深刻なのは、EC・店舗・倉庫の在庫同期が最大30分遅延する点です。この間にオーバーセルが発生し、顧客への欠品連絡が必要になります。"
+    },
+    {
+      "index": 5,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "ScalarDB による解決策",
+        "subtitle": "リアルタイム在庫一貫性の実現",
+        "sectionNumber": 2
+      },
+      "speakerNotes": "セクション2では、ScalarDBによる具体的な解決策をご説明します。技術アーキテクチャから導入前後の比較まで詳しくお話しします。"
+    },
+    {
+      "index": 6,
+      "type": "problem_solution",
+      "master": "SPLIT_SCREEN",
+      "content": {
+        "title": "バッチ同期からリアルタイムACID同期への転換で在庫精度が劇的に向上する",
+        "problem": {
+          "heading": "現状: バッチ同期",
+          "points": [
+            "EC/店舗/倉庫の在庫を30分間隔でバッチ同期",
+            "同期間隔中のオーバーセルを防止できない",
+            "不整合発生時の手動調整に1件あたり30分",
+            "セール時は同期頻度を上げるも根本解決に至らず"
+          ]
+        },
+        "solution": {
+          "heading": "ScalarDB: リアルタイムACID",
+          "points": [
+            "3システム間のトランザクションをACIDで即時同期",
+            "在庫引き当てを排他制御でオーバーセル完全防止",
+            "自動リカバリで手動調整ゼロ",
+            "ピーク時も5ms未満のレイテンシを維持"
+          ]
+        }
+      },
+      "speakerNotes": "左が現状のバッチ同期の問題点、右がScalarDBによる解決策です。バッチ同期からリアルタイムACID同期への転換が、在庫精度の劇的な向上をもたらします。"
+    },
+    {
+      "index": 7,
+      "type": "product_overview",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は小売業の3系統の在庫DBを統一トランザクションで結ぶ",
+        "productName": "ScalarDB for Retail",
+        "tagline": "オムニチャネル在庫管理のためのトランザクションミドルウェア",
+        "keyFeatures": [
+          {
+            "icon": "🛒",
+            "name": "リアルタイム在庫同期",
+            "description": "EC・店舗・倉庫の在庫をACIDトランザクションで即時同期"
+          },
+          {
+            "icon": "⚡",
+            "name": "高速引き当て",
+            "description": "ピーク時10万req/secでも5ms未満のレスポンス"
+          },
+          {
+            "icon": "🔄",
+            "name": "BOPIS対応",
+            "description": "店舗受取の在庫引き当てをリアルタイムで整合性保証"
+          },
+          {
+            "icon": "📦",
+            "name": "返品処理統合",
+            "description": "返品時の在庫戻し入れを全システムで同時に反映"
+          }
+        ]
+      },
+      "speakerNotes": "小売業向けのScalarDB活用方法です。EC・店舗POS・倉庫管理の3つの異なるDBを、ScalarDBで統一的にトランザクション管理します。BOPIS対応と返品処理も含めた在庫一貫性を保証します。"
+    },
+    {
+      "index": 8,
+      "type": "architecture",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB が3系統の在庫DBを束ねるミドルウェア構成を採用する",
+        "layers": [
+          {
+            "name": "チャネル層",
+            "components": [
+              { "name": "EC サイト", "type": "client" },
+              { "name": "店舗 POS", "type": "client" },
+              { "name": "倉庫管理 WMS", "type": "client" }
+            ]
+          },
+          {
+            "name": "ScalarDB 層",
+            "components": [
+              { "name": "ScalarDB Cluster", "type": "scalar" },
+              { "name": "在庫引き当てAPI", "type": "scalar" }
+            ]
+          },
+          {
+            "name": "データストア層",
+            "components": [
+              { "name": "DynamoDB (EC在庫)", "type": "external" },
+              { "name": "PostgreSQL (店舗在庫)", "type": "external" },
+              { "name": "Oracle (倉庫在庫)", "type": "external" }
+            ]
+          }
+        ],
+        "connections": [
+          { "from": "EC サイト", "to": "ScalarDB Cluster", "label": "gRPC", "style": "solid" },
+          { "from": "店舗 POS", "to": "ScalarDB Cluster", "label": "JDBC", "style": "solid" },
+          { "from": "倉庫管理 WMS", "to": "ScalarDB Cluster", "label": "REST API", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "DynamoDB (EC在庫)", "label": "Storage API", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "PostgreSQL (店舗在庫)", "label": "Storage API", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "Oracle (倉庫在庫)", "label": "Storage API", "style": "solid" }
+        ]
+      },
+      "speakerNotes": "アーキテクチャ図です。EC・店舗POS・倉庫管理WMSからのリクエストをScalarDB Clusterが受け、3つの異なるDB上の在庫を統一的にACIDトランザクション管理します。"
+    },
+    {
+      "index": 9,
+      "type": "before_after",
+      "master": "SPLIT_SCREEN",
+      "content": {
+        "title": "ScalarDB 導入でオーバーセル率が0.5%からゼロに改善した",
+        "before": {
+          "heading": "導入前",
+          "points": [
+            "在庫同期遅延: 最大30分",
+            "オーバーセル率: 0.5%（月間500件）",
+            "在庫不整合: 月間1,200件",
+            "手動調整工数: 月間200人時",
+            "顧客クレーム: 月間150件"
+          ]
+        },
+        "after": {
+          "heading": "導入後",
+          "points": [
+            "在庫同期: リアルタイム（5ms以内）",
+            "オーバーセル率: 0%（完全排除）",
+            "在庫不整合: 月間0件",
+            "手動調整工数: 月間0人時",
+            "顧客クレーム: 月間12件（92%削減）"
+          ]
+        }
+      },
+      "speakerNotes": "導入前後の比較です。最も劇的な改善はオーバーセルの完全排除です。月間500件のオーバーセルがゼロになり、在庫不整合も1,200件からゼロに改善しました。顧客クレームは92%削減です。"
+    },
+    {
+      "index": 10,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "導入実績と効果",
+        "subtitle": "同業界の事例と定量的効果",
+        "sectionNumber": 3
+      },
+      "speakerNotes": "セクション3では、小売・EC業界での実際の導入事例と、定量的な効果をご紹介します。"
+    },
+    {
+      "index": 11,
+      "type": "case_study",
+      "master": "CONTENT",
+      "content": {
+        "title": "大手アパレルB社はオムニチャネル在庫統合で売上機会損失を15%削減した",
+        "company": "大手アパレルB社",
+        "industry": "小売・アパレル",
+        "challenge": "EC（年商300億円規模）と全国200店舗の在庫データがバッチ同期で、セール期間中のオーバーセルが月間800件発生。BOPIS開始に伴い在庫精度の改善が急務だった。",
+        "solution": "ScalarDB を導入し、EC (DynamoDB) と店舗POS (PostgreSQL) の在庫をリアルタイムACID同期。BOPIS の在庫引き当ても即座に全チャネルに反映される構成を実現。",
+        "results": [
+          { "metric": "オーバーセル", "value": "800件→0件/月", "description": "完全排除" },
+          { "metric": "売上機会損失", "value": "15%削減", "description": "欠品による機会損失の改善" },
+          { "metric": "在庫回転率", "value": "1.3倍向上", "description": "在庫精度向上による最適化" }
+        ],
+        "quote": "ScalarDB のおかげでBOPISを安心して展開でき、オムニチャネル戦略が加速しました。"
+      },
+      "speakerNotes": "大手アパレルB社の事例です。ECと200店舗の在庫統合により、オーバーセルを完全に排除し、BOPIS展開も実現しました。在庫回転率1.3倍向上は在庫精度改善の直接効果です。"
+    },
+    {
+      "index": 12,
+      "type": "kpi_highlight",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "小売業のScalarDB導入効果は売上・コスト・顧客満足の3軸で顕著である",
+        "kpis": [
+          {
+            "value": "15%",
+            "label": "売上機会損失削減",
+            "description": "欠品・オーバーセル排除の効果",
+            "trend": "down"
+          },
+          {
+            "value": "1.3x",
+            "label": "在庫回転率向上",
+            "description": "在庫精度改善による最適化",
+            "trend": "up"
+          },
+          {
+            "value": "92%",
+            "label": "クレーム削減",
+            "description": "在庫関連クレームの大幅削減",
+            "trend": "down"
+          }
+        ]
+      },
+      "speakerNotes": "小売業での主要KPIです。売上機会損失15%削減は、ECのセール期間に特に効果が大きく出ています。在庫回転率1.3倍は在庫精度が向上し、適正在庫が実現できた結果です。"
+    },
+    {
+      "index": 13,
+      "type": "roi_impact",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "小売業では年間売上高の0.3%相当のコスト削減効果が見込まれる",
+        "metrics": [
+          {
+            "value": "0.3%",
+            "label": "売上高比削減効果",
+            "description": "年商300億円で約9,000万円相当"
+          },
+          {
+            "value": "¥9,000万",
+            "label": "年間コスト削減",
+            "description": "在庫ロス+手動調整+クレーム対応"
+          },
+          {
+            "value": "4ヶ月",
+            "label": "投資回収期間",
+            "description": "導入後4ヶ月で投資回収完了"
+          }
+        ],
+        "summary": "在庫ロス削減、手動調整工数ゼロ化、顧客クレーム対応コスト削減を合わせ、年商300億円規模の小売企業で年間約9,000万円の効果が見込まれます。"
+      },
+      "speakerNotes": "小売業向けのROI分析です。年商の0.3%相当という数字は、在庫ロス・手動調整工数・クレーム対応の合計です。投資回収期間は4ヶ月と、金融業界より短いのが小売業の特徴です。"
+    },
+    {
+      "index": 14,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "導入プラン",
+        "subtitle": "段階的導入で早期に価値を実感",
+        "sectionNumber": 4
+      },
+      "speakerNotes": "セクション4では、具体的な導入プランをご提案します。小売業の繁忙期を考慮したスケジュールでお話しします。"
+    },
+    {
+      "index": 15,
+      "type": "table",
+      "master": "CONTENT",
+      "content": {
+        "title": "繁忙期を避けた4フェーズ導入計画で確実に成果を出す",
+        "headers": ["フェーズ", "期間", "対象", "成果物", "判定基準"],
+        "rows": [
+          ["PoC検証", "4週間", "EC在庫のみ", "技術検証レポート", "レイテンシ<5ms"],
+          ["パイロット", "6週間", "EC+店舗3店", "運用マニュアル", "不整合ゼロ"],
+          ["段階展開", "8週間", "全店舗50店", "性能レポート", "ピーク耐性確認"],
+          ["全面展開", "4週間", "200店舗+倉庫", "完了報告書", "全KPI達成"]
+        ],
+        "footnote": "※ 繁忙期（年末年始・セール期間）を避けてスケジュールを調整します"
+      },
+      "speakerNotes": "4フェーズの導入計画です。PoC検証からはじめ、店舗数を段階的に拡大します。各フェーズにGo/No-Goの判定基準を設け、リスクを管理します。繁忙期を避けたスケジュールを組みます。"
+    },
+    {
+      "index": 16,
+      "type": "columns",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB 導入で得られる3つの戦略的メリットが競争力を強化する",
+        "columns": [
+          {
+            "heading": "オムニチャネル加速",
+            "bullets": [
+              "BOPIS/Ship-from-Storeの即時展開",
+              "全チャネル統一在庫による顧客体験向上",
+              "新チャネル追加時の在庫連携が容易"
+            ],
+            "icon": "🛍️"
+          },
+          {
+            "heading": "運用効率化",
+            "bullets": [
+              "在庫調整の手動作業をゼロに",
+              "在庫精度99.99%で棚卸工数を削減",
+              "異常検知の自動化で即時対応"
+            ],
+            "icon": "⚙️"
+          },
+          {
+            "heading": "データ活用基盤",
+            "bullets": [
+              "正確な在庫データでAI需要予測の精度向上",
+              "リアルタイムデータで動的価格最適化",
+              "在庫分析による品揃え最適化"
+            ],
+            "icon": "📊"
+          }
+        ]
+      },
+      "speakerNotes": "導入によるビジネスメリットを3つの観点から整理しました。在庫データの正確性が向上することで、オムニチャネル戦略・運用効率化・データ活用基盤の3つの軸で競争力が強化されます。"
+    },
+    {
+      "index": 17,
+      "type": "process_flow",
+      "master": "CONTENT",
+      "content": {
+        "title": "導入はアセスメントから効果測定まで5ステップで完了する",
+        "steps": [
+          {
+            "name": "アセスメント",
+            "description": "現状の在庫管理システムを分析し、ScalarDB適用範囲を決定",
+            "icon": "🔍"
+          },
+          {
+            "name": "設計",
+            "description": "スキーマ設計・API設計・インフラ設計を実施",
+            "icon": "📐"
+          },
+          {
+            "name": "構築",
+            "description": "ScalarDB クラスタ構築・アプリ改修・テスト",
+            "icon": "🔧"
+          },
+          {
+            "name": "移行",
+            "description": "段階的なトラフィック切り替えとデータマイグレーション",
+            "icon": "🚀"
+          },
+          {
+            "name": "効果測定",
+            "description": "KPI モニタリングとROI評価の実施",
+            "icon": "📈"
+          }
+        ]
+      },
+      "speakerNotes": "導入プロセスは5ステップです。アセスメントから効果測定まで、Scalarのコンサルタントが伴走支援します。各ステップで成果物とゲートを設定し、確実に前進します。"
+    },
+    {
+      "index": 18,
+      "type": "quote",
+      "master": "QUOTE",
+      "content": {
+        "quoteText": "ScalarDB により在庫の真実の姿をリアルタイムで把握できるようになり、お客様に自信を持って在庫状況をお伝えできるようになりました。オムニチャネル戦略の根幹を支える基盤技術です。",
+        "attribution": "山田 太郎",
+        "role": "CTO",
+        "company": "大手アパレルB社"
+      },
+      "speakerNotes": "大手アパレルB社のCTO山田様のコメントです。在庫の正確性が向上したことで、顧客へのコミュニケーションにも自信が持てるようになったとのことです。"
+    },
+    {
+      "index": 19,
+      "type": "deployment_steps",
+      "master": "CONTENT",
+      "content": {
+        "title": "セール前に導入完了するため逆算スケジュールで進行する",
+        "phases": [
+          {
+            "name": "Phase 1: PoC",
+            "duration": "4週間（3月）",
+            "tasks": [
+              "EC在庫DBでのScalarDB動作検証",
+              "セール相当の負荷テスト実施",
+              "既存システムとの互換性確認"
+            ]
+          },
+          {
+            "name": "Phase 2: パイロット",
+            "duration": "6週間（4-5月）",
+            "tasks": [
+              "3店舗でのパイロット運用",
+              "BOPIS在庫引き当てのE2Eテスト",
+              "運用手順の策定と研修"
+            ]
+          },
+          {
+            "name": "Phase 3: 段階展開",
+            "duration": "8週間（5-7月）",
+            "tasks": [
+              "50店舗への段階的展開",
+              "ピーク負荷テストの実施",
+              "モニタリング体制の確立"
+            ]
+          },
+          {
+            "name": "Phase 4: 全面展開",
+            "duration": "4週間（7-8月）",
+            "tasks": [
+              "全200店舗+倉庫への展開",
+              "秋セール前の最終負荷テスト",
+              "効果測定と最適化"
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "秋のセール前に全面展開を完了する逆算スケジュールです。3月のPoC開始から8月の全面展開まで約5ヶ月です。繁忙期を避けて段階的に展開します。"
+    },
+    {
+      "index": 20,
+      "type": "summary",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "ScalarDB は小売業の在庫課題を根本解決しオムニチャネルを加速させる",
+        "keyPoints": [
+          "EC・店舗・倉庫の在庫をリアルタイムACID同期でオーバーセルを完全排除",
+          "導入実績企業で売上機会損失15%削減・在庫回転率1.3倍を達成",
+          "繁忙期を避けた5ヶ月導入計画で確実に成果を実現"
+        ],
+        "recommendation": "セール前の導入完了に向け、3月中のPoC着手を推奨します",
+        "nextSteps": [
+          "現状の在庫管理システムアセスメント（1週間）",
+          "PoC計画の策定とキックオフ"
+        ]
+      },
+      "speakerNotes": "まとめです。ScalarDB は小売業の在庫一貫性課題を根本解決し、オムニチャネル戦略の加速を支援します。セール前に効果を実感いただくため、3月中のPoC着手をお勧めします。"
+    },
+    {
+      "index": 21,
+      "type": "closing",
+      "master": "CLOSING",
+      "content": {
+        "message": "ご清聴ありがとうございました",
+        "contactInfo": {
+          "name": "Scalar, Inc. リテールソリューションチーム",
+          "email": "retail@scalar-labs.com",
+          "url": "https://scalar-labs.com/retail"
+        }
+      },
+      "speakerNotes": "ご清聴ありがとうございました。小売・EC業界での在庫管理課題について、具体的なご相談をお待ちしております。"
+    }
+  ]
+}

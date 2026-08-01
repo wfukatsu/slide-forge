@@ -1,0 +1,297 @@
+{
+  "name": "aixdevops",
+  "displayName": "AI x DevOps Study Theme",
+  "version": "1.0.0",
+  "description": "AI x DevOps Study 向けテーマ。Deep Purple / Cyan 基調のテック系パレット",
+  "source": null,
+
+  "pageSize": {
+    "width": 9144000,
+    "height": 5143500,
+    "widthInches": 10.0,
+    "heightInches": 5.625,
+    "aspectRatio": "16:9",
+    "unit": "EMU"
+  },
+
+  "colors": {
+    "__comment": "=== Theme Colors (Purple/Cyan tech palette) ===",
+    "dark1":               "#1E1033",
+    "light1":              "#FFFFFF",
+    "dark2":               "#6B7280",
+    "light2":              "#F5F3FF",
+    "accent1":             "#06B6D4",
+    "accent2":             "#EC4899",
+    "accent3":             "#8B5CF6",
+    "accent4":             "#F59E0B",
+    "accent5":             "#5B21B6",
+    "accent6":             "#5B21B6",
+
+    "__comment_semantic": "=== Semantic Aliases ===",
+    "primary":             "#5B21B6",
+    "primaryDark":         "#3B0764",
+    "accent":              "#06B6D4",
+    "success":             "#10B981",
+    "textPrimary":         "#000000",
+    "textTitle":           "#3B0764",
+    "textOnDark":          "#FFFFFF",
+    "textMuted":           "#666666",
+    "__textMuted_note":    "Changed from #808080 to #666666 for WCAG AA compliance (4.5:1 contrast ratio on white background). Original #808080 only achieves 3.9:1.",
+    "textSecondary":       "#595959",
+    "background":          "#FFFFFF",
+    "backgroundAlt":       "#F5F3FF",
+    "surfaceLight":        "#EDE9FE",
+    "border":              "#6B7280",
+    "calloutBg":           "#EDE9FE",
+    "calloutBorder":       "#5B21B6",
+    "cautionDark":         "#6B5000",
+
+    "__comment_table": "=== Table Colors ===",
+    "tableHeader":         "#5B21B6",
+    "tableHeaderText":     "#FFFFFF",
+    "tableDataCell":       "#EDE9FE",
+    "tableRowHeader":      "#DDD6FE",
+    "tableRowAlt":         "#EEEEEE",
+
+    "__comment_semantic_fills": "=== Status Colors ===",
+    "highlightYellow":     "#FFF1CC",
+    "successGreen":        "#D1FAE5",
+    "successGreenDark":    "#059669",
+    "alertRed":            "#F4CCCC",
+    "cautionYellow":       "#BE9000",
+
+    "__comment_chart": "=== Chart Colors (accent order) ===",
+    "chart1":              "#06B6D4",
+    "chart2":              "#8B5CF6",
+    "chart3":              "#EC4899",
+    "chart4":              "#F59E0B",
+    "chart5":              "#5B21B6"
+  },
+
+  "fonts": {
+    "fontFaceTitle":       "Noto Sans JP",
+    "fontFaceBody":        "Noto Sans JP",
+    "fontFaceEn":          "Arial",
+    "fontFaceMono":        "Courier New",
+    "fontFaceAccent":      "Century Gothic",
+    "fontFallback":        "Noto Sans JP, Arial"
+  },
+
+  "fontSizes": {
+    "__comment": "=== Master-level defaults ===",
+    "coverTitle":          30,
+    "contentTitle":        26,
+    "sectionTitle":        24,
+    "masterTitle":         20,
+    "bodyLevel1":          16,
+    "bodyLevel2":          14,
+    "bodyLevel3":          12,
+    "bodyLevel4":          10,
+    "bodyLevel5":          8,
+    "__bodyLevel5_note":   "8pt はマスターレベルの最小値。インフォグラフィクスでは 9pt 以上必須、10pt 以上推奨（infographic-patterns.md 参照）",
+    "slideNumber":         7,
+    "copyright":           7,
+
+    "__comment_actual": "=== Actual slide-level common sizes ===",
+    "bodyTextPrimary":     10,
+    "bodyTextSecondary":   12,
+    "bodyTextSmall":       8,
+    "bodyTextCompact":     9,
+    "subtitle":            14,
+    "finePrint":           7,
+    "__finePrint_note":    "Changed from 6 to 7 to meet minimum footer font size (7pt). design-principles.md セクション8参照"
+  },
+
+  "fontWeights": {
+    "title":               "bold",
+    "body":                "normal"
+  },
+
+  "lineSpacing": {
+    "__comment": "Google Slides API lineSpacing はパーセント値（100=1行分）。日本語本文はこの値を 185-200 に上書きすること（design-principles.md セクション2参照）",
+    "title":               100,
+    "body":                115,
+    "bodyJapanese":        185
+  },
+
+  "layouts": {
+    "__layoutId_note": "layoutId は Scalar マスタースライドから抽出した値。独自マスターを作成した場合はそのプレゼンテーションの layoutId に差し替えること",
+    "COVER": {
+      "id": "Title Slide 1",
+      "layoutId": "g1b3a74d17bb_0_6",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": false,
+      "hasLogo": true,
+      "logoPosition": "top-right",
+      "elements": {
+        "title":    { "x": 0.500, "y": 1.292, "w": 8.906, "h": 1.208 },
+        "subtitle": { "x": 0.543, "y": 2.616, "w": 8.863, "h": 0.464 },
+        "body":     { "x": 5.891, "y": 3.436, "w": 3.587, "h": 1.761 },
+        "logo":     { "x": 8.297, "y": 0.419, "w": 1.181, "h": 0.342 }
+      },
+      "decorative": {
+        "bottomBand": { "x": 0.000, "y": 3.667, "w": 10.000, "h": 1.958, "type": "image" }
+      }
+    },
+
+    "SECTION": {
+      "id": "Slide Sub Section",
+      "layoutId": "g1b3a74d17bb_0_23",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": true,
+      "hasLogo": true,
+      "logoPosition": "top-left",
+      "elements": {
+        "title":      { "x": 1.438, "y": 2.039, "w": 7.125, "h": 0.590 },
+        "body":       { "x": 1.438, "y": 2.759, "w": 7.125, "h": 1.088 },
+        "separator":  { "x": 1.438, "y": 2.686, "w": 8.562, "h": 0, "color": "primary", "weight": 2.25 },
+        "logo":       { "x": 0.118, "y": 0.179, "w": 1.181, "h": 0.342 },
+        "slideNumber":{ "x": 9.569, "y": 5.378, "w": 0.264, "h": 0.219 }
+      },
+      "decorative": {
+        "bottomBand": { "x": 0.000, "y": 3.667, "w": 10.000, "h": 1.958, "type": "image" }
+      }
+    },
+
+    "CONTENT": {
+      "id": "2-14 [for print] Free Layout",
+      "layoutId": "g34f87d91a42_0_298",
+      "background": "background",
+      "hasFooter": true,
+      "hasPageNumber": true,
+      "hasLogo": true,
+      "logoPosition": "footer-left",
+      "usageCount": 89,
+      "elements": {
+        "title":      { "x": 0.323, "y": 0.303, "w": 9.354, "h": 0.437 },
+        "subtitle":   { "x": 0.351, "y": 0.658, "w": 8.964, "h": 0.366 },
+        "contentTop": { "y": 0.787 },
+        "contentBottom": { "y": 5.208 },
+        "contentHeight": 4.421,
+        "logo":       { "x": 0.323, "y": 5.208, "w": 0.952, "h": 0.244 },
+        "slideNumber":{ "x": 9.077, "y": 5.246, "w": 0.600, "h": 0.168 }
+      }
+    },
+
+    "CONTENT_ACCENT": {
+      "id": "Default",
+      "layoutId": "g1b3a74d17bb_0_19",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": true,
+      "hasLogo": false,
+      "usageCount": 8,
+      "elements": {
+        "accentBar": { "x": 0.367, "y": 0.059, "w": 0.054, "h": 0.398, "fill": "primary" },
+        "title":     { "x": 0.500, "y": 0.126, "w": 9.000, "h": 0.351 },
+        "body":      { "x": 0.500, "y": 0.960, "w": 9.000, "h": 4.068 },
+        "slideNumber":{ "x": 9.611, "y": 5.378, "w": 0.222, "h": 0.219 }
+      }
+    },
+
+    "TITLE_ONLY": {
+      "id": "Title Only 2",
+      "layoutId": "g34f87d91a42_0_22",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": true,
+      "hasLogo": false,
+      "usageCount": 21,
+      "elements": {
+        "title":      { "x": 0.500, "y": 0.247, "w": 9.000, "h": 0.351 },
+        "slideNumber":{ "x": 9.611, "y": 5.378, "w": 0.222, "h": 0.219 }
+      }
+    },
+
+    "BLANK": {
+      "id": "White",
+      "layoutId": "g34f87d91a42_0_4",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": true,
+      "hasLogo": false,
+      "usageCount": 6,
+      "elements": {
+        "slideNumber":{ "x": 9.611, "y": 5.378, "w": 0.222, "h": 0.219 }
+      }
+    },
+
+    "CLOSING": {
+      "id": "Close Page",
+      "layoutId": "g1b3a74d17bb_0_31",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": false,
+      "hasLogo": true,
+      "logoPosition": "center",
+      "elements": {
+        "logo": { "x": 3.307, "y": 2.323, "w": 3.385, "h": 0.979 }
+      },
+      "decorative": {
+        "bottomBand": { "x": 0.000, "y": 3.667, "w": 10.000, "h": 1.958, "type": "image" }
+      }
+    }
+  },
+
+  "masterFooter": {
+    "logo":       { "x": 0.118, "y": 5.197, "w": 1.181, "h": 0.342 },
+    "copyright":  { "x": 2.000, "y": 5.378, "w": 6.083, "h": 0.219, "text": "", "font": "Arial", "fontSize": 7, "color": "textMuted", "alignment": "CENTER" },
+    "slideNumber":{ "x": 9.569, "y": 5.378, "w": 0.264, "h": 0.219, "font": "Arial", "fontSize": 7, "color": "textMuted", "alignment": "END" }
+  },
+
+  "columnLayouts": {
+    "twoColumn": {
+      "leftX": 0.98,
+      "leftW": 3.67,
+      "gap": 0.69,
+      "rightX": 5.34,
+      "rightW": 3.67
+    }
+  },
+
+  "borders": {
+    "thin":   { "weight": 0.75, "weightEMU": 9525 },
+    "medium": { "weight": 1.50, "weightEMU": 19050 },
+    "heavy":  { "weight": 2.25, "weightEMU": 28575 },
+    "defaultColor": "border"
+  },
+
+  "tableStyle": {
+    "headerFill": "tableHeader",
+    "headerTextColor": "tableHeaderText",
+    "headerFontSize": 10,
+    "headerBold": true,
+    "dataCellFill": "tableDataCell",
+    "rowHeaderFill": "tableRowHeader",
+    "altRowFill": "tableRowAlt",
+    "cellFont": "Arial",
+    "cellFontSize": 10,
+    "borderColor": "border",
+    "borderWeight": 0.75
+  },
+
+  "pptxScheme": {
+    "dk1":      "1E1033",
+    "lt1":      "FFFFFF",
+    "dk2":      "6B7280",
+    "lt2":      "F5F3FF",
+    "accent1":  "06B6D4",
+    "accent2":  "EC4899",
+    "accent3":  "8B5CF6",
+    "accent4":  "F59E0B",
+    "accent5":  "5B21B6",
+    "accent6":  "5B21B6",
+    "hlink":    "0000FF",
+    "folHlink": "FF00FF"
+  },
+
+  "pptxFonts": {
+    "__comment": "PPTX エクスポート時のフォントマッピング用。Google Slides スキルでは直接使用しないが、scalar-slides スキル（PPTX 生成）との互換性のために保持",
+    "majorLatin":    "Noto Sans JP",
+    "majorEastAsia": "Noto Sans JP",
+    "minorLatin":    "M PLUS 1p",
+    "minorEastAsia": "M PLUS 1p"
+  }
+}

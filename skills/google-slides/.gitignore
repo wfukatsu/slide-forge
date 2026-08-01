@@ -1,0 +1,24 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# OAuth credentials and tokens (user-placed, contains secrets)
+config/credentials.json
+config/token.json
+
+# OS
+.DS_Store
+
+# Test output
+test_thumbnails/
+thumbnails/
+
+# 生成物のキャッシュ（アイコンを染めて焼いた PNG など）
+cache/
+
+# クラウドベンダーの公式アイコン（各社の資産なので再配布しない）。
+# 利用者が scripts/fetch-cloud-icons.py で自分の環境に取り込む
+assets/shared/cloud-icons/*
+!assets/shared/cloud-icons/README.md

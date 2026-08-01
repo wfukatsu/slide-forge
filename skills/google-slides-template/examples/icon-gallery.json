@@ -1,0 +1,507 @@
+{
+  "title": "アイコンライブラリ",
+  "slides": [
+    {
+      "layout": "COVER",
+      "title": "アイコンライブラリ",
+      "subtitle": "Scalar ブランドのピクトグラム 62 種",
+      "body": "google-slides-template スキル\nscripts/icons.py / assets/icons/"
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "アイコン一覧 1/3（asset_icon_grid）",
+      "figures": [
+        {
+          "type": "asset_icon_grid",
+          "x": 0.5,
+          "y": 0.95,
+          "w": 9.0,
+          "cols": 8,
+          "size": 0.52,
+          "rowGap": 0.3,
+          "labelSize": 7,
+          "items": [
+            [
+              "account-link",
+              "account-link"
+            ],
+            [
+              "agent",
+              "agent"
+            ],
+            [
+              "benefit",
+              "benefit"
+            ],
+            [
+              "certificate",
+              "certificate"
+            ],
+            [
+              "company",
+              "company"
+            ],
+            [
+              "consent",
+              "consent"
+            ],
+            [
+              "contact",
+              "contact"
+            ],
+            [
+              "cookie",
+              "cookie"
+            ],
+            [
+              "data-bank",
+              "data-bank"
+            ],
+            [
+              "data-bank-role",
+              "data-bank-\nrole"
+            ],
+            [
+              "data-consumer",
+              "data-consumer"
+            ],
+            [
+              "data-operations",
+              "data-\noperations"
+            ],
+            [
+              "data-subject",
+              "data-subject"
+            ],
+            [
+              "data-usage",
+              "data-usage"
+            ],
+            [
+              "data-use-case",
+              "data-use-case"
+            ],
+            [
+              "edit-profile",
+              "edit-profile"
+            ],
+            [
+              "evidence-chain",
+              "evidence-\nchain"
+            ],
+            [
+              "evidence-chain-link",
+              "evidence-\nchain-link"
+            ],
+            [
+              "facebook",
+              "facebook"
+            ],
+            [
+              "faq",
+              "faq"
+            ],
+            [
+              "file-history",
+              "file-history"
+            ],
+            [
+              "glossary",
+              "glossary"
+            ],
+            [
+              "guide",
+              "guide"
+            ],
+            [
+              "hiring-company",
+              "hiring-\ncompany"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "アイコン一覧 2/3（asset_icon_grid）",
+      "figures": [
+        {
+          "type": "asset_icon_grid",
+          "x": 0.5,
+          "y": 0.95,
+          "w": 9.0,
+          "cols": 8,
+          "size": 0.52,
+          "rowGap": 0.3,
+          "labelSize": 7,
+          "items": [
+            [
+              "id-card",
+              "id-card"
+            ],
+            [
+              "image-record",
+              "image-record"
+            ],
+            [
+              "interview",
+              "interview"
+            ],
+            [
+              "invoice",
+              "invoice"
+            ],
+            [
+              "ip-document",
+              "ip-document"
+            ],
+            [
+              "job-offer",
+              "job-offer"
+            ],
+            [
+              "job-seeker",
+              "job-seeker"
+            ],
+            [
+              "joint-project",
+              "joint-project"
+            ],
+            [
+              "ledger",
+              "ledger"
+            ],
+            [
+              "mail",
+              "mail"
+            ],
+            [
+              "my-data",
+              "my-data"
+            ],
+            [
+              "new-workflow",
+              "new-workflow"
+            ],
+            [
+              "notice",
+              "notice"
+            ],
+            [
+              "notice-alert",
+              "notice-alert"
+            ],
+            [
+              "personal-data-management",
+              "personal-data-\nmanagement"
+            ],
+            [
+              "personal-info",
+              "personal-info"
+            ],
+            [
+              "privacy-policy",
+              "privacy-\npolicy"
+            ],
+            [
+              "private-key",
+              "private-key"
+            ],
+            [
+              "public-key",
+              "public-key"
+            ],
+            [
+              "receipt",
+              "receipt"
+            ],
+            [
+              "recommended-env",
+              "recommended-\nenv"
+            ],
+            [
+              "recommender",
+              "recommender"
+            ],
+            [
+              "reference-check",
+              "reference-\ncheck"
+            ],
+            [
+              "referrer",
+              "referrer"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "アイコン一覧 3/3（asset_icon_grid）",
+      "figures": [
+        {
+          "type": "asset_icon_grid",
+          "x": 0.5,
+          "y": 0.95,
+          "w": 9.0,
+          "cols": 8,
+          "size": 0.52,
+          "rowGap": 0.3,
+          "labelSize": 7,
+          "items": [
+            [
+              "screening",
+              "screening"
+            ],
+            [
+              "search",
+              "search"
+            ],
+            [
+              "security",
+              "security"
+            ],
+            [
+              "service-detail",
+              "service-\ndetail"
+            ],
+            [
+              "settings",
+              "settings"
+            ],
+            [
+              "shared-key",
+              "shared-key"
+            ],
+            [
+              "signup",
+              "signup"
+            ],
+            [
+              "survey",
+              "survey"
+            ],
+            [
+              "tamper-check",
+              "tamper-check"
+            ],
+            [
+              "terms",
+              "terms"
+            ],
+            [
+              "timestamp",
+              "timestamp"
+            ],
+            [
+              "twitter",
+              "twitter"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "流れを見せる（asset_icon_flow）",
+      "figures": [
+        {
+          "type": "asset_icon_flow",
+          "x": 0.5,
+          "y": 1.15,
+          "w": 9.0,
+          "size": 0.86,
+          "items": [
+            [
+              "job-seeker",
+              "求職者"
+            ],
+            [
+              "signup",
+              "会員登録"
+            ],
+            [
+              "screening",
+              "書類選考"
+            ],
+            [
+              "interview",
+              "面接"
+            ],
+            [
+              "job-offer",
+              "内定"
+            ]
+          ]
+        },
+        {
+          "type": "asset_icon_flow",
+          "x": 0.5,
+          "y": 3.05,
+          "w": 9.0,
+          "size": 0.86,
+          "items": [
+            [
+              "personal-info",
+              "個人情報"
+            ],
+            [
+              "consent",
+              "同意"
+            ],
+            [
+              "data-bank",
+              "情報銀行"
+            ],
+            [
+              "data-consumer",
+              "利活用企業"
+            ],
+            [
+              "data-usage",
+              "利用状況の把握"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "説明を添える（asset_icon_cards）",
+      "figures": [
+        {
+          "type": "asset_icon_cards",
+          "x": 0.5,
+          "y": 1.15,
+          "w": 9.0,
+          "h": 3.4,
+          "cols": 3,
+          "items": [
+            [
+              "evidence-chain",
+              "証拠チェーン",
+              "取引を鎖状につなぎ、後からの書き換えを検知する"
+            ],
+            [
+              "tamper-check",
+              "改ざん検知",
+              "記録時のままであることを検証する"
+            ],
+            [
+              "timestamp",
+              "タイムスタンプ",
+              "いつ記録されたかを第三者が確認できる形で残す"
+            ],
+            [
+              "public-key",
+              "公開鍵",
+              "署名の検証に使う。公開してよい鍵"
+            ],
+            [
+              "private-key",
+              "秘密鍵",
+              "署名の生成に使う。持ち主だけの鍵"
+            ],
+            [
+              "shared-key",
+              "共通鍵",
+              "暗号化と復号に同じ鍵を使う方式"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "色はテンプレートの配色から選ぶ（color）",
+      "figures": [
+        {
+          "type": "asset_icon_row",
+          "x": 0.5,
+          "y": 1.25,
+          "w": 9.0,
+          "size": 0.9,
+          "labelSize": 10,
+          "items": [
+            [
+              "security",
+              "既定（主色）"
+            ],
+            [
+              "mail",
+              "既定（主色）"
+            ],
+            [
+              "notice",
+              "既定（主色）"
+            ],
+            [
+              "search",
+              "既定（主色）"
+            ]
+          ]
+        },
+        {
+          "type": "asset_icon_row",
+          "x": 0.5,
+          "y": 3.0,
+          "w": 9.0,
+          "size": 0.9,
+          "labelSize": 10,
+          "color": [
+            "#63C045",
+            "#EE2155",
+            "#FFB300",
+            "#6B7280"
+          ],
+          "items": [
+            [
+              "security",
+              "成功色"
+            ],
+            [
+              "mail",
+              "警告色"
+            ],
+            [
+              "notice",
+              "注意色"
+            ],
+            [
+              "search",
+              "抑えた色"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "ロゴ（scalar-logo は色指定を受け付けない）",
+      "figures": [
+        {
+          "type": "asset_icon_row",
+          "x": 2.0,
+          "y": 1.6,
+          "w": 6.0,
+          "size": 1.4,
+          "labelSize": 10,
+          "color": "#EE2155",
+          "items": [
+            [
+              "scalar-logo",
+              "scalar-logo\nブランド色で固定（color は無視）"
+            ],
+            [
+              "scalar-logo-mono",
+              "scalar-logo-mono\n単色なので color で染まる"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "CLOSING"
+    }
+  ]
+}

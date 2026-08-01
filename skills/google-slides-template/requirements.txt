@@ -1,0 +1,13 @@
+# 記録用。実際のインストール先は共有 venv ~/.claude/venvs/gslides で、
+# 依存の追加・更新は ~/.claude/venvs/gslides-requirements.txt を編集すること。
+# google-slides / google-slides-template の 2 スキルで共有している。
+
+# Requires Python 3.10+
+
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0
+google-api-python-client>=2.120.0
+
+# アイコンライブラリ（scripts/icons.py）の SVG→PNG 変換。無い場合は
+# rsvg-convert / ImageMagick を探し、どれも無ければ同梱 PNG を色そのままで使う
+cairosvg>=2.7.0

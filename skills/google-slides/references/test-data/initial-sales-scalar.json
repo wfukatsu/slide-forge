@@ -1,0 +1,437 @@
+{
+  "metadata": {
+    "deckPattern": "initial_sales",
+    "theme": "scalar",
+    "product": "ScalarDB",
+    "language": "ja",
+    "copyright": "(C) 2026 Scalar, Inc."
+  },
+  "slides": [
+    {
+      "index": 0,
+      "type": "title",
+      "master": "COVER",
+      "content": {
+        "title": "ScalarDB",
+        "subtitle": "分散トランザクション基盤で金融業界のデータ課題を解決",
+        "presenter": "Scalar, Inc. セールスチーム",
+        "date": "2026-02-22",
+        "company": "Scalar, Inc."
+      },
+      "speakerNotes": "本日は ScalarDB の概要と金融業界におけるデータ一貫性の課題解決についてご紹介いたします。15分程度のプレゼンテーションを予定しております。ご質問は随時お受けいたします。"
+    },
+    {
+      "index": 1,
+      "type": "agenda",
+      "master": "SECTION",
+      "content": {
+        "title": "アジェンダ",
+        "items": [
+          "金融業界が直面するデータ課題",
+          "ScalarDB による解決アプローチ",
+          "製品アーキテクチャと主要機能",
+          "導入効果と事例紹介",
+          "次のステップ"
+        ]
+      },
+      "speakerNotes": "本日は5つのパートに分けてご説明します。まず業界課題の共有から始め、ScalarDB の価値提案、技術概要、実績、そして具体的な次のステップをお話しします。"
+    },
+    {
+      "index": 2,
+      "type": "text_bullets",
+      "master": "CONTENT",
+      "content": {
+        "title": "金融機関は3つの深刻なデータ一貫性課題に直面している",
+        "bullets": [
+          "マイクロサービス間のデータ不整合が決済エラーの主因",
+          "レガシーDBのスケール限界で処理遅延が常態化",
+          "マルチリージョン展開時にACID保証が破綻する",
+          "手動リカバリに平均4時間を要し業務停止リスクが拡大"
+        ],
+        "footnote": "出典: 2025年 金融機関IT課題調査（Scalar自社調べ）"
+      },
+      "speakerNotes": "金融機関のお客様から最も多く伺う課題がこの3点です。特にマイクロサービス移行後のデータ不整合は、決済エラーや二重処理の原因となり、ビジネスに直結するリスクです。"
+    },
+    {
+      "index": 3,
+      "type": "problem_solution",
+      "master": "SPLIT_SCREEN",
+      "content": {
+        "title": "従来手法ではスケーラビリティと一貫性を両立できない",
+        "problem": {
+          "heading": "従来のアプローチ",
+          "points": [
+            "2フェーズコミットの性能ボトルネック",
+            "結果整合性モデルの複雑な補償処理",
+            "DB固有の分散機能へのベンダーロックイン",
+            "アプリケーション側での整合性管理の負荷"
+          ]
+        },
+        "solution": {
+          "heading": "ScalarDB のアプローチ",
+          "points": [
+            "独自コンセンサスで高スループットを維持",
+            "アプリ透過的にACIDトランザクションを保証",
+            "任意のDB組み合わせに対応しロックイン回避",
+            "ミドルウェア方式で既存システムを変更不要"
+          ]
+        }
+      },
+      "speakerNotes": "左側が従来のアプローチの限界、右側が ScalarDB の解決策です。最大の差別化ポイントは、既存データベースを変更せずにACIDトランザクションを実現できる点です。"
+    },
+    {
+      "index": 4,
+      "type": "product_overview",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB はアプリ透過的にACID保証を提供するミドルウェアである",
+        "productName": "ScalarDB",
+        "tagline": "Universal Transaction Manager for Heterogeneous Databases",
+        "keyFeatures": [
+          {
+            "icon": "🔄",
+            "name": "分散トランザクション",
+            "description": "異種DB間でACIDトランザクションを透過的に実行"
+          },
+          {
+            "icon": "🌐",
+            "name": "マルチクラウド対応",
+            "description": "AWS・GCP・Azure・オンプレを横断した統一データアクセス"
+          },
+          {
+            "icon": "⚡",
+            "name": "高スループット",
+            "description": "独自コンセンサスにより毎秒数万トランザクションを処理"
+          },
+          {
+            "icon": "🔌",
+            "name": "プラグイン型アーキテクチャ",
+            "description": "JDBC互換APIで既存アプリケーションからシームレスに移行"
+          }
+        ]
+      },
+      "speakerNotes": "ScalarDB はデータベースミドルウェアとして、既存のデータベースの上に透過的なトランザクション層を提供します。アプリケーション側のコード変更は最小限で導入可能です。"
+    },
+    {
+      "index": 5,
+      "type": "architecture",
+      "master": "CONTENT",
+      "content": {
+        "title": "ミドルウェア方式で既存DBを変更せずに導入できる",
+        "layers": [
+          {
+            "name": "アプリケーション層",
+            "components": [
+              { "name": "マイクロサービスA", "type": "client" },
+              { "name": "マイクロサービスB", "type": "client" },
+              { "name": "マイクロサービスC", "type": "client" }
+            ]
+          },
+          {
+            "name": "ScalarDB 層",
+            "components": [
+              { "name": "ScalarDB Cluster", "type": "scalar" },
+              { "name": "Transaction Manager", "type": "scalar" },
+              { "name": "Consensus Module", "type": "scalar" }
+            ]
+          },
+          {
+            "name": "データストア層",
+            "components": [
+              { "name": "Amazon DynamoDB", "type": "external" },
+              { "name": "PostgreSQL", "type": "external" },
+              { "name": "Cassandra", "type": "external" }
+            ]
+          }
+        ],
+        "connections": [
+          { "from": "マイクロサービスA", "to": "ScalarDB Cluster", "label": "JDBC/gRPC", "style": "solid" },
+          { "from": "マイクロサービスB", "to": "ScalarDB Cluster", "label": "JDBC/gRPC", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "Amazon DynamoDB", "label": "Storage API", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "PostgreSQL", "label": "Storage API", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "Cassandra", "label": "Storage API", "style": "solid" }
+        ]
+      },
+      "speakerNotes": "3層アーキテクチャをご覧ください。ScalarDB はアプリケーションとデータベースの間にミドルウェアとして配置されます。既存DBの変更は不要で、JDBC互換APIでアクセスできます。"
+    },
+    {
+      "index": 6,
+      "type": "feature_matrix",
+      "master": "CONTENT",
+      "content": {
+        "title": "5つの主要機能が競合製品にない差別化を実現する",
+        "features": [
+          "異種DB間トランザクション",
+          "マルチクラウド対応",
+          "JDBC互換API",
+          "スキーマ管理",
+          "Kubernetes ネイティブ",
+          "商用サポート"
+        ],
+        "products": [
+          {
+            "name": "ScalarDB",
+            "values": ["yes", "yes", "yes", "yes", "yes", "yes"]
+          },
+          {
+            "name": "Vitess",
+            "values": ["no", "partial", "yes", "partial", "yes", "partial"]
+          },
+          {
+            "name": "CockroachDB",
+            "values": ["no", "yes", "yes", "yes", "yes", "yes"]
+          }
+        ]
+      },
+      "speakerNotes": "ScalarDB は異種データベース間でのACIDトランザクションを唯一サポートしています。CockroachDB は分散SQLですが、既存DBの活用はできません。Vitess は MySQL 専用です。"
+    },
+    {
+      "index": 7,
+      "type": "kpi_highlight",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "導入企業は平均40%のコスト削減と99.99%の可用性を達成",
+        "kpis": [
+          {
+            "value": "40%",
+            "label": "運用コスト削減",
+            "description": "手動リカバリ排除と運用自動化",
+            "trend": "down"
+          },
+          {
+            "value": "99.99%",
+            "label": "データ一貫性",
+            "description": "ACID保証による整合性確保",
+            "trend": "up"
+          },
+          {
+            "value": "3x",
+            "label": "スループット向上",
+            "description": "独自コンセンサスにより従来比3倍",
+            "trend": "up"
+          },
+          {
+            "value": "<5ms",
+            "label": "レイテンシ",
+            "description": "P99レイテンシ5ms未満を実現",
+            "trend": "stable"
+          }
+        ]
+      },
+      "speakerNotes": "導入企業の実績データです。運用コスト40%削減は手動リカバリの排除が主因です。スループット3倍はバッチ処理が不要になり、リアルタイム処理に移行した効果です。"
+    },
+    {
+      "index": 8,
+      "type": "case_study",
+      "master": "CONTENT",
+      "content": {
+        "title": "大手銀行A社はScalarDBで決済基盤を刷新し処理速度を3倍にした",
+        "company": "大手銀行A社",
+        "industry": "金融（メガバンク）",
+        "challenge": "マイクロサービス化に伴い、決済処理のデータ不整合が月100件以上発生。手動リカバリに平均4時間を要し、顧客影響が深刻化していた。",
+        "solution": "ScalarDB を導入し、PostgreSQL と DynamoDB 間の分散トランザクションをACID保証付きで実現。既存アプリケーションのコード変更は最小限。",
+        "results": [
+          { "metric": "データ不整合", "value": "ゼロ件/月", "description": "月100件→0件に削減" },
+          { "metric": "処理速度", "value": "3倍向上", "description": "バッチ→リアルタイム化" },
+          { "metric": "運用工数", "value": "60%削減", "description": "手動リカバリが不要に" }
+        ],
+        "quote": "ScalarDB 導入後、データ不整合は完全にゼロになり、運用チームの負担が劇的に軽減されました。"
+      },
+      "speakerNotes": "大手銀行A社の事例です。決済基盤のマイクロサービス化に伴うデータ不整合問題を、ScalarDB で根本的に解決しました。導入期間は約3ヶ月でした。"
+    },
+    {
+      "index": 9,
+      "type": "competitive_compare",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は既存DB活用と異種DB対応で唯一無二のポジションにある",
+        "dimensions": [
+          "異種DB対応",
+          "既存DB変更不要",
+          "ACID保証",
+          "マルチクラウド",
+          "導入容易性",
+          "ライセンスコスト"
+        ],
+        "competitors": [
+          {
+            "name": "ScalarDB",
+            "isOurs": true,
+            "values": ["◎ 任意の組み合わせ", "◎ 変更不要", "◎ 完全ACID", "◎ 全主要クラウド", "◎ K8sデプロイ", "○ 中"]
+          },
+          {
+            "name": "CockroachDB",
+            "isOurs": false,
+            "values": ["× 自社DBのみ", "× DB入替必要", "◎ 完全ACID", "○ 主要クラウド", "○ 専用クラスタ", "△ 高"]
+          },
+          {
+            "name": "TiDB",
+            "isOurs": false,
+            "values": ["× MySQL互換のみ", "× DB入替必要", "◎ 完全ACID", "○ 主要クラウド", "△ 複雑", "○ OSS+商用"]
+          }
+        ]
+      },
+      "speakerNotes": "競合比較をご覧ください。CockroachDB や TiDB は優れた分散DBですが、既存のデータベースを置き換える必要があります。ScalarDB は既存資産を活かせる唯一のソリューションです。"
+    },
+    {
+      "index": 10,
+      "type": "usecase_overview",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は金融・小売・ゲームの3業界で採用実績がある",
+        "industry": "クロスインダストリー",
+        "challenge": "各業界固有のデータ一貫性課題",
+        "solution": "ScalarDB による異種DB間ACID保証",
+        "outcomes": [
+          "金融: 決済基盤の不整合ゼロを達成",
+          "小売: 在庫管理の整合性を確保しピーク時も安定稼働",
+          "ゲーム: グローバル分散環境でユーザーデータ一貫性を維持"
+        ]
+      },
+      "speakerNotes": "ScalarDB は特定業界に限定されず、データ一貫性が重要なあらゆる場面で活用されています。特に金融・小売・ゲーム業界での採用実績が豊富です。"
+    },
+    {
+      "index": 11,
+      "type": "roi_impact",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "3年間で投資回収率280%を達成する見込みである",
+        "metrics": [
+          {
+            "value": "280%",
+            "label": "3年ROI",
+            "description": "運用コスト削減+障害損失回避"
+          },
+          {
+            "value": "¥1.2億",
+            "label": "年間コスト削減",
+            "description": "運用工数60%削減の効果"
+          },
+          {
+            "value": "6ヶ月",
+            "label": "投資回収期間",
+            "description": "導入初年度で投資回収完了"
+          }
+        ],
+        "summary": "ScalarDB の導入により、運用コスト削減と障害による機会損失回避を合わせて、3年間で投資額の約2.8倍のリターンが見込まれます。"
+      },
+      "speakerNotes": "ROI分析の結果です。運用コスト削減に加え、データ不整合に起因する障害の機会損失回避も大きな効果です。多くのお客様が初年度内に投資回収を達成されています。"
+    },
+    {
+      "index": 12,
+      "type": "deployment_steps",
+      "master": "CONTENT",
+      "content": {
+        "title": "最短3ヶ月で本番環境への導入が完了する",
+        "phases": [
+          {
+            "name": "PoC検証",
+            "duration": "4週間",
+            "tasks": [
+              "対象ユースケースの選定",
+              "テスト環境構築と基本動作確認",
+              "性能ベンチマーク実施"
+            ]
+          },
+          {
+            "name": "パイロット導入",
+            "duration": "4週間",
+            "tasks": [
+              "本番相当環境でのE2Eテスト",
+              "既存システムとの統合テスト",
+              "運用手順書の整備"
+            ]
+          },
+          {
+            "name": "本番展開",
+            "duration": "4週間",
+            "tasks": [
+              "段階的なトラフィック切り替え",
+              "モニタリング体制の確立",
+              "運用チームへの引き継ぎ"
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "導入は3フェーズで進めます。PoC検証で技術的な適合性を確認し、パイロットで本番相当の検証を行い、最後に段階的に本番展開します。Scalarのエンジニアが伴走支援します。"
+    },
+    {
+      "index": 13,
+      "type": "pricing",
+      "master": "CONTENT",
+      "content": {
+        "title": "用途に合わせた3つのプランを提供している",
+        "plans": [
+          {
+            "name": "Standard",
+            "price": "¥500,000/月〜",
+            "features": [
+              "ScalarDB Cluster 基本機能",
+              "最大3ノード構成",
+              "ビジネスアワーサポート",
+              "コミュニティフォーラム"
+            ]
+          },
+          {
+            "name": "Enterprise",
+            "price": "¥1,500,000/月〜",
+            "features": [
+              "全機能利用可能",
+              "無制限ノード構成",
+              "24/7プレミアムサポート",
+              "専任テクニカルアカウントマネージャー"
+            ],
+            "highlighted": true
+          },
+          {
+            "name": "Enterprise Plus",
+            "price": "個別見積",
+            "features": [
+              "Enterprise全機能",
+              "カスタム機能開発",
+              "オンサイトサポート",
+              "SLAカスタマイズ"
+            ]
+          }
+        ],
+        "footnote": "※ 価格は参考値です。詳細はお問い合わせください。"
+      },
+      "speakerNotes": "料金体系は3プランです。Enterprise プランが最も人気で、多くのお客様がこちらを選択されています。PoC期間中は無償評価版をご利用いただけます。"
+    },
+    {
+      "index": 14,
+      "type": "summary",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "ScalarDB は3つの差別化で金融業界のデータ課題を根本解決する",
+        "keyPoints": [
+          "既存DBを変更せずに異種DB間ACIDトランザクションを実現",
+          "導入企業は平均40%のコスト削減と99.99%の可用性を達成",
+          "最短3ヶ月で本番導入可能、Scalarエンジニアが伴走支援"
+        ],
+        "recommendation": "まずは4週間のPoC検証で技術的な適合性をご確認ください",
+        "nextSteps": [
+          "技術検証環境の構築（1週間以内に開始可能）",
+          "対象ユースケースの選定ワークショップ",
+          "PoC計画の策定と実施"
+        ]
+      },
+      "speakerNotes": "まとめとして、ScalarDB の3つの差別化ポイントを改めてお伝えします。次のステップとして、まずは4週間のPoC検証をご提案いたします。技術チームとの打ち合わせを設定させてください。"
+    },
+    {
+      "index": 15,
+      "type": "closing",
+      "master": "CLOSING",
+      "content": {
+        "message": "ご清聴ありがとうございました",
+        "contactInfo": {
+          "name": "Scalar, Inc. セールスチーム",
+          "email": "sales@scalar-labs.com",
+          "phone": "03-XXXX-XXXX",
+          "url": "https://scalar-labs.com"
+        }
+      },
+      "speakerNotes": "ご清聴ありがとうございました。ご質問やPoC検証のご相談は、記載の連絡先までお気軽にお問い合わせください。本日の資料は後日メールでお送りいたします。"
+    }
+  ]
+}

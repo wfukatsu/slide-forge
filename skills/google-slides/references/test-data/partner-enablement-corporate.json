@@ -1,0 +1,525 @@
+{
+  "metadata": {
+    "deckPattern": "partner_enablement",
+    "theme": "corporate",
+    "product": "ScalarDB",
+    "language": "ja",
+    "copyright": "(C) 2026 Scalar, Inc."
+  },
+  "slides": [
+    {
+      "index": 0,
+      "type": "title",
+      "master": "COVER",
+      "content": {
+        "title": "ScalarDB パートナー",
+        "subtitle": "パートナー様向け製品理解・販売支援プログラム",
+        "presenter": "Scalar, Inc. パートナーアライアンス",
+        "date": "2026-02-22",
+        "company": "Scalar, Inc."
+      },
+      "speakerNotes": "パートナー様向けのScalarDB製品説明資料です。製品理解、主要ユースケース、販売支援体制の3部構成でご説明します。パートナー様がお客様に再説明できるレベルの情報を提供します。"
+    },
+    {
+      "index": 1,
+      "type": "agenda",
+      "master": "SECTION",
+      "content": {
+        "title": "アジェンダ",
+        "items": [
+          "製品理解: ScalarDB の概要と差別化ポイント",
+          "ユースケース: 主要業界での活用事例",
+          "販売支援: 料金体系・サポート・パートナーリソース"
+        ]
+      },
+      "speakerNotes": "3つのセクションで構成しています。まず製品を正しく理解いただき、次にお客様向けに説明できるユースケースを共有し、最後に販売時に必要な情報をお伝えします。"
+    },
+    {
+      "index": 2,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "製品理解",
+        "subtitle": "ScalarDB の概要・アーキテクチャ・差別化",
+        "sectionNumber": 1
+      },
+      "speakerNotes": "セクション1では、ScalarDB の製品概要、アーキテクチャ、主要機能、競合との差別化について詳しくご説明します。"
+    },
+    {
+      "index": 3,
+      "type": "product_overview",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は既存DB資産を活かす世界唯一のトランザクションミドルウェアである",
+        "productName": "ScalarDB",
+        "tagline": "Universal Transaction Manager — 異種DB間ACID保証",
+        "keyFeatures": [
+          {
+            "icon": "🔄",
+            "name": "異種DB間ACID",
+            "description": "DynamoDB + PostgreSQL 等、異なるDB間でACIDトランザクション"
+          },
+          {
+            "icon": "🏗️",
+            "name": "ミドルウェア型",
+            "description": "既存DBを変更せず上に載せるだけで導入可能"
+          },
+          {
+            "icon": "☁️",
+            "name": "マルチクラウド",
+            "description": "AWS/GCP/Azure/オンプレ対応、クラウド間トランザクションも可"
+          },
+          {
+            "icon": "🔌",
+            "name": "JDBC互換",
+            "description": "既存アプリのJDBCコードを最小変更で移行可能"
+          }
+        ]
+      },
+      "speakerNotes": "ScalarDB の最大の特徴は、既存のデータベースを入れ替えることなく、ミドルウェアとして上に載せるだけで異種DB間のACIDトランザクションを実現する点です。競合には同様の製品は存在しません。"
+    },
+    {
+      "index": 4,
+      "type": "architecture",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB はアプリとDBの間に透過的に配置されるミドルウェアである",
+        "layers": [
+          {
+            "name": "アプリケーション層",
+            "components": [
+              { "name": "既存アプリケーション", "type": "client" },
+              { "name": "新規マイクロサービス", "type": "client" }
+            ]
+          },
+          {
+            "name": "ScalarDB 層",
+            "components": [
+              { "name": "ScalarDB Cluster", "type": "scalar" },
+              { "name": "Transaction Manager", "type": "scalar" }
+            ]
+          },
+          {
+            "name": "データストア層",
+            "components": [
+              { "name": "RDB (PostgreSQL, MySQL)", "type": "external" },
+              { "name": "NoSQL (DynamoDB, Cassandra)", "type": "external" },
+              { "name": "NewSQL (Cosmos DB)", "type": "external" }
+            ]
+          }
+        ],
+        "connections": [
+          { "from": "既存アプリケーション", "to": "ScalarDB Cluster", "label": "JDBC", "style": "solid" },
+          { "from": "新規マイクロサービス", "to": "ScalarDB Cluster", "label": "gRPC", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "RDB (PostgreSQL, MySQL)", "label": "Storage API", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "NoSQL (DynamoDB, Cassandra)", "label": "Storage API", "style": "solid" },
+          { "from": "ScalarDB Cluster", "to": "NewSQL (Cosmos DB)", "label": "Storage API", "style": "solid" }
+        ]
+      },
+      "speakerNotes": "アーキテクチャを図で示します。ScalarDB はアプリケーションとデータベースの間にミドルウェアとして配置されます。お客様への説明では、このレイヤー構成図が最も理解されやすいです。"
+    },
+    {
+      "index": 5,
+      "type": "feature_matrix",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は6つの差別化機能で競合に対する明確な優位性を持つ",
+        "features": [
+          "異種DB間トランザクション",
+          "既存DB変更不要",
+          "マルチクラウド対応",
+          "JDBC互換API",
+          "Kubernetes ネイティブ",
+          "商用エンタープライズサポート"
+        ],
+        "products": [
+          {
+            "name": "ScalarDB",
+            "values": ["yes", "yes", "yes", "yes", "yes", "yes"]
+          },
+          {
+            "name": "CockroachDB",
+            "values": ["no", "no", "yes", "yes", "yes", "yes"]
+          },
+          {
+            "name": "TiDB",
+            "values": ["no", "no", "partial", "yes", "yes", "yes"]
+          },
+          {
+            "name": "Vitess",
+            "values": ["no", "no", "partial", "partial", "yes", "partial"]
+          }
+        ]
+      },
+      "speakerNotes": "パートナー様が商談で最もよく聞かれる質問への回答がこの比較表です。ScalarDB だけが異種DB間トランザクションと既存DB変更不要の2つを同時に満たしています。"
+    },
+    {
+      "index": 6,
+      "type": "competitive_compare",
+      "master": "CONTENT",
+      "content": {
+        "title": "お客様への説明では既存DB活用と導入容易性を強調すると効果的である",
+        "dimensions": [
+          "導入アプローチ",
+          "既存DB活用",
+          "導入期間",
+          "TCO",
+          "対象ユースケース"
+        ],
+        "competitors": [
+          {
+            "name": "ScalarDB",
+            "isOurs": true,
+            "values": ["ミドルウェア追加", "◎ そのまま活用", "3ヶ月", "最低", "異種DB連携全般"]
+          },
+          {
+            "name": "CockroachDB",
+            "values": ["DB入替", "× 全面移行", "12-18ヶ月", "高", "新規分散DB"]
+          },
+          {
+            "name": "TiDB",
+            "values": ["DB入替", "× MySQL互換のみ", "6-12ヶ月", "中", "MySQL拡張"]
+          },
+          {
+            "name": "自社開発",
+            "values": ["スクラッチ", "△ 部分的", "6-18ヶ月", "最高", "個別対応"]
+          }
+        ]
+      },
+      "speakerNotes": "商談時に競合と比較される場合の説明ポイントです。最も強いポイントは、既存DBをそのまま活用できること。お客様のDB入替リスクがゼロである点を強調してください。"
+    },
+    {
+      "index": 7,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "ユースケース",
+        "subtitle": "主要業界での活用事例と提案ポイント",
+        "sectionNumber": 2
+      },
+      "speakerNotes": "セクション2では、パートナー様がお客様に提案する際の業界別ユースケースと、提案のポイントをご説明します。"
+    },
+    {
+      "index": 8,
+      "type": "usecase_overview",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は金融・小売・ゲーム・物流の4業界で高い成約率を誇る",
+        "industry": "クロスインダストリー",
+        "challenge": "各業界に共通するのは、分散システム化に伴うデータ一貫性の課題",
+        "solution": "ScalarDB のミドルウェアアプローチで既存システムを活かしながら解決",
+        "outcomes": [
+          "金融: 決済基盤のデータ不整合ゼロ達成（成約率40%）",
+          "小売: オムニチャネル在庫統合の実現（成約率35%）",
+          "ゲーム: グローバル分散でのユーザーデータ一貫性確保（成約率30%）",
+          "物流: サプライチェーンのトレーサビリティ強化（成約率25%）"
+        ]
+      },
+      "speakerNotes": "パートナー様の提案先として推奨する4業界です。金融と小売が特に成約率が高く、お客様の課題が明確で、ScalarDB の価値が伝わりやすい業界です。"
+    },
+    {
+      "index": 9,
+      "type": "case_study",
+      "master": "CONTENT",
+      "content": {
+        "title": "金融業界: 大手銀行がScalarDB導入で決済不整合をゼロにした",
+        "company": "大手銀行A社",
+        "industry": "金融（メガバンク）",
+        "challenge": "マイクロサービス化後、決済処理のデータ不整合が月100件発生し、手動復旧に膨大な工数を費やしていた。",
+        "solution": "ScalarDB で PostgreSQL + DynamoDB 間の分散トランザクションを実現。3ヶ月で本番導入。",
+        "results": [
+          { "metric": "不整合件数", "value": "月100件→0件" },
+          { "metric": "運用コスト", "value": "年間1.2億円削減" },
+          { "metric": "処理速度", "value": "3倍向上" }
+        ],
+        "quote": "既存DBを入れ替えずに導入できたことが、経営層の承認を得る決め手になりました。"
+      },
+      "speakerNotes": "パートナー様が商談で活用できる金融業界の事例です。お客様への説明ポイントは、既存DB入替不要で経営層の承認が得やすかったという点です。"
+    },
+    {
+      "index": 10,
+      "type": "case_study",
+      "master": "CONTENT",
+      "content": {
+        "title": "小売業界: アパレル大手がオムニチャネル在庫統合を実現した",
+        "company": "大手アパレルB社",
+        "industry": "小売・アパレル",
+        "challenge": "EC（DynamoDB）と200店舗（PostgreSQL）の在庫がバッチ同期で、セール時のオーバーセルが月800件発生。",
+        "solution": "ScalarDB でリアルタイムACID同期を実現。BOPIS対応も含め、全チャネルの在庫を統一管理。",
+        "results": [
+          { "metric": "オーバーセル", "value": "月800件→0件" },
+          { "metric": "売上機会損失", "value": "15%削減" },
+          { "metric": "在庫回転率", "value": "1.3倍向上" }
+        ],
+        "quote": "BOPISの展開がScalarDBのおかげでスムーズに実現できました。"
+      },
+      "speakerNotes": "小売業界の事例です。オムニチャネル推進中のお客様に対しては、BOPIS対応と在庫精度向上をセットで提案すると効果的です。"
+    },
+    {
+      "index": 11,
+      "type": "section_divider",
+      "master": "SECTION",
+      "content": {
+        "title": "販売支援",
+        "subtitle": "料金体系・サポート・パートナーリソース",
+        "sectionNumber": 3
+      },
+      "speakerNotes": "セクション3では、パートナー様が販売活動に必要な情報をお伝えします。料金体系、サポート体制、パートナー向けリソースについてご説明します。"
+    },
+    {
+      "index": 12,
+      "type": "pricing",
+      "master": "CONTENT",
+      "content": {
+        "title": "3段階の価格体系でお客様の規模と要件に合わせた提案が可能である",
+        "plans": [
+          {
+            "name": "Standard",
+            "price": "¥500,000/月〜",
+            "features": [
+              "ScalarDB Cluster 基本機能",
+              "最大3ノード",
+              "ビジネスアワーサポート",
+              "パートナーマージン: 20%"
+            ]
+          },
+          {
+            "name": "Enterprise",
+            "price": "¥1,500,000/月〜",
+            "features": [
+              "全機能利用可能",
+              "無制限ノード",
+              "24/7プレミアムサポート",
+              "パートナーマージン: 25%"
+            ],
+            "highlighted": true
+          },
+          {
+            "name": "Enterprise Plus",
+            "price": "個別見積",
+            "features": [
+              "Enterprise全機能+カスタム",
+              "オンサイト対応",
+              "SLAカスタマイズ",
+              "パートナーマージン: 30%"
+            ]
+          }
+        ],
+        "footnote": "※ パートナーマージンは Authorized Partner 以上が対象です。PoC 期間中の無償評価版あり。"
+      },
+      "speakerNotes": "パートナー向け価格体系です。Enterpriseプランが最も販売しやすく、パートナーマージンは25%です。Enterprise Plusは大企業向けの個別見積で、マージン30%を確保できます。"
+    },
+    {
+      "index": 13,
+      "type": "ecosystem",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は主要クラウドとSIerのパートナーエコシステムを構築している",
+        "center": {
+          "name": "ScalarDB",
+          "icon": "🔄"
+        },
+        "partners": [
+          {
+            "category": "Technology Partners",
+            "items": [
+              { "name": "AWS" },
+              { "name": "Google Cloud" },
+              { "name": "Microsoft Azure" }
+            ]
+          },
+          {
+            "category": "SI Partners",
+            "items": [
+              { "name": "NTTデータ" },
+              { "name": "富士通" },
+              { "name": "日立製作所" }
+            ]
+          },
+          {
+            "category": "Consulting Partners",
+            "items": [
+              { "name": "アクセンチュア" },
+              { "name": "デロイト" }
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "現在のパートナーエコシステムです。3大クラウドベンダーとのテクノロジーパートナーシップ、大手SIerとのSIパートナーシップを構築しています。御社もこのエコシステムに参画いただけます。"
+    },
+    {
+      "index": 14,
+      "type": "support_sla",
+      "master": "CONTENT",
+      "content": {
+        "title": "パートナー様にも3段階のテクニカルサポートを提供している",
+        "tiers": [
+          {
+            "name": "Partner Basic",
+            "features": [
+              "技術ドキュメントアクセス",
+              "パートナーポータル",
+              "四半期ウェビナー"
+            ],
+            "sla": "ベストエフォート",
+            "responseTime": "翌営業日"
+          },
+          {
+            "name": "Partner Premium",
+            "features": [
+              "ビジネスアワーサポート",
+              "共同提案サポート",
+              "パートナーSEアサイン",
+              "月次定例ミーティング"
+            ],
+            "sla": "99.9%",
+            "responseTime": "4時間以内",
+            "highlighted": true
+          },
+          {
+            "name": "Partner Strategic",
+            "features": [
+              "24/7サポート",
+              "専任パートナーマネージャー",
+              "共同Go-to-Market",
+              "マーケティング費用支援"
+            ],
+            "sla": "99.99%",
+            "responseTime": "1時間以内"
+          }
+        ]
+      },
+      "speakerNotes": "パートナー向けサポート体制です。Partner Premiumでは共同提案のサポートとパートナーSEのアサインが利用できます。商談の技術フォローをScalarのSEが担当します。"
+    },
+    {
+      "index": 15,
+      "type": "deployment_steps",
+      "master": "CONTENT",
+      "content": {
+        "title": "パートナー様主導の導入プロジェクトでScalarSEが技術支援する体制である",
+        "phases": [
+          {
+            "name": "プリセールス",
+            "duration": "2-4週間",
+            "tasks": [
+              "Scalar SE による技術アセスメント",
+              "共同提案書の作成",
+              "PoC計画の策定"
+            ]
+          },
+          {
+            "name": "PoC/パイロット",
+            "duration": "4-6週間",
+            "tasks": [
+              "パートナーSE主導のPoC実施",
+              "Scalar SE の技術サポート",
+              "結果レポートの共同作成"
+            ]
+          },
+          {
+            "name": "本番導入",
+            "duration": "8-12週間",
+            "tasks": [
+              "パートナー主導のインテグレーション",
+              "Scalarによるコードレビュー",
+              "本番リリースの立会い"
+            ]
+          }
+        ]
+      },
+      "speakerNotes": "パートナー様主導で導入プロジェクトを進めていただき、ScalarのSEが技術面でバックアップします。プリセールスから本番リリースまで一貫した支援体制を提供します。"
+    },
+    {
+      "index": 16,
+      "type": "icon_grid",
+      "master": "CONTENT",
+      "content": {
+        "title": "パートナー様向けに6つの販売支援リソースを無償提供している",
+        "items": [
+          {
+            "icon": "📚",
+            "label": "パートナーポータル",
+            "description": "技術ドキュメント・FAQ・ベストプラクティス集"
+          },
+          {
+            "icon": "🎓",
+            "label": "トレーニングプログラム",
+            "description": "SE向け技術研修（オンライン/対面）"
+          },
+          {
+            "icon": "📋",
+            "label": "提案テンプレート",
+            "description": "業界別提案書・RFPテンプレート"
+          },
+          {
+            "icon": "🔧",
+            "label": "デモ環境",
+            "description": "お客様向けデモ用クラスタ環境"
+          },
+          {
+            "icon": "📊",
+            "label": "ROI計算ツール",
+            "description": "お客様のROI試算を支援するツール"
+          },
+          {
+            "icon": "🤝",
+            "label": "共同マーケティング",
+            "description": "ウェビナー・事例記事の共同制作"
+          }
+        ]
+      },
+      "speakerNotes": "パートナー様向けに6つの販売支援リソースを無償提供しています。特にROI計算ツールは商談で効果的で、お客様の具体的な数字でROIを試算できます。"
+    },
+    {
+      "index": 17,
+      "type": "image_text",
+      "master": "CONTENT",
+      "content": {
+        "title": "パートナー認定制度で3段階のランクと特典を提供している",
+        "text": "パートナー認定制度は、Registered・Authorized・Premierの3段階で構成されています。認定ランクに応じてマージン率、サポートレベル、マーケティング支援が向上します。Premier パートナーには共同Go-to-Marketの優先権が付与されます。",
+        "bullets": [
+          "Registered: 基本マージン15%、ポータルアクセス",
+          "Authorized: マージン20-25%、SE支援、共同提案",
+          "Premier: マージン25-30%、戦略パートナー特典"
+        ],
+        "imageAsset": "shared/icons/partner-tiers.png",
+        "imagePosition": "right"
+      },
+      "speakerNotes": "パートナー認定制度のご案内です。現在のパートナーランクに応じた特典と、ランクアップの要件については別途ご説明いたします。多くのパートナー様が1年以内にAuthorizedに昇格されています。"
+    },
+    {
+      "index": 18,
+      "type": "summary",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "ScalarDB パートナーは3つの強みでお客様のDXを支援し収益を拡大できる",
+        "keyPoints": [
+          "世界唯一の異種DB間ACIDミドルウェアで差別化された提案が可能",
+          "金融・小売の成約実績に基づく業界別提案テンプレートと共同提案支援",
+          "最大30%のマージン率とScalar SEの技術バックアップで収益性を確保"
+        ],
+        "recommendation": "まずはパートナー登録と SE 向けトレーニングの受講をお勧めします",
+        "nextSteps": [
+          "パートナー契約の締結",
+          "SE向け技術トレーニング（2日間）",
+          "初回共同商談の計画"
+        ]
+      },
+      "speakerNotes": "まとめです。ScalarDB パートナーとして、差別化された提案、実績に基づくサポート、高いマージン率の3つのメリットを提供します。まずはパートナー登録とSEトレーニングから始めましょう。"
+    },
+    {
+      "index": 19,
+      "type": "closing",
+      "master": "CLOSING",
+      "content": {
+        "message": "パートナーシップのご相談をお待ちしております",
+        "contactInfo": {
+          "name": "Scalar, Inc. パートナーアライアンス",
+          "email": "partners@scalar-labs.com",
+          "url": "https://scalar-labs.com/partners"
+        }
+      },
+      "speakerNotes": "ご清聴ありがとうございました。パートナー契約やトレーニングのご相談は、パートナーアライアンスチームまでお気軽にお問い合わせください。"
+    }
+  ]
+}

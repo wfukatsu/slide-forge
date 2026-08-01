@@ -1,0 +1,305 @@
+{
+  "metadata": {
+    "deckPattern": "executive_briefing",
+    "theme": "corporate",
+    "product": "ScalarDB",
+    "language": "ja",
+    "copyright": "(C) 2026 Scalar, Inc."
+  },
+  "slides": [
+    {
+      "index": 0,
+      "type": "title",
+      "master": "COVER",
+      "content": {
+        "title": "ScalarDB 経営概要",
+        "subtitle": "データ一貫性の課題解決によるビジネス価値創出",
+        "presenter": "Scalar, Inc. 代表取締役",
+        "date": "2026-02-22",
+        "company": "Scalar, Inc."
+      },
+      "speakerNotes": "本日は経営層の皆様に、ScalarDB がもたらすビジネス価値を簡潔にご説明いたします。10分程度のプレゼンテーションです。結論からお話しし、データで裏付けてまいります。"
+    },
+    {
+      "index": 1,
+      "type": "text_bullets",
+      "master": "CONTENT",
+      "content": {
+        "title": "データ不整合は年間数億円の損失とレピュテーションリスクを生む",
+        "subtitle": "エグゼクティブサマリー",
+        "bullets": [
+          "分散システム化で企業の87%がデータ不整合問題を経験",
+          "データ障害1件あたりの平均損失額は3,200万円",
+          "ScalarDB は既存DB資産を活かしながら不整合をゼロにする",
+          "導入企業は平均40%の運用コスト削減と6ヶ月で投資回収を達成"
+        ],
+        "footnote": "出典: Gartner 2025 Data Management Survey, Scalar 導入企業実績"
+      },
+      "speakerNotes": "まずエグゼクティブサマリーです。結論として、ScalarDB は年間数億円規模のデータ不整合コストを解消し、6ヶ月で投資回収が可能です。以降、この主張の根拠をデータでご説明します。"
+    },
+    {
+      "index": 2,
+      "type": "problem_solution",
+      "master": "SPLIT_SCREEN",
+      "content": {
+        "title": "DB刷新なしで分散トランザクションの課題を根本解決できる",
+        "problem": {
+          "heading": "経営課題",
+          "points": [
+            "DX推進でマイクロサービス化したが不整合が頻発",
+            "データ障害の手動復旧でエンジニア工数を逼迫",
+            "既存DBの入替はコストとリスクが大きすぎる",
+            "規制対応（FISC等）でデータ整合性の証明が必要"
+          ]
+        },
+        "solution": {
+          "heading": "ScalarDB の価値",
+          "points": [
+            "ミドルウェアとして導入、既存DB変更は不要",
+            "自動リカバリで手動復旧工数をゼロに",
+            "段階的移行でリスクを最小化",
+            "監査ログ・トランザクション証跡で規制対応"
+          ]
+        }
+      },
+      "speakerNotes": "左が経営課題、右がScalarDBの提供価値です。最大のポイントは、既存のデータベースを入れ替える必要がないことです。ミドルウェアとして上に載せるだけで、分散トランザクション問題を解決します。"
+    },
+    {
+      "index": 3,
+      "type": "product_overview",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は既存IT資産を最大限活用する唯一のソリューションである",
+        "productName": "ScalarDB",
+        "tagline": "既存DB資産を活かす分散トランザクションミドルウェア",
+        "keyFeatures": [
+          {
+            "icon": "💰",
+            "name": "投資保護",
+            "description": "既存DB・アプリケーション資産をそのまま活用"
+          },
+          {
+            "icon": "📈",
+            "name": "ビジネス継続性",
+            "description": "99.99%の可用性でデータ不整合ゼロを達成"
+          },
+          {
+            "icon": "⚡",
+            "name": "迅速な価値実現",
+            "description": "最短3ヶ月で本番導入、6ヶ月で投資回収"
+          }
+        ]
+      },
+      "speakerNotes": "経営視点での ScalarDB の3つの価値です。投資保護、ビジネス継続性、迅速な価値実現。特に、既存のDB資産を入れ替えずに済むことは、TCO削減に直結します。"
+    },
+    {
+      "index": 4,
+      "type": "kpi_highlight",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "導入企業は4つの経営指標で明確な改善を達成している",
+        "kpis": [
+          {
+            "value": "40%",
+            "label": "運用コスト削減",
+            "description": "手動リカバリ排除による工数削減",
+            "trend": "down"
+          },
+          {
+            "value": "ゼロ",
+            "label": "データ不整合",
+            "description": "月間不整合件数をゼロに",
+            "trend": "down"
+          },
+          {
+            "value": "3倍",
+            "label": "処理スループット",
+            "description": "バッチからリアルタイムへ移行",
+            "trend": "up"
+          },
+          {
+            "value": "99.99%",
+            "label": "サービス可用性",
+            "description": "計画外停止の大幅削減",
+            "trend": "up"
+          }
+        ]
+      },
+      "speakerNotes": "導入企業の実績KPIです。運用コスト40%削減はCFOにとって即座に効果が見える数字です。データ不整合ゼロはビジネスリスクの排除を意味します。"
+    },
+    {
+      "index": 5,
+      "type": "case_study",
+      "master": "CONTENT",
+      "content": {
+        "title": "大手銀行は決済基盤刷新でデータ障害ゼロと年間1.2億円削減を達成した",
+        "company": "大手銀行A社",
+        "industry": "金融（メガバンク）",
+        "challenge": "マイクロサービス化に伴いデータ不整合が月100件発生。年間の障害対応コストが2億円超。金融庁監査でデータ整合性の改善勧告を受領。",
+        "solution": "ScalarDB を導入し、既存のPostgreSQL・DynamoDB環境を維持したまま分散トランザクションを実現。3ヶ月で本番導入完了。",
+        "results": [
+          { "metric": "障害対応コスト", "value": "年間1.2億円削減" },
+          { "metric": "不整合件数", "value": "月100件→0件" },
+          { "metric": "導入期間", "value": "3ヶ月" }
+        ],
+        "quote": "ScalarDB により、データ整合性の課題が完全に解消され、金融庁監査にも自信を持って対応できるようになりました。"
+      },
+      "speakerNotes": "大手銀行A社の事例です。決定的だったのは、既存DBの入替なしに3ヶ月で導入が完了し、初年度から1.2億円のコスト削減効果が出た点です。金融庁監査対応も改善されました。"
+    },
+    {
+      "index": 6,
+      "type": "roi_impact",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "3年間で投資回収率280%、初年度で投資額を回収できる",
+        "metrics": [
+          {
+            "value": "280%",
+            "label": "3年間ROI",
+            "description": "運用削減+障害回避+機会損失防止"
+          },
+          {
+            "value": "6ヶ月",
+            "label": "投資回収期間",
+            "description": "導入初年度で回収完了"
+          },
+          {
+            "value": "¥1.2億",
+            "label": "年間削減効果",
+            "description": "障害対応+運用工数の合計"
+          }
+        ],
+        "summary": "ScalarDB への投資は初年度内に回収可能であり、3年間で投資額の約2.8倍のリターンを実現します。既存DB資産の活用により、他社製品と比較してTCOが30%低減されます。"
+      },
+      "speakerNotes": "ROI分析です。初年度内の投資回収は多くの経営者にとって重要な判断基準です。既存DB資産を活用するため、DB入替を伴う他社ソリューションと比較してTCOが30%低いのも特徴です。"
+    },
+    {
+      "index": 7,
+      "type": "competitive_compare",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB は既存資産活用で競合より30%低いTCOを実現する",
+        "dimensions": [
+          "既存DB活用",
+          "導入期間",
+          "TCO（3年）",
+          "データ整合性",
+          "規制対応"
+        ],
+        "competitors": [
+          {
+            "name": "ScalarDB",
+            "isOurs": true,
+            "values": ["◎ 変更不要", "3ヶ月", "低（ミドルウェア追加のみ）", "◎ ACID保証", "◎ 監査証跡完備"]
+          },
+          {
+            "name": "分散DB入替",
+            "values": ["× 全面入替", "12-18ヶ月", "高（DB移行+再開発）", "◎ ACID保証", "○ 製品依存"]
+          },
+          {
+            "name": "自社開発",
+            "values": ["△ 部分利用", "6-12ヶ月", "最高（開発+保守）", "△ 実装依存", "△ 自己責任"]
+          }
+        ]
+      },
+      "speakerNotes": "代替案との比較です。分散DB入替は1年以上の期間とDB移行コストが発生します。自社開発は初期コストに加え保守コストが積み上がります。ScalarDB はミドルウェア追加のみでTCO最適化を実現します。"
+    },
+    {
+      "index": 8,
+      "type": "roadmap",
+      "master": "CONTENT",
+      "content": {
+        "title": "4フェーズで段階的にビジネス価値を実現するロードマップを提案する",
+        "milestones": [
+          {
+            "date": "2026 Q1",
+            "title": "PoC検証",
+            "description": "4週間のPoC検証で技術適合性を確認",
+            "status": "planned"
+          },
+          {
+            "date": "2026 Q2",
+            "title": "パイロット導入",
+            "description": "1ユースケースでパイロット運用開始",
+            "status": "planned"
+          },
+          {
+            "date": "2026 Q3",
+            "title": "本番展開",
+            "description": "全対象システムへの段階的展開",
+            "status": "planned"
+          },
+          {
+            "date": "2026 Q4",
+            "title": "効果測定・拡大",
+            "description": "ROI評価と横展開計画の策定",
+            "status": "planned"
+          }
+        ]
+      },
+      "speakerNotes": "提案する導入ロードマップです。Q1のPoC検証からQ4の効果測定まで、約9ヶ月で本番導入と効果確認を完了します。各フェーズにゲートを設け、リスクを管理します。"
+    },
+    {
+      "index": 9,
+      "type": "chart",
+      "master": "CONTENT",
+      "content": {
+        "title": "ScalarDB 導入によるコスト削減効果は3年で累計3.6億円に達する",
+        "chartType": "bar",
+        "data": {
+          "labels": ["1年目", "2年目", "3年目"],
+          "series": [
+            {
+              "name": "障害対応コスト削減",
+              "values": [80, 90, 95]
+            },
+            {
+              "name": "運用工数削減",
+              "values": [40, 45, 50]
+            }
+          ]
+        },
+        "options": {
+          "showValues": true,
+          "showLegend": true,
+          "unit": "百万円",
+          "source": "Scalar社試算（導入企業実績ベース）"
+        }
+      },
+      "speakerNotes": "3年間のコスト削減効果の内訳です。障害対応コスト削減が最大の効果で、年次で改善が進みます。運用工数削減は自動化の成熟に伴い段階的に拡大します。合計で3年間約3.6億円の削減効果です。"
+    },
+    {
+      "index": 10,
+      "type": "summary",
+      "master": "HIGHLIGHT",
+      "content": {
+        "title": "ScalarDB は最小リスクで最大のデータ整合性投資効果を実現する",
+        "keyPoints": [
+          "既存DB資産を活かし、ミドルウェア追加のみでデータ不整合を根本解決",
+          "初年度内の投資回収と3年280%のROIを達成",
+          "3ヶ月で本番導入、段階的移行でリスクを最小化"
+        ],
+        "recommendation": "まずはPoC検証を通じて御社環境での効果を確認することを推奨します",
+        "nextSteps": [
+          "4週間のPoC計画策定（来週中に着手可能）",
+          "対象ユースケースの選定ワークショップ"
+        ]
+      },
+      "speakerNotes": "まとめです。ScalarDB は最小リスク・最大リターンのデータ整合性ソリューションです。具体的な次のステップとして、来週中にPoC計画の策定に着手することをご提案いたします。"
+    },
+    {
+      "index": 11,
+      "type": "closing",
+      "master": "CLOSING",
+      "content": {
+        "message": "ご清聴ありがとうございました",
+        "contactInfo": {
+          "name": "Scalar, Inc.",
+          "email": "executive@scalar-labs.com",
+          "url": "https://scalar-labs.com"
+        }
+      },
+      "speakerNotes": "ご清聴ありがとうございました。PoC検証やさらに詳しい情報については、担当営業または記載の連絡先までお問い合わせください。"
+    }
+  ]
+}

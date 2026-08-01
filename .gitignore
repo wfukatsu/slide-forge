@@ -1,0 +1,30 @@
+# --- 秘密情報(OAuth)。スキル個別の .gitignore に加えたルート側の安全網 ---
+skills/**/config/credentials.json
+skills/**/config/token.json*
+
+# --- Python / Node ---
+.venv
+__pycache__/
+*.pyc
+node_modules/
+
+# --- 再配布不可のクラウド公式アイコン(fetch-cloud-icons.py で各自取り込み) ---
+skills/**/assets/cloud-icons/*
+!skills/**/assets/cloud-icons/README.md
+skills/**/assets/shared/cloud-icons/*
+!skills/**/assets/shared/cloud-icons/README.md
+
+# --- 生成物・キャッシュ ---
+skills/**/out/
+skills/**/cache/
+skills/**/test_thumbnails/
+skills/**/thumbnails/
+.DS_Store
+
+# --- このリポジトリの対象外(別プロジェクト) ---
+slide-forge/
+aixdevops-study-template/
+claude-code-guide2/
+scalar-study-template/
+.playwright-mcp/
+.claude/

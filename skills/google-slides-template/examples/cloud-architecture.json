@@ -1,0 +1,286 @@
+{
+  "title": "クラウド構成図の作り方",
+  "slides": [
+    {
+      "layout": "COVER",
+      "title": "クラウド構成図",
+      "subtitle": "AWS / Google Cloud / Azure の公式アイコンで描く",
+      "body": "google-slides-template スキル\nscripts/cloud_icons.py / assets/cloud-icons/"
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "ゾーンで囲って中に並べる（cloud_zone + cloud_icon_row）",
+      "figures": [
+        {
+          "type": "cloud_zone",
+          "x": 0.45,
+          "y": 1.05,
+          "w": 9.1,
+          "h": 2.5,
+          "vendor": "aws",
+          "title": "AWS  ap-northeast-1"
+        },
+        {
+          "type": "cloud_zone",
+          "x": 0.75,
+          "y": 1.5,
+          "w": 8.5,
+          "h": 1.85,
+          "title": "VPC  10.0.0.0/16",
+          "color": "#6B7280"
+        },
+        {
+          "type": "cloud_icon_row",
+          "x": 1.0,
+          "y": 2.05,
+          "w": 8.0,
+          "size": 0.72,
+          "labelSize": 8.5,
+          "items": [
+            [
+              "aws:elastic-load-balancing",
+              "ALB"
+            ],
+            [
+              "aws:elastic-container-service",
+              "ECS Fargate"
+            ],
+            [
+              "aws:rds",
+              "RDS for PostgreSQL"
+            ],
+            [
+              "aws:simple-storage-service",
+              "S3"
+            ],
+            [
+              "aws:cloudwatch",
+              "CloudWatch"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "マルチクラウドを並べる",
+      "figures": [
+        {
+          "type": "cloud_zone",
+          "x": 0.4,
+          "y": 1.15,
+          "w": 2.95,
+          "h": 3.2,
+          "vendor": "aws"
+        },
+        {
+          "type": "cloud_zone",
+          "x": 3.55,
+          "y": 1.15,
+          "w": 2.9,
+          "h": 3.2,
+          "vendor": "gcp"
+        },
+        {
+          "type": "cloud_zone",
+          "x": 6.65,
+          "y": 1.15,
+          "w": 2.95,
+          "h": 3.2,
+          "vendor": "azure"
+        },
+        {
+          "type": "cloud_icon_grid",
+          "x": 0.55,
+          "y": 1.65,
+          "w": 2.65,
+          "cols": 2,
+          "size": 0.62,
+          "rowGap": 0.34,
+          "labelSize": 8,
+          "items": [
+            [
+              "aws:elastic-kubernetes-service",
+              "EKS"
+            ],
+            [
+              "aws:aurora",
+              "Aurora"
+            ],
+            [
+              "aws:simple-storage-service",
+              "S3"
+            ],
+            [
+              "aws:cloudwatch",
+              "CloudWatch"
+            ]
+          ]
+        },
+        {
+          "type": "cloud_icon_grid",
+          "x": 3.7,
+          "y": 1.65,
+          "w": 2.6,
+          "cols": 2,
+          "size": 0.62,
+          "rowGap": 0.34,
+          "labelSize": 8,
+          "items": [
+            [
+              "gcp:gke",
+              "GKE"
+            ],
+            [
+              "gcp:cloud-spanner",
+              "Spanner"
+            ],
+            [
+              "gcp:cloud-storage",
+              "Cloud Storage"
+            ],
+            [
+              "gcp:cloud-monitoring",
+              "Cloud Monitoring"
+            ]
+          ]
+        },
+        {
+          "type": "cloud_icon_grid",
+          "x": 6.8,
+          "y": 1.65,
+          "w": 2.65,
+          "cols": 2,
+          "size": 0.62,
+          "rowGap": 0.34,
+          "labelSize": 8,
+          "items": [
+            [
+              "azure:kubernetes-services",
+              "AKS"
+            ],
+            [
+              "azure:cosmos-db",
+              "Cosmos DB"
+            ],
+            [
+              "azure:storage-accounts",
+              "Storage"
+            ],
+            [
+              "azure:monitor",
+              "Monitor"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "データの流れを見せる（cloud_icon_flow）",
+      "figures": [
+        {
+          "type": "cloud_icon_flow",
+          "x": 0.5,
+          "y": 1.35,
+          "w": 9.0,
+          "size": 0.72,
+          "items": [
+            [
+              "aws:kinesis-data-streams",
+              "取り込み"
+            ],
+            [
+              "aws:lambda",
+              "変換"
+            ],
+            [
+              "aws:simple-storage-service",
+              "保管"
+            ],
+            [
+              "aws:glue",
+              "カタログ"
+            ],
+            [
+              "aws:athena",
+              "分析"
+            ]
+          ]
+        },
+        {
+          "type": "cloud_icon_flow",
+          "x": 0.5,
+          "y": 3.15,
+          "w": 9.0,
+          "size": 0.72,
+          "items": [
+            [
+              "gcp:pubsub",
+              "取り込み"
+            ],
+            [
+              "gcp:dataflow",
+              "変換"
+            ],
+            [
+              "gcp:cloud-storage",
+              "保管"
+            ],
+            [
+              "gcp:data-catalog",
+              "カタログ"
+            ],
+            [
+              "gcp:bigquery",
+              "分析"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "囲いのアイコンも入っている（kind: group）",
+      "figures": [
+        {
+          "type": "cloud_icon_row",
+          "x": 0.5,
+          "y": 1.5,
+          "w": 9.0,
+          "size": 0.8,
+          "labelSize": 9,
+          "items": [
+            [
+              "aws:aws-cloud",
+              "AWS Cloud"
+            ],
+            [
+              "aws:region",
+              "リージョン"
+            ],
+            [
+              "aws:virtual-private-cloud-vpc",
+              "VPC"
+            ],
+            [
+              "aws:public-subnet",
+              "パブリック\nサブネット"
+            ],
+            [
+              "aws:private-subnet",
+              "プライベート\nサブネット"
+            ],
+            [
+              "aws:auto-scaling-group",
+              "Auto Scaling"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "CLOSING"
+    }
+  ]
+}
