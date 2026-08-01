@@ -31,6 +31,15 @@
   // followed_hyperlink/text1/text2/background1/background2 が入る
   "colors": { "dark1": "#0F172A", "accent5": "#2673BB", "…": "…" },
 
+  // マスターの一覧。マスターが複数あるプレゼンテーションもある（他ファイルから
+  // スライドを貼り付けると増える）。既定は 1 つ目（トップレベルの colors /
+  // masterDecorations は masters[0] 由来）だが、レイアウトごとにどのマスターに
+  // 属するかを layouts.*.masterObjectId がここの objectId で参照する
+  "masters": [
+    { "objectId": "g1b3a74d17bb_0_0", "displayName": "Scalar Master Slide",
+      "colors": { "…": "…" }, "decorations": [{ "…": "…" }] }
+  ],
+
   // ページ番号の描画スタイル。Slides API は SLIDE_NUMBER を生成できないため自前描画する
   "pageNumber": {
     "font": "Arial",
@@ -143,11 +152,18 @@
 | ブランドのアイコン | `asset_icon` `asset_icon_row` `asset_icon_flow` `asset_icon_grid` `asset_icon_cards` |
 | クラウドアイコン | `cloud_icon` `cloud_icon_row` `cloud_icon_flow` `cloud_icon_grid` `cloud_zone` |
 | 構造図 | `cards` `flow` `hbars` `metric` |
+| 表・グラフ | `table` `vbars` `vbars_grouped` `vbars_stacked` `linechart` `pie` |
+| フレームワーク図 | `posmap` `gantt` `orgchart` `lean_canvas` `nested_circles` `testimonial` |
+| コード | `code_block` |
 | 画像 | `image` `aiImage` |
 
 各 `type` の引数は `references/images.md` / `references/icons.md` /
-`references/cloud-icons.md`、動く実例は `examples/illustration-gallery.json` /
-`examples/icon-gallery.json` / `examples/cloud-architecture.json`。
+`references/cloud-icons.md` / `references/charts.md`（表・グラフ）/
+`references/patterns.md`（フレームワーク図）/ `references/code-blocks.md`（コード）、
+動く実例は `examples/illustration-gallery.json` /
+`examples/icon-gallery.json` / `examples/cloud-architecture.json` /
+`examples/charts-demo.json` / `examples/patterns-demo.json` /
+`examples/code-blocks-demo.json`。
 
 **`cloud_zone` は中身より先に書くこと。** 後ろに書くと矩形が中身を覆う。
 

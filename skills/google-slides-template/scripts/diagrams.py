@@ -6,8 +6,9 @@
 テンプレートの配色を使って描く。
 
     import sys; sys.path.insert(0, "<skill>/scripts")
-    from importlib.machinery import SourceFileLoader
-    bd = SourceFileLoader("bd", "<skill>/scripts/build-deck.py").load_module()
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("bd", "<skill>/scripts/build-deck.py")
+    bd = importlib.util.module_from_spec(spec); spec.loader.exec_module(bd)
     from diagrams import Canvas
 
     deck = bd.TemplateDeck.create(template, title="…")
@@ -66,6 +67,11 @@ from patterns import PatternMixin  # noqa: E402
 
 # ---------- 描画 ----------
 
+# オブジェクト ID をプロセス間で衝突させないためのランダムトークン
+import uuid  # noqa: E402
+_RUN_TOKEN = uuid.uuid4().hex[:4]
+
+
 class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
              ChartMixin, PatternMixin):
     """1 枚のスライドに図形を描くための薄いラッパー。"""
@@ -95,7 +101,9 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     def _oid(self, prefix: str) -> str:
         Canvas._seq += 1
-        return f"dg{prefix}{Canvas._seq:04d}"
+        # _RUN_TOKEN はプロセスごとのランダム値。連番だけだと、既存デッキへ
+        # 別プロセスから 2 回目の描画を行ったとき dg*0001 から再採番して衝突する
+        return f"dg{_RUN_TOKEN}{prefix}{Canvas._seq:04d}"
 
     def _elem_props(self, x, y, w, h, rotation: float = 0.0,
                     flip_x: bool = False, flip_y: bool = False):
@@ -204,7 +212,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         else:
             props["outline"] = {
                 "outlineFill": self._solid(stroke),
-                "weight": {"magnitude": int(stroke_weight * 12700), "unit": "EMU"},
+                "weight": {"magnitude": int(stroke_weight * _auth.EMU_PER_PT), "unit": "EMU"},
                 "dashStyle": dash,
             }
             fields.append("outline")
@@ -340,6 +348,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         rules = cls._CODE_RULES.get(lang)
         if not rules:
             return []
+        if any(ord(ch) > 0xFFFF for ch in code):
+            print("  warn: code_block に BMP 外の文字（絵文字等）が含まれています。"
+                  "Slides API の文字範囲は UTF-16 単位のため、ハイライトの色範囲が"
+                  "ずれる可能性があります", file=sys.stderr)
         pattern = "|".join(f"(?P<{name}_{i}>{rx})"
                            for i, (name, rx) in enumerate(rules))
         spans = []
@@ -406,7 +418,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 "objectId": oid,
                 "lineProperties": {
                     "lineFill": self._solid(color or self.P.muted),
-                    "weight": {"magnitude": int(weight * 12700), "unit": "EMU"},
+                    "weight": {"magnitude": int(weight * _auth.EMU_PER_PT), "unit": "EMU"},
                     "dashStyle": "DASH" if dashed else "SOLID",
                     "startArrow": start_arrow,
                     "endArrow": end_arrow,
@@ -519,7 +531,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                     "endConnection": {"connectedObjectId": dst,
                                       "connectionSiteIndex": e_site},
                     "lineFill": self._solid(color or self.P.primary),
-                    "weight": {"magnitude": int(weight * 12700), "unit": "EMU"},
+                    "weight": {"magnitude": int(weight * _auth.EMU_PER_PT), "unit": "EMU"},
                     "dashStyle": "DASH" if dashed else "SOLID",
                     "startArrow": start_arrow,
                     "endArrow": end_arrow,
@@ -827,7 +839,11 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
         出典のある数値にだけ使うこと。
         """
-        mx = max_value or max(r[1] for r in rows)
+        if not rows:
+            raise ValueError("hbars: rows が空です")
+        mx = max_value if max_value is not None else max(r[1] for r in rows)
+        if mx <= 0:
+            mx = 1.0  # 全行 0 のときは空のトラックだけ描く（ゼロ除算回避）
         track_x = x + label_w
         track_w = w - label_w - value_w
         for i, (name, value, caption) in enumerate(rows):

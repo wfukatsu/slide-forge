@@ -36,7 +36,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -150,8 +149,14 @@ def _try_cairosvg(svg: str, out: str, px: int) -> bool:
         import cairosvg
     except Exception:
         return False
-    cairosvg.svg2png(bytestring=svg.encode("utf-8"), write_to=out,
-                     output_width=px, output_height=px)
+    try:
+        cairosvg.svg2png(bytestring=svg.encode("utf-8"), write_to=out,
+                         output_width=px, output_height=px)
+    except Exception as e:
+        # 変換自体の失敗（未対応の SVG 機能など）も CLI フォールバックに回す
+        print(f"  warn: cairosvg での変換に失敗しました（{e}）。"
+              f"rsvg-convert / magick を試します", file=sys.stderr)
+        return False
     return True
 
 
@@ -230,10 +235,6 @@ def render(name: str, *, color: str | None = None, px: int = DEFAULT_PX,
         if os.path.exists(tmp_out):
             os.unlink(tmp_out)
     return path
-
-
-def cache_key(name: str, color: str | None, px: int) -> str:
-    return hashlib.sha256(f"{resolve(name)}|{color}|{px}".encode()).hexdigest()[:12]
 
 
 # ---------- Canvas に生やすメソッド ----------

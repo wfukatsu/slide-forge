@@ -10,7 +10,7 @@
     "aspectRatio": "1.778:1"
   },
   "existingSlideIds": [],
-  "__existingSlideIds_note": "複製直後に削除するテンプレート同梱スライド。テンプレート側を編集したら再解析すること",
+  "__existingSlideIds_note": "複製直後に削除するテンプレート同梱スライド。テンプレート側を編集したら再解析すること。現在は空配列（実測値未取得）",
   "colors": {
     "dark1": "#0F172A",
     "light1": "#FFFFFF",
@@ -114,7 +114,7 @@
     "THREE_COLUMN": "TITLE_AND_3_COLUMNS",
     "THREE_COLUMN_LINE": "TITLE_AND_3_COLUMNS_CENTER_LINE"
   },
-  "__roles_note": "人間確認済み (2026-07-29)。AIxDevOps テンプレート (13QHfp9p…) から派生生成。AIxDevOps ワードマーク・区切り線・元デッキ固有画像を削除し、地色を corporate パレットの ネイビー #1E3A5F に、カラム区切り線を #BFDBFE に変更。SCALAR ロゴと著作権表記は残している。CLOSING は該当レイアウトが無いため未割当",
+  "__roles_note": "人間確認済み (2026-07-29)。AIxDevOps テンプレート (13QHfp9p…) から派生生成。AIxDevOps ワードマーク・区切り線・元デッキ固有画像を削除し、地色を corporate パレットの ネイビー #1E3A5F に、カラム区切り線を #BFDBFE に変更。SCALAR ロゴと著作権表記は残している。CLOSING は該当レイアウトが無いため未割当（closing 系レイアウト自体が存在しない。締めスライドが必要な場合は BLANK 等で代替する）",
   "roleCandidates": {
     "COVER": [
       "TITLE_SLIDE",
@@ -134,6 +134,7 @@
       "DEFAULT"
     ]
   },
+  "__layouts_note": "TITLE_ONLY / TITLE_AND_BODY / TITLE_AND_2_COLUMNS / TITLE_AND_2_COLUMNS_CENTER_LINE / TITLE_AND_3_COLUMNS / TITLE_AND_3_COLUMNS_CENTER_LINE の 6 レイアウトは hasPageNumber: true だが SLIDE_NUMBER プレースホルダを持たず、elements.slideNumber は手書きで追加した差分。inspect-template.py で再解析すると hasPageNumber が false に戻り elements.slideNumber ごと消えてページ番号が出なくなるため、再解析したらこの手書き差分を復元すること",
   "layouts": {
     "TITLE_SLIDE": {
       "layoutId": "g1b3a74d17bb_0_6",

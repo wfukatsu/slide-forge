@@ -80,6 +80,11 @@ d.asset_icon_flow(0.5, 1.15, 9.0, [("job-seeker", "求職者"), ("interview", "�
 | `journey(x,y,w,h,milestones)` | 道のり。上下交互に配置 | `milestones=[(見出し, 補足)]` |
 | `timeline(x,y,w,items)` | 横方向の時系列 | `items=[(時点, 見出し)]` |
 
+**JSON 仕様で書く場合、`levels` / `stages` / `sets` / `spokes` / `milestones` の
+ような位置引数はすべて `FIGURES` 定義のキー名（多くは `items`）で渡す。**
+Python のシグネチャの引数名のままでは通らない（`hub` の `center`、`iceberg` の
+`above` / `below` のように `FIGURES` 側も固有名のものはそのまま）。
+
 ### 枠の外に出るもの
 
 `pyramid(captions=…)` と `funnel` の値表示は、**`x + w` の右外側**を使う。
@@ -207,8 +212,8 @@ python scripts/images.py --prompt "…" --style flat_vector \
 }
 ```
 
-- `type` は `scripts/build-deck.py` の `FIGURES` にあるもの。`illustrations` の
-  全メソッドに加え、`cards` / `flow` / `hbars` / `metric` / `image` / `aiImage`。
+- `type` の正は `scripts/build-deck.py` の `FIGURES` 辞書（45 種）。
+  系統別の一覧は `references/template-schema.md` を参照。
 - 位置引数以外のキーは **camelCase → snake_case** に直して渡される
   （`labelSize` → `label_size`、`xAxis` → `x_axis`）。
 - `--dry-run` は API を一切呼ばずに図を座標へ展開し、はみ出し・重なり・文字溢れを

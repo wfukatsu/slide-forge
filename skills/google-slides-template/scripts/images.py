@@ -248,8 +248,12 @@ def generate(subject: str, *, style: str = DEFAULT_STYLE, palette: dict | None =
         raise ImageGenerationError(
             f"Slides が扱えない形式が返りました: {mime}（PNG/JPEG/GIF のみ）"
         )
-    with open(path, "wb") as f:
+    # 中断で壊れた PNG がキャッシュに残ると exists() チェックで恒久的に再利用される
+    # ため、一時ファイルに書いてから os.replace でアトミックに置く（icons.py と同じ流儀）
+    tmp = f"{path}.{os.getpid()}.part"
+    with open(tmp, "wb") as f:
         f.write(blob)
+    os.replace(tmp, path)
     with open(path + ".json", "w") as f:
         json.dump({"model": model, "style": style, "aspect": aspect,
                    "subject": subject, "prompt": prompt, "mime": mime},
@@ -289,6 +293,19 @@ def image_size(data: bytes) -> tuple[int, int]:
                 return w, h
             i += 2 + seg
     raise ValueError("画像の寸法を読めません（PNG / JPEG / GIF のみ対応）")
+
+
+def _remote_image_size(url: str, limit: int = 64 * 1024) -> tuple[int, int]:
+    """リモート画像の先頭だけ取得して (幅, 高さ) をピクセルで返す。
+
+    fit="cover" / "contain" の計算には実寸が要る。全体をダウンロードせず
+    ヘッダが読める分だけ取る。読めなければ ValueError。
+    """
+    import urllib.request
+    req = urllib.request.Request(url, headers={"User-Agent": "gslides-template"})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        head = r.read(limit)
+    return image_size(head)
 
 
 def sniff_mime(path: str, data: bytes | None = None) -> str:
@@ -494,9 +511,20 @@ class ImageMixin:
                     px = image_size(f.read(64 * 1024))
                 except ValueError:
                     px = (0, 0)
-        elif fit == "contain":
-            # 実寸が分からないと contain は計算できない。枠いっぱいに敷いて切る方が事故が少ない
-            fit = "cover"
+        else:
+            # リモート画像（http / Drive）も先頭だけ取得して実寸を読む。
+            # cover を実寸なしで進めると後処理の絶対 transform が実質 stretch になり
+            # 比率が崩れるため、読めなければ contain（比率保持）へ落として警告する
+            try:
+                px = _remote_image_size(url)
+            except Exception:
+                px = (0, 0)
+            if not px[0] and fit != "stretch":
+                if fit == "cover":
+                    print(f"  warn: {source} の実寸が取れないため fit=\"cover\" を"
+                          f"適用できません。contain 相当（比率保持）で配置します",
+                          file=sys.stderr)
+                fit = "contain"
 
         rect, crop = self._fit_rect((x, y, w, h), px[0], px[1], fit)
         oid = self._oid("i")
@@ -522,7 +550,7 @@ class ImageMixin:
             props["outline"] = {
                 "outlineFill": {"solidFill": {
                     "color": {"rgbColor": _auth.hex_to_rgb(outline)}, "alpha": 1}},
-                "weight": {"magnitude": int(outline_weight * 12700), "unit": "EMU"},
+                "weight": {"magnitude": int(outline_weight * _auth.EMU_PER_PT), "unit": "EMU"},
                 "dashStyle": "SOLID",
             }
             fields.append("outline")

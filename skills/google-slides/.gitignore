@@ -6,7 +6,7 @@ __pycache__/
 
 # OAuth credentials and tokens (user-placed, contains secrets)
 config/credentials.json
-config/token.json
+config/token.json*
 
 # OS
 .DS_Store

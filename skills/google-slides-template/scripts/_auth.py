@@ -16,6 +16,7 @@ import os
 import re
 import sys
 
+from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -27,6 +28,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 EMU_PER_INCH = 914400
+EMU_PER_PT = 12700
 
 
 def config_dirs() -> list[str]:
@@ -66,12 +68,19 @@ def get_credentials():
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except RefreshError:
+                # トークンが失効・取り消し済み（invalid_grant）。再認証に落とす
+                print("トークンが失効しています。再認証します...", file=sys.stderr)
+                creds = None
+        if not creds or not creds.valid:
             print("ブラウザで OAuth 認証を行います...", file=sys.stderr)
             flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
             creds = flow.run_local_server(port=0)
-        with open(token_path, "w") as f:
+        # リフレッシュトークンを含むため所有者のみ読み書き可で保存する
+        fd = os.open(token_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
             f.write(creds.to_json())
     return creds
 

@@ -413,6 +413,21 @@
     },
     {
       "layout": "TITLE_ONLY",
+      "title": "1 個だけ置く（asset_icon）",
+      "figures": [
+        {
+          "type": "asset_icon",
+          "name": "data-bank",
+          "x": 4.3,
+          "y": 1.7,
+          "size": 1.4,
+          "labelSize": 12,
+          "label": "情報銀行"
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
       "title": "色はテンプレートの配色から選ぶ（color）",
       "figures": [
         {

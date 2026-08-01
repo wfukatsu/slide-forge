@@ -15,9 +15,10 @@
 
 - **棒グラフの基線は必ずゼロ。** 負値・途中からの軸は受け付けない
   （変化を誇張するため）。折れ線だけ `y_min` を動かせる。
-- **系列色は `Palette.series()` の固定順**（primary → info → success →
-  warning → danger）。並べ替えたり循環させたりしない。色は系列＝実体に
-  ついて回り、順位や大小では塗らない。単一系列の棒は primary 一色。
+- **系列色は `Palette.series()` の固定順**（primary → success → info →
+  danger → 暗黄。CVD 検証済みの並び。詳細は colors.py）。並べ替えたり
+  循環させたりしない。色は系列＝実体について回り、順位や大小では塗らない。
+  単一系列の棒は primary 一色。
 - **文字は本文色（text / muted）で描く。** 系列の識別は隣の色見本が担う。
 - **軸・グリッドは控えめに**（border 色・破線）。数値は選択的に直接ラベル。
 - 表は Slides ネイティブのテーブル（後から編集できる）。グラフは図形で
@@ -103,6 +104,8 @@ class ChartMixin:
         total_w = sum(weights)
         widths = [w * wt / total_w for wt in weights]
         aligns = list(aligns) if aligns else ["START"] + ["CENTER"] * (ncols - 1)
+        if len(aligns) != ncols:
+            raise ValueError("aligns の要素数が headers と合いません")
         head_c = header_fill or self.P.primary
         head_fg = readable_on(head_c)
         border_c = border or self.P.border
@@ -139,7 +142,7 @@ class ChartMixin:
             "tableBorderProperties": {
                 "tableBorderFill": {"solidFill": {
                     "color": {"rgbColor": _auth.hex_to_rgb(border_c)}}},
-                "weight": {"magnitude": 12700, "unit": "EMU"},
+                "weight": {"magnitude": _auth.EMU_PER_PT, "unit": "EMU"},
                 "dashStyle": "SOLID"},
             "fields": "tableBorderFill,weight,dashStyle"}})
 

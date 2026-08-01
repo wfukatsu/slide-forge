@@ -177,7 +177,7 @@ def analyze_page(page: dict) -> dict:
             color = opaque_hex((lp.get("lineFill") or {}).get("solidFill"))
             if color:
                 entry["color"] = color
-            entry["weight"] = round(lp.get("weight", {}).get("magnitude", 0) / 12700, 2)
+            entry["weight"] = round(lp.get("weight", {}).get("magnitude", 0) / _auth.EMU_PER_PT, 2)
         elif kind == "elementGroup":
             children = el["elementGroup"].get("children", [])
             entry["childCount"] = len(children)

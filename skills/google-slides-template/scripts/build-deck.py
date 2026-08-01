@@ -22,11 +22,16 @@ import argparse
 import json
 import os
 import sys
+import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 
 FILLABLE = ("TITLE", "SUBTITLE", "BODY")
+
+# オブジェクト ID をプロセス間で衝突させないためのランダムトークン。
+# 連番だけだと、既存デッキへ別プロセスから追記したとき slide_001 等が衝突する
+_RUN_TOKEN = uuid.uuid4().hex[:4]
 
 
 def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0):
@@ -34,6 +39,7 @@ def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0):
 
     枚数の多いテンプレートの `files.copy` は、混んでいるときに 500 Internal Error を
     返すことが実際にある。1 回で諦めると生成が丸ごと落ちるので指数バックオフで粘る。
+    HttpError 以外に、socket timeout 等のネットワーク例外（OSError）も再試行する。
     """
     import time
     from googleapiclient.errors import HttpError
@@ -41,10 +47,12 @@ def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0):
     for i in range(attempts):
         try:
             return call()
-        except HttpError as e:
-            code = getattr(e.resp, "status", None)
-            if code not in (429, 500, 502, 503, 504) or i == attempts - 1:
+        except (HttpError, OSError) as e:
+            code = getattr(getattr(e, "resp", None), "status", None)
+            retryable = isinstance(e, OSError) or code in (429, 500, 502, 503, 504)
+            if not retryable or i == attempts - 1:
                 raise
+            code = code or type(e).__name__
             wait = base_delay * (2 ** i)
             print(f"  warn: {what} が HTTP {code} で失敗。{wait:.0f} 秒後に再試行 "
                   f"({i + 1}/{attempts - 1})", file=sys.stderr)
@@ -108,17 +116,21 @@ class TemplateDeck:
         else:
             # 残したスライドの実枚数を数え、ページ番号の起点をずらす。
             # template.json の existingSlideIds はテンプレート更新で古くなり得るため実物を見る
-            pres = deck.slides.presentations().get(
-                presentationId=deck.presentation_id, fields="slides.objectId"
-            ).execute()
+            pres = _retry(
+                lambda: deck.slides.presentations().get(
+                    presentationId=deck.presentation_id, fields="slides.objectId"
+                ).execute(),
+                what="presentations.get")
             deck.kept_slides = len(pres.get("slides", []))
         return deck
 
     def _delete_existing_slides(self) -> None:
         """複製直後に残っているテンプレート同梱スライドを削除する。"""
-        pres = self.slides.presentations().get(
-            presentationId=self.presentation_id, fields="slides.objectId"
-        ).execute()
+        pres = _retry(
+            lambda: self.slides.presentations().get(
+                presentationId=self.presentation_id, fields="slides.objectId"
+            ).execute(),
+            what="presentations.get")
         present = [s["objectId"] for s in pres.get("slides", [])]
         expected = set(self.template.get("existingSlideIds", []))
         stale = expected - set(present)
@@ -151,7 +163,8 @@ class TemplateDeck:
 
     def _next_id(self, prefix: str) -> str:
         self._counter += 1
-        return f"{prefix}_{self._counter:03d}"
+        # objectId は 50 文字まで。長いレイアウト名でも収まるよう prefix を丸める
+        return f"{prefix[:40]}_{_RUN_TOKEN}_{self._counter:03d}"
 
     def add_slide(
         self,
@@ -274,6 +287,9 @@ class TemplateDeck:
         Slides API は SLIDE_NUMBER プレースホルダを生成できない（createSlide の
         placeholderIdMappings に指定してもエラーにならず黙って無視される）ため、
         レイアウトの slideNumber 座標に合わせて自前で描画する。
+
+        注意: 番号は add_slide() の呼び出し順に振る。add_slide(index=...) で
+        挿入位置を指定したデッキでは実際の並び順と一致しない。
         """
         cfg = self.template.get("pageNumber", {})
         # keep_existing で残したスライドの後に積む場合は、その枚数分だけ番号を進める
@@ -345,21 +361,24 @@ class TemplateDeck:
 
     def commit(self, chunk_size: int = 500) -> str:
         """溜めたリクエストを batchUpdate で実行し、プレゼンテーション URL を返す。"""
-        for i in range(0, len(self.requests), chunk_size):
-            chunk = self.requests[i : i + chunk_size]
-            _retry(
-                lambda: self.slides.presentations().batchUpdate(
-                    presentationId=self.presentation_id, body={"requests": chunk}
-                ).execute(),
-                what=f"batchUpdate ({len(chunk)} requests)")
-            print(f"  batch {i // chunk_size + 1}: {len(chunk)} requests")
-        self.requests = []
-        if self._notes or self.image_fixups:
-            self._post_pass()
-        if self.assets is not None:
-            # Slides は挿入時に画像を中へコピーする。取り込み済みなので、
-            # 一時アップロードと公開共有はここで畳んでよい
-            self.assets.cleanup()
+        try:
+            for i in range(0, len(self.requests), chunk_size):
+                chunk = self.requests[i : i + chunk_size]
+                _retry(
+                    lambda: self.slides.presentations().batchUpdate(
+                        presentationId=self.presentation_id, body={"requests": chunk}
+                    ).execute(),
+                    what=f"batchUpdate ({len(chunk)} requests)")
+                print(f"  batch {i // chunk_size + 1}: {len(chunk)} requests")
+            self.requests = []
+            if self._notes or self.image_fixups:
+                self._post_pass()
+        finally:
+            # Slides は挿入時に画像を中へコピーする。batchUpdate が失敗した場合も、
+            # 「リンクを知る全員が閲覧可」で共有した一時アップロードを残さないよう
+            # 必ずここで畳む
+            if self.assets is not None:
+                self.assets.cleanup()
         return f"https://docs.google.com/presentation/d/{self.presentation_id}/edit"
 
     def _post_pass(self) -> None:
@@ -370,12 +389,14 @@ class TemplateDeck:
           枠を埋める配置（fit="cover" / "stretch"）は作成時には実現できない。
           生成された要素の素の大きさを読み、transform を絶対値で置き換えて直す。
         """
-        pres = self.slides.presentations().get(
-            presentationId=self.presentation_id,
-            fields=("slides(objectId,"
-                    "slideProperties.notesPage.notesProperties.speakerNotesObjectId,"
-                    "pageElements(objectId,size))"),
-        ).execute()
+        pres = _retry(
+            lambda: self.slides.presentations().get(
+                presentationId=self.presentation_id,
+                fields=("slides(objectId,"
+                        "slideProperties.notesPage.notesProperties.speakerNotesObjectId,"
+                        "pageElements(objectId,size))"),
+            ).execute(),
+            what="presentations.get (post pass)")
         slides = pres.get("slides", [])
         note_ids = {
             s["objectId"]: (
@@ -423,9 +444,11 @@ class TemplateDeck:
             n_img += 1
 
         if reqs:
-            self.slides.presentations().batchUpdate(
-                presentationId=self.presentation_id, body={"requests": reqs}
-            ).execute()
+            _retry(
+                lambda: self.slides.presentations().batchUpdate(
+                    presentationId=self.presentation_id, body={"requests": reqs}
+                ).execute(),
+                what=f"batchUpdate (post pass, {len(reqs)} requests)")
             if n_notes:
                 print(f"  speaker notes: {n_notes} slides")
             if n_img:

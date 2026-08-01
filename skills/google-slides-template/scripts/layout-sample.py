@@ -11,13 +11,15 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import sys
-from importlib.machinery import SourceFileLoader
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-bd = SourceFileLoader("bd", os.path.join(HERE, "build-deck.py")).load_module()
+_spec = importlib.util.spec_from_file_location("bd", os.path.join(HERE, "build-deck.py"))
+bd = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(bd)
 from diagrams import Canvas, lighten  # noqa: E402
 
 SAMPLE_BODY = [

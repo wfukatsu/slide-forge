@@ -55,7 +55,9 @@ def get_credentials(creds_file, token_file):
         else:
             flow = InstalledAppFlow.from_client_secrets_file(creds_file, SCOPES)
             creds = flow.run_local_server(port=0)
-        with open(token_file, "w") as f:
+        # リフレッシュトークンを含むため所有者のみ読み書き可で保存する
+        fd = os.open(token_file, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
             f.write(creds.to_json())
     return creds
 

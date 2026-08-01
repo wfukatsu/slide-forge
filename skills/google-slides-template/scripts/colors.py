@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """配色ユーティリティ。
 
-`diagrams` / `illustrations` / `images` が共有する。この 3 つは互いを import する
-関係にあるため、共通の色計算をここに置いて循環を避けている。
+`diagrams` / `charts` / `illustrations` / `patterns` / `images` の 5 つが共有する。
+これらは互いを import する関係にあるため、共通の色計算をここに置いて循環を避けている。
 
 後方互換のため `diagrams` からも同じ名前で re-export している
 （`from diagrams import lighten` は従来どおり動く）。

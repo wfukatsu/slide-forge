@@ -14,6 +14,10 @@ skills/**/assets/cloud-icons/*
 skills/**/assets/shared/cloud-icons/*
 !skills/**/assets/shared/cloud-icons/README.md
 
+# --- エディタの一時ファイル ---
+*.swp
+*.swo
+
 # --- 生成物・キャッシュ ---
 skills/**/out/
 skills/**/cache/

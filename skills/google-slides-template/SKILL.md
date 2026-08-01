@@ -3,7 +3,8 @@ name: google-slides-template
 description: >-
   既存の Google Slides テンプレート（マスタースライド）を複製して、そのレイアウトに沿った
   プレゼンテーションを生成する。テンプレートの解析・登録（template.json）、デッキ生成、
-  サムネイルによる視覚 QA までを扱う。
+  サムネイルによる視覚 QA までを扱う。テンプレートを使わずゼロからデザインする場合は
+  google-slides スキルを使う。
   トリガー: "このテンプレートでスライドを作って", "マスタースライドから生成", "テンプレートを登録",
   "テンプレートを解析", "gslides-template", "create slides from this template",
   "use this master", Google Slides のテンプレート URL を渡された場合。
@@ -14,8 +15,10 @@ description: >-
 ## Important
 
 - **このスキルの守備範囲**: 既存の Google Slides プレゼンテーションを**デザインの正**として複製し、そのレイアウトにテキストを流し込む。
+- **すべてのコマンドはスキルディレクトリ（`~/.claude/skills/google-slides-template`）を cwd として実行する。** `scripts/…` `templates/…` `.venv/bin/python` の相対パスはここを起点に解決される。
 - **対象外**:
   - テンプレートを持たずゼロからデザインを組む → `google-slides` スキル（コンポーザー・インフォグラフィクス）
+  - Scalar の会社/製品/機能紹介デッキ → `scalar-product-slides` スキル（本スキルの上に載る専用ワークフロー）
   - PPTX ファイルの生成 → `document-skills:pptx`
   - テンプレート自体のデザイン変更 → **Slides API はマスター/レイアウトの作成・編集をサポートしない**。Google Slides の UI で行うこと。
 - Python 3.10+ が必要。`.venv` は `~/.claude/venvs/gslides` への**シンボリックリンク**で、`google-slides` スキルと共有している。依存を変更すると両方に効く。
@@ -26,15 +29,16 @@ description: >-
 
 | やること | コマンド |
 |---------|---------|
-| テンプレートを解析して登録 | `scripts/inspect-template.py <URL> --emit templates/<id>.json --name <id>` |
-| レイアウトのサムネイル取得 | `scripts/inspect-template.py <URL> --thumbnails out/layouts` |
-| デッキ仕様の検証（API 不要） | `scripts/build-deck.py --template … --spec … --dry-run` |
-| デッキ生成 | `scripts/build-deck.py --template … --spec … --title "…"` |
-| 生成物の視覚 QA | `scripts/fetch-thumbnails.py <URL> --out out/qa` |
-| 画像を AI で生成 | `scripts/images.py --prompt "…" --style flat_vector --out out/x.png` |
-| アイコンを探す | `scripts/icons.py --list` / `--search 情報銀行` |
-| クラウドアイコンの取り込み（**初回必須**） | `scripts/fetch-cloud-icons.py` |
-| クラウドアイコンを探す | `scripts/cloud_icons.py --search s3` / `--list --vendor aws` |
+| テンプレートを解析して登録 | `.venv/bin/python scripts/inspect-template.py <URL> --emit templates/<id>.json --name <id>` |
+| レイアウトのサムネイル取得 | `.venv/bin/python scripts/inspect-template.py <URL> --thumbnails out/layouts` |
+| デッキ仕様の検証（API 不要） | `.venv/bin/python scripts/build-deck.py --template … --spec … --dry-run` |
+| デッキ生成 | `.venv/bin/python scripts/build-deck.py --template … --spec … --title "…"` |
+| 生成物の視覚 QA | `.venv/bin/python scripts/fetch-thumbnails.py <URL> --out out/qa` |
+| 画像を AI で生成 | `.venv/bin/python scripts/images.py --prompt "…" --style flat_vector --out out/x.png` |
+| アイコンを探す | `.venv/bin/python scripts/icons.py --list` / `--search 情報銀行` |
+| クラウドアイコンの取り込み（**初回必須**） | `.venv/bin/python scripts/fetch-cloud-icons.py` |
+| クラウドアイコンを探す | `.venv/bin/python scripts/cloud_icons.py --search s3` / `--list --vendor aws` |
+| 図解（`Canvas`）の描き方・作図規約 | `references/diagrams.md` |
 | 表・グラフの使い方 | `references/charts.md` |
 | 表・グラフのカタログ（仕様の実例） | `examples/charts-demo.json` |
 | ビジネスフレームワーク図の使い方 | `references/patterns.md` |
@@ -65,16 +69,23 @@ cd ~/.claude/skills/google-slides-template
 .venv/bin/python -c "import googleapiclient; print('ok')"
 ```
 
-壊れている・存在しない場合は共有 venv を作り直してリンクし直す:
+壊れている・存在しない場合は共有 venv を作り直してリンクし直す。
+`~/.claude/venvs/gslides-requirements.txt` が存在しない場合は、先にスキル同梱の
+`requirements.txt` をコピーして種にする:
 
 ```bash
+[ -f ~/.claude/venvs/gslides-requirements.txt ] || \
+  cp ~/.claude/skills/google-slides-template/requirements.txt ~/.claude/venvs/gslides-requirements.txt
 python3 -m venv ~/.claude/venvs/gslides
 ~/.claude/venvs/gslides/bin/pip install -U -r ~/.claude/venvs/gslides-requirements.txt
 for s in google-slides google-slides-template; do
   rm -rf ~/.claude/skills/$s/.venv
-  ln -s ../../venvs/gslides ~/.claude/skills/$s/.venv
+  ln -s ~/.claude/venvs/gslides ~/.claude/skills/$s/.venv
 done
 ```
+
+> シンボリックリンクは**絶対パス**で張ること。スキルディレクトリ自体がシンボリックリンクの
+> 環境では、相対パスのリンクは解決に失敗して壊れる。
 
 > 依存を追加するときは `~/.claude/venvs/gslides-requirements.txt` を編集する。両スキルの `requirements.txt` は記録用で、実際のインストール元ではない。
 
@@ -92,6 +103,8 @@ done
 素材はコミットしない（`.gitignore` 済み）。詳細は `references/cloud-icons.md`。
 
 4. **テンプレートへのアクセス権**: 複製には Drive の閲覧＋コピー権限が必要。「ダウンロード・印刷・コピーを無効にする」設定の共有ファイルは複製できない。
+
+5. **AI 画像生成（`ai_image` / 表紙画像）を使う場合のみ**、課金済みの `GEMINI_API_KEY` が必要（任意）。図形で描く `illustrations` / `patterns` はキー不要。
 
 ---
 
@@ -115,6 +128,9 @@ done
 1. `--thumbnails` で出力した PNG を Read ツールで開き、各レイアウトの実際の見た目を確認する
 2. レポートの「候補 N 件、要確認」と「未割当のロール」を潰す
 3. `template.json` の `roles` を編集して確定させ、`__roles_note` に確認日と判断理由を書く
+
+`.venv/bin/python scripts/layout-sample.py --template templates/<id>.json` で、全レイアウトに
+サンプル文字列を流し込んだカタログデッキを生成できる。ロール割当の目視検証に使う。
 
 標準ロール名: `COVER` / `SECTION` / `CONTENT` / `TITLE_ONLY` / `BLANK` / `CLOSING`。
 テンプレートが用途別に系統を持つ場合（提案書用と登壇用など）は、`CONTENT_PRESENTATION`
@@ -180,6 +196,7 @@ done
 ```
 
 API を一切呼ばずに、レイアウト解決とプレースホルダ整合をチェックする。ここを通してから本番実行する。
+`--strict` を併用すると、図の検査で警告が 1 件でも出たらエラー終了する（生成前の CI 的チェックに推奨）。
 
 ---
 
@@ -208,7 +225,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 
 | 見せたいもの | 使うもの | 特徴 |
 |---|---|---|
-| 構造・手順・数値の関係 | `diagrams.Canvas`（下記「図解を描く」） | 正確。要素どうしの関係が保証される |
+| 構造・手順・数値の関係 | `diagrams.Canvas`（`references/diagrams.md`） | 正確。要素どうしの関係が保証される |
 | 表・グラフ（比較・推移・構成比） | `charts`（`table` / `vbars` / `vbars_stacked` / `linechart` / `pie` …） | 表はネイティブで後から編集可。基線ゼロ・系列色固定などの規約込み |
 | 概念・比喩・登場人物 | `illustrations`（`icon_flow` / `pyramid` / `iceberg` …） | 図形で描く。**キー不要・毎回同じ絵**・テーマ配色 |
 | ビジネスフレームワークの型 | `patterns`（`posmap` / `gantt` / `orgchart` / `lean_canvas` / `nested_circles` / `testimonial`） | 新規事業提案・稟議の定番図。キー不要・テーマ配色 |
@@ -217,155 +234,17 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | 雰囲気・情景・表紙 | `images`（`ai_image` / `image`） | AI 生成か手持ちの画像 |
 | コードサンプル | `code_block`（java / graphql / json / bash） | 等幅 + VS Code Dark+ 風ハイライト。**角は直角** |
 
-8 つとも同じ `Canvas` のメソッドなので、1 枚のスライドに混ぜて使える。
-詳細は `references/charts.md` / `references/patterns.md` / `references/images.md` /
-`references/icons.md` / `references/cloud-icons.md` / `references/code-blocks.md`、実例は
-`examples/charts-demo.json` / `examples/patterns-demo.json` /
-`examples/illustration-gallery.json` / `examples/icon-gallery.json` /
-`examples/cloud-architecture.json`。
+8 つとも同じ `Canvas` のメソッドなので、1 枚のスライドに混ぜて使える。デッキ仕様（JSON）
+からは `figures` で使える。**描き方の詳細（コード例・部品一覧・作図とレイアウトの規約・
+`build-deck.py` をライブラリとして使う方法）は `references/diagrams.md` を読むこと。**
+ファミリー別の使い方は `references/charts.md` / `references/patterns.md` /
+`references/images.md` / `references/icons.md` / `references/cloud-icons.md` /
+`references/code-blocks.md`、実例は `examples/` の各デモ仕様。
 
-```python
-d.icon_flow(0.5, 1.3, 9.0, [("person", "利用者"), ("server", "API"),
-                            ("database", "台帳")], size=0.92)
-d.asset_icon_flow(0.5, 2.6, 9.0, [("job-seeker", "求職者"), ("interview", "面接"),
-                                  ("job-offer", "内定")])
-d.pyramid(1.6, 2.4, 6.8, 2.4, ["経営指標", "業務指標", "システム指標"])
-d.iceberg(0.5, 1.0, 9.0, 3.6, above=["画面の使い勝手"], below=["データモデル"])
-d.image(0.6, 1.1, 4.2, 2.6, "assets/shot.png", fit="contain", caption="管理画面")
-d.ai_image(5.2, 1.1, 4.2, 2.6, "夜間に自動でビルドが回っている様子")
-```
+### 図解の要点（詳細と根拠は `references/diagrams.md`）
 
-ピクトグラムは 30 種（`person` `server` `database` `cloud` `lock` `shield` `bot` …）。
-比喩図は `pyramid` / `funnel` / `venn` / `iceberg` / `balance` / `steps` / `layers` /
-`hub` / `matrix` / `before_after` / `journey` / `timeline`。
-
-ブランドのアイコンは `assets/icons/` に 62 種（`evidence-chain` `data-bank`
-`public-key` `interview` `consent` …）。**「情報銀行」「証拠チェーン」「内定」の
-ような業務語彙は `illustrations` では描けないので、こちらを使う。** 名前は slug でも
-日本語名でも引ける。素材は単色なので、既定でテンプレートの主色に染まる。
-
-```bash
-.venv/bin/python scripts/icons.py --list          # 62 種を一覧
-.venv/bin/python scripts/icons.py --search 情報銀行 # 日本語名・英語名・タグで探す
-```
-
-クラウドサービスのアイコン（AWS / Google Cloud / Azure の公式 1,757 種）は
-`cloud_icon` 系。**名前は推測せず必ず検索して確かめる**（ファイル名は
-`Arch_Amazon-EC2_64.svg` のような形で、勘で書くと必ず外れる）。
-**色の変更・回転・反転は各社の利用条件で禁止**なので、引数自体を持たせていない。
-
-```bash
-.venv/bin/python scripts/cloud_icons.py --search s3            # 別名でも引ける
-.venv/bin/python scripts/cloud_icons.py --list --vendor aws --category groups
-```
-
-```python
-d.cloud_zone(0.45, 1.05, 9.1, 2.5, vendor="aws", title="AWS  ap-northeast-1")
-d.cloud_icon_row(1.0, 1.9, 8.0, [("aws:rds", "RDS"), ("aws:simple-storage-service", "S3")])
-```
-
-**迷ったら `illustrations`。** AI 生成は表現力が高い代わりに、課金済みの
-`GEMINI_API_KEY` が要る（画像モデルは無料枠のクォータが 0）。図形で描くほうは
-オフラインで動き、テンプレートの配色に必ず従い、何度作り直しても同じ絵になる。
-
-**回転した図形に文字を入れてはいけない。** 台形などを 180 度回して使うとき、
-`text=` を渡すと文字も一緒に逆さまになる。図形は `text` 無しで描き、`label()` を
-重ねること（`shape()` は 0/90/270 度以外の回転に文字を入れると警告する）。
-
-デッキ仕様（JSON）からは `figures` で使える。`--dry-run` は API を呼ばずに
-図を座標へ展開して検査する。
-
-```json
-{ "layout": "TITLE_ONLY_PROPOSAL", "title": "…",
-  "figures": [
-    { "type": "icon_flow", "x": 0.5, "y": 1.3, "w": 9.0,
-      "items": [["person", "利用者"], ["database", "台帳"]] },
-    { "type": "asset_icon_flow", "x": 0.5, "y": 3.1, "w": 9.0,
-      "items": [["personal-info", "個人情報"], ["data-bank", "情報銀行"]] }
-  ] }
-```
-
-### 図解を描く
-
-箇条書きだけで説明しきれない内容は `scripts/diagrams.py` の `Canvas` で図にする。
-テンプレートの `colors` から配色を組み立てるため、テーマから外れない。
-
-```python
-from diagrams import Canvas, lighten
-ref = deck.add_slide("TITLE_ONLY", title="…")   # BODY を持たないレイアウトが図に向く
-d = Canvas(deck, ref["slideId"], template)
-
-d.flow(0.6, 1.0, 8.8, 0.8, ["Inner Loop", "Middle Loop", "Outer Loop"])   # 工程フロー
-d.cards(0.5, 2.0, 9.0, 1.5, [("見出し", "本文"), ...])                      # 横並びカード
-d.hbars(0.5, 3.6, 7.4, [("従来", 1220, "1,220h"), ("AI駆動", 56, "56h")])   # 横棒グラフ
-d.metric(8.0, 3.6, 1.4, 1.0, "22x", "工数削減", color=d.P.success)          # 大きな数値
-d.box(...) / d.solid(...) / d.label(...) / d.band(...) / d.arrow(...)       # 基本部品
-```
-
-表と本格的なグラフは `charts`（同じ Canvas に生えている。`references/charts.md`）。
-表はネイティブテーブルなので生成後にユーザーが編集できる。棒・折れ線は基線ゼロ・
-系列色固定（色覚検証済みの並び）・数値の直接ラベルという規約込みで描かれる。
-
-```python
-d.table(0.5, 1.2, 9.0, ["項目", "従来", "提案"], [["構築期間", "6ヶ月", "2ヶ月"]])
-d.vbars(0.5, 1.2, 6.0, 3.2, [("2023", 120), ("2024", 210), ("2025", 380)])
-d.vbars_grouped(0.5, 1.2, 9.0, 3.4, ["Q1", "Q2"],
-                [("従来", [40, 42]), ("提案", [18, 12])], unit="h")
-d.linechart(0.5, 1.2, 9.0, 3.2, ["1月", "2月", "3月"],
-            [("p95", [320, 180, 90])], unit="ms")
-d.pie(0.7, 1.3, 2.8, [("移行済み", 62), ("移行中", 23), ("未着手", 15)])
-```
-
-コードサンプルは `code_block`（`references/code-blocks.md`）。等幅 + ハイライト付き、
-角は直角。高さは実効行高（`行数 × size × ls × 1.45 / 72 + 0.14in`）で見積もる。
-
-```python
-d.code_block(0.5, 1.0, 6.1, 2.9, code, lang="java")  # java/graphql/json/bash
-```
-
-**図形どうしを結ぶ線は座標で書かない。** `createLine` は座標をそのまま受け取るだけで
-図形との位置関係を検証しないため、端点がずれていても API はエラーにしない。
-「矢印が図形から浮いている / 枠に食い込んでいる」は生成してサムネイルを見るまで気づけない。
-
-```python
-a = d.shape(1.0, 1.0, 1.6, 0.6, text="A")    # shape() 系は objectId を返す
-b = d.shape(4.0, 2.0, 1.6, 0.6, text="B")
-
-d.connect(a, b)                  # API のコネクタとして接続。図形を動かすと線が追従する
-d.connect(a, b, category="BENT") # エルボー。1対多のファンアウトで経路が交差しにくい
-d.link(a, b)                     # 中心を結ぶ線と辺の交点を端点にする（斜めでもぴたり）
-d.edge_point(a, (tx, ty), gap=0.04)          # 辺の一点だけ欲しいとき
-d.line(..., free=True)           # 軸・目盛り・引き出し線など、接しないのが正しい線
-
-for msg in (d.audit_connectors()      # 浮いた線・埋まった線
-            + d.audit_overlaps()      # 文字が図形に隠れている／文字どうしがぶつかっている
-            + d.audit_text_fit()):    # 枠に対して文字が多すぎる
-    print(msg)
-```
-
-**生成前にこの 4 つを必ず呼ぶ。** どれも座標だけで分かる不具合で、放っておくと
-サムネイルを見るまで気づけない。
-
-```python
-for msg in (d.audit_bounds() + d.audit_connectors()
-            + d.audit_overlaps() + d.audit_text_fit()):
-    print(msg)
-```
-
-| 検査 | 拾うもの |
-|---|---|
-| `audit_bounds()` | スライドの外へ出た図形・線の端点 |
-| `audit_connectors()` | 端点がどの図形にも接していない／図形に埋まっている矢印 |
-| `audit_overlaps()` | 後から描いた図形に隠れた文字、ラベルどうしの衝突 |
-| `audit_text_fit()` | 枠からはみ出して切れる文字と、最終行に 1 文字だけ残る折り返し |
-
-`audit_bounds()` は複合パーツで効く。`pyramid` や `funnel` のように与えられた枠から
-自分で座標を計算する部品は、**枠が正しくても中身が外へ突き抜ける**ことがあり、
-図形単位で見ないと拾えない。
-
-`audit_overlaps()` は Slides の描画順（後の要素が上）を使う。バナーやゾーンを
-直前のブロックに重ねてしまう典型的な事故がこれで落ちる。入れ子（ゾーンの中に
-中身を置く）は正常なので報告しない。
+- **生成前に audit 4 種を必ず呼ぶ。** `audit_bounds()`（枠外の図形）/ `audit_connectors()`（浮いた・埋まった矢印）/ `audit_overlaps()`（隠れた文字・ラベル衝突）/ `audit_text_fit()`（枠に対して文字が多すぎる）。どれも座標だけで分かる不具合で、放っておくとサムネイルを見るまで気づけない。
+- **図形どうしを結ぶ線は座標で書かない。** 使い分けは次のとおり。
 
 | 用途 | 使うもの |
 |---|---|
@@ -373,59 +252,9 @@ for msg in (d.audit_bounds() + d.audit_connectors()
 | 図形 A → B。辺にぴたりと合わせたい | `d.link(a, b)` |
 | 経路の折れ点・軸・引き出し線 | `d.line(..., free=True)` |
 
-`connect()` の接続サイトは位置関係から自動で決まる（0=上 1=左 2=下 3=右）。
-`audit_connectors()` は、どの図形からも 0.22in 以上離れた端点と、図形の内部に
-0.06in 以上食い込んだ端点を返す。ゾーンのような大きな容器とテキストボックスは
-判定から外れる（矢印が容器の中を通るのは正常なため）。**生成前に必ず呼ぶこと。**
-
-`d.P` はテンプレート由来のパレット（`primary` / `success` / `danger` / `info` / `muted` /
-`surface` / `border` / `text`）。`readable_on()` で背景に応じた文字色を自動で選ぶ。
-
-**縦位置は前のブロックの戻り値で決めること。** `cards` / `flow` / `hbars` / `metric` は
-描画領域の下端 y を返すので、次のブロックはその値を起点に置く。手で `2.7` のような
-値を書くと、内容が増えたときに下のブロックへ潜り込む。
-
-```python
-b = d.cards(0.5, 0.9, 9.0, 1.0, items)     # b は下端 y
-b = d.hbars(0.5, b + 0.2, 9.0, rows)       # 前のブロックの下から置く
-d.label(0.5, b + 0.2, 9.0, 0.3, "まとめ")
-```
-
-下端が本文領域（`scalar-2026` の `TITLE_ONLY` なら y = 5.02 まで）に収まるかは
-最後に確認する。
-
-**枠の中の文字は折り返しを見越して改行位置まで書く。** カード見出しが2行になると本文に食い込む。
-目安は「幅[in] × 72 ÷ フォントサイズ」文字（全角1・半角0.5）。`audit_text_fit()` が
-この計算で溢れを拾う。
-
-**箱の高さに対して固定比率で中身を割り当てない。** 「見出しに 0.7in」「数値に 52%」の
-ような配分は、箱が小さいと中身が潰れて文字が切れる。自作の部品は与えられた領域に
-収まるよう自分で縮ませる（`stats` / `metric` は枠高からフォントサイズを算出している）。
-
-**直線のアクセントバーを重ねる矩形は角を丸めない。** 上端・左端にバー（細い
-`RECTANGLE`）を敷くカードは、本体も `RECTANGLE` で描く。角丸の縁と直線バーの端が
-噛み合わず、不揃いに見える（`cards()` はこの規約で直角になっている）。バーを持たない
-単独のチップ・帯は角丸のままでよい。
-
-### レイアウトに収まらない内容を足す場合
-
-プレースホルダだけで足りないときは、`build-deck.py` をライブラリとして使い、返ってきた `slideId` に対して図形を足す:
-
-```python
-import sys; sys.path.insert(0, "scripts")
-from importlib.machinery import SourceFileLoader
-bd = SourceFileLoader("bd", "scripts/build-deck.py").load_module()
-
-template = bd.load_template("templates/<id>.json")
-deck = bd.TemplateDeck.create(template, title="…", folder=None)
-ref = deck.add_slide("CONTENT", title="…")
-deck.requests.append({"createShape": {..., "elementProperties": {"pageObjectId": ref["slideId"], ...}}})
-deck.add_page_numbers()
-print(deck.commit())
-```
-
-座標は `template.json` の `layouts.<KEY>.elements` の `contentTop` 相当（`body` の y）と
-フッター位置の間に収める。色は `colors` のキーを使い、テンプレートの配色から外れないようにする。
+- **回転した図形に文字を入れてはいけない。** 図形は `text` 無しで描き、`label()` を重ねる。
+- **迷ったら `illustrations`。** オフラインで動き、テンプレートの配色に必ず従う。AI 生成（`ai_image`）だけは課金済みの `GEMINI_API_KEY` が要る。
+- `--dry-run` は API を呼ばずに図を座標へ展開して検査する（`--strict` で警告 1 件でもエラー終了）。
 
 ---
 
@@ -456,11 +285,16 @@ print(deck.commit())
 |------|-----------|
 | `プレゼンテーション ID を抽出できません` | URL の形が想定外。`/presentation/d/<ID>/` の `<ID>` を直接渡す |
 | `credentials.json が見つかりません` | Phase 0 の認証設定。Slides API と Drive API の両方が有効か確認 |
+| `RefreshError` / `invalid_grant` | 認証トークンの失効。`~/.claude/skills/google-slides/config/token.json` を削除して再実行するとブラウザで再認証される |
 | copy で 403 | テンプレートのコピー権限が無い。所有者に「閲覧者（コピー可）」を依頼 |
 | `Invalid requests[N].createSlide: layout not found` | `template.json` が古い。テンプレートが編集された可能性。再解析する |
 | ページ番号が出ない | Slides API は SLIDE_NUMBER プレースホルダを生成できない。`add_page_numbers()` を呼んでいるか確認 |
 | フッターが二重 | テンプレート由来のフッターを自前でも描いている。自前描画をやめる |
 | 文字が途中で切れる | プレースホルダの高さ不足。文量を減らすか、`BODY` を持つ別レイアウトに変える |
+
+**失敗時の原則**: 生成途中で失敗したデッキ（テンプレート複製済みのもの）は Drive から削除し、
+仕様を直して**最初から作り直す**。中途半端な生成物への部分修正は再現性がなく、
+複製方式の生成は再実行のほうが速い。
 
 ---
 
@@ -472,18 +306,24 @@ print(deck.commit())
 | `scripts/inspect-template.py` | テンプレート解析 → `template.json` 生成、レイアウトサムネイル取得 |
 | `scripts/build-deck.py` | テンプレート複製 → デッキ生成（`TemplateDeck`）。仕様検証も担当 |
 | `scripts/fetch-thumbnails.py` | 生成物のサムネイル取得（視覚 QA 用） |
+| `scripts/layout-sample.py` | 全レイアウトを 1 枚ずつ並べたレイアウトサンプルの生成。ロール割当の目視検証に使う |
 | `scripts/diagrams.py` | 図解プリミティブ（`Canvas`）。フロー・カード・横棒グラフ・図形接続コネクタ（`connect` / `link`）・回転と半透明・コードブロック（`code_block`。ハイライト付き・直角）・`font` 指定・自己点検（`audit_bounds` / `audit_connectors` / `audit_overlaps` / `audit_text_fit`） |
-| `scripts/charts.py` | 表とグラフ（`ChartMixin`）。ネイティブテーブル・縦棒・グループ縦棒・折れ線・円/ドーナツ。基線ゼロ・系列色固定（CVD 検証済み）などの規約を実装で強制する |
+| `scripts/charts.py` | 表とグラフ（`ChartMixin`）。ネイティブテーブル・縦棒・グループ縦棒・積み上げ縦棒（`vbars_stacked`）・折れ線・円/ドーナツ。基線ゼロ・系列色固定（CVD 検証済み）などの規約を実装で強制する |
 | `scripts/illustrations.py` | イメージ図（`IllustrationMixin`）。ピクトグラム 30 種と比喩図 12 種。図形だけで描くのでキーもネットワークも不要 |
 | `scripts/patterns.py` | ビジネスフレームワーク図（`PatternMixin`）。posmap / gantt / orgchart / lean_canvas / nested_circles / testimonial の 6 種。キーもネットワークも不要 |
 | `scripts/icons.py` | アイコンライブラリ（`IconLibraryMixin`）。`assets/icons/` の SVG を色を変えて PNG に焼き、スライドへ貼る。検索・一覧の CLI も持つ |
 | `scripts/cloud_icons.py` | クラウドアイコン（`CloudIconMixin`）。AWS/GCP/Azure の公式 SVG を**色を変えずに**焼いて貼る。検索 CLI も持つ |
 | `scripts/images.py` | 画像（`ImageMixin`）。AI 生成（Gemini・キャッシュ付き）と、ローカル/URL/Drive の画像の挿入。単体 CLI としても動く |
-| `scripts/colors.py` | 配色ユーティリティ（`Palette` / `lighten` / `readable_on`）。上記 4 つが共有する |
+| `scripts/colors.py` | 配色ユーティリティ（`Palette` / `lighten` / `readable_on`）。diagrams / charts / illustrations / patterns / images の 5 つで共有 |
 | `assets/icons/` | Scalar ブランドのアイコン 62 種（`icons.json` + `svg/` + 控えの `png/`） |
 | `assets/brand/` | Scalar / ScalarDB / ScalarDL のロゴ（`logos/` `product-logos/`。PNG と SVG） |
-| `assets/cloud-icons/` | AWS / Google Cloud / Azure の公式アイコン 1,757 種（`cloud-icons.json` + `<vendor>/<category>/*.svg`）。取り込みは google-slides スキルの `fetch-cloud-icons.py` |
+| `assets/cloud-icons/` | AWS / Google Cloud / Azure の公式アイコン 1,757 種（`cloud-icons.json` + `<vendor>/<category>/*.svg`）。取り込みは `scripts/fetch-cloud-icons.py`（実体は google-slides スキル側と共有） |
 | `references/template-schema.md` | `template.json` と デッキ仕様 JSON のスキーマ |
+| `references/diagrams.md` | 図解の描き方（`Canvas`）。8 手段のコード例・線の接続・audit 4 種・配色とレイアウトの規約・ライブラリ利用 |
+| `references/charts.md` | 表・グラフ（`charts.py`）の使い方と設計規約 |
+| `references/patterns.md` | ビジネスフレームワーク図（`patterns.py`）の使い方 |
+| `references/code-blocks.md` | コードブロック（`code_block`）の使い方と高さの見積もり |
+| `references/deck-outlines.md` | デッキの構成テンプレート（新規事業提案の 15 セクション等） |
 | `references/images.md` | イメージ図・画像の使い分けと全メソッドの一覧 |
 | `references/icons.md` | アイコンライブラリの引き方・色・制約・素材の足し方 |
 | `references/cloud-icons.md` | クラウドアイコンの引き方・作図 API・ライセンス条件・更新手順 |

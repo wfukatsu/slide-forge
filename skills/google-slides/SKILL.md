@@ -108,7 +108,7 @@ python3 -m venv ~/.claude/venvs/gslides
 ~/.claude/venvs/gslides/bin/pip install -U -r ~/.claude/venvs/gslides-requirements.txt
 for s in google-slides google-slides-template; do
   rm -rf ~/.claude/skills/$s/.venv
-  ln -s ../../venvs/gslides ~/.claude/skills/$s/.venv
+  ln -s ~/.claude/venvs/gslides ~/.claude/skills/$s/.venv
 done
 ```
 
