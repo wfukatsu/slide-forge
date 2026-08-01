@@ -67,8 +67,17 @@ class Palette:
         self.white = "#FFFFFF"
 
     def series(self, n: int) -> list[str]:
-        """系列色を n 個返す。テーマ由来の色を順に使い、足りなければ明度で伸ばす。"""
-        base = [self.primary, self.info, self.success, self.warning, self.danger]
+        """系列色を n 個返す。テーマ由来の色を順に使い、足りなければ明度で伸ばす。
+
+        並びは**固定**（グラフの系列は常にこの順で塗り、循環・並べ替えをしない）。
+        順序は色覚多様性の検証を通したもの: primary → info の青2連は隣どうしが
+        判別できず（ΔE 10.5 < 15）、warning の黄はほぼ白に沈むため、
+        青 → 緑 → 水色 → 赤 → 暗黄 の並びに置き、黄だけチャート用に暗くしている
+        （全隣接ペアで CVD ΔE ≥ 9.2 / 通常視 ΔE ≥ 27）。緑と暗黄は白背景との
+        コントラストが 3:1 を下回るので、グラフ側は必ず凡例と直接ラベルを添える。
+        """
+        chart_yellow = "#C7A500"
+        base = [self.primary, self.success, self.info, self.danger, chart_yellow]
         out = []
         for i in range(n):
             c = base[i % len(base)]

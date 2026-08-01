@@ -475,6 +475,13 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "flow":         ("flow",         ["x", "y", "w", "h", "items"]),
     "hbars":        ("hbars",        ["x", "y", "w", "items"]),
     "metric":       ("metric",       ["x", "y", "w", "h", "value", "caption"]),
+    # 表・グラフ（charts.py）。pie は画像で貼るが、--dry-run では
+    # プレースホルダに置き換えて自分で座標検査を通す
+    "table":         ("table",         ["x", "y", "w", "headers", "rows"]),
+    "vbars":         ("vbars",         ["x", "y", "w", "h", "items"]),
+    "vbars_grouped": ("vbars_grouped", ["x", "y", "w", "h", "categories", "series"]),
+    "linechart":     ("linechart",     ["x", "y", "w", "h", "labels", "series"]),
+    "pie":           ("pie",           ["x", "y", "size", "items"]),
     # 画像（images.py）
     "image":        ("image",        ["x", "y", "w", "h", "source"]),
     "aiImage":      ("ai_image",     ["x", "y", "w", "h", "prompt"]),

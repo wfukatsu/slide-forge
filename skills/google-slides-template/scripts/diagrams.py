@@ -55,6 +55,7 @@ import _auth  # noqa: E402
 from colors import (  # noqa: E402,F401
     Palette, contrast_ratio, darken, lighten, mix, readable_on, relative_luminance,
 )
+from charts import ChartMixin  # noqa: E402
 from cloud_icons import CloudIconMixin  # noqa: E402
 from icons import IconLibraryMixin  # noqa: E402
 from illustrations import IllustrationMixin  # noqa: E402
@@ -63,7 +64,8 @@ from images import ImageMixin  # noqa: E402
 
 # ---------- 描画 ----------
 
-class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin):
+class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
+             ChartMixin):
     """1 枚のスライドに図形を描くための薄いラッパー。"""
 
     _seq = 0
