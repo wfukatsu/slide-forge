@@ -1,0 +1,17 @@
+# OAuth 資格情報とトークン（絶対にコミットしない）
+config/
+**/credentials.json
+**/token.json
+**/token.json.bak*
+
+# 生成物
+out/
+*.png
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store

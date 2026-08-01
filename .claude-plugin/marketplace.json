@@ -1,0 +1,45 @@
+{
+  "name": "slide-forge",
+  "owner": {
+    "name": "Wataru Fukatsu",
+    "url": "https://github.com/wfukatsu"
+  },
+  "metadata": {
+    "description": "Diagram-first Google Slides deck generation with offline layout, overlap and connector verification",
+    "version": "0.3.0"
+  },
+  "plugins": [
+    {
+      "name": "slide-forge",
+      "strict": false,
+      "description": "図解主体の Google Slides デッキを Python で宣言的に組み立てて生成する。1 機能 1 ページの製品説明・技術解説・アーキテクチャ資料向け。32 のレイアウトパターン（すべて下端 y を返し、積み上げ時の重なりを構造的に防ぐ）、図形に本当に接続するコネクタ、26 種の図形、7 段階のトーンパレットを同梱。生成前に座標をオフライン検査し、はみ出し・タイトル折返し・コネクタの不接続・文字が図形に隠れる重なり・枠からの文字溢れを API を呼ばずに検出するため、作り直しの手戻りが起きない。",
+      "version": "0.3.0",
+      "author": {
+        "name": "Wataru Fukatsu",
+        "url": "https://github.com/wfukatsu"
+      },
+      "homepage": "https://github.com/wfukatsu/slide-forge",
+      "keywords": [
+        "google-slides",
+        "presentation",
+        "deck",
+        "diagram",
+        "architecture-diagram",
+        "slides-api",
+        "layout-validation",
+        "overlap-detection",
+        "connector",
+        "visual-qa",
+        "python"
+      ],
+      "source": "./",
+      "skills": [
+        "./skills/build",
+        "./skills/validate",
+        "./skills/template",
+        "./skills/qa"
+      ],
+      "license": "MIT"
+    }
+  ]
+}

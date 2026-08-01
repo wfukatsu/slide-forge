@@ -1,0 +1,288 @@
+{
+  "name": "blank-16x9",
+  "displayName": "Blank 16:9 (Google 既定レイアウト)",
+  "__note": "マスターを持たない場合の既定テンプレート。presentationId が無いので複製ではなく 新規プレゼンを作り、predefinedLayout=BLANK の上にタイトル等を座標指定で描く（既定プレースホルダは幅を変更できず折り返すため）。自社マスターがあるなら scripts/inspect_template.py で解析して別ファイルを作ること。",
+  "generationMode": "create",
+  "pageSize": {
+    "widthInches": 10.0,
+    "heightInches": 5.625,
+    "aspectRatio": "1.778:1"
+  },
+  "existingSlideIds": [],
+  "colors": {
+    "dark1": "#0F172A",
+    "dark2": "#6B7280",
+    "light1": "#FFFFFF",
+    "light2": "#F9FAFB",
+    "accent1": "#16A34A",
+    "accent2": "#DC2626",
+    "accent3": "#0284C7",
+    "accent4": "#D97706",
+    "accent5": "#2563EB",
+    "accent6": "#2563EB"
+  },
+  "pageNumber": {
+    "font": "Arial",
+    "fontSize": 8,
+    "color": "#9AA0A6",
+    "align": "END",
+    "startAt": 1
+  },
+  "masterDecorations": [],
+  "roles": {
+    "COVER": "PREDEF_TITLE",
+    "SECTION": "PREDEF_SECTION",
+    "CONTENT": "PREDEF_TITLE_AND_BODY",
+    "TITLE_ONLY": "PREDEF_TITLE_ONLY",
+    "BLANK": "PREDEF_BLANK",
+    "CLOSING": "PREDEF_BLANK"
+  },
+  "layouts": {
+    "PREDEF_TITLE": {
+      "predefinedLayout": "BLANK",
+      "displayName": "Title (predefined)",
+      "placeholders": [],
+      "hasPageNumber": false,
+      "elements": {
+        "title": {
+          "x": 0.7,
+          "y": 2.0,
+          "w": 8.6,
+          "h": 0.95,
+          "align": "START"
+        },
+        "subtitle": {
+          "x": 0.7,
+          "y": 3.05,
+          "w": 8.6,
+          "h": 0.8,
+          "align": "START"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 30,
+          "bold": true
+        },
+        "subtitle": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 12.5,
+          "bold": false
+        }
+      },
+      "decorations": [],
+      "drawText": {
+        "title": {
+          "x": 0.7,
+          "y": 2.0,
+          "w": 8.6,
+          "h": 0.95,
+          "size": 30,
+          "bold": true,
+          "align": "START",
+          "valign": "MIDDLE",
+          "color": "#0F172A"
+        },
+        "subtitle": {
+          "x": 0.7,
+          "y": 3.05,
+          "w": 8.6,
+          "h": 0.8,
+          "size": 12.5,
+          "bold": false,
+          "align": "START",
+          "valign": "TOP",
+          "color": "#6B7280",
+          "lineSpacing": 125
+        }
+      }
+    },
+    "PREDEF_SECTION": {
+      "predefinedLayout": "BLANK",
+      "displayName": "Section title and description (predefined)",
+      "placeholders": [],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.7,
+          "y": 2.3,
+          "w": 8.6,
+          "h": 0.6,
+          "align": "START"
+        },
+        "body": {
+          "x": 0.7,
+          "y": 3.0,
+          "w": 8.6,
+          "h": 0.7,
+          "align": "START"
+        },
+        "slideNumber": {
+          "x": 9.0,
+          "y": 5.25,
+          "w": 0.5,
+          "h": 0.25,
+          "align": "END"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 24,
+          "bold": true
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 12,
+          "bold": false
+        }
+      },
+      "decorations": [],
+      "drawText": {
+        "title": {
+          "x": 0.7,
+          "y": 2.3,
+          "w": 8.6,
+          "h": 0.6,
+          "size": 24,
+          "bold": true,
+          "align": "START",
+          "valign": "MIDDLE",
+          "color": "#0F172A"
+        },
+        "body": {
+          "x": 0.7,
+          "y": 3.0,
+          "w": 8.6,
+          "h": 0.7,
+          "size": 12,
+          "bold": false,
+          "align": "START",
+          "valign": "TOP",
+          "color": "#6B7280",
+          "lineSpacing": 125
+        }
+      }
+    },
+    "PREDEF_TITLE_AND_BODY": {
+      "predefinedLayout": "BLANK",
+      "displayName": "Title and body (predefined)",
+      "placeholders": [],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.3,
+          "w": 9.0,
+          "h": 0.46,
+          "align": "START"
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.96,
+          "w": 9.0,
+          "h": 4.07,
+          "align": "START"
+        },
+        "slideNumber": {
+          "x": 9.0,
+          "y": 5.25,
+          "w": 0.5,
+          "h": 0.25,
+          "align": "END"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 20,
+          "bold": true
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 12,
+          "bold": false
+        }
+      },
+      "decorations": [],
+      "drawText": {
+        "title": {
+          "x": 0.5,
+          "y": 0.3,
+          "w": 9.0,
+          "h": 0.46,
+          "size": 20,
+          "bold": true,
+          "align": "START",
+          "valign": "MIDDLE",
+          "color": "#0F172A"
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.96,
+          "w": 9.0,
+          "h": 4.07,
+          "size": 12,
+          "bold": false,
+          "align": "START",
+          "valign": "TOP",
+          "color": "#0F172A",
+          "lineSpacing": 120
+        }
+      }
+    },
+    "PREDEF_TITLE_ONLY": {
+      "predefinedLayout": "BLANK",
+      "displayName": "Title only (predefined)",
+      "placeholders": [],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.3,
+          "w": 9.0,
+          "h": 0.46,
+          "align": "START"
+        },
+        "slideNumber": {
+          "x": 9.0,
+          "y": 5.25,
+          "w": 0.5,
+          "h": 0.25,
+          "align": "END"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 20,
+          "bold": true
+        }
+      },
+      "decorations": [],
+      "drawText": {
+        "title": {
+          "x": 0.5,
+          "y": 0.3,
+          "w": 9.0,
+          "h": 0.46,
+          "size": 20,
+          "bold": true,
+          "align": "START",
+          "valign": "MIDDLE",
+          "color": "#0F172A"
+        }
+      }
+    },
+    "PREDEF_BLANK": {
+      "predefinedLayout": "BLANK",
+      "displayName": "Blank (predefined)",
+      "placeholders": [],
+      "hasPageNumber": false,
+      "elements": {},
+      "textStyles": {},
+      "decorations": []
+    }
+  }
+}
