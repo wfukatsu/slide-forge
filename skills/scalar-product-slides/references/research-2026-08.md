@@ -45,6 +45,12 @@
 - ENS 電力量30分値(ScalarDB): **法定帳票業務 1/5 — 唯一の公表定量効果**
 - J-POWER 環境価値PF(ScalarDL, 2025.1〜) / NSW COBOL移行(ScalarDB) / LayerX Ai Workforce(ScalarDB, 2024.10)
 - トヨタファイナンシャルサービス実証(2020.3) / NTT Digital・ドコモ Web3 提携(2023.7, 詳細不明)
+- 常石造船 基幹システム刷新(ScalarDB + Kong Konnect, 2026.6.10 発表, 2026-08-02 調査):
+  15年以上稼働のモノリスを AI 駆動開発で刷新。現状分析・再設計 2 日、MVP 実質 3 ヶ月、
+  IT 担当 2 名が Scalar に常駐、ビジネスドメイン単位の 9 マイクロサービス構成。
+  出典: prtimes.jp/main/html/rd/p/000000071.000037795.html /
+  atmarkit.itmedia.co.jp/ait/articles/2606/29/news054.html /
+  jp.konghq.com/news/kong-tsuneishi-ai-core-system-modernization
 - パターン: DB=サイロ統合・マイクロサービス一貫性・レガシー移行・マルチクラウド・生成AI基盤・大量データ /
   DL=改ざん検知・監査証跡・トレーサビリティ・ブロックチェーン代替
 

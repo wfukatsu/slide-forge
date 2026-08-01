@@ -480,8 +480,18 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "table":         ("table",         ["x", "y", "w", "headers", "rows"]),
     "vbars":         ("vbars",         ["x", "y", "w", "h", "items"]),
     "vbars_grouped": ("vbars_grouped", ["x", "y", "w", "h", "categories", "series"]),
+    "vbars_stacked": ("vbars_stacked", ["x", "y", "w", "h", "categories", "series"]),
     "linechart":     ("linechart",     ["x", "y", "w", "h", "labels", "series"]),
     "pie":           ("pie",           ["x", "y", "size", "items"]),
+    # ビジネスフレームワーク図（patterns.py・図形だけで描く。ネットワーク不要）
+    "posmap":         ("posmap",         ["x", "y", "w", "h", "points"]),
+    "gantt":          ("gantt",          ["x", "y", "w", "h", "columns", "rows"]),
+    "orgchart":       ("orgchart",       ["x", "y", "w", "h", "tree"]),
+    "lean_canvas":    ("lean_canvas",    ["x", "y", "w", "h", "blocks"]),
+    "nested_circles": ("nested_circles", ["x", "y", "w", "h", "rings"]),
+    "testimonial":    ("testimonial",    ["x", "y", "w", "h", "quote", "name"]),
+    # コードサンプル（diagrams.py。等幅 + シンタックスハイライト。ネットワーク不要）
+    "code_block":   ("code_block",   ["x", "y", "w", "h", "code"]),
     # 画像（images.py）
     "image":        ("image",        ["x", "y", "w", "h", "source"]),
     "aiImage":      ("ai_image",     ["x", "y", "w", "h", "prompt"]),

@@ -320,6 +320,73 @@ class ChartMixin:
                        color=self.P.text)
         return y + h
 
+    def vbars_stacked(self, x, y, w, h, categories, series, *, max_value=None,
+                      colors=None, unit="", size=10, value_size=8.5,
+                      legend=True, values=False, totals=True,
+                      bar_ratio=0.55) -> float:
+        """積み上げ縦棒。内訳（構成）の変化をカテゴリ間で比較する。
+
+        categories は横軸、series は [(系列名, [値…]), …]。下から最初の系列を
+        積む。系列色は `Palette.series()` の固定順。合計は棒の上に直接ラベルし、
+        セグメント内の数値は `values=True` のときだけ、**入る高さがある
+        セグメントに限って**描く（積み上げの外側ラベルは誤読のもとなので無い）。
+        戻り値は下端 y（= y + h）。
+
+        系列が 4 を超えると内訳は読み取れない。「その他」に畳んでから渡すこと。
+        """
+        pairs = _series_pairs(series)
+        ns, ncat = len(pairs), len(categories)
+        for name, vs in pairs:
+            if len(vs) != ncat:
+                raise ValueError(f"系列「{name}」の値が {len(vs)} 個で、"
+                                 f"categories の {ncat} と合いません")
+            if any(v < 0 for v in vs):
+                raise ValueError("vbars_stacked は負値を扱えません（基線ゼロ固定）")
+        cols = list(colors) if colors else self.P.series(ns)
+        leg_h = 0.28 if (legend and ns >= 2) else 0.0
+        if leg_h:
+            self._legend_row(x, y, w, [(name, cols[i])
+                                       for i, (name, _) in enumerate(pairs)],
+                             size=size)
+        val_h = self.VBAR_VAL_H if totals else 0.06
+        plot_top = y + leg_h + val_h
+        plot_h = h - leg_h - val_h - self.VBAR_LAB_H
+        if plot_h < 0.4:
+            raise ValueError(f"h={h} ではプロット領域が確保できません")
+        sums = [sum(vs[ci] for _, vs in pairs) for ci in range(ncat)]
+        # 軸目盛りを描かないので「きりのよい上限」は要らない。_nice_ceil だと
+        # 260 → 500 のような切り上げでプロットの上半分が空く
+        mx = max_value or max(sums) * 1.05
+        base_y = plot_top + plot_h
+        cell = w / ncat
+        bw = cell * bar_ratio
+
+        self.line(x, base_y, x + w, base_y, color=self.P.border, weight=1.0,
+                  free=True)
+        for ci, cat in enumerate(categories):
+            bx = x + ci * cell + (cell - bw) / 2
+            top = base_y
+            for si, (_, vs) in enumerate(pairs):
+                sh = plot_h * vs[ci] / mx
+                if sh > 0.005:
+                    self.shape(bx, top - sh, bw, sh, kind="RECTANGLE",
+                               fill=cols[si], stroke=None)
+                    # セグメント中央の値。文字の行高より低い段には描かない
+                    if values and sh >= value_size * 1.6 / 72.0:
+                        self.label(bx, top - sh / 2 - 0.09, bw, 0.18,
+                                   _fmt(vs[ci]), size=value_size, align="CENTER",
+                                   valign="MIDDLE", color=readable_on(cols[si]))
+                top -= sh
+            if totals:
+                self.label(bx - 0.25, top - self.VBAR_VAL_H, bw + 0.5,
+                           self.VBAR_VAL_H - 0.02, _fmt(sums[ci]) + unit,
+                           size=value_size + 1, bold=True, align="CENTER",
+                           valign="BOTTOM", color=self.P.text)
+            self.label(x + ci * cell, base_y + 0.04, cell, self.VBAR_LAB_H - 0.04,
+                       cat, size=size, align="CENTER", valign="TOP",
+                       color=self.P.text)
+        return y + h
+
     def _legend_row(self, x, y, w, entries, *, size=10) -> float:
         """色見本＋名前を 1 行に左詰めで並べる凡例。entries は [(名前, 色), …]。"""
         ex = x

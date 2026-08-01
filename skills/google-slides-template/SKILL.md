@@ -37,6 +37,11 @@ description: >-
 | クラウドアイコンを探す | `scripts/cloud_icons.py --search s3` / `--list --vendor aws` |
 | 表・グラフの使い方 | `references/charts.md` |
 | 表・グラフのカタログ（仕様の実例） | `examples/charts-demo.json` |
+| ビジネスフレームワーク図の使い方 | `references/patterns.md` |
+| フレームワーク図のカタログ（仕様の実例） | `examples/patterns-demo.json` |
+| コードサンプル（ハイライト付き）の使い方 | `references/code-blocks.md` |
+| コードブロックのカタログ（仕様の実例） | `examples/code-blocks-demo.json` |
+| デッキの構成テンプレート（新規事業提案の 15 セクション等） | `references/deck-outlines.md` |
 | イメージ図・画像の使い方 | `references/images.md` |
 | アイコンライブラリの使い方 | `references/icons.md` |
 | クラウドアイコン（AWS/GCP/Azure）の使い方 | `references/cloud-icons.md` |
@@ -199,20 +204,23 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 
 **テンプレート側の装飾・ロゴ・フッターは複製で自動継承されるので、自前で描いてはならない**（二重描画になる）。`template.json` の `masterDecorations` は「何が既に描かれているか」の記録であって、描画指示ではない。
 
-### 絵で見せる手段は 6 つある。まず用途で選ぶ
+### 絵で見せる手段は 8 つある。まず用途で選ぶ
 
 | 見せたいもの | 使うもの | 特徴 |
 |---|---|---|
 | 構造・手順・数値の関係 | `diagrams.Canvas`（下記「図解を描く」） | 正確。要素どうしの関係が保証される |
-| 表・グラフ（比較・推移・構成比） | `charts`（`table` / `vbars` / `linechart` / `pie` …） | 表はネイティブで後から編集可。基線ゼロ・系列色固定などの規約込み |
+| 表・グラフ（比較・推移・構成比） | `charts`（`table` / `vbars` / `vbars_stacked` / `linechart` / `pie` …） | 表はネイティブで後から編集可。基線ゼロ・系列色固定などの規約込み |
 | 概念・比喩・登場人物 | `illustrations`（`icon_flow` / `pyramid` / `iceberg` …） | 図形で描く。**キー不要・毎回同じ絵**・テーマ配色 |
+| ビジネスフレームワークの型 | `patterns`（`posmap` / `gantt` / `orgchart` / `lean_canvas` / `nested_circles` / `testimonial`） | 新規事業提案・稟議の定番図。キー不要・テーマ配色 |
 | 業務語彙のアイコン | `icons`（`asset_icon` / `asset_icon_flow` …） | ブランド素材 62 種。ブランド準拠。**通信が要る** |
 | クラウド構成図 | `cloud_icons`（`cloud_icon` / `cloud_zone` …） | AWS/GCP/Azure 公式 1,757 種。**色・回転の変更は禁止**。通信が要る |
 | 雰囲気・情景・表紙 | `images`（`ai_image` / `image`） | AI 生成か手持ちの画像 |
+| コードサンプル | `code_block`（java / graphql / json / bash） | 等幅 + VS Code Dark+ 風ハイライト。**角は直角** |
 
-6 つとも同じ `Canvas` のメソッドなので、1 枚のスライドに混ぜて使える。
-詳細は `references/charts.md` / `references/images.md` / `references/icons.md` /
-`references/cloud-icons.md`、実例は `examples/charts-demo.json` /
+8 つとも同じ `Canvas` のメソッドなので、1 枚のスライドに混ぜて使える。
+詳細は `references/charts.md` / `references/patterns.md` / `references/images.md` /
+`references/icons.md` / `references/cloud-icons.md` / `references/code-blocks.md`、実例は
+`examples/charts-demo.json` / `examples/patterns-demo.json` /
 `examples/illustration-gallery.json` / `examples/icon-gallery.json` /
 `examples/cloud-architecture.json`。
 
@@ -306,6 +314,13 @@ d.vbars_grouped(0.5, 1.2, 9.0, 3.4, ["Q1", "Q2"],
 d.linechart(0.5, 1.2, 9.0, 3.2, ["1月", "2月", "3月"],
             [("p95", [320, 180, 90])], unit="ms")
 d.pie(0.7, 1.3, 2.8, [("移行済み", 62), ("移行中", 23), ("未着手", 15)])
+```
+
+コードサンプルは `code_block`（`references/code-blocks.md`）。等幅 + ハイライト付き、
+角は直角。高さは実効行高（`行数 × size × ls × 1.45 / 72 + 0.14in`）で見積もる。
+
+```python
+d.code_block(0.5, 1.0, 6.1, 2.9, code, lang="java")  # java/graphql/json/bash
 ```
 
 **図形どうしを結ぶ線は座標で書かない。** `createLine` は座標をそのまま受け取るだけで
@@ -457,9 +472,10 @@ print(deck.commit())
 | `scripts/inspect-template.py` | テンプレート解析 → `template.json` 生成、レイアウトサムネイル取得 |
 | `scripts/build-deck.py` | テンプレート複製 → デッキ生成（`TemplateDeck`）。仕様検証も担当 |
 | `scripts/fetch-thumbnails.py` | 生成物のサムネイル取得（視覚 QA 用） |
-| `scripts/diagrams.py` | 図解プリミティブ（`Canvas`）。フロー・カード・横棒グラフ・図形接続コネクタ（`connect` / `link`）・回転と半透明・自己点検（`audit_bounds` / `audit_connectors` / `audit_overlaps` / `audit_text_fit`） |
+| `scripts/diagrams.py` | 図解プリミティブ（`Canvas`）。フロー・カード・横棒グラフ・図形接続コネクタ（`connect` / `link`）・回転と半透明・コードブロック（`code_block`。ハイライト付き・直角）・`font` 指定・自己点検（`audit_bounds` / `audit_connectors` / `audit_overlaps` / `audit_text_fit`） |
 | `scripts/charts.py` | 表とグラフ（`ChartMixin`）。ネイティブテーブル・縦棒・グループ縦棒・折れ線・円/ドーナツ。基線ゼロ・系列色固定（CVD 検証済み）などの規約を実装で強制する |
 | `scripts/illustrations.py` | イメージ図（`IllustrationMixin`）。ピクトグラム 30 種と比喩図 12 種。図形だけで描くのでキーもネットワークも不要 |
+| `scripts/patterns.py` | ビジネスフレームワーク図（`PatternMixin`）。posmap / gantt / orgchart / lean_canvas / nested_circles / testimonial の 6 種。キーもネットワークも不要 |
 | `scripts/icons.py` | アイコンライブラリ（`IconLibraryMixin`）。`assets/icons/` の SVG を色を変えて PNG に焼き、スライドへ貼る。検索・一覧の CLI も持つ |
 | `scripts/cloud_icons.py` | クラウドアイコン（`CloudIconMixin`）。AWS/GCP/Azure の公式 SVG を**色を変えずに**焼いて貼る。検索 CLI も持つ |
 | `scripts/images.py` | 画像（`ImageMixin`）。AI 生成（Gemini・キャッシュ付き）と、ローカル/URL/Drive の画像の挿入。単体 CLI としても動く |

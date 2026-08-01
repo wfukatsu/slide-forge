@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import math
 import os
+import re
 import sys
 import unicodedata
 
@@ -60,12 +61,13 @@ from cloud_icons import CloudIconMixin  # noqa: E402
 from icons import IconLibraryMixin  # noqa: E402
 from illustrations import IllustrationMixin  # noqa: E402
 from images import ImageMixin  # noqa: E402
+from patterns import PatternMixin  # noqa: E402
 
 
 # ---------- 描画 ----------
 
 class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
-             ChartMixin):
+             ChartMixin, PatternMixin):
     """1 枚のスライドに図形を描くための薄いラッパー。"""
 
     _seq = 0
@@ -160,11 +162,15 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
               stroke_weight=1.0, dash="SOLID", text=None, color=None, size=11,
               bold=False, align="CENTER", valign="MIDDLE", line_spacing=None,
               alpha: float = 1.0, rotation: float = 0.0,
-              flip_x: bool = False, flip_y: bool = False) -> str:
+              flip_x: bool = False, flip_y: bool = False,
+              font: str | None = None) -> str:
         """図形を描き、objectId を返す。fill=None で塗りなし。
 
         dash は枠線の線種（SOLID / DASH / DOT / DASH_DOT …）。クラウドの
         ゾーン枠のように「囲い」を示す矩形は破線にする。
+
+        font はフォントファミリー（省略時 Noto Sans JP）。コードブロックには
+        "Roboto Mono" のような等幅フォントを指定する。
 
         alpha は塗りの不透明度（0〜1）。ベン図など重ねて見せる図で使う。
         rotation は度。中心を保ったまま回す。回転した図形は外接矩形で記録するため、
@@ -213,7 +219,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             reqs.append({"updateTextStyle": {
                 "objectId": oid,
                 "style": {
-                    "fontFamily": "Noto Sans JP",
+                    "fontFamily": font or "Noto Sans JP",
                     "fontSize": {"magnitude": size, "unit": "PT"},
                     "bold": bold,
                     "foregroundColor": {"opaqueColor": {"rgbColor": _auth.hex_to_rgb(fg)}},
@@ -262,17 +268,110 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return self.shape(x, y, w, h, text=text, **kw)
 
     def label(self, x, y, w, h, text, *, size=10, color=None, bold=False,
-              align="START", valign="TOP", line_spacing=None, rotation=0) -> str:
+              align="START", valign="TOP", line_spacing=None, rotation=0,
+              font=None) -> str:
         """枠も塗りもないテキスト。rotation=270 で縦軸のラベルなどに使える。"""
         return self.shape(x, y, w, h, kind="TEXT_BOX", fill=None, stroke=None,
                           text=text, size=size, color=color or self.P.text, bold=bold,
                           align=align, valign=valign, line_spacing=line_spacing,
-                          rotation=rotation)
+                          rotation=rotation, font=font)
 
     def band(self, x, y, w, h, *, fill=None) -> str:
         """背景の帯。図のグループ化に使う。"""
         return self.shape(x, y, w, h, kind="ROUND_RECTANGLE",
                           fill=fill or self.P.surfaceAlt, stroke=None)
+
+    # ---- コードブロック ----
+
+    # VS Code Dark+ 風。濃色背景 CODE_BG 上でコントラスト比 4.5:1 以上を満たす
+    CODE_BG, CODE_FG = "#1F2933", "#E8ECF1"
+    _CODE_STYLES = {
+        "comment": "#7DBA7D",   # コメント（緑）
+        "string":  "#E2A37E",   # 文字列（橙）
+        "keyword": "#6FB6EA",   # 予約語（青）
+        "number":  "#B5CEA8",   # 数値（淡緑）
+        "type":    "#56C9B4",   # 型・クラス（青緑）
+        "func":    "#DCDCAA",   # 関数・メソッド（黄）
+        "anno":    "#D19FD3",   # アノテーション・ディレクティブ（紫）
+        "prop":    "#9CDCFE",   # プロパティ名・フラグ（水色）
+    }
+    # 言語ごとの字句規則。上にあるものが優先（コメント・文字列を最優先に置く）
+    _CODE_RULES = {
+        "java": [
+            ("comment", r"//[^\n]*"),
+            ("string", r'"(?:[^"\\\n]|\\.)*"'),
+            ("anno", r"@\w+"),
+            ("keyword", r"\b(?:public|class|extends|return|try|catch|new|"
+                        r"if|else|null|int|long|void|static|final|import)\b"),
+            ("number", r"\b\d[\d_.]*[FLfl]?\b"),
+            ("type", r"\b[A-Z][A-Za-z0-9_]*\b"),
+            ("func", r"\b[a-z]\w*(?=\()"),
+        ],
+        "graphql": [
+            ("comment", r"#[^\n]*"),
+            ("string", r'"(?:[^"\\\n]|\\.)*"'),
+            ("anno", r"@\w+"),
+            ("keyword", r"\b(?:query|mutation|true|false)\b"),
+            ("number", r"\b\d+\b"),
+            ("prop", r"\b\w+(?=\s*:)"),
+        ],
+        "json": [
+            ("prop", r'"(?:[^"\\\n]|\\.)*"(?=\s*:)'),
+            ("string", r'"(?:[^"\\\n]|\\.)*"'),
+            ("keyword", r"\b(?:true|false|null)\b"),
+            ("number", r"-?\b\d[\d.]*\b"),
+        ],
+        # シェル。二重引用符の中身は素通しにして、SQL キーワードを拾えるようにする
+        # （TableStore の --statement "CREATE TABLE …" のため）
+        "bash": [
+            ("comment", r"#[^\n]*"),
+            ("string", r"'[^'\n]*'"),
+            ("prop", r"(?<!\w)--[\w-]+"),
+            ("func", r"(?<=\$ )[\w./-]+|\bhistory(?=\()"),
+            ("keyword", r"\b(?:CREATE|TABLE|INSERT|INTO|VALUES|SELECT|FROM|"
+                        r"JOIN|ON|WHERE|UPDATE|SET|PRIMARY|KEY|STRING|LIMIT)\b"),
+        ],
+    }
+
+    @classmethod
+    def _highlight(cls, code: str, lang: str):
+        """(start, end, hex) のリスト。インデックスは UTF-16 単位と一致する
+        （BMP 外の文字を含むコードは想定しない）。"""
+        rules = cls._CODE_RULES.get(lang)
+        if not rules:
+            return []
+        pattern = "|".join(f"(?P<{name}_{i}>{rx})"
+                           for i, (name, rx) in enumerate(rules))
+        spans = []
+        for m in re.finditer(pattern, code):
+            kind = m.lastgroup.rsplit("_", 1)[0]
+            spans.append((m.start(), m.end(), cls._CODE_STYLES[kind]))
+        return spans
+
+    def code_block(self, x, y, w, h, code, *, lang="java", size=7.5,
+                   line_spacing=104, bg=None, fg=None,
+                   font="Roboto Mono") -> str:
+        """シンタックスハイライト付きのコードパネル。
+
+        lang は _CODE_RULES のキー（java / graphql / json / bash）。未知の言語は
+        単色で描く。高さの見積もりは実効行高（fontSize × lineSpacing × 約1.45）で
+        行うこと。
+        """
+        # 角は直角にする（角丸だと 1 行目・最終行のインデントが角に食われて
+        # 見え、他のカード類の直角規約とも揃わない）
+        oid = self.shape(x, y, w, h, kind="RECTANGLE",
+                         fill=bg or self.CODE_BG, stroke=None, text=code,
+                         size=size, color=fg or self.CODE_FG, align="START",
+                         valign="MIDDLE", line_spacing=line_spacing, font=font)
+        for start, end, color in self._highlight(code, lang):
+            self.deck.requests.append({"updateTextStyle": {
+                "objectId": oid,
+                "style": {"foregroundColor": {
+                    "opaqueColor": {"rgbColor": _auth.hex_to_rgb(color)}}},
+                "textRange": {"type": "FIXED_RANGE",
+                              "startIndex": start, "endIndex": end},
+                "fields": "foregroundColor"}})
+        return oid
 
     # ---- 線・矢印 ----
 
