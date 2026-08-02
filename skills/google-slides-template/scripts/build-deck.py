@@ -513,6 +513,21 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "lean_canvas":    ("lean_canvas",    ["x", "y", "w", "h", "blocks"]),
     "nested_circles": ("nested_circles", ["x", "y", "w", "h", "rings"]),
     "testimonial":    ("testimonial",    ["x", "y", "w", "h", "quote", "name"]),
+    # 印刷物用デッキの型（mckinsey.py・図形だけで描く。ネットワーク不要）
+    "governing_message": ("governing_message", ["x", "y", "w", "text"]),
+    "lead_in":           ("lead_in",           ["x", "y", "w", "text"]),
+    "so_what":           ("so_what",           ["x", "y", "w", "h", "text"]),
+    "source_note":       ("source_note",       ["x", "y", "w", "source"]),
+    # exhibit_frame の戻り値（内側領域）は JSON からは受け取れない。枠を描き、
+    # 中身は内側座標（x+0.2 / ヘッダー下 +0.45 目安）を手で合わせて別の図で描く
+    "exhibit_frame":     ("exhibit_frame",     ["x", "y", "w", "h", "number", "title"]),
+    "mece_tree":         ("mece_tree",         ["x", "y", "w", "h", "tree"]),
+    "waterfall":         ("waterfall",         ["x", "y", "w", "h", "items"]),
+    "rating_matrix":     ("rating_matrix",     ["x", "y", "w", "columns", "rows"]),
+    "exec_summary":      ("exec_summary",      ["x", "y", "w", "h", "situation",
+                                                "complication", "resolution"]),
+    "storyline":         ("storyline",         ["x", "y", "w", "titles"]),
+    "ghost":             ("ghost",             ["x", "y", "w", "h", "slides"]),
     # コードサンプル（diagrams.py。等幅 + シンタックスハイライト。ネットワーク不要）
     "code_block":   ("code_block",   ["x", "y", "w", "h", "code"]),
     # 画像（images.py）
@@ -582,12 +597,16 @@ def validate_figures(spec: dict, page: dict) -> list[str]:
             if missing:
                 problems.append(f"{where}: type '{kind}' に必要なキーがありません: {missing}")
                 continue
-            for k in ("x", "y", "w", "h", "size"):
+            for k in ("x", "y", "w", "h"):
                 if k in fig and not isinstance(fig[k], (int, float)):
                     problems.append(f"{where}: '{k}' は数値（インチ）である必要があります")
+            # "size" が空間量（インチ）なのは位置引数に size を持つ type
+            # （icon 系・pie）だけ。table 等ではフォントサイズ（pt）なので、
+            # 高さの代わりに使うと 8.5pt を 8.5in と誤読してしまう
+            spatial_size = fig.get("size", 0) if "size" in order else 0
             x, y = fig.get("x", 0), fig.get("y", 0)
-            w = fig.get("w", fig.get("size", 0))
-            h = fig.get("h", fig.get("size", 0))
+            w = fig.get("w", spatial_size)
+            h = fig.get("h", spatial_size)
             if isinstance(x, (int, float)) and isinstance(w, (int, float)):
                 if x < 0 or x + w > pw + 0.01:
                     problems.append(

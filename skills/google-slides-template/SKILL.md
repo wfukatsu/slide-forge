@@ -48,6 +48,8 @@ description: >-
 | 表・グラフのカタログ（仕様の実例） | `examples/charts-demo.json` |
 | ビジネスフレームワーク図の使い方 | `references/patterns.md` |
 | フレームワーク図のカタログ（仕様の実例） | `examples/patterns-demo.json` |
+| 印刷物用デッキ（マッキンゼー流）の使い方 | `references/print-layouts.md` |
+| 印刷物用デッキの型カタログ（仕様の実例・30 枚） | `examples/print-deck-catalog.json` |
 | コードサンプル（ハイライト付き）の使い方 | `references/code-blocks.md` |
 | コードブロックのカタログ（仕様の実例） | `examples/code-blocks-demo.json` |
 | デッキの構成テンプレート（課題解決型・新規事業提案・製品紹介・登壇） | `references/deck-outlines.md` |
@@ -258,7 +260,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 
 **テンプレート側の装飾・ロゴ・フッターは複製で自動継承されるので、自前で描いてはならない**（二重描画になる）。`template.json` の `masterDecorations` は「何が既に描かれているか」の記録であって、描画指示ではない。
 
-### 絵で見せる手段は 8 つある。まず用途で選ぶ
+### 絵で見せる手段は 9 つある。まず用途で選ぶ
 
 | 見せたいもの | 使うもの | 特徴 |
 |---|---|---|
@@ -266,17 +268,18 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | 表・グラフ（比較・推移・構成比） | `charts`（`table` / `vbars` / `vbars_stacked` / `linechart` / `pie` …） | 表はネイティブで後から編集可。基線ゼロ・系列色固定などの規約込み |
 | 概念・比喩・登場人物 | `illustrations`（`icon_flow` / `pyramid` / `iceberg` …） | 図形で描く。**キー不要・毎回同じ絵**・テーマ配色 |
 | ビジネスフレームワークの型 | `patterns`（`posmap` / `gantt` / `orgchart` / `lean_canvas` / `nested_circles` / `testimonial`） | 新規事業提案・稟議の定番図。キー不要・テーマ配色 |
+| 印刷物用（read-alone）の型 | `mckinsey`（`exec_summary` / `storyline` / `so_what` / `source_note` / `waterfall` / `rating_matrix` …） | マッキンゼー流の配布・提出資料の作法。キー不要・テーマ配色 |
 | 業務語彙のアイコン | `icons`（`asset_icon` / `asset_icon_flow` …） | ブランド素材 62 種。ブランド準拠。**通信が要る** |
 | クラウド構成図 | `cloud_icons`（`cloud_icon` / `cloud_zone` …） | AWS/GCP/Azure 公式 1,757 種。**色・回転の変更は禁止**。通信が要る |
 | 雰囲気・情景・表紙 | `images`（`ai_image` / `image`） | AI 生成か手持ちの画像 |
 | コードサンプル | `code_block`（java / graphql / json / bash） | 等幅 + VS Code Dark+ 風ハイライト。**角は直角** |
 
-8 つとも同じ `Canvas` のメソッドなので、1 枚のスライドに混ぜて使える。デッキ仕様（JSON）
+9 つとも同じ `Canvas` のメソッドなので、1 枚のスライドに混ぜて使える。デッキ仕様（JSON）
 からは `figures` で使える。**描き方の詳細（コード例・部品一覧・作図とレイアウトの規約・
 `build-deck.py` をライブラリとして使う方法）は `references/diagrams.md` を読むこと。**
 ファミリー別の使い方は `references/charts.md` / `references/patterns.md` /
-`references/images.md` / `references/icons.md` / `references/cloud-icons.md` /
-`references/code-blocks.md`、実例は `examples/` の各デモ仕様。
+`references/print-layouts.md` / `references/images.md` / `references/icons.md` /
+`references/cloud-icons.md` / `references/code-blocks.md`、実例は `examples/` の各デモ仕様。
 
 ### 図解の要点（詳細と根拠は `references/diagrams.md`）
 
@@ -354,6 +357,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `scripts/charts.py` | 表とグラフ（`ChartMixin`）。ネイティブテーブル・縦棒・グループ縦棒・積み上げ縦棒（`vbars_stacked`）・折れ線・円/ドーナツ。基線ゼロ・系列色固定（CVD 検証済み）などの規約を実装で強制する |
 | `scripts/illustrations.py` | イメージ図（`IllustrationMixin`）。ピクトグラム 30 種と比喩図 12 種。図形だけで描くのでキーもネットワークも不要 |
 | `scripts/patterns.py` | ビジネスフレームワーク図（`PatternMixin`）。posmap / gantt / orgchart / lean_canvas / nested_circles / testimonial の 6 種。キーもネットワークも不要 |
+| `scripts/mckinsey.py` | 印刷物用デッキの型（`McKinseyMixin`）。exec_summary / storyline / ghost / mece_tree / governing_message / lead_in / so_what / source_note / exhibit_frame / waterfall / rating_matrix の 11 種。出典の空・合計の不一致を実装で止める。キーもネットワークも不要 |
 | `scripts/icons.py` | アイコンライブラリ（`IconLibraryMixin`）。`assets/icons/` の SVG を色を変えて PNG に焼き、スライドへ貼る。検索・一覧の CLI も持つ |
 | `scripts/cloud_icons.py` | クラウドアイコン（`CloudIconMixin`）。AWS/GCP/Azure の公式 SVG を**色を変えずに**焼いて貼る。検索 CLI も持つ |
 | `scripts/images.py` | 画像（`ImageMixin`）。AI 生成（Gemini・キャッシュ付き）と、ローカル/URL/Drive の画像の挿入。単体 CLI としても動く |
@@ -365,6 +369,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `references/diagrams.md` | 図解の描き方（`Canvas`）。8 手段のコード例・線の接続・audit 4 種・配色とレイアウトの規約・ライブラリ利用 |
 | `references/charts.md` | 表・グラフ（`charts.py`）の使い方と設計規約 |
 | `references/patterns.md` | ビジネスフレームワーク図（`patterns.py`）の使い方 |
+| `references/print-layouts.md` | 印刷物用デッキ（`mckinsey.py`）の使い方。マッキンゼー流の作法の根拠・ページの標準形・アンチパターン |
 | `references/code-blocks.md` | コードブロック（`code_block`）の使い方と高さの見積もり |
 | `references/interactive-intake.md` | 対話で前提を確定する手順。AskUserQuestion の質問セット・アウトライン承認ゲート・聞かないことの線引き |
 | `references/deck-outlines.md` | デッキの構成テンプレート（課題解決型 / 新規事業提案 15 セクション / 製品紹介 / 登壇）。対話の「構成」の選択肢はここから作る |
@@ -373,6 +378,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `references/cloud-icons.md` | クラウドアイコンの引き方・作図 API・ライセンス条件・更新手順 |
 | `references/api-notes.md` | Google Slides API の制約・実測で判明した落とし穴 |
 | `examples/design-catalog.json` | **全部品のカタログ**（49 枚）。8 系統・`FIGURES` の 45 type のうち 44 を実際に描く。`aiImage` だけは課金済み `GEMINI_API_KEY` が要るため仕様の記載にとどめている（キーがあれば該当スライドを `aiImage` に戻して再生成する）。どの見せ方を使うか迷ったとき、まずこれを生成して見る |
+| `examples/print-deck-catalog.json` | **印刷物用デッキの型カタログ**（30 枚）。mckinsey.py の全 11 部品＋アンチパターン集を、架空の題材「受注処理コスト削減」で実演。配布・提出用デッキはこれを複製して題材を置き換えるのが最短 |
 | `examples/illustration-gallery.json` | 全ピクトグラム・全比喩図・画像配置を使ったデッキ仕様（動く実例） |
 | `examples/icon-gallery.json` | 全アイコンと `asset_icon_*` の 5 メソッドを使ったデッキ仕様（動く実例） |
 | `examples/cloud-architecture.json` | クラウド構成図（ゾーン・マルチクラウド・データフロー）のデッキ仕様（動く実例） |
