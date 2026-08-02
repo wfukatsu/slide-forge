@@ -37,7 +37,9 @@ description: >-
 | レイアウトのサムネイル取得 | `.venv/bin/python scripts/inspect-template.py <URL> --thumbnails out/layouts` |
 | デッキ仕様の検証（API 不要） | `.venv/bin/python scripts/build-deck.py --template … --spec … --dry-run` |
 | デッキ生成 | `.venv/bin/python scripts/build-deck.py --template … --spec … --title "…"` |
-| 生成物の視覚 QA | `.venv/bin/python scripts/fetch-thumbnails.py <URL> --out out/qa` |
+| 生成物の視覚 QA | `.venv/bin/python scripts/fetch-thumbnails.py <URL> --out out/qa [--pages 9-16]` |
+| ページ断片を 1 本の仕様にまとめる | `.venv/bin/python scripts/assemble-spec.py --out deck.json --title "…" out/<deck>/pages` |
+| 大きなデッキを分担生成する手順（サブエージェント） | `references/parallel-generation.md` |
 | 画像を AI で生成 | `.venv/bin/python scripts/images.py --prompt "…" --style flat_vector --out out/x.png` |
 | アイコンを探す | `.venv/bin/python scripts/icons.py --list` / `--search 情報銀行` |
 | クラウドアイコンの取り込み（**初回必須**） | `.venv/bin/python scripts/fetch-cloud-icons.py` |
@@ -48,9 +50,9 @@ description: >-
 | 表・グラフのカタログ（仕様の実例） | `examples/charts-demo.json` |
 | ビジネスフレームワーク図の使い方 | `references/patterns.md` |
 | フレームワーク図のカタログ（仕様の実例） | `examples/patterns-demo.json` |
-| 印刷物用デッキ（マッキンゼー流）の使い方 | `references/print-layouts.md` |
-| 印刷物用デッキの型カタログ（型の解説・30 枚） | `examples/print-deck-catalog.json` |
-| 印刷配布用ページの全パターン索引（骨格 6 × 用途 35・56 枚） | `examples/print-pattern-index.json` |
+| スライドパターン（骨格 6 × 中身 35）の使い方 | `references/slide-patterns.md` |
+| 全パターン索引（1 枚 1 パターンの実物・59 枚） | `examples/slide-pattern-index.json` |
+| 配布資料（read-alone）の作法カタログ（30 枚） | `examples/read-alone-guide.json` |
 | コードサンプル（ハイライト付き）の使い方 | `references/code-blocks.md` |
 | コードブロックのカタログ（仕様の実例） | `examples/code-blocks-demo.json` |
 | デッキの構成テンプレート（課題解決型・新規事業提案・製品紹介・登壇） | `references/deck-outlines.md` |
@@ -238,6 +240,23 @@ done
 API を一切呼ばずに、レイアウト解決とプレースホルダ整合をチェックする。ここを通してから本番実行する。
 `--strict` を併用すると、図の検査で警告が 1 件でも出たらエラー終了する（生成前の CI 的チェックに推奨）。
 
+### 12 枚を超えるなら、仕様を 1 人で書かない
+
+**アウトラインとアクションタイトルを確定させたら、ページ単位でサブエージェントに
+分担させる。** 仕様の JSON を主エージェントの文脈に素通りさせないための手順が
+**`references/parallel-generation.md`**（1 エージェント 2〜3 枚・自己検証つき・
+ページの難しさに応じた model の選び方・`assemble-spec.py` での組み立て）。
+
+```bash
+mkdir -p out/<deck>/pages          # 各エージェントは 0120-*.json を 1 つ書く
+.venv/bin/python scripts/assemble-spec.py \
+    --out out/<deck>/deck.json --title "資料タイトル" out/<deck>/pages
+```
+
+**分担してはいけないのは、アウトライン・タイトル・数値の調達・組み立て**の 4 つ。
+横の論理と出典の一貫性が壊れる。10 枚以下なら分担の段取りのほうが高くつくので、
+そのまま 1 人で書く。
+
 ---
 
 ## Phase 4: 生成
@@ -269,7 +288,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | 表・グラフ（比較・推移・構成比） | `charts`（`table` / `vbars` / `vbars_stacked` / `linechart` / `pie` …） | 表はネイティブで後から編集可。基線ゼロ・系列色固定などの規約込み |
 | 概念・比喩・登場人物 | `illustrations`（`icon_flow` / `pyramid` / `iceberg` …） | 図形で描く。**キー不要・毎回同じ絵**・テーマ配色 |
 | ビジネスフレームワークの型 | `patterns`（`posmap` / `gantt` / `orgchart` / `lean_canvas` / `nested_circles` / `testimonial`） | 新規事業提案・稟議の定番図。キー不要・テーマ配色 |
-| 印刷物用（read-alone）の型 | `mckinsey`（`exec_summary` / `storyline` / `so_what` / `source_note` / `waterfall` / `rating_matrix` …） | マッキンゼー流の配布・提出資料の作法。キー不要・テーマ配色 |
+| ページの骨組みと分析図 | `pages`（`governing_message` / `lead_in` / `so_what` / `source_note` / `exhibit_frame` / `waterfall` / `rating_matrix` …） | ページをどう組むかの型。用途で変わるのは密度だけ。キー不要・テーマ配色 |
 | 業務語彙のアイコン | `icons`（`asset_icon` / `asset_icon_flow` …） | ブランド素材 62 種。ブランド準拠。**通信が要る** |
 | クラウド構成図 | `cloud_icons`（`cloud_icon` / `cloud_zone` …） | AWS/GCP/Azure 公式 1,757 種。**色・回転の変更は禁止**。通信が要る |
 | 雰囲気・情景・表紙 | `images`（`ai_image` / `image`） | AI 生成か手持ちの画像 |
@@ -279,7 +298,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 からは `figures` で使える。**描き方の詳細（コード例・部品一覧・作図とレイアウトの規約・
 `build-deck.py` をライブラリとして使う方法）は `references/diagrams.md` を読むこと。**
 ファミリー別の使い方は `references/charts.md` / `references/patterns.md` /
-`references/print-layouts.md` / `references/images.md` / `references/icons.md` /
+`references/slide-patterns.md` / `references/images.md` / `references/icons.md` /
 `references/cloud-icons.md` / `references/code-blocks.md`、実例は `examples/` の各デモ仕様。
 
 ### 図解の要点（詳細と根拠は `references/diagrams.md`）
@@ -304,6 +323,10 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 ```bash
 .venv/bin/python scripts/fetch-thumbnails.py "<生成物のURL>" --out out/qa
 ```
+
+**15 枚を超えるなら QA も分担する。** サムネイル画像は主エージェントの文脈を
+最も圧迫する。`--pages 9-16` で範囲を割り、エージェントごとに 6〜8 枚を担当させて
+**指摘だけをテキストで返させる**（手順は `references/parallel-generation.md`）。
 
 出力された PNG を Read ツールで開き、最低限これを確認する:
 
@@ -351,14 +374,15 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `scripts/_auth.py` | OAuth 認証・単位変換・色変換・URL から ID 抽出 |
 | `scripts/inspect-template.py` | テンプレート解析 → `template.json` 生成、レイアウトサムネイル取得 |
 | `scripts/build-deck.py` | テンプレート複製 → デッキ生成（`TemplateDeck`）。仕様検証も担当 |
-| `scripts/fetch-thumbnails.py` | 生成物のサムネイル取得（視覚 QA 用） |
+| `scripts/fetch-thumbnails.py` | 生成物のサムネイル取得（視覚 QA 用）。`--pages 9-16` で範囲を絞れる（QA を分担するとき用） |
+| `scripts/assemble-spec.py` | ページ単位の JSON 断片を昇順に連結して 1 本のデッキ仕様にする。分担生成の組み立て役 |
 | `scripts/layout-sample.py` | 全レイアウトを 1 枚ずつ並べたレイアウトサンプルの生成。ロール割当の目視検証に使う |
 | `scripts/list-templates.py` | 登録済みテンプレートの一覧（ロール・レイアウト数・同梱スライド数）。対話でテンプレートを選ばせるときの選択肢の材料。`--json` あり |
 | `scripts/diagrams.py` | 図解プリミティブ（`Canvas`）。フロー・カード・横棒グラフ・図形接続コネクタ（`connect` / `link`）・回転と半透明・コードブロック（`code_block`。ハイライト付き・直角）・`font` 指定・自己点検（`audit_bounds` / `audit_connectors` / `audit_overlaps` / `audit_text_fit`） |
 | `scripts/charts.py` | 表とグラフ（`ChartMixin`）。ネイティブテーブル・縦棒・グループ縦棒・積み上げ縦棒（`vbars_stacked`）・折れ線・円/ドーナツ。基線ゼロ・系列色固定（CVD 検証済み）などの規約を実装で強制する |
 | `scripts/illustrations.py` | イメージ図（`IllustrationMixin`）。ピクトグラム 30 種と比喩図 12 種。図形だけで描くのでキーもネットワークも不要 |
 | `scripts/patterns.py` | ビジネスフレームワーク図（`PatternMixin`）。posmap / gantt / orgchart / lean_canvas / nested_circles / testimonial の 6 種。キーもネットワークも不要 |
-| `scripts/mckinsey.py` | 印刷物用デッキの型（`McKinseyMixin`）。exec_summary / storyline / ghost / mece_tree / governing_message / lead_in / so_what / source_note / exhibit_frame / waterfall / rating_matrix の 11 種。出典の空・合計の不一致を実装で止める。キーもネットワークも不要 |
+| `scripts/pages.py` | ページ部品と分析図（`PageMixin`）。governing_message / lead_in / so_what / source_note / exhibit_frame（骨組み）+ mece_tree / waterfall / rating_matrix（分析図）+ exec_summary / storyline / ghost（デッキ設計）の 11 種。出典の空・合計の不一致を実装で止める。キーもネットワークも不要 |
 | `scripts/icons.py` | アイコンライブラリ（`IconLibraryMixin`）。`assets/icons/` の SVG を色を変えて PNG に焼き、スライドへ貼る。検索・一覧の CLI も持つ |
 | `scripts/cloud_icons.py` | クラウドアイコン（`CloudIconMixin`）。AWS/GCP/Azure の公式 SVG を**色を変えずに**焼いて貼る。検索 CLI も持つ |
 | `scripts/images.py` | 画像（`ImageMixin`）。AI 生成（Gemini・キャッシュ付き）と、ローカル/URL/Drive の画像の挿入。単体 CLI としても動く |
@@ -370,7 +394,8 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `references/diagrams.md` | 図解の描き方（`Canvas`）。8 手段のコード例・線の接続・audit 4 種・配色とレイアウトの規約・ライブラリ利用 |
 | `references/charts.md` | 表・グラフ（`charts.py`）の使い方と設計規約 |
 | `references/patterns.md` | ビジネスフレームワーク図（`patterns.py`）の使い方 |
-| `references/print-layouts.md` | 印刷物用デッキ（`mckinsey.py`）の使い方。マッキンゼー流の作法の根拠・ページの標準形・アンチパターン |
+| `references/slide-patterns.md` | スライドパターン（`pages.py`）の使い方。骨格 6 種と**標準座標**・作法の根拠・登壇用と配布用の密度差・アンチパターン |
+| `references/parallel-generation.md` | 大きなデッキをページ単位でサブエージェントに分担させる手順。分担してはいけない仕事・モデルの選び方・QA の分担 |
 | `references/code-blocks.md` | コードブロック（`code_block`）の使い方と高さの見積もり |
 | `references/interactive-intake.md` | 対話で前提を確定する手順。AskUserQuestion の質問セット・アウトライン承認ゲート・聞かないことの線引き |
 | `references/deck-outlines.md` | デッキの構成テンプレート（課題解決型 / 新規事業提案 15 セクション / 製品紹介 / 登壇）。対話の「構成」の選択肢はここから作る |
@@ -379,8 +404,8 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `references/cloud-icons.md` | クラウドアイコンの引き方・作図 API・ライセンス条件・更新手順 |
 | `references/api-notes.md` | Google Slides API の制約・実測で判明した落とし穴 |
 | `examples/design-catalog.json` | **全部品のカタログ**（49 枚）。8 系統・`FIGURES` の 45 type のうち 44 を実際に描く。`aiImage` だけは課金済み `GEMINI_API_KEY` が要るため仕様の記載にとどめている（キーがあれば該当スライドを `aiImage` に戻して再生成する）。どの見せ方を使うか迷ったとき、まずこれを生成して見る |
-| `examples/print-deck-catalog.json` | **印刷物用デッキの型カタログ**（30 枚）。mckinsey.py の全 11 部品＋アンチパターン集を、架空の題材「受注処理コスト削減」で実演。**型の使い方を学ぶ**ためのデッキ |
-| `examples/print-pattern-index.json` | **印刷配布用ページの全パターン索引**（56 枚）。骨格 6 種 × 用途別ページ 35 種を 1 枚 1 パターンで実物として並べる。**作れるページを見て選ぶ**ためのデッキ。ユーザーに「どのページで組むか」を指させるときはこれを生成して見せる |
+| `examples/read-alone-guide.json` | **配布資料（read-alone）の作法カタログ**（30 枚）。pages.py の全 11 部品＋アンチパターン集を、架空の題材「受注処理コスト削減」で実演。**密度と作法を学ぶ**ためのデッキ |
+| `examples/slide-pattern-index.json` | **全スライドパターンの索引**（59 枚）。骨格 6 種 × 用途別ページ 35 種を 1 枚 1 パターンで実物として並べる。**作れるページを見て選ぶ**ためのデッキ。ユーザーに「どのページで組むか」を指させるときはこれを生成して見せる |
 | `examples/illustration-gallery.json` | 全ピクトグラム・全比喩図・画像配置を使ったデッキ仕様（動く実例） |
 | `examples/icon-gallery.json` | 全アイコンと `asset_icon_*` の 5 メソッドを使ったデッキ仕様（動く実例） |
 | `examples/cloud-architecture.json` | クラウド構成図（ゾーン・マルチクラウド・データフロー）のデッキ仕様（動く実例） |

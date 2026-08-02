@@ -63,7 +63,7 @@ from icons import IconLibraryMixin  # noqa: E402
 from illustrations import IllustrationMixin  # noqa: E402
 from images import ImageMixin  # noqa: E402
 from patterns import PatternMixin  # noqa: E402
-from mckinsey import McKinseyMixin  # noqa: E402
+from pages import PageMixin  # noqa: E402
 
 
 # ---------- 描画 ----------
@@ -74,7 +74,7 @@ _RUN_TOKEN = uuid.uuid4().hex[:4]
 
 
 class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
-             ChartMixin, PatternMixin, McKinseyMixin):
+             ChartMixin, PatternMixin, PageMixin):
     """1 枚のスライドに図形を描くための薄いラッパー。"""
 
     _seq = 0

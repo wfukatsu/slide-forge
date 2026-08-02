@@ -513,7 +513,7 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "lean_canvas":    ("lean_canvas",    ["x", "y", "w", "h", "blocks"]),
     "nested_circles": ("nested_circles", ["x", "y", "w", "h", "rings"]),
     "testimonial":    ("testimonial",    ["x", "y", "w", "h", "quote", "name"]),
-    # 印刷物用デッキの型（mckinsey.py・図形だけで描く。ネットワーク不要）
+    # ページ部品と分析図（pages.py・図形だけで描く。ネットワーク不要）
     "governing_message": ("governing_message", ["x", "y", "w", "text"]),
     "lead_in":           ("lead_in",           ["x", "y", "w", "text"]),
     "so_what":           ("so_what",           ["x", "y", "w", "h", "text"]),
@@ -538,9 +538,14 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
 # API を呼ぶ（＝ --dry-run では実行できない）type
 NETWORK_FIGURES = {"image", "aiImage"}
 
-# Slides のテーブル行が実際に取る最小の高さ（インチ・実測）。`minRowHeight` を
-# これより小さくしても行は縮まないので、高さの見積もりはこの値で下から抑える
-MIN_TABLE_ROW_H = 0.28
+def min_table_row_h(size: float) -> float:
+    """Slides のテーブル行が実際に取る最小の高さ（インチ）。
+
+    `minRowHeight` をこれより小さくしても行は縮まない。文字の行高にセルの
+    余白が乗った値で、実測（size 9 で約 0.34in、size 8.5 で約 0.32in）に
+    合わせてある。高さの見積もりはこの値で下から抑える。
+    """
+    return max(0.28, size * 1.45 / 72 + 0.16)
 
 
 def _snake(key: str) -> str:
@@ -574,15 +579,28 @@ def draw_figures(canvas, figures: list, *, skip_network: bool = False) -> None:
         getattr(canvas, method)(*args, **kwargs)
 
 
-def validate_figures(spec: dict, page: dict) -> list[str]:
-    """figures ブロックを、API を呼ばずに検証する。"""
+def validate_figures(spec: dict, page: dict, template: dict | None = None) -> list[str]:
+    """figures ブロックを、API を呼ばずに検証する。
+
+    `template` を渡すと、マスターのロゴ・フッター帯への重なりも検査する。
+    ページ内に収まっていても帯に重なれば読めなくなるので、座標だけで分かる
+    不具合としてここで止める。
+    """
     problems = []
     pw = page.get("widthInches", 10.0)
     ph = page.get("heightInches", 5.625)
+    band = footer_band(template) if template else None
+    layouts = (template or {}).get("layouts", {})
+    roles = (template or {}).get("roles", {})
     for i, s in enumerate(spec.get("slides", [])):
         figs = s.get("figures")
         if figs is None:
             continue
+        # 全面の矩形を持つレイアウトはマスターの装飾を覆い隠すので、帯の検査から外す
+        layout = layouts.get(roles.get(s.get("layout"), s.get("layout")), {})
+        covers_footer = any(
+            d.get("w", 0) > pw * 0.95 and d.get("h", 0) > ph * 0.9
+            for d in (layout.get("decorations") or []))
         if not isinstance(figs, list):
             problems.append(f"slides[{i}]: 'figures' は配列である必要があります")
             continue
@@ -615,8 +633,9 @@ def validate_figures(spec: dict, page: dict) -> list[str]:
             # フォントに応じた最小内寸があり、row_h をそれ未満にしても縮まない
             # （実測 ≒ 0.28in）。折り返せばさらに伸びるので、これは下限の見積もり
             if kind == "table" and isinstance(fig.get("rows"), list):
-                rh = max(fig.get("rowH", fig.get("row_h", 0.34)), MIN_TABLE_ROW_H)
-                hh = max(fig.get("headerH", fig.get("header_h", 0.38)), MIN_TABLE_ROW_H)
+                floor = min_table_row_h(fig.get("size", 10))
+                rh = max(fig.get("rowH", fig.get("row_h", 0.34)), floor)
+                hh = max(fig.get("headerH", fig.get("header_h", 0.38)), floor)
                 h = hh + rh * len(fig["rows"])
             if isinstance(x, (int, float)) and isinstance(w, (int, float)):
                 if x < 0 or x + w > pw + 0.01:
@@ -628,6 +647,18 @@ def validate_figures(spec: dict, page: dict) -> list[str]:
                     problems.append(
                         f"{where}: 縦方向がページ({ph}in)からはみ出します"
                         f"（y={y} h={h} → 下端 {y + h:.2f}in）")
+                # 帯への重なりは **表だけ** 検査する。表は h を宣言せず、行数から
+                # 出した高さがほぼそのまま実寸になるので判定が当たる。図形の図は
+                # 宣言した枠の下端に余白があること（posmap の軸ラベル領域など）が
+                # 多く、宣言値で判定すると誤検出になる。図形側は audit_bounds が
+                # 実際に描いた座標で見ている
+                elif (kind == "table" and band and not covers_footer
+                      and y + h > band[0] + 0.01
+                      and isinstance(x, (int, float)) and isinstance(w, (int, float))
+                      and x < band[2] and x + w > band[1]):
+                    problems.append(
+                        f"{where}: 表がマスターのロゴ・フッター帯（y={band[0]:.2f}in 以下）に"
+                        f"重なります（下端 {y + h:.2f}in）。行数を減らすか複数枚に分けること")
     return problems
 
 
@@ -670,6 +701,24 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
 
 
 # ---------- 仕様の検証と組み立て ----------
+
+def footer_band(template: dict) -> tuple[float, float, float] | None:
+    """マスターが下端に敷く帯（ロゴ・著作権表記）の上端 y と x 範囲を返す。
+
+    ページの下端まで使えると思って図を置くと、ロゴやフッターに重なる。
+    ページサイズだけを見る検査ではこれを拾えないので、装飾の実座標から
+    「ここより下には置けない」線を出す。該当が無ければ None。
+    """
+    page_h = template.get("pageSize", {}).get("heightInches", 5.625)
+    decs = [d for d in template.get("masterDecorations", []) or []
+            if isinstance(d.get("y"), (int, float)) and d["y"] > page_h * 0.75]
+    if not decs:
+        return None
+    top = min(d["y"] for d in decs)
+    x0 = min(d.get("x", 0.0) for d in decs)
+    x1 = max(d.get("x", 0.0) + d.get("w", 0.0) for d in decs)
+    return top, x0, x1
+
 
 def validate_spec(template: dict, spec: dict) -> list[str]:
     """デッキ仕様をテンプレートと突き合わせ、問題点のリストを返す（空なら OK）。"""
@@ -770,7 +819,7 @@ def main() -> int:
         spec = json.load(f)
 
     problems = validate_spec(template, spec)
-    problems += validate_figures(spec, template.get("pageSize", {}))
+    problems += validate_figures(spec, template.get("pageSize", {}), template)
     if problems:
         print("仕様に問題があります:", file=sys.stderr)
         for msg in problems:
