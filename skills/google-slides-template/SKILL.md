@@ -42,6 +42,7 @@ description: >-
 | アイコンを探す | `.venv/bin/python scripts/icons.py --list` / `--search 情報銀行` |
 | クラウドアイコンの取り込み（**初回必須**） | `.venv/bin/python scripts/fetch-cloud-icons.py` |
 | クラウドアイコンを探す | `.venv/bin/python scripts/cloud_icons.py --search s3` / `--list --vendor aws` |
+| 全部品のカタログ（8 系統 45 type を 1 デッキに。仕様の実例） | `examples/design-catalog.json` |
 | 図解（`Canvas`）の描き方・作図規約 | `references/diagrams.md` |
 | 表・グラフの使い方 | `references/charts.md` |
 | 表・グラフのカタログ（仕様の実例） | `examples/charts-demo.json` |
@@ -371,6 +372,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `references/icons.md` | アイコンライブラリの引き方・色・制約・素材の足し方 |
 | `references/cloud-icons.md` | クラウドアイコンの引き方・作図 API・ライセンス条件・更新手順 |
 | `references/api-notes.md` | Google Slides API の制約・実測で判明した落とし穴 |
+| `examples/design-catalog.json` | **全部品のカタログ**（49 枚）。8 系統・`FIGURES` の 45 type のうち 44 を実際に描く。`aiImage` だけは課金済み `GEMINI_API_KEY` が要るため仕様の記載にとどめている（キーがあれば該当スライドを `aiImage` に戻して再生成する）。どの見せ方を使うか迷ったとき、まずこれを生成して見る |
 | `examples/illustration-gallery.json` | 全ピクトグラム・全比喩図・画像配置を使ったデッキ仕様（動く実例） |
 | `examples/icon-gallery.json` | 全アイコンと `asset_icon_*` の 5 メソッドを使ったデッキ仕様（動く実例） |
 | `examples/cloud-architecture.json` | クラウド構成図（ゾーン・マルチクラウド・データフロー）のデッキ仕様（動く実例） |
