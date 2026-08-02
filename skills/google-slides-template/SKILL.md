@@ -2,7 +2,8 @@
 name: google-slides-template
 description: >-
   既存の Google Slides テンプレート（マスタースライド）を複製して、そのレイアウトに沿った
-  プレゼンテーションを生成する。テンプレートの解析・登録（template.json）、デッキ生成、
+  プレゼンテーションを生成する。テンプレート・用途・構成・分量を AskUserQuestion で
+  対話的に確認したうえで、テンプレートの解析・登録（template.json）、デッキ生成、
   サムネイルによる視覚 QA までを扱う。テンプレートを使わずゼロからデザインする場合は
   google-slides スキルを使う。
   トリガー: "このテンプレートでスライドを作って", "マスタースライドから生成", "テンプレートを登録",
@@ -24,11 +25,14 @@ description: >-
 - Python 3.10+ が必要。`.venv` は `~/.claude/venvs/gslides` への**シンボリックリンク**で、`google-slides` スキルと共有している。依存を変更すると両方に効く。
 - 認証情報は `config/credentials.json` → `~/.claude/skills/google-slides/config/` の順に探索する。既存の `google-slides` スキルを設定済みならそのまま使える。
 - **視覚確認を省略しない。** API のレスポンスが正常でも、文字のはみ出し・装飾との矢印が他の図形の上を横切っていないか、意味のうえで正しい図形に繋がっているかは判定できない。生成後は必ずサムネイルを取得して目視する。
+- **前提が未指定なら、生成の前に `AskUserQuestion` で確定させる。** テンプレート・用途・構成・分量は、外すとデッキ丸ごと作り直しになる分岐。Phase 1 と `references/interactive-intake.md` に手順がある。ユーザーが既に指定している項目や「おまかせ」と言われたときは聞かず、採用した前提を 1 行で明示して進める。
 
 ## Quick Reference
 
 | やること | コマンド |
 |---------|---------|
+| 登録済みテンプレートの一覧（対話の選択肢の材料） | `.venv/bin/python scripts/list-templates.py` / `--json` |
+| 対話で前提を確定する手順（AskUserQuestion） | `references/interactive-intake.md` |
 | テンプレートを解析して登録 | `.venv/bin/python scripts/inspect-template.py <URL> --emit templates/<id>.json --name <id>` |
 | レイアウトのサムネイル取得 | `.venv/bin/python scripts/inspect-template.py <URL> --thumbnails out/layouts` |
 | デッキ仕様の検証（API 不要） | `.venv/bin/python scripts/build-deck.py --template … --spec … --dry-run` |
@@ -45,7 +49,7 @@ description: >-
 | フレームワーク図のカタログ（仕様の実例） | `examples/patterns-demo.json` |
 | コードサンプル（ハイライト付き）の使い方 | `references/code-blocks.md` |
 | コードブロックのカタログ（仕様の実例） | `examples/code-blocks-demo.json` |
-| デッキの構成テンプレート（新規事業提案の 15 セクション等） | `references/deck-outlines.md` |
+| デッキの構成テンプレート（課題解決型・新規事業提案・製品紹介・登壇） | `references/deck-outlines.md` |
 | イメージ図・画像の使い方 | `references/images.md` |
 | アイコンライブラリの使い方 | `references/icons.md` |
 | クラウドアイコン（AWS/GCP/Azure）の使い方 | `references/cloud-icons.md` |
@@ -108,9 +112,41 @@ done
 
 ---
 
-## Phase 1: テンプレートの解析と登録
+## Phase 1: 対話で設計を確定する
 
-登録済みテンプレートがあれば `templates/` から選ぶ。無ければ URL から解析する。
+新規デッキで前提が未指定なら、**生成の前に `AskUserQuestion` で決めごとを確定させる**。
+ここを飛ばして 40 枚作ると、前提違いで丸ごと作り直しになる。
+
+決めること（外すと作り直しになる分岐）:
+
+| 決めごと | 既定 | 外したときの影響 |
+|---|---|---|
+| テンプレート | `scalar-2026` | レイアウトも配色も全部変わる |
+| 用途（Proposal / Presentation 系） | Proposal | 系統がちぐはぐなデッキになる |
+| 構成の型 | 課題解決型 | 話の順序が変わる＝全スライドの並べ替え |
+| 分量 | 20 枚前後 | 1 枚あたりの情報量が変わる |
+
+手順の要点（詳細・質問文・選択肢の実例は **`references/interactive-intake.md`**）:
+
+1. **選択肢は実データから作る。** テンプレートは `scripts/list-templates.py` の出力から組む。
+   ハードコードするとテンプレートが増減したときに腐る。
+2. **まとめて聞く。** 1 問ずつ往復しない。最大 3 往復（前提 4 問 → 中身 → アウトライン承認）。
+3. **アウトライン承認ゲートは省略しない。** JSON を書く前に、枚数・レイアウト・各スライドの
+   見出しを会話の本文で提示して承認を取る。承認後は QA まで一気に通す。
+4. **聞かないこと**: 座標・フォントサイズ・部品選び・配色。これはこちらの責任範囲。
+   ユーザーが既に指定した項目、「おまかせ」と言われたときも聞かない（採用した前提は明示する）。
+
+```bash
+.venv/bin/python scripts/list-templates.py        # 人が読む形
+.venv/bin/python scripts/list-templates.py --json # 選択肢を組む材料
+```
+
+---
+
+## Phase 2: テンプレートの解析と登録
+
+**Phase 1 で登録済みテンプレートが選ばれたなら、この Phase は丸ごと飛ばす。**
+新しい URL を渡された（＝未登録の）ときだけ解析して登録する。
 
 ```bash
 .venv/bin/python scripts/inspect-template.py "<テンプレートURL>" \
@@ -140,7 +176,7 @@ done
 
 ---
 
-## Phase 2: デッキ仕様の作成
+## Phase 3: デッキ仕様の作成
 
 スライド構成を JSON で書く。
 
@@ -200,7 +236,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 
 ---
 
-## Phase 3: 生成
+## Phase 4: 生成
 
 ```bash
 .venv/bin/python scripts/build-deck.py \
@@ -258,7 +294,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 
 ---
 
-## Phase 4: 視覚的 QA（省略禁止）
+## Phase 5: 視覚的 QA（省略禁止）
 
 ```bash
 .venv/bin/python scripts/fetch-thumbnails.py "<生成物のURL>" --out out/qa
@@ -276,6 +312,11 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 仕様を直して作り直すほうが速く、再現性がある。
 
 不要になった生成物は Drive から削除する（`drive.files().delete(fileId=…)`）。検証で作った中間デッキを残さない。
+
+**QA は自分で通してから結果を出す。** 目視で潰せる不具合をユーザーに見つけさせない。
+そのうえで直す余地があれば `AskUserQuestion` で「確定する / 文言を直す / 図の見せ方を変える /
+枚数を調整する」を出す（`references/interactive-intake.md` セクション 4）。作り直すときは
+**先に古い生成物を Drive から削除**してから再生成する。
 
 ---
 
@@ -307,6 +348,7 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `scripts/build-deck.py` | テンプレート複製 → デッキ生成（`TemplateDeck`）。仕様検証も担当 |
 | `scripts/fetch-thumbnails.py` | 生成物のサムネイル取得（視覚 QA 用） |
 | `scripts/layout-sample.py` | 全レイアウトを 1 枚ずつ並べたレイアウトサンプルの生成。ロール割当の目視検証に使う |
+| `scripts/list-templates.py` | 登録済みテンプレートの一覧（ロール・レイアウト数・同梱スライド数）。対話でテンプレートを選ばせるときの選択肢の材料。`--json` あり |
 | `scripts/diagrams.py` | 図解プリミティブ（`Canvas`）。フロー・カード・横棒グラフ・図形接続コネクタ（`connect` / `link`）・回転と半透明・コードブロック（`code_block`。ハイライト付き・直角）・`font` 指定・自己点検（`audit_bounds` / `audit_connectors` / `audit_overlaps` / `audit_text_fit`） |
 | `scripts/charts.py` | 表とグラフ（`ChartMixin`）。ネイティブテーブル・縦棒・グループ縦棒・積み上げ縦棒（`vbars_stacked`）・折れ線・円/ドーナツ。基線ゼロ・系列色固定（CVD 検証済み）などの規約を実装で強制する |
 | `scripts/illustrations.py` | イメージ図（`IllustrationMixin`）。ピクトグラム 30 種と比喩図 12 種。図形だけで描くのでキーもネットワークも不要 |
@@ -323,7 +365,8 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `references/charts.md` | 表・グラフ（`charts.py`）の使い方と設計規約 |
 | `references/patterns.md` | ビジネスフレームワーク図（`patterns.py`）の使い方 |
 | `references/code-blocks.md` | コードブロック（`code_block`）の使い方と高さの見積もり |
-| `references/deck-outlines.md` | デッキの構成テンプレート（新規事業提案の 15 セクション等） |
+| `references/interactive-intake.md` | 対話で前提を確定する手順。AskUserQuestion の質問セット・アウトライン承認ゲート・聞かないことの線引き |
+| `references/deck-outlines.md` | デッキの構成テンプレート（課題解決型 / 新規事業提案 15 セクション / 製品紹介 / 登壇）。対話の「構成」の選択肢はここから作る |
 | `references/images.md` | イメージ図・画像の使い分けと全メソッドの一覧 |
 | `references/icons.md` | アイコンライブラリの引き方・色・制約・素材の足し方 |
 | `references/cloud-icons.md` | クラウドアイコンの引き方・作図 API・ライセンス条件・更新手順 |

@@ -2,6 +2,7 @@
 name: scalar-product-slides
 description: >-
   株式会社Scalar の会社紹介・製品紹介・機能紹介・ユースケースの Google Slides を、
+  デッキの型・対象製品・対象者を AskUserQuestion で確認したうえで、
   公式サイト/developers ドキュメントの調査から生成・QA まで一貫して作る。
   google-slides-template スキル(scalar-2026 テンプレート)の上に載る Scalar 専用ワークフロー。
   トリガー: "製品紹介スライドを作って", "機能紹介スライド", "会社紹介スライド",
@@ -18,20 +19,50 @@ description: >-
   テンプレート・クラウドアイコン)。セットアップ手順・API の制約・作図 API はすべてそちらの
   SKILL.md に従う。本スキルは「Scalar 紹介資料に特化した構成・生成スクリプト・調査知見」を持つ。
 - **事実は調査してから書く。** 会社情報・バージョン・事例は `references/research-2026-08.md` が
-  出発点だが、**調査日から 3 か月以上経過していたら再調査**(下記 Phase 1)。推測で埋めない。
+  出発点だが、**調査日から 3 か月以上経過していたら再調査**(下記 Phase 2)。推測で埋めない。
   不明な項目(資本金など)は載せない。
 - **視覚 QA を省略しない**(`fetch-thumbnails.py` で全ページ目視)。
+- **前提が未指定なら、調査に入る前に `AskUserQuestion` で確定させる**(Phase 1)。
+  対話の作法は `google-slides-template` の `references/interactive-intake.md`
+  (セクション 0・3・4・5)に従う。質問セットだけ本スキル固有のものを使う。
 
 ## Quick Reference
 
 | やること | 使うもの |
 |---------|---------|
+| 対話で前提を確定する作法 | `google-slides-template` の `references/interactive-intake.md`(セクション 0・3・4・5) |
 | 会社紹介 + 製品概要 + ユースケースのデッキ | `scripts/build_scalar_intro.py` |
 | 機能紹介デッキ(1機能=1スライド・図解付き) | `scripts/build_scalar_features.py` |
 | 調査済みの事実・落とし穴 | `references/research-2026-08.md` |
 | 実行 | `cd ~/.claude/skills/google-slides-template && .venv/bin/python <script> [--folder <Drive URL>]` |
 
-## Phase 1: 調査
+## Phase 1: 対話で型と前提を確定する
+
+**調査に入る前**に決める。型を外すと調査からやり直しになる(会社紹介と機能紹介では
+集める事実が違う)。作法は `google-slides-template` の `references/interactive-intake.md`
+— セクション 0(いつ聞くか)・3(アウトライン承認ゲート)・4(生成後の確認)・
+5(やってはいけない聞き方)。**まとめて 1 回で聞き、1 問ずつ往復しない。**
+
+質問セット(本スキル固有。Q1 の 4 問を 1 回で出す):
+
+| # | header | 質問 | 選択肢 |
+|---|---|---|---|
+| 1 | デッキの型 | どの型で作りますか？ | 会社紹介 + 製品概要(`build_scalar_intro.py`。定型スライド活用) / 機能紹介カタログ(`build_scalar_features.py`。1機能=1スライド) / ユースケース特化(機能紹介を業種で絞る) |
+| 2 | 対象製品 | どの製品を扱いますか？ | ScalarDB / ScalarDL / 両方 |
+| 3 | 対象者 | 誰に見せますか？ | 顧客(初回・営業) / 技術者(検証・PoC) / 経営層(投資判断) / パートナー(販売支援) |
+| 4 | 調査 | 事実の鮮度は？ | `references/research-2026-08.md` をそのまま使う / 再調査する(Phase 2 を実行) |
+
+- **Q4 は勝手に決めない。** 調査日から 3 か月以上経っていたら「再調査する」を
+  推奨として先頭に置き、理由(調査日と経過月数)を `description` に書く。
+- 上の 4 問で 1 回分が埋まる。出力先 Drive フォルダ・表紙の日付・言語(日本語 / 英語)は
+  指定が無ければ 2 回目にまとめて聞く(`--folder` 未指定ならマイドライブ直下)。
+- **聞かないこと**: 図解の組み方・座標・配色・機能ごとの図の選択。
+  これは `FEATURES_DB` / `FEATURES_DL` と デザイン規約で決まっている。
+
+型と対象が決まったら、**生成前にスライド構成(枚数と各スライドの見出し)を提示して
+承認を取る**。`build_plan()` を書き換える前にここを通す。
+
+## Phase 2: 調査
 
 `references/research-2026-08.md` を読み、鮮度が十分ならそのまま使う。古い場合や
 新しい情報が要る場合は、調査エージェントを**並行で**出す:
@@ -46,7 +77,9 @@ description: >-
 調査結果で `references/` を更新し、調査日を書き換える。
 **落とし穴リスト(references 末尾)は毎回スライド化の前に確認すること。**
 
-## Phase 2: デッキの型を選ぶ
+## Phase 3: 型ごとの作り方
+
+型は Phase 1 で確定済み。ここはその型をどう組むかの実装メモ。
 
 ### A. 会社紹介デッキ(`build_scalar_intro.py`)
 
@@ -86,7 +119,7 @@ description: >-
 - 図解は `illustrations` のピクトグラム + `_pill`(角丸チップ)+ `cloud_zone` +
   `_anchored` 矢印で組む。クラウド公式アイコンは改変禁止
 
-## Phase 3: 生成と QA
+## Phase 4: 生成と QA
 
 ```bash
 cd ~/.claude/skills/google-slides-template
@@ -98,6 +131,9 @@ cd ~/.claude/skills/google-slides-template
    (部分修正より速い)。作り直す前に旧デッキを Drive から削除する
 2. `fetch-thumbnails.py` で全ページ取得し、Read で目視(はみ出し・重なり・レイアウト取り違え)
 3. **作り直すと URL が変わる**。ユーザーに新 URL を伝え、旧デッキの扱い(削除)を明示する
+4. QA を自分で通してから結果を出す。直す余地があれば `AskUserQuestion` で
+   「確定する / 文言を直す / 図解を変える / 機能を増減する」を出す
+   (`interactive-intake.md` セクション 4)
 
 ## ファイル構成
 
