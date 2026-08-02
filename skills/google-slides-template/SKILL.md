@@ -49,7 +49,8 @@ description: >-
 | ビジネスフレームワーク図の使い方 | `references/patterns.md` |
 | フレームワーク図のカタログ（仕様の実例） | `examples/patterns-demo.json` |
 | 印刷物用デッキ（マッキンゼー流）の使い方 | `references/print-layouts.md` |
-| 印刷物用デッキの型カタログ（仕様の実例・30 枚） | `examples/print-deck-catalog.json` |
+| 印刷物用デッキの型カタログ（型の解説・30 枚） | `examples/print-deck-catalog.json` |
+| 印刷配布用ページの全パターン索引（骨格 6 × 用途 35・56 枚） | `examples/print-pattern-index.json` |
 | コードサンプル（ハイライト付き）の使い方 | `references/code-blocks.md` |
 | コードブロックのカタログ（仕様の実例） | `examples/code-blocks-demo.json` |
 | デッキの構成テンプレート（課題解決型・新規事業提案・製品紹介・登壇） | `references/deck-outlines.md` |
@@ -378,7 +379,8 @@ API を一切呼ばずに、レイアウト解決とプレースホルダ整合�
 | `references/cloud-icons.md` | クラウドアイコンの引き方・作図 API・ライセンス条件・更新手順 |
 | `references/api-notes.md` | Google Slides API の制約・実測で判明した落とし穴 |
 | `examples/design-catalog.json` | **全部品のカタログ**（49 枚）。8 系統・`FIGURES` の 45 type のうち 44 を実際に描く。`aiImage` だけは課金済み `GEMINI_API_KEY` が要るため仕様の記載にとどめている（キーがあれば該当スライドを `aiImage` に戻して再生成する）。どの見せ方を使うか迷ったとき、まずこれを生成して見る |
-| `examples/print-deck-catalog.json` | **印刷物用デッキの型カタログ**（30 枚）。mckinsey.py の全 11 部品＋アンチパターン集を、架空の題材「受注処理コスト削減」で実演。配布・提出用デッキはこれを複製して題材を置き換えるのが最短 |
+| `examples/print-deck-catalog.json` | **印刷物用デッキの型カタログ**（30 枚）。mckinsey.py の全 11 部品＋アンチパターン集を、架空の題材「受注処理コスト削減」で実演。**型の使い方を学ぶ**ためのデッキ |
+| `examples/print-pattern-index.json` | **印刷配布用ページの全パターン索引**（56 枚）。骨格 6 種 × 用途別ページ 35 種を 1 枚 1 パターンで実物として並べる。**作れるページを見て選ぶ**ためのデッキ。ユーザーに「どのページで組むか」を指させるときはこれを生成して見せる |
 | `examples/illustration-gallery.json` | 全ピクトグラム・全比喩図・画像配置を使ったデッキ仕様（動く実例） |
 | `examples/icon-gallery.json` | 全アイコンと `asset_icon_*` の 5 メソッドを使ったデッキ仕様（動く実例） |
 | `examples/cloud-architecture.json` | クラウド構成図（ゾーン・マルチクラウド・データフロー）のデッキ仕様（動く実例） |

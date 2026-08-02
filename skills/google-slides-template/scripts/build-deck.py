@@ -538,6 +538,10 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
 # API を呼ぶ（＝ --dry-run では実行できない）type
 NETWORK_FIGURES = {"image", "aiImage"}
 
+# Slides のテーブル行が実際に取る最小の高さ（インチ・実測）。`minRowHeight` を
+# これより小さくしても行は縮まないので、高さの見積もりはこの値で下から抑える
+MIN_TABLE_ROW_H = 0.28
+
 
 def _snake(key: str) -> str:
     out = []
@@ -607,6 +611,13 @@ def validate_figures(spec: dict, page: dict) -> list[str]:
             x, y = fig.get("x", 0), fig.get("y", 0)
             w = fig.get("w", spatial_size)
             h = fig.get("h", spatial_size)
+            # 表は h を宣言しない。行数から見積もる。Slides のテーブル行には
+            # フォントに応じた最小内寸があり、row_h をそれ未満にしても縮まない
+            # （実測 ≒ 0.28in）。折り返せばさらに伸びるので、これは下限の見積もり
+            if kind == "table" and isinstance(fig.get("rows"), list):
+                rh = max(fig.get("rowH", fig.get("row_h", 0.34)), MIN_TABLE_ROW_H)
+                hh = max(fig.get("headerH", fig.get("header_h", 0.38)), MIN_TABLE_ROW_H)
+                h = hh + rh * len(fig["rows"])
             if isinstance(x, (int, float)) and isinstance(w, (int, float)):
                 if x < 0 or x + w > pw + 0.01:
                     problems.append(
