@@ -146,6 +146,39 @@ PROPOSAL = {
         ],
     },
 
+    # システム構成（初期提案の標準 3 環境。クラウド既定は AWS）
+    # 図は examples/scalar-proposal-envs.drawio を drawio_export.py で PNG 化したもの。
+    # 顧客要件で書き換えたら再エクスポートする（drawio-diagrams スキル参照）
+    "architecture": {
+        "diagram": os.path.join(REPO_DIR, "examples", "scalar-proposal-envs.png"),
+        "drawio": "examples/scalar-proposal-envs.drawio",
+        "cloud": "AWS",
+        "caption": "初期提案の 3 環境。ローカルは無料の Community で開発し、"
+                   "AWS 側 2 環境は同一構成をサイズ違いで用意して昇格させる",
+        "envs": [
+            {"name": "開発（ローカル）",
+             "purpose": "各開発者の PC で完結する開発・単体検証",
+             "services": "Docker Compose（業務アプリ + PostgreSQL コンテナ）",
+             "scalar": "ScalarDB Core（Community）",
+             "qty": "開発者数分", "monthly": "無料"},
+            {"name": "テスト（aidd-infra-test）",
+             "purpose": "結合テスト・自動テストの常設環境",
+             "services": "EKS / NLB / RDS for PostgreSQL（Single-AZ）/ ECR / CloudWatch / S3",
+             "scalar": "ScalarDB Cluster（Enterprise Standard）",
+             "qty": "1 Pod", "monthly": "約 $1,022"},
+            {"name": "ステージング（aidd-infra-staging）",
+             "purpose": "本番同等構成での受入・性能検証",
+             "services": "EKS（2 AZ）/ NLB / RDS for PostgreSQL（Multi-AZ）/ "
+                         "Secrets Manager / CloudWatch / S3",
+             "scalar": "ScalarDB Cluster（Enterprise Standard）",
+             "qty": "3 Pod", "monthly": "約 $3,066"},
+        ],
+        "monthly_total": "約 $4,088/月",
+        "monthly_note": "※ Scalar 製品ライセンスのみの概算（$1.40/h × Pod 数 × 730h で算定）。"
+                        "AWS インフラ利用料・本番環境は別途",
+        "source": "ScalarDB Cluster 価格: AWS Marketplace 公表値（2026年8月時点、Standard エディション）",
+    },
+
     # 体制（お客様側の負担も見えるように）
     "team": ("ステアリングコミッティ\n(月次)",
              [("〈お客様〉PM\n業務部門・情シス", []),
@@ -162,8 +195,8 @@ PROPOSAL = {
     "costs": {
         "rows": [
             ["PoC 支援", "2 ヶ月・Scalar エンジニア支援込み", "個別お見積り"],
-            ["ScalarDB Cluster", "商用ライセンス（AWS Marketplace, Standard）",
-             "$1.40/h × Pod 数〜"],
+            ["ScalarDB Cluster", "テスト 1 Pod + ステージング 3 Pod（構成内訳参照）",
+             "約 $4,088/月〜"],
             ["構築・導入支援", "設計〜MVP 構築の伴走支援", "体制により個別お見積り"],
         ],
         "note": "※ 費目・金額は概算の目安。PoC 評価後に確定見積りをご提示",
@@ -271,6 +304,36 @@ def draw_journey(d: Canvas, p: dict) -> None:
             text=p["poc_criteria"], size=9.5, color=d.P.text)
 
 
+def draw_architecture(d: Canvas, arch: dict) -> None:
+    d.image(0.5, 1.05, 9.0, 3.25, arch["diagram"], fit="contain",
+            caption=arch["caption"], outline=d.P.border)
+
+
+def draw_bom_services(d: Canvas, arch: dict) -> None:
+    # 環境名は「テスト\n（aidd-infra-test）」の 2 行に割る。1 行のままだと
+    # 列幅に対して折り返しの最終行が 1 字未満になり audit_text_fit が拾う
+    rows = [[e["name"].replace("（aidd", "\n（aidd"), e["purpose"], e["services"]]
+            for e in arch["envs"]]
+    d.table(0.6, 1.3, 8.8, ["環境", "役割", "主な構成サービス"], rows,
+            col_widths=[1.2, 1.3, 2.0], row_h=0.72, size=9.5,
+            aligns=["START", "START", "START"])
+    d.label(0.6, 4.2, 8.8, 0.3,
+            f"※ クラウドは {arch['cloud']} を既定として構成。指定があれば同じ役割分担で"
+            " GCP / Azure に組み替える",
+            size=9, align="START", color=d.P.muted)
+
+
+def draw_bom_scalar(d: Canvas, arch: dict) -> None:
+    rows = [[e["name"], e["scalar"], e["qty"], e["monthly"]] for e in arch["envs"]]
+    rows.append(["合計（ライセンス月額）", "", "", arch["monthly_total"]])
+    d.table(0.6, 1.25, 8.8, ["環境", "Scalar 製品", "数量", "月額概算"], rows,
+            col_widths=[1.5, 1.7, 0.8, 1.0], row_h=0.5, size=9.5,
+            aligns=["START", "START", "CENTER", "CENTER"])
+    d.label(0.6, 4.0, 8.8, 0.45, arch["monthly_note"], size=9, align="START",
+            color=d.P.muted, line_spacing=125)
+    d.source_note(0.6, 4.75, 8.8, arch["source"])
+
+
 def draw_gantt(d: Canvas, g: dict) -> None:
     rows = [tuple(r) for r in g["rows"]]
     d.gantt(0.6, 1.3, 8.8, 2.8, g["columns"], rows, size=9.5)
@@ -306,6 +369,19 @@ def draw_next(d: Canvas, steps: list) -> None:
     d.so_what(0.7, 3.4, 8.6, 0.85,
               "本日は課題認識の確認と、PoC スコープ検討に進むかどうかのご判断をいただきたい",
               label="お願い")
+
+
+def print_bom(arch: dict) -> None:
+    """構成内訳（サービス一覧と Scalar 製品・数量・月額）をコンソールにも出す。"""
+    print("\n=== 構成内訳（BOM） ===")
+    print(f"[クラウドサービス（{arch['cloud']}）]")
+    for e in arch["envs"]:
+        print(f"  - {e['name']}: {e['services']}")
+    print("[Scalar 製品]")
+    for e in arch["envs"]:
+        print(f"  - {e['name']}: {e['scalar']} × {e['qty']} — {e['monthly']}")
+    print(f"  合計（ライセンス月額概算）: {arch['monthly_total']}")
+    print(f"  {arch['monthly_note']}")
 
 
 # ============================================================ 組み立て
@@ -384,6 +460,20 @@ def main() -> int:
     deck.add_slide("SECTION", title="導入の進め方", body="スモールスタートで確実に")
     drawn("導入アプローチ — PoC で検証してから段階導入", draw_journey, P,
           notes="PoC は成功基準（Go/No-Go）までがワンセット（エンプラ IT 提案の定石）。")
+    drawn("提案システム構成 — 開発・テスト・ステージングの 3 環境", draw_architecture,
+          P["architecture"],
+          notes="初期提案の標準 3 環境（ローカル / aidd-infra-test / aidd-infra-staging）。"
+                "クラウド既定は AWS。図の元データは examples/scalar-proposal-envs.drawio で、"
+                "顧客要件に合わせて drawio-diagrams スキルで書き換えてから "
+                "scripts/drawio_export.py で PNG を再生成する。環境名・本番環境の扱いは"
+                "ヒアリングに合わせて変更する。")
+    drawn("構成内訳（1）— 各環境のサービス構成", draw_bom_services, P["architecture"],
+          notes="クラウドサービスのリスト。環境の役割分担（ローカル無料 → テスト最小 → "
+                "ステージング本番同等）が崩れない範囲でサービスを増減する。")
+    drawn("構成内訳（2）— Scalar 製品と数量・月額概算", draw_bom_scalar, P["architecture"],
+          notes="Scalar 製品の数量と月額概算。数量の指定が無い場合は既定サイズ"
+                "（テスト 1 Pod / ステージング 3 Pod）で月額を算定する。"
+                "$1.40/h × Pod 数 × 730h。価格出典は AWS Marketplace（2026-08 時点）。")
     drawn("スケジュール案 — 6 ヶ月で MVP まで", draw_gantt, P["gantt"],
           notes="ヒアリングした導入希望時期・予算年度に合わせて列と行を書き換える。")
     drawn("推進体制案 — 御社・Scalar・開発パートナーの三者体制", draw_team, P,
@@ -404,6 +494,7 @@ def main() -> int:
         print(f"  検査: {m}")
     url = deck.commit()
     print(f"Done! Open: {url}")
+    print_bom(P["architecture"])
     return 0
 
 

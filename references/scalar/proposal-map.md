@@ -114,7 +114,32 @@ ScalarDL:
   従量課金提供は不明（BYOL コンテナ記載と非提供記載が混在）
 - 概算費用スライドには必ず `source_note`（AWS Marketplace 公表値+時点）を置く
 
-## 6. 出典
+## 6. 初期提案の標準環境構成と BOM
+
+初期提案には**システム構成図と構成内訳（BOM）を必ず含める**。標準は次の
+3 環境で、クラウドは **AWS が既定**（指定があれば同じ役割分担で GCP / Azure に
+組み替える。作図の検証済みスタイルは `references/drawio.md`）。
+
+| 環境 | 役割 | 主な構成 | Scalar 製品 / 数量（既定） |
+|---|---|---|---|
+| 開発（ローカル） | 各開発者の PC で完結する開発・単体検証 | Docker Compose（アプリ + PostgreSQL コンテナ） | ScalarDB Core（Community）× 開発者数 — 無料 |
+| テスト（aidd-infra-test） | 結合テスト・自動テストの常設環境 | EKS / NLB / RDS（Single-AZ）/ ECR / CloudWatch / S3 | ScalarDB Cluster（Enterprise Standard）× 1 Pod |
+| ステージング（aidd-infra-staging） | 本番同等構成での受入・性能検証 | EKS（2 AZ）/ NLB / RDS（Multi-AZ）/ Secrets Manager / CloudWatch / S3 | ScalarDB Cluster（Enterprise Standard）× 3 Pod |
+
+- 月額概算の算定式: **$1.40/h（Standard, AWS）× Pod 数 × 730h** →
+  1 Pod ≈ $1,022/月、3 Pod ≈ $3,066/月、既定構成の合計 ≈ **$4,088/月**
+  （Scalar ライセンスのみ。AWS インフラ利用料・本番環境は別途）。
+  Premium が必要な機能（SQL/GraphQL・暗号化等）を提案に含めるときは
+  $2.79/h で計算し直す（§5）
+- ScalarDL を含む提案では Ledger + Auditor（各 $1.40/h、Auditor は同時購入
+  必須）を環境ごとに数える
+- 構成図の worked example: `examples/scalar-proposal-envs.drawio`（→ PNG は
+  `scripts/drawio_export.py` で再生成）。顧客要件での書き換えは
+  `drawio-diagrams` スキルの流儀に従う
+- **デッキとは別に、生成後の報告でもサービス一覧と Scalar 製品・数量・月額の
+  リストを提示する**（ビルダーが `=== 構成内訳（BOM） ===` として stdout に出す）
+
+## 7. 出典
 
 提案の型: 才流 提案書テンプレート https://sairu.co.jp/method/3543/ /
 才流 稟議書 https://sairu.co.jp/method/18438/ / 才流 営業資料改善

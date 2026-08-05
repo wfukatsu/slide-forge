@@ -32,6 +32,14 @@ Working directory: the repo root, `/Users/wfukatsu/work/slide-forge`.
   calculation basis from the hearing; otherwise write qualitative effects and
   route quantification to the PoC ("PoC で実測し稟議材料にする"). Public case
   numbers (ENS 約1/5 など) are usable with sources.
+- **Every initial proposal includes an architecture diagram and a BOM.** The
+  standard topology is 3 environments — 開発（ローカル）/ テスト
+  (aidd-infra-test) / ステージング (aidd-infra-staging) — on **AWS by default**
+  (rebuild the same role split on GCP/Azure only if the customer specifies).
+  After composing the architecture, output the cloud-service list and the
+  Scalar product list with quantities (and monthly license cost when
+  quantities are not specified) — on the deck AND as a list in the final
+  report (proposal-map.md §6).
 - **Check the constraints before proposing** —
   `references/scalar/proposal-map.md` §4 (cases where ScalarDB/DL does not
   fit). Do not force a challenge onto a Scalar product; saying so is part of
@@ -50,8 +58,9 @@ Working directory: the repo root, `/Users/wfukatsu/work/slide-forge`.
 
 | Task | Use |
 |------|-----|
-| Hearing checklist / proposal structure / challenge→product map / constraints / pricing | `references/scalar/proposal-map.md` |
-| Proposal deck builder (worked example, 20 slides) | `scripts/scalar/build_scalar_proposal.py` |
+| Hearing checklist / proposal structure / challenge→product map / constraints / pricing / standard environments + BOM | `references/scalar/proposal-map.md` |
+| Proposal deck builder (worked example, 23 slides incl. architecture + BOM) | `scripts/scalar/build_scalar_proposal.py` |
+| Environment diagram source (3 environments, AWS) | `examples/scalar-proposal-envs.drawio` → PNG via `scripts/drawio_export.py` |
 | Researched company/product facts + pitfalls | `references/scalar/research-2026-08.md` |
 | Section ordering rationale (problem-solving outline) | `references/deck-outlines.md` |
 | Run | `cd /Users/wfukatsu/work/slide-forge && .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <Drive URL>]` |
@@ -71,7 +80,9 @@ Follow `references/interactive-intake.md` sections 0/3/4/5. Ask in one batch:
   pre-select the likely categories in the option descriptions.
 - If nothing is known yet, present the hearing checklist
   (proposal-map.md §1) as the deliverable instead of forcing a deck.
-- Second round if unspecified: output Drive folder, cover date, language.
+- Second round if unspecified: output Drive folder, cover date, language,
+  and cloud (default AWS — state the adopted default instead of asking when
+  the customer's cloud is unknown).
 - **Do not ask about** diagram composition, coordinates, colors, or which
   part draws which section — that is fixed by the worked example and
   design conventions.
@@ -91,10 +102,25 @@ challenge→product mapping made explicit) and get approval before generating**
    research agents if stale, and check the pitfall list at the end of
    research-2026-08.md before writing slides.
 
+## Phase 2.5: Compose the architecture and BOM
+
+1. Start from the standard 3-environment topology (proposal-map.md §6):
+   開発（ローカル, Community・無料）→ テスト aidd-infra-test（Cluster 1 Pod）→
+   ステージング aidd-infra-staging（Cluster 3 Pod）, AWS by default. Adjust
+   environment names, sizes, and the production environment to the hearing.
+2. Author the diagram from `examples/scalar-proposal-envs.drawio` (edit →
+   `scripts/drawio_export.py` → Read the PNG; drawio-diagrams skill rules
+   apply: verified shape names only, visual check mandatory).
+3. Derive the BOM: per environment, the cloud services and the Scalar
+   products with quantities; compute monthly license cost with the §6 formula
+   when quantities are not customer-specified. Premium features or ScalarDL
+   change the unit prices (§5/§6).
+
 ## Phase 3: Build the deck
 
 `scripts/scalar/build_scalar_proposal.py` is a worked example (fictional
-manufacturing scenario, 20 slides) that encodes the standard structure —
+manufacturing scenario, 23 slides incl. architecture + BOM) that encodes the
+standard structure —
 proposal-map.md §2 has the section-by-section rationale. To build a real
 proposal, rewrite only the `PROPOSAL` dict at the top of the script
 (customer, summary, challenges, mapping, alternatives, effects, cases,
@@ -127,7 +153,10 @@ cd /Users/wfukatsu/work/slide-forge
 3. Content QA specific to proposals: no customer-specific number without a
    hearing basis, no case/price without a source note, challenge wording
    consistent across slides 3 / 7 (整理と対応表), scope-out line present.
-4. Offer follow-ups via `AskUserQuestion` (interactive-intake.md §4):
+4. In the final report, alongside the deck/folder URLs, include the BOM
+   lists (cloud services per environment; Scalar products with quantity and
+   monthly cost) — the builder prints them as `=== 構成内訳（BOM） ===`.
+5. Offer follow-ups via `AskUserQuestion` (interactive-intake.md §4):
    finalize / adjust wording / swap cases / add-remove sections.
 
 ## File layout
@@ -137,4 +166,5 @@ cd /Users/wfukatsu/work/slide-forge
 | `scripts/scalar/build_scalar_proposal.py` | Proposal deck builder (worked example; rewrite `PROPOSAL` per customer) |
 | `references/scalar/proposal-map.md` | Hearing items, proposal structure + rationale, challenge→product map, constraints, pricing |
 | `references/scalar/research-2026-08.md` | Company/product facts, cases, slide pitfalls (shared with scalar-product-slides) |
+| `examples/scalar-proposal-envs.drawio` / `.png` | 3-environment architecture diagram source and export (rewrite per customer) |
 | `templates/scalar-2026.json` | Scalar 2026 template |
