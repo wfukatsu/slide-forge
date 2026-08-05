@@ -20,6 +20,7 @@ description: >-
 - **Routing**:
   - User has a template/master URL, or wants text flowed into an existing corporate layout → `google-slides-template` skill
   - Scalar company/product/use-case decks → `scalar-product-slides` skill
+  - Dense cloud architecture / data-flow / network diagrams (nested containers, 10+ nodes) → author them with the `drawio-diagrams` skill (draw.io → PNG → insert); simple concept figures stay on `diagrams.py`
   - PPTX files → `document-skills:pptx`; Slidev → `slidev` skill
   - A bare "make slides" request uses this skill only when a Google Drive / Google Slides context is explicit
 - **Working directory**: the repo root `/Users/wfukatsu/work/slide-forge`. All commands below run from there.
@@ -39,6 +40,8 @@ description: >-
 | Visual QA thumbnails | `scripts/fetch_thumbnails.py` |
 | Snapshot a version before editing an existing deck | `scripts/snapshot_version.py` |
 | Diagrams (flows, architecture) | `scripts/diagrams.py` (Canvas) + `references/diagrams.md`, `references/diagram-cookbook.md` |
+| Dense cloud/data-flow diagrams (draw.io → PNG) | `drawio-diagrams` skill + `scripts/drawio_export.py` + `references/drawio.md` |
+| Drive folder per deck (create / collect files) | `scripts/drive_folder.py` |
 | Charts and tables | `scripts/charts.py` + `references/charts.md` |
 | Shape-drawn pictograms and metaphor figures | `scripts/illustrations.py` + `references/pictogram-catalog.md` |
 | Business-framework figures (posmap, gantt, orgchart…) | `scripts/patterns.py` + `references/patterns.md` |
@@ -154,6 +157,16 @@ Code-first path:
 ```
 
 `--only` renders a page range for cheap prototyping. First run opens a browser for OAuth and writes `config/token.json`. The script prints the presentation URL — relay it to the user.
+
+**Drive folder rule**: every generated deck gets its own Drive folder, and all related files live under it. Create the folder first, generate into it, then collect the sources:
+
+```bash
+.venv/bin/python scripts/drive_folder.py create "<Deck title>" [--parent <URL/ID>]
+# pass the printed ID as --folder to build_deck.py / render_deck.py, then:
+.venv/bin/python scripts/drive_folder.py upload <FOLDER_ID> deck.json figures/*.drawio out/diagrams/*.png
+```
+
+Upload whatever lets the user regenerate or edit later: the spec (`deck.json`) or deck module (`deck.py`), `.drawio` sources, and exported figure PNGs. QA thumbnails stay local. Report the folder URL together with the presentation URL.
 
 For large decks, page-level fan-out to subagents is possible; see `references/parallel-generation.md` for what may and may not be split.
 

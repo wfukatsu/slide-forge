@@ -33,6 +33,10 @@ Working directory: the repo root, `/Users/wfukatsu/work/slide-forge`.
   stock).
 - **Never skip visual QA** (fetch every page with `scripts/fetch_thumbnails.py`
   and inspect them).
+- **Drive folder rule** (shared with `google-slides-template`): create a Drive
+  folder for the deck first (`scripts/drive_folder.py create "<title>"`), pass
+  its ID as the output folder, and collect the spec / figure sources there
+  with `drive_folder.py upload`. Report the folder URL with the deck URL.
 - **When updating an existing deck the user already has** (same URL, in-place
   edits — not the normal copy-the-boilerplate flow), run
   `.venv/bin/python scripts/snapshot_version.py <URL>` first to record the
