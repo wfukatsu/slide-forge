@@ -16,9 +16,7 @@
     "counterpartTemplate": "~/.claude/skills/google-slides-template/templates/scalar-2026.json",
     "__counterpartTemplate_note": "同じマスターを指す google-slides-template 側の登録ファイル。複製方式で生成する場合はそちらを使う。マスターを更新したら両方を再生成すること",
     "sampleSlideIds": ["g3b4087f65e2_0_0", "g353093c97b1_0_10", "g24a58f1ca40_1_60"],
-    "__sampleSlideIds_note": "マスターに同梱されたサンプルスライド3枚（表紙/中扉/裏表紙のプレースホルダ見本）。複製直後に削除すること",
-    "previousSource": "https://docs.google.com/presentation/d/1TOz10qxROymUH_b57f6krMT2xXyffqdII75IantI6Yk/edit",
-    "__previousSource_note": "v1.0.0 で参照していた旧マスター。旧 layoutId は本マスターと互換性がない（theme.json.bak-1TOz10qx-20260729 に退避）"
+    "__sampleSlideIds_note": "マスターに同梱されたサンプルスライド3枚（表紙/中扉/裏表紙のプレースホルダ見本）。複製直後に削除すること"
   },
 
   "pageSize": {
