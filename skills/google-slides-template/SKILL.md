@@ -126,7 +126,8 @@ permission. A shared file with "Disable download, print, copy" cannot be
 duplicated.
 
 5. **Only if using AI image generation** (`ai_image` / cover images), a billed
-`GEMINI_API_KEY` is required (optional). The shape-drawn `illustrations` /
+`GEMINI_API_KEY` is required (optional) — as an env var or saved to
+`config/gemini_api_key` (gitignored). The shape-drawn `illustrations` /
 `patterns` need no key.
 
 ---

@@ -71,7 +71,7 @@ description: >-
 
 3. **Optional capabilities** (check only if the deck needs them):
    - Cloud icons: they are not bundled (vendor license terms forbid redistribution). Verify with `.venv/bin/python scripts/cloud_icons.py --list --vendor aws | head`; if missing, run `.venv/bin/python scripts/fetch_cloud_icons.py` once (~1–2 min).
-   - AI images: `images.py` needs `GEMINI_API_KEY` in the environment. If unset and the deck wants generated imagery, fall back to `illustrations.py` or ask the user.
+   - AI images: `images.py` needs `GEMINI_API_KEY` (env var, or a `config/gemini_api_key` file — gitignored). If unset and the deck wants generated imagery, fall back to `illustrations.py` or ask the user.
 
 ---
 

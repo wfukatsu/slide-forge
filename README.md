@@ -60,7 +60,9 @@ cache/ out/   transient render cache and QA output (gitignored)
    .venv/bin/python scripts/fetch_cloud_icons.py
    ```
 
-5. Optional: `GEMINI_API_KEY` for AI image generation (`scripts/images.py`).
+5. Optional, for AI image generation (`scripts/images.py`): set `GEMINI_API_KEY`,
+   or save the key to `config/gemini_api_key` (gitignored, like the OAuth files).
+   The key must belong to a billed project — the image model has zero free-tier quota.
 
 ## Quick start (template-driven)
 

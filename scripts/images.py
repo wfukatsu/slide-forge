@@ -141,12 +141,27 @@ class ImageGenerationError(RuntimeError):
 
 
 def _api_key() -> str:
+    """Resolve the Gemini API key.
+
+    Order: $GEMINI_API_KEY / $GOOGLE_API_KEY env vars, then the
+    `gemini_api_key` file in the auth config directories (repo `config/` is
+    gitignored, same policy as the OAuth credentials).
+    """
     key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if not key:
+        import _auth
+        for d in _auth.config_dirs():
+            path = os.path.join(d, "gemini_api_key")
+            if os.path.exists(path):
+                with open(path, encoding="utf-8") as f:
+                    key = f.read().strip()
+                if key:
+                    break
     if not key:
         raise ImageGenerationError(
             "GEMINI_API_KEY が設定されていません。\n"
             "  https://aistudio.google.com/apikey でキーを作り、"
-            "export GEMINI_API_KEY=… してください。\n"
+            "export GEMINI_API_KEY=… するか、config/gemini_api_key に保存してください。\n"
             "  画像モデルは無料枠のクォータが 0 のため、課金を有効にした"
             "プロジェクトのキーが必要です。"
         )
