@@ -75,13 +75,13 @@ class TrackedCanvas(Canvas):
         self.right = 0.0
         self.left = 99.0
 
-    def _elem_props(self, x, y, w, h):
+    def _elem_props(self, x, y, w, h, *args, **kwargs):
         # 下部の固定要素（要点行・エディション行）は意図した位置なので除外する
         if not deckkit.FOOT_MODE[0]:
             self.bottom = max(self.bottom, y + h)
             self.right = max(self.right, x + w)
             self.left = min(self.left, x)
-        return super()._elem_props(x, y, w, h)
+        return super()._elem_props(x, y, w, h, *args, **kwargs)
 
 
 def resolve_layout(template: dict, key: str):

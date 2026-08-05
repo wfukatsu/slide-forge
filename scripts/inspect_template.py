@@ -177,7 +177,7 @@ def analyze_page(page: dict) -> dict:
             color = opaque_hex((lp.get("lineFill") or {}).get("solidFill"))
             if color:
                 entry["color"] = color
-            entry["weight"] = round(lp.get("weight", {}).get("magnitude", 0) / 12700, 2)
+            entry["weight"] = round(lp.get("weight", {}).get("magnitude", 0) / _auth.EMU_PER_PT, 2)
         elif kind == "elementGroup":
             children = el["elementGroup"].get("children", [])
             entry["childCount"] = len(children)
@@ -300,7 +300,7 @@ def build_template(pres: dict, name: str, source_url: str) -> dict:
         "__colors_note": "masters[0] の colorScheme。マスターが複数ある場合は masters[].colors も確認すること",
         "masters": master_list,
         "pageNumber": page_number,
-        "__pageNumber_note": "Slides API は SLIDE_NUMBER プレースホルダを生成できないため、build-deck.py がこのスタイルでテキストボックスを描画する",
+        "__pageNumber_note": "Slides API は SLIDE_NUMBER プレースホルダを生成できないため、build_deck.py がこのスタイルでテキストボックスを描画する",
         "masterDecorations": master_info.get("decorations", []),
         "__masterDecorations_note": "マスターが全ページに敷く要素（ロゴ・著作権表記等）。複製方式では自動継承されるので自前描画しないこと",
         "roles": roles,

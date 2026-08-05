@@ -1,0 +1,464 @@
+{
+  "name": "aixdevops",
+  "displayName": "AI x DevOps Study Theme",
+  "version": "1.0.0",
+  "description": "AI x DevOps Study 向けテーマ。Deep Purple / Cyan 基調のテック系パレット",
+  "source": "https://docs.google.com/presentation/d/13QHfp9pgTYvuVJzjiNIhaWbUozHLYPJ4A67b1418RzM/edit",
+  "master": {
+    "__comment": "=== マスターテンプレート ===",
+    "presentationId": "13QHfp9pgTYvuVJzjiNIhaWbUozHLYPJ4A67b1418RzM",
+    "presentationTitle": "AIxDevOps 自律型コーディングエージェントを用いた開発プロセスの最適化",
+    "masterObjectId": "g1b3a74d17bb_0_0",
+    "generationMode": "copy",
+    "__generationMode_note": "Drive API でマスターを複製してから createSlide(layoutId) でスライドを追加する。実装は google-slides-template スキルの scripts/build-deck.py にある",
+    "sampleSlideIds": [],
+    "counterpartTemplate": "~/.claude/skills/google-slides-template/templates/aixdevops.json",
+    "__counterpartTemplate_note": "~/.claude/skills/google-slides-template/templates/aixdevops.json を作れば複製方式に対応できる。手順は同スキルの SKILL.md Phase 1 を参照",
+    "__masterObjectId_note": "このプレゼンにはマスターが 2 つ同居している。g1b3a74d17bb_0_0 が AIxDevOps 共同ブランド（青の斜めデザイン + SCALAR|AIxDevOps ロックアップ）で本テーマが使うもの。g3f9599793cc_0_234 は別ファイルから貼り付けられた Scalar Slide Master 2026 のレイアウト群で、使わない",
+    "__sampleSlideIds_note": "元プレゼンは 24 枚の登壇資料スライドを含む。build-deck.py は複製後に実在するスライドを全て削除するため個別列挙は不要。正確な一覧は counterpartTemplate の existingSlideIds を参照"
+  },
+  "pageSize": {
+    "width": 9144000,
+    "height": 5143500,
+    "widthInches": 10.0,
+    "heightInches": 5.625,
+    "aspectRatio": "16:9",
+    "unit": "EMU"
+  },
+  "colors": {
+    "__comment": "=== Theme Colors — 実マスター (13QHfp9p… の M1) の colorScheme と一致 ===",
+    "dark1": "#0F172A",
+    "light1": "#FFFFFF",
+    "dark2": "#6B7280",
+    "light2": "#F9FAFB",
+    "accent1": "#63C045",
+    "accent2": "#EE2155",
+    "accent3": "#0985FD",
+    "accent4": "#FFEF24",
+    "accent5": "#2673BB",
+    "accent6": "#2673BB",
+    "__comment_semantic": "=== Semantic Aliases ===",
+    "primary": "#2673BB",
+    "primaryDark": "#004266",
+    "accent": "#63C045",
+    "success": "#63C045",
+    "textPrimary": "#000000",
+    "textTitle": "#0F172A",
+    "textOnDark": "#FFFFFF",
+    "textMuted": "#666666",
+    "__textMuted_note": "Changed from #808080 to #666666 for WCAG AA compliance (4.5:1 contrast ratio on white background). Original #808080 only achieves 3.9:1.",
+    "textSecondary": "#595959",
+    "background": "#FFFFFF",
+    "backgroundAlt": "#F9FAFB",
+    "surfaceLight": "#F0F4F8",
+    "border": "#6B7280",
+    "calloutBg": "#F0F4F8",
+    "calloutBorder": "#2673BB",
+    "cautionDark": "#6B5000",
+    "__comment_table": "=== Table Colors ===",
+    "tableHeader": "#2673BB",
+    "tableHeaderText": "#FFFFFF",
+    "tableDataCell": "#D3ECFF",
+    "tableRowHeader": "#C9DAF7",
+    "tableRowAlt": "#EEEEEE",
+    "__comment_semantic_fills": "=== Status Colors ===",
+    "highlightYellow": "#FFF1CC",
+    "successGreen": "#D9EAD3",
+    "successGreenDark": "#6AA84F",
+    "alertRed": "#F4CCCC",
+    "cautionYellow": "#BE9000",
+    "__comment_chart": "=== Chart Colors (accent order) ===",
+    "chart1": "#63C045",
+    "chart2": "#EE2155",
+    "chart3": "#0985FD",
+    "chart4": "#FFEF24",
+    "chart5": "#2673BB",
+    "__palette_note": "2026-07-29 に紫/シアンの独自パレットから実マスター準拠へ変更。AIxDevOps は Scalar との共同ブランドで、地色は Scalar ブルー #2673BB、アクセントは AIxDevOps ロックアップの緑 #63C045。旧パレット（紫 #5B21B6 / シアン #06B6D4）は theme.json.bak-20260729 に残っている",
+    "hyperlink": "#0000FF",
+    "followedHyperlink": "#FF00FF",
+    "__accent_note": "#63C045 は AIxDevOps ロックアップの緑。白背景で 2.29:1 と WCAG AA を大きく下回るため、本文テキストに使ってはならない。図形の塗り・アイコン・強調バーなど装飾用途に限る。緑で文字を書く必要がある場合は successGreenDark #6AA84F（4.06:1、大きい文字のみ AA）を検討し、本文は textPrimary / textTitle を使う",
+    "__primary_note": "#2673BB は表紙・中扉の地色（マスターの ACCENT5）。白文字との比は 4.94:1 で AA を満たす"
+  },
+  "fonts": {
+    "fontFaceTitle": "Noto Sans JP",
+    "fontFaceBody": "Noto Sans JP",
+    "fontFaceEn": "Arial",
+    "fontFaceMono": "Courier New",
+    "fontFaceAccent": "Century Gothic",
+    "fontFallback": "Noto Sans JP, Arial"
+  },
+  "fontSizes": {
+    "__comment": "=== Master-level defaults ===",
+    "coverTitle": 30,
+    "contentTitle": 26,
+    "sectionTitle": 24,
+    "masterTitle": 20,
+    "bodyLevel1": 16,
+    "bodyLevel2": 14,
+    "bodyLevel3": 12,
+    "bodyLevel4": 10,
+    "bodyLevel5": 8,
+    "__bodyLevel5_note": "8pt はマスターレベルの最小値。インフォグラフィクスでは 9pt 以上必須、10pt 以上推奨（infographic-patterns.md 参照）",
+    "slideNumber": 7,
+    "copyright": 7,
+    "__comment_actual": "=== Actual slide-level common sizes ===",
+    "bodyTextPrimary": 10,
+    "bodyTextSecondary": 12,
+    "bodyTextSmall": 8,
+    "bodyTextCompact": 9,
+    "subtitle": 14,
+    "finePrint": 7,
+    "__finePrint_note": "Changed from 6 to 7 to meet minimum footer font size (7pt). design-principles.md セクション8参照"
+  },
+  "fontWeights": {
+    "title": "bold",
+    "body": "normal"
+  },
+  "lineSpacing": {
+    "__comment": "Google Slides API lineSpacing はパーセント値（100=1行分）。日本語本文はこの値を 185-200 に上書きすること（design-principles.md セクション2参照）",
+    "title": 100,
+    "body": 115,
+    "bodyJapanese": 185
+  },
+  "layouts": {
+    "__layoutId_note": "layoutId は Scalar マスタースライドから抽出した値。独自マスターを作成した場合はそのプレゼンテーションの layoutId に差し替えること",
+    "COVER": {
+      "id": "Title Slide",
+      "layoutId": "g1b3a74d17bb_0_6",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": false,
+      "hasLogo": true,
+      "logoPosition": "top-right",
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 1.292,
+          "w": 8.906,
+          "h": 1.208
+        },
+        "subtitle": {
+          "x": 0.543,
+          "y": 2.616,
+          "w": 8.863,
+          "h": 0.464
+        },
+        "body": {
+          "x": 5.891,
+          "y": 3.436,
+          "w": 3.587,
+          "h": 1.761
+        },
+        "logo": {
+          "x": 8.297,
+          "y": 0.419,
+          "w": 1.181,
+          "h": 0.342
+        }
+      },
+      "decorative": {
+        "bottomBand": {
+          "x": 0.0,
+          "y": 3.667,
+          "w": 10.0,
+          "h": 1.958,
+          "type": "image"
+        }
+      },
+      "__layoutId_note": "AIxDevOps マスター (M1) の TITLE_SLIDE"
+    },
+    "SECTION": {
+      "id": "Title and 2 columns 1",
+      "layoutId": "g3dd14cbaf7b_0_30",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": true,
+      "hasLogo": true,
+      "logoPosition": "top-left",
+      "elements": {
+        "title": {
+          "x": 1.438,
+          "y": 2.039,
+          "w": 7.125,
+          "h": 0.59
+        },
+        "body": {
+          "x": 1.438,
+          "y": 2.759,
+          "w": 7.125,
+          "h": 1.088
+        },
+        "separator": {
+          "x": 1.438,
+          "y": 2.686,
+          "w": 8.562,
+          "h": 0,
+          "color": "primary",
+          "weight": 2.25
+        },
+        "logo": {
+          "x": 0.118,
+          "y": 0.179,
+          "w": 1.181,
+          "h": 0.342
+        },
+        "slideNumber": {
+          "x": 9.569,
+          "y": 5.378,
+          "w": 0.264,
+          "h": 0.219
+        }
+      },
+      "decorative": {
+        "bottomBand": {
+          "x": 0.0,
+          "y": 3.667,
+          "w": 10.0,
+          "h": 1.958,
+          "type": "image"
+        }
+      },
+      "__layoutId_note": "AIxDevOps マスター (M1) の TITLE_AND_2_COLUMNS_1"
+    },
+    "CONTENT": {
+      "id": "Title and body",
+      "layoutId": "g3dd14cbaf7b_0_3",
+      "background": "background",
+      "hasFooter": true,
+      "hasPageNumber": true,
+      "hasLogo": true,
+      "logoPosition": "footer-left",
+      "usageCount": 89,
+      "elements": {
+        "title": {
+          "x": 0.323,
+          "y": 0.303,
+          "w": 9.354,
+          "h": 0.437
+        },
+        "subtitle": {
+          "x": 0.351,
+          "y": 0.658,
+          "w": 8.964,
+          "h": 0.366
+        },
+        "contentTop": {
+          "y": 0.787
+        },
+        "contentBottom": {
+          "y": 5.208
+        },
+        "contentHeight": 4.421,
+        "logo": {
+          "x": 0.323,
+          "y": 5.208,
+          "w": 0.952,
+          "h": 0.244
+        },
+        "slideNumber": {
+          "x": 9.077,
+          "y": 5.246,
+          "w": 0.6,
+          "h": 0.168
+        }
+      },
+      "__layoutId_note": "AIxDevOps マスター (M1) の TITLE_AND_BODY"
+    },
+    "CONTENT_ACCENT": {
+      "id": "Default",
+      "layoutId": null,
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": true,
+      "hasLogo": false,
+      "usageCount": 8,
+      "elements": {
+        "accentBar": {
+          "x": 0.367,
+          "y": 0.059,
+          "w": 0.054,
+          "h": 0.398,
+          "fill": "primary"
+        },
+        "title": {
+          "x": 0.5,
+          "y": 0.126,
+          "w": 9.0,
+          "h": 0.351
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.96,
+          "w": 9.0,
+          "h": 4.068
+        },
+        "slideNumber": {
+          "x": 9.611,
+          "y": 5.378,
+          "w": 0.222,
+          "h": 0.219
+        }
+      },
+      "__layoutId_note": "AIxDevOps マスターに該当レイアウトが無いため null のまま。CONTENT / BLANK で代替するか、マスター側にレイアウトを追加すること"
+    },
+    "TITLE_ONLY": {
+      "id": "Title Only",
+      "layoutId": "g3d3e62ccb52_0_0",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": true,
+      "hasLogo": false,
+      "usageCount": 21,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.247,
+          "w": 9.0,
+          "h": 0.351
+        },
+        "slideNumber": {
+          "x": 9.611,
+          "y": 5.378,
+          "w": 0.222,
+          "h": 0.219
+        }
+      },
+      "__layoutId_note": "AIxDevOps マスター (M1) の TITLE_ONLY"
+    },
+    "BLANK": {
+      "id": "DEFAULT",
+      "layoutId": "g50b70684e380feb_213",
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": true,
+      "hasLogo": false,
+      "usageCount": 6,
+      "elements": {
+        "slideNumber": {
+          "x": 9.611,
+          "y": 5.378,
+          "w": 0.222,
+          "h": 0.219
+        }
+      },
+      "__layoutId_note": "AIxDevOps マスター (M1) の DEFAULT"
+    },
+    "CLOSING": {
+      "id": "Close Page",
+      "layoutId": null,
+      "background": "background",
+      "hasFooter": false,
+      "hasPageNumber": false,
+      "hasLogo": true,
+      "logoPosition": "center",
+      "elements": {
+        "logo": {
+          "x": 3.307,
+          "y": 2.323,
+          "w": 3.385,
+          "h": 0.979
+        }
+      },
+      "decorative": {
+        "bottomBand": {
+          "x": 0.0,
+          "y": 3.667,
+          "w": 10.0,
+          "h": 1.958,
+          "type": "image"
+        }
+      },
+      "__layoutId_note": "AIxDevOps マスターに該当レイアウトが無いため null のまま。CONTENT / BLANK で代替するか、マスター側にレイアウトを追加すること"
+    }
+  },
+  "masterFooter": {
+    "logo": {
+      "x": 0.118,
+      "y": 5.197,
+      "w": 1.181,
+      "h": 0.342
+    },
+    "copyright": {
+      "x": 2.0,
+      "y": 5.378,
+      "w": 6.083,
+      "h": 0.219,
+      "text": "© 2026 Scalar, inc.",
+      "font": "Arial",
+      "fontSize": 7,
+      "color": "textMuted",
+      "alignment": "CENTER"
+    },
+    "slideNumber": {
+      "x": 9.569,
+      "y": 5.378,
+      "w": 0.264,
+      "h": 0.219,
+      "font": "Arial",
+      "fontSize": 7,
+      "color": "textMuted",
+      "alignment": "END"
+    },
+    "__inherited_note": "複製方式ではマスターがこのフッターを描画するため自前描画は不要。マスター実物の色は #808080 だが、白背景で 3.9:1 と WCAG AA 未達のため、自前描画する場合は textMuted (#666666) を使う",
+    "__lockup_note": "マスター下部に 'AIxDevOps' ロックアップ（Fira Code 12pt / accent1 #63C045）と 区切り線（accent5 #2673BB / 0.75pt）がある。これらも複製で自動継承される"
+  },
+  "columnLayouts": {
+    "twoColumn": {
+      "leftX": 0.98,
+      "leftW": 3.67,
+      "gap": 0.69,
+      "rightX": 5.34,
+      "rightW": 3.67
+    }
+  },
+  "borders": {
+    "thin": {
+      "weight": 0.75,
+      "weightEMU": 9525
+    },
+    "medium": {
+      "weight": 1.5,
+      "weightEMU": 19050
+    },
+    "heavy": {
+      "weight": 2.25,
+      "weightEMU": 28575
+    },
+    "defaultColor": "border"
+  },
+  "tableStyle": {
+    "headerFill": "tableHeader",
+    "headerTextColor": "tableHeaderText",
+    "headerFontSize": 10,
+    "headerBold": true,
+    "dataCellFill": "tableDataCell",
+    "rowHeaderFill": "tableRowHeader",
+    "altRowFill": "tableRowAlt",
+    "cellFont": "Arial",
+    "cellFontSize": 10,
+    "borderColor": "border",
+    "borderWeight": 0.75
+  },
+  "pptxScheme": {
+    "dk1": "0F172A",
+    "lt1": "FFFFFF",
+    "dk2": "6B7280",
+    "lt2": "F9FAFB",
+    "accent1": "63C045",
+    "accent2": "EE2155",
+    "accent3": "0985FD",
+    "accent4": "FFEF24",
+    "accent5": "2673BB",
+    "accent6": "2673BB",
+    "hlink": "0000FF",
+    "folHlink": "FF00FF"
+  },
+  "pptxFonts": {
+    "__comment": "PPTX エクスポート時のフォントマッピング用。Google Slides スキルでは直接使用しないが、scalar-slides スキル（PPTX 生成）との互換性のために保持",
+    "majorLatin": "Noto Sans JP",
+    "majorEastAsia": "Noto Sans JP",
+    "minorLatin": "M PLUS 1p",
+    "minorEastAsia": "M PLUS 1p"
+  },
+  "__extraLayouts_note": "AIxDevOps マスターは 2カラム / 3カラム（各・中央線あり）のレイアウトを持つ。これらは本ファイルの標準ロールに対応が無いため、複製方式で使う場合は counterpartTemplate 側の TWO_COLUMN / TWO_COLUMN_LINE / THREE_COLUMN / THREE_COLUMN_LINE ロールを指定する"
+}

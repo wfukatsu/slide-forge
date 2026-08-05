@@ -1,0 +1,569 @@
+{
+  "name": "scalar-2026",
+  "displayName": "Scalar Slide Master 2026",
+  "sourceUrl": "1shiZp7PWWMcpD5Yz2NfZ9Hmd5plZL_C_5ql3mK8yGsI",
+  "presentationId": "1shiZp7PWWMcpD5Yz2NfZ9Hmd5plZL_C_5ql3mK8yGsI",
+  "generationMode": "copy",
+  "pageSize": {
+    "widthInches": 10.0,
+    "heightInches": 5.625,
+    "aspectRatio": "1.778:1"
+  },
+  "existingSlideIds": [
+    "g3b4087f65e2_0_0",
+    "g353093c97b1_0_10",
+    "g24a58f1ca40_1_60"
+  ],
+  "__existingSlideIds_note": "複製直後に削除するテンプレート同梱スライド。テンプレート側を編集したら再解析すること",
+  "colors": {
+    "dark1": "#0F172A",
+    "light1": "#FFFFFF",
+    "dark2": "#6B7280",
+    "light2": "#F9FAFB",
+    "accent1": "#63C045",
+    "accent2": "#EE2155",
+    "accent3": "#0985FD",
+    "accent4": "#FFEF24",
+    "accent5": "#2673BB",
+    "accent6": "#2673BB",
+    "hyperlink": "#0000FF",
+    "followed_hyperlink": "#FF00FF",
+    "text1": "#0F172A",
+    "background1": "#FFFFFF",
+    "text2": "#F9FAFB",
+    "background2": "#6B7280"
+  },
+  "__colors_note": "masters[0] の colorScheme。マスターが複数ある場合は masters[].colors も確認すること",
+  "masters": [
+    {
+      "objectId": "g1b3a74d17bb_0_0",
+      "displayName": "Scalar Master Slide",
+      "colors": {
+        "dark1": "#0F172A",
+        "light1": "#FFFFFF",
+        "dark2": "#6B7280",
+        "light2": "#F9FAFB",
+        "accent1": "#63C045",
+        "accent2": "#EE2155",
+        "accent3": "#0985FD",
+        "accent4": "#FFEF24",
+        "accent5": "#2673BB",
+        "accent6": "#2673BB",
+        "hyperlink": "#0000FF",
+        "followed_hyperlink": "#FF00FF",
+        "text1": "#0F172A",
+        "background1": "#FFFFFF",
+        "text2": "#F9FAFB",
+        "background2": "#6B7280"
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g1b3a74d17bb_0_4",
+          "x": 2.0,
+          "y": 5.378,
+          "w": 6.083,
+          "h": 0.219,
+          "fill": "#FFFFFF",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "image",
+          "objectId": "g1b3a74d17bb_0_5",
+          "x": 0.118,
+          "y": 5.197,
+          "w": 1.181,
+          "h": 0.342
+        }
+      ]
+    }
+  ],
+  "pageNumber": {
+    "font": "Arial",
+    "fontSize": 7,
+    "color": "#666666",
+    "align": "END",
+    "startAt": 1
+  },
+  "__pageNumber_note": "Slides API は SLIDE_NUMBER プレースホルダを生成できないため、build-deck.py がこのスタイルでテキストボックスを描画する",
+  "masterDecorations": [
+    {
+      "type": "shape",
+      "objectId": "g1b3a74d17bb_0_4",
+      "x": 2.0,
+      "y": 5.378,
+      "w": 6.083,
+      "h": 0.219,
+      "fill": "#FFFFFF",
+      "shapeType": "RECTANGLE"
+    },
+    {
+      "type": "image",
+      "objectId": "g1b3a74d17bb_0_5",
+      "x": 0.118,
+      "y": 5.197,
+      "w": 1.181,
+      "h": 0.342
+    }
+  ],
+  "__masterDecorations_note": "マスターが全ページに敷く要素（ロゴ・著作権表記等）。複製方式では自動継承されるので自前描画しないこと",
+  "roles": {
+    "COVER": "TITLE_SLIDE",
+    "CONTENT": "DEFAULT_PROPOSAL",
+    "TITLE_ONLY": "TITLE_ONLY_PROPOSAL",
+    "BLANK": "WHITE",
+    "SECTION": "SLIDE_SUB_SECTION",
+    "CLOSING": "CLOSE_PAGE",
+    "CONTENT_PRESENTATION": "DEFAULT_PRESENTATION",
+    "TITLE_ONLY_PRESENTATION": "TITLE_ONLY_PRESENTATION"
+  },
+  "__roles_note": "人間確認済み (2026-07-29)。Proposal 系＝提案書・営業資料、Presentation 系＝登壇・勉強会",
+  "roleCandidates": {
+    "COVER": [
+      "TITLE_SLIDE"
+    ],
+    "CONTENT": [
+      "DEFAULT_PROPOSAL",
+      "DEFAULT_PRESENTATION"
+    ],
+    "TITLE_ONLY": [
+      "TITLE_ONLY_PROPOSAL",
+      "TITLE_ONLY_PRESENTATION"
+    ],
+    "BLANK": [
+      "WHITE"
+    ],
+    "SECTION": [
+      "SLIDE_SUB_SECTION"
+    ],
+    "CLOSING": [
+      "CLOSE_PAGE"
+    ]
+  },
+  "layouts": {
+    "TITLE_SLIDE": {
+      "layoutId": "g1b3a74d17bb_0_6",
+      "displayName": "Title Slide",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "SUBTITLE",
+        "BODY"
+      ],
+      "hasPageNumber": false,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 1.292,
+          "w": 8.906,
+          "h": 1.208,
+          "align": "START"
+        },
+        "subtitle": {
+          "x": 0.543,
+          "y": 2.616,
+          "w": 8.863,
+          "h": 0.464
+        },
+        "body": {
+          "x": 4.868,
+          "y": 3.436,
+          "w": 3.587,
+          "h": 1.761,
+          "align": "END"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 30,
+          "bold": false,
+          "color": "theme:DARK1"
+        },
+        "subtitle": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false,
+          "color": "theme:DARK1"
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "bold": false,
+          "color": "theme:DARK1"
+        }
+      },
+      "decorations": [
+        {
+          "type": "image",
+          "objectId": "g34db0b1da2c_0_2",
+          "x": 0.0,
+          "y": 3.667,
+          "w": 10.0,
+          "h": 1.958
+        },
+        {
+          "type": "image",
+          "objectId": "g25283c032fb_0_1",
+          "x": 8.297,
+          "y": 0.419,
+          "w": 1.181,
+          "h": 0.342
+        }
+      ]
+    },
+    "DEFAULT_PROPOSAL": {
+      "layoutId": "g1b3a74d17bb_0_19",
+      "displayName": "Default - Proposal",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "SLIDE_NUMBER",
+        "BODY"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.126,
+          "w": 9.0,
+          "h": 0.351,
+          "align": "START"
+        },
+        "slideNumber": {
+          "x": 9.611,
+          "y": 5.378,
+          "w": 0.222,
+          "h": 0.219,
+          "align": "END"
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.96,
+          "w": 9.0,
+          "h": 4.068,
+          "align": "START"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 20,
+          "bold": false,
+          "color": "theme:DARK1"
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 20,
+          "bold": false,
+          "color": "theme:DARK1"
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g241bdc1e498_0_93",
+          "x": 0.367,
+          "y": 0.059,
+          "w": 0.054,
+          "h": 0.398,
+          "fill": "theme:ACCENT6",
+          "shapeType": "RECTANGLE"
+        }
+      ]
+    },
+    "TITLE_ONLY_PROPOSAL": {
+      "layoutId": "g1b3a74d17bb_0_53",
+      "displayName": "Title Only - Proposal",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "SLIDE_NUMBER"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.5,
+          "y": 0.126,
+          "w": 9.0,
+          "h": 0.351,
+          "align": "START"
+        },
+        "slideNumber": {
+          "x": 9.611,
+          "y": 5.378,
+          "w": 0.222,
+          "h": 0.219,
+          "align": "END"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 20,
+          "bold": false,
+          "color": "theme:DARK1"
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g241bdc1e498_0_95",
+          "x": 0.367,
+          "y": 0.059,
+          "w": 0.054,
+          "h": 0.398,
+          "fill": "theme:ACCENT6",
+          "shapeType": "RECTANGLE"
+        }
+      ]
+    },
+    "WHITE": {
+      "layoutId": "g34f87d91a42_0_4",
+      "displayName": "White",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "SLIDE_NUMBER"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "slideNumber": {
+          "x": 9.611,
+          "y": 5.378,
+          "w": 0.222,
+          "h": 0.219,
+          "align": "END"
+        }
+      },
+      "textStyles": {},
+      "decorations": []
+    },
+    "SLIDE_SUB_SECTION": {
+      "layoutId": "g1b3a74d17bb_0_23",
+      "displayName": "Slide Sub Section",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "SLIDE_NUMBER",
+        "BODY"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 1.438,
+          "y": 2.039,
+          "w": 7.125,
+          "h": 0.59,
+          "align": "START"
+        },
+        "slideNumber": {
+          "x": 9.569,
+          "y": 5.378,
+          "w": 0.264,
+          "h": 0.219,
+          "align": "END"
+        },
+        "body": {
+          "x": 1.438,
+          "y": 2.759,
+          "w": 7.125,
+          "h": 1.088,
+          "align": "START"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 24,
+          "bold": false,
+          "color": "theme:DARK1"
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 14,
+          "bold": false,
+          "color": "theme:DARK1"
+        }
+      },
+      "decorations": [
+        {
+          "type": "image",
+          "objectId": "g35125b94a44_0_452",
+          "x": 0.0,
+          "y": 3.667,
+          "w": 10.0,
+          "h": 1.958
+        },
+        {
+          "type": "line",
+          "objectId": "g1b3a74d17bb_0_27",
+          "x": 1.438,
+          "y": 2.686,
+          "w": 8.562,
+          "h": 3.281,
+          "color": "theme:ACCENT5",
+          "weight": 2.25
+        },
+        {
+          "type": "image",
+          "objectId": "g35125b94a44_0_454",
+          "x": 0.118,
+          "y": 0.179,
+          "w": 1.181,
+          "h": 0.342
+        }
+      ]
+    },
+    "CLOSE_PAGE": {
+      "layoutId": "g1b3a74d17bb_0_31",
+      "displayName": "Close Page",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [],
+      "hasPageNumber": false,
+      "elements": {},
+      "textStyles": {},
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g1b3a74d17bb_0_32",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT1",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "image",
+          "objectId": "g25283c032fb_0_2",
+          "x": 3.307,
+          "y": 2.323,
+          "w": 3.385,
+          "h": 0.979
+        },
+        {
+          "type": "image",
+          "objectId": "g34db0b1da2c_0_1",
+          "x": 0.0,
+          "y": 3.667,
+          "w": 10.0,
+          "h": 1.958
+        }
+      ]
+    },
+    "TITLE_ONLY_PRESENTATION": {
+      "layoutId": "g34f87d91a42_0_298",
+      "displayName": "Title Only - Presentation",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "SLIDE_NUMBER"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.323,
+          "y": 0.303,
+          "w": 9.354,
+          "h": 0.437,
+          "align": "CENTER"
+        },
+        "slideNumber": {
+          "x": 9.077,
+          "y": 5.246,
+          "w": 0.6,
+          "h": 0.168
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontSize": 26,
+          "color": "theme:DARK1"
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g34f87d91a42_0_299",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT1",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "image",
+          "objectId": "g34f87d91a42_0_302",
+          "x": 0.323,
+          "y": 5.208,
+          "w": 0.952,
+          "h": 0.244
+        }
+      ]
+    },
+    "DEFAULT_PRESENTATION": {
+      "layoutId": "g36dd4012440_0_5",
+      "displayName": "Default - Presentation",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "SLIDE_NUMBER",
+        "BODY"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.323,
+          "y": 0.303,
+          "w": 9.354,
+          "h": 0.437,
+          "align": "CENTER"
+        },
+        "slideNumber": {
+          "x": 9.077,
+          "y": 5.246,
+          "w": 0.6,
+          "h": 0.168
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.96,
+          "w": 9.0,
+          "h": 4.068,
+          "align": "START"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontSize": 26,
+          "color": "theme:DARK1"
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 20,
+          "bold": false,
+          "color": "theme:DARK1"
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g36dd4012440_0_6",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT1",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "image",
+          "objectId": "g36dd4012440_0_9",
+          "x": 0.323,
+          "y": 5.208,
+          "w": 0.952,
+          "h": 0.244
+        }
+      ]
+    }
+  }
+}

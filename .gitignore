@@ -1,17 +1,24 @@
-# OAuth 資格情報とトークン（絶対にコミットしない）
+# Python
+__pycache__/
+*.py[cod]
+.venv
+
+# OAuth credentials — never commit
 config/
+!config/.gitkeep
 **/credentials.json
 **/token.json
 **/token.json.bak*
 
-# 生成物
+# Transient render caches and QA output
+cache/
+!cache/.gitkeep
 out/
-*.png
+!out/.gitkeep
 
-# Python
-.venv/
-__pycache__/
-*.pyc
+# Vendor cloud icons — not redistributed; restore with scripts/fetch_cloud_icons.py
+assets/cloud-icons/*
+!assets/cloud-icons/README.md
 
-# OS
+# macOS
 .DS_Store

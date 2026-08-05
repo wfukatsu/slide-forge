@@ -1,0 +1,60 @@
+{
+  "defaults": {
+    "bodyFontSize": 13,
+    "bodyLineSpacing": 115,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 3
+  },
+  "slides": [
+    {
+      "layout": "COVER",
+      "title": "AI Agent のための RAG System",
+      "subtitle": "#2 Agent 時代の RAG",
+      "body": "全2回の技術勉強会（第2回・60分）\n2026年8月\n株式会社Scalar",
+      "notes": "全2回の第2回。前編で作った「良い検索」を、Agentから安全に使えるようにするまでを扱う。",
+      "figures": [
+        {
+          "type": "band",
+          "x": 6.4,
+          "y": 3.442,
+          "w": 3.15,
+          "h": 1.772,
+          "fill": "#FFFFFF",
+          "kind": "RECTANGLE"
+        },
+        {
+          "type": "icon_row",
+          "x": 6.58,
+          "y": 3.928,
+          "w": 2.79,
+          "items": [
+            "bot",
+            "network",
+            "shield"
+          ],
+          "size": 0.8,
+          "color": "#2673BB"
+        }
+      ]
+    },
+    {
+      "layout": "CONTENT",
+      "title": "前編のふりかえりと後編の問い",
+      "body": [
+        "【前編でおさえたこと】",
+        "  ・RAG は5工程（Query / Retriever / Vector / Prompt / Answer）に分解して改善する",
+        "  ・情報量を増やすほど良い訳ではない。ハードネガティブが判断を狂わせる",
+        "  ・Advanced RAG＝Query rewrite / Hybrid search / Rerank で検索品質を上げる",
+        "  ・権限漏れと古い情報は検索アルゴリズムでは解けない。データ設計の問題",
+        "  ・日本語では前処理が最大の変数。Hybrid 検索と評価セットを標準にする",
+        "",
+        "【後編で扱う4つの問い】",
+        "  1. 検索が外れたとき、どう気づいてどう回復するか（Self-RAG / CRAG）",
+        "  2. 断片検索では届かない問いにどう答えるか（RAPTOR / GraphRAG / Multi-Hop）",
+        "  3. Agent から RAG をどう呼ばせるか（RAG as Tool / Agentic RAG / MCP）",
+        "  4. 安全に運用し、改善し続けるにはどうするか（セキュリティ / 評価）"
+      ],
+      "notes": "前編は「良い検索を作る」話。後編は「検索を制御し、Agentに安全に使わせ、測り続ける」話。"
+    }
+  ]
+}

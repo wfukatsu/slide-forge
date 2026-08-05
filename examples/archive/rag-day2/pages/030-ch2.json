@@ -1,0 +1,411 @@
+[
+  {
+    "layout": "SECTION",
+    "title": "RAPTOR / GraphRAG",
+    "subtitle": "第2章\n長文・全体傾向・関係探索に強い RAG",
+    "notes": "第2章。断片検索の限界を、インデックスの構造そのものを変えることで超える手法。",
+    "figures": [
+      {
+        "type": "band",
+        "x": 0.5,
+        "y": 2.85,
+        "w": 3.25,
+        "h": 2.34,
+        "fill": "#FFFFFF",
+        "kind": "RECTANGLE"
+      },
+      {
+        "type": "icon_grid",
+        "x": 0.74,
+        "y": 3.04,
+        "w": 2.77,
+        "items": [
+          "stack",
+          "network",
+          "documents",
+          "folder"
+        ],
+        "cols": 2,
+        "size": 0.8,
+        "rowGap": 0.36,
+        "color": "#2673BB"
+      }
+    ]
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "断片検索では届かない問いがある",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Chunk 検索だけでは、長文の要約・全体傾向・関係の横断探索に弱い。検索対象を「断片」から「構造」へ拡張する必要がある。"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 2.0,
+        "items": [
+          [
+            "Advanced RAG の得意領域",
+            "質問に近い断片を探す\nQuery rewrite / Hybrid / Rerank で精度を上げる"
+          ],
+          [
+            "残る課題",
+            "長文の全体像が見えにくい\n複数文書にまたがる関係を辿りにくい\n「傾向」や「構造」の質問に弱い"
+          ],
+          [
+            "構造化 RAG の方向性",
+            "RAPTOR：要約の階層木\nGraphRAG：エンティティ・関係・コミュニティ"
+          ]
+        ],
+        "titleSize": 10.5,
+        "bodySize": 9
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.89,
+        "w": 9.0,
+        "h": 1.15,
+        "text": "問いの種類が変わる。「この文書の要点は？」「全体として何が言える？」「A社とB社の関係は？」「どの論点がどの部署に影響する？」——これらは断片を1個取ってきても答えられない。"
+      }
+    ],
+    "notes": "「規程集の中の該当条項を探す」はAdvanced RAGで足りる。「規程全体で何が変わったか」は足りない。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "RAPTOR：階層的な要約ツリー",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Recursive Abstractive Processing for Tree-Organized Retrieval。下位の詳細 Chunk をクラスタリングして LLM で要約し、これを再帰的に繰り返す。"
+      },
+      {
+        "type": "pyramid",
+        "x": 0.8,
+        "y": 1.5,
+        "w": 5.0,
+        "h": 2.5,
+        "items": [
+          "Root",
+          "上位要約",
+          "クラスタ要約",
+          "Chunk（原文）"
+        ],
+        "size": 10
+      },
+      {
+        "type": "cards",
+        "x": 6.0,
+        "y": 1.5,
+        "w": 3.5,
+        "h": 2.5,
+        "items": [
+          [
+            "考え方",
+            "文書・文書群の抽象度別インデックスを作る"
+          ],
+          [
+            "検索時",
+            "詳細 Chunk だけでなく、上位要約も検索対象にする"
+          ]
+        ],
+        "titleSize": 10.5,
+        "bodySize": 9
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.35,
+        "w": 9.0,
+        "source": "RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval（Sarthi et al., 2024 / arXiv:2401.18059）"
+      }
+    ],
+    "notes": "ピラミッドの下が原文チャンク、上に行くほど抽象度が上がる。質問の抽象度に応じてどの層を引くかが変わる。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "RAPTOR の処理フローと注意点",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Indexing と Retrieval の両方で抽象度の異なる情報を扱う。Indexing は5工程、Retrieval は複数階層から取得する。"
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.45,
+        "w": 9.0,
+        "h": 0.68,
+        "items": [
+          "1. 分割",
+          "2. 埋め込み",
+          "3. クラスタ",
+          "4. 要約",
+          "5. 再帰"
+        ],
+        "size": 10.5
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 2.4,
+        "w": 9.0,
+        "h": 1.37,
+        "items": [
+          [
+            "向いている質問",
+            "長い報告書の要約\n章をまたぐ論点整理\n文書群の大きなテーマ把握"
+          ],
+          [
+            "注意点",
+            "要約の誤りが上位に伝播する\n更新時に再構築コストがかかる\n原文への追跡性が重要になる"
+          ],
+          [
+            "設計ポイント",
+            "階層ごとに引用元を保持する\n要約品質を評価する\n差分更新の戦略を持つ"
+          ]
+        ],
+        "titleSize": 10.5,
+        "bodySize": 9
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.89,
+        "w": 9.0,
+        "h": 1.15,
+        "text": "最大のリスクは「要約の誤りが上位に伝播する」こと。上位ノードは原文ではないため、必ず引用元を保持して原文まで戻れるようにする。"
+      }
+    ],
+    "notes": "要約ツリーは生成物なので、原文と違って「間違いうる」。監査可能性のために引用元の保持が必須。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "GraphRAG：知識グラフとして検索",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "文書からエンティティと関係を抽出し、ノード・エッジの知識グラフを構築する。さらに関連ノードの集まりをコミュニティ化し、要約を作る。"
+      },
+      {
+        "type": "hub",
+        "x": 0.6,
+        "y": 1.45,
+        "w": 5.0,
+        "h": 2.7,
+        "center": "A社",
+        "items": [
+          "製品X",
+          "規制Y",
+          "リスクR",
+          "部署Z",
+          "顧客B"
+        ],
+        "size": 9.5
+      },
+      {
+        "type": "cards",
+        "x": 6.0,
+        "y": 1.45,
+        "w": 3.5,
+        "h": 2.7,
+        "items": [
+          [
+            "作るもの",
+            "エンティティ（人・組織・製品・制約）と関係のグラフ"
+          ],
+          [
+            "答えられる問い",
+            "「A社と規制Yの関係は？」\n「部署Zに影響するリスクは？」\n「全体で頻出する論点は？」"
+          ]
+        ],
+        "titleSize": 10.5,
+        "bodySize": 8.5
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.4,
+        "w": 9.0,
+        "source": "Microsoft GraphRAG documentation / GitHub, Microsoft Research GraphRAG materials"
+      }
+    ],
+    "notes": "ベクトル検索では「関係」を辿れない。A社→製品X→規制Y のような経路探索がGraphRAGの独自価値。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "GraphRAG の処理フローと検索モード",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "テキスト断片ではなく、関係とコミュニティを検索コンテキストにする。構築は4工程、検索は3モードを使い分ける。"
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.45,
+        "w": 9.0,
+        "h": 0.68,
+        "items": [
+          "Raw Text",
+          "エンティティ抽出",
+          "Knowledge Graph",
+          "Community Detection",
+          "Community Summaries"
+        ],
+        "size": 9.5
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 2.4,
+        "w": 9.0,
+        "h": 1.7,
+        "items": [
+          [
+            "Global Search",
+            "コミュニティ要約を横断し、全体傾向・主要テーマ・比較を回答する"
+          ],
+          [
+            "Local Search",
+            "特定エンティティ周辺のノード・エッジ・原文を取得し、関係を深掘りする"
+          ],
+          [
+            "Hybrid / Agentic",
+            "必要に応じてベクトル検索、グラフ探索、原文参照を組み合わせる"
+          ]
+        ],
+        "titleSize": 10.5,
+        "bodySize": 9
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.3,
+        "w": 9.0,
+        "source": "Microsoft GraphRAG docs: graph extraction, community hierarchy, summaries, global/local search"
+      }
+    ],
+    "notes": "Global と Local の使い分けが実装の勘所。「全体として」はGlobal、「この会社について」はLocal。"
+  },
+  {
+    "layout": "TWO_COLUMN",
+    "title": "RAPTOR と GraphRAG の使い分け",
+    "bodies": [
+      [
+        "【RAPTOR：長文・階層要約に強い】",
+        "",
+        "・文書／文書群を木構造にする",
+        "・抽象度別に検索できる",
+        "・「章をまたぐ要約」「全体像」に向く",
+        "・要約品質と更新コストが課題",
+        "",
+        "例：200ページの報告書から「結局この案件のリスクは何か」を答える"
+      ],
+      [
+        "【GraphRAG：関係探索・全体傾向に強い】",
+        "",
+        "・知識をノード／エッジにする",
+        "・関係経路や近傍探索ができる",
+        "・「誰が何に影響するか」に向く",
+        "・抽出精度とグラフ更新が課題",
+        "",
+        "例：新しい規制が、どの製品・どの契約・どの部署に波及するかを辿る"
+      ]
+    ],
+    "bodyFontSize": 11.5,
+    "notes": "共通して重要なのは、原文トレース・権限・鮮度・評価・差分更新。どちらも索引が生成物である点は同じ。",
+    "bodyLineSpacing": 113,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 1.5
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "どの RAG を選ぶか（質問から逆算）",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "手法から選ぶのではなく、ユースケースの問いから逆算する。実務では併用が多い。"
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.45,
+        "w": 9.0,
+        "headers": [
+          "質問の性質",
+          "推奨アプローチ",
+          "理由"
+        ],
+        "rows": [
+          [
+            "単一文書の該当箇所を探す",
+            "Advanced RAG",
+            "Hybrid search + Rerank で十分なことが多い"
+          ],
+          [
+            "長文・章をまたぐ要約",
+            "RAPTOR",
+            "抽象度の異なる要約を検索できる"
+          ],
+          [
+            "全体傾向・主要テーマ",
+            "RAPTOR / GraphRAG",
+            "階層要約またはコミュニティ要約が効く"
+          ],
+          [
+            "人物・組織・製品・リスクの関係",
+            "GraphRAG",
+            "ノード・エッジで関係を辿れる"
+          ],
+          [
+            "権限・鮮度・監査が重要",
+            "データ基盤 + RAG",
+            "索引更新とアクセス制御を一貫管理する"
+          ]
+        ],
+        "colWidths": [
+          2,
+          1.5,
+          3
+        ],
+        "size": 9.5,
+        "aligns": [
+          "START",
+          "START",
+          "START"
+        ]
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "順序は「まず Advanced RAG で安定化 → 長文なら RAPTOR → 関係探索なら GraphRAG」。最初から構造化 RAG を作らない。"
+      }
+    ],
+    "notes": "構造化RAGは索引の構築・更新コストが高い。Advanced RAGで足りるかを先に確かめる。"
+  }
+]

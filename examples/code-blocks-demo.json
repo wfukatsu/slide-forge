@@ -1,0 +1,46 @@
+{
+  "title": "コードブロックのカタログ（code_block の動く実例）",
+  "slides": [
+    {
+      "layout": "TITLE_ONLY",
+      "title": "Java: 型・メソッド・文字列・コメントを塗り分ける",
+      "figures": [
+        {
+          "type": "code_block",
+          "x": 0.5, "y": 1.1, "w": 6.1, "h": 2.1,
+          "lang": "java",
+          "code": "DistributedTransaction tx = manager.begin();  // 開始\ntry {\n  tx.put(Put.newBuilder()\n      .namespace(\"order\").table(\"orders\")\n      .partitionKey(Key.ofInt(\"order_id\", 10))\n      .textValue(\"status\", \"PAID\").build());\n  tx.commit();\n} catch (TransactionException e) {\n  tx.rollback();\n}"
+        },
+        {
+          "type": "cards",
+          "x": 6.85, "y": 1.1, "w": 2.65, "h": 2.1,
+          "items": [["解説", "型は青緑、メソッドは黄、文字列は橙、コメントは緑"]]
+        }
+      ]
+    },
+    {
+      "layout": "TITLE_ONLY",
+      "title": "GraphQL / JSON / bash も同じ書き方で使える",
+      "figures": [
+        {
+          "type": "code_block",
+          "x": 0.5, "y": 1.1, "w": 4.4, "h": 1.3,
+          "lang": "graphql",
+          "code": "mutation Put @transaction {\n  account_put(put: {key: {id: \"u1\"},\n                    values: {balance: 750}})\n}"
+        },
+        {
+          "type": "code_block",
+          "x": 5.1, "y": 1.1, "w": 4.4, "h": 1.3,
+          "lang": "json",
+          "code": "{\n  \"legacy.orders\": { \"transaction\": true },\n  \"legacy.logs\":   { \"transaction\": false }\n}"
+        },
+        {
+          "type": "code_block",
+          "x": 0.5, "y": 2.75, "w": 9.0, "h": 1.15,
+          "lang": "bash",
+          "code": "$ scalardl-tablestore execute-statement \\\n    --properties client.properties \\\n    --statement \"SELECT history() FROM employee WHERE id = '1001'\""
+        }
+      ]
+    }
+  ]
+}

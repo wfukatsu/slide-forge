@@ -5,10 +5,10 @@
 スライドを積む。テンプレートのマスターが定義する装飾・ロゴ・フッターは自動継承される。
 
     # 仕様の検証だけ（API 呼び出しなし）
-    python scripts/build-deck.py --template templates/x.json --spec deck.json --dry-run
+    python scripts/build_deck.py --template templates/x.json --spec deck.json --dry-run
 
     # 生成
-    python scripts/build-deck.py --template templates/x.json --spec deck.json \
+    python scripts/build_deck.py --template templates/x.json --spec deck.json \
         --title "資料タイトル" [--folder <DRIVE_FOLDER_URL_OR_ID>]
 
 ライブラリとして:
@@ -22,11 +22,41 @@ import argparse
 import json
 import os
 import sys
+import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 
 FILLABLE = ("TITLE", "SUBTITLE", "BODY")
+
+# オブジェクト ID をプロセス間で衝突させないためのランダムトークン。
+# 連番だけだと、既存デッキへ別プロセスから追記したとき slide_001 等が衝突する
+_RUN_TOKEN = uuid.uuid4().hex[:4]
+
+
+def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0):
+    """一時的な 5xx / 429 を吸収して API 呼び出しを繰り返す。
+
+    枚数の多いテンプレートの `files.copy` は、混んでいるときに 500 Internal Error を
+    返すことが実際にある。1 回で諦めると生成が丸ごと落ちるので指数バックオフで粘る。
+    HttpError 以外に、socket timeout 等のネットワーク例外（OSError）も再試行する。
+    """
+    import time
+    from googleapiclient.errors import HttpError
+
+    for i in range(attempts):
+        try:
+            return call()
+        except (HttpError, OSError) as e:
+            code = getattr(getattr(e, "resp", None), "status", None)
+            retryable = isinstance(e, OSError) or code in (429, 500, 502, 503, 504)
+            if not retryable or i == attempts - 1:
+                raise
+            code = code or type(e).__name__
+            wait = base_delay * (2 ** i)
+            print(f"  warn: {what} が HTTP {code} で失敗。{wait:.0f} 秒後に再試行 "
+                  f"({i + 1}/{attempts - 1})", file=sys.stderr)
+            time.sleep(wait)
 
 
 def load_template(path: str) -> dict:
@@ -47,6 +77,14 @@ class TemplateDeck:
         self._added: list[dict] = []
         self._notes: list[tuple[str, str]] = []  # (slideId, notes)
         self._counter = 0
+        # keep_existing で残したテンプレート同梱スライドの枚数。
+        # add_page_numbers() が新規スライドの番号をこの分だけずらす
+        self.kept_slides = 0
+        # 画像を挿入したときに images.AssetStore が入る。commit() の後で後始末する
+        self.assets = None
+        # (objectId, x, y, w, h)。createImage は比率を保つため、枠ぴったりに
+        # 敷きたい画像は commit 後に transform を上書きして直す
+        self.image_fixups: list[tuple] = []
 
     # ---------- 生成 ----------
 
@@ -59,38 +97,40 @@ class TemplateDeck:
         creds=None,
         keep_existing: bool = False,
     ) -> "TemplateDeck":
-        slides, drive = _auth.services(creds)
         src = template.get("presentationId")
+        if not src:
+            raise ValueError("template.json に presentationId がありません")
+        slides, drive = _auth.services(creds)
+
+        body: dict = {"name": title}
         fid = _auth.folder_id(folder)
+        if fid:
+            body["parents"] = [fid]
+        copied = _retry(
+            lambda: drive.files().copy(fileId=src, body=body, fields="id").execute(),
+            what="テンプレートの複製")
 
-        if src:
-            # マスターを複製する。装飾・ロゴ・フッターがレイアウトから継承される
-            body: dict = {"name": title}
-            if fid:
-                body["parents"] = [fid]
-            pres_id = drive.files().copy(fileId=src, body=body, fields="id").execute()["id"]
-        else:
-            # マスター無し。Google の既定レイアウト（predefinedLayout）で新規作成する
-            pres_id = slides.presentations().create(
-                body={"title": title}, fields="presentationId"
-            ).execute()["presentationId"]
-            if fid:
-                cur = drive.files().get(fileId=pres_id, fields="parents").execute()
-                drive.files().update(
-                    fileId=pres_id, addParents=fid,
-                    removeParents=",".join(cur.get("parents", [])), fields="id",
-                ).execute()
-
-        deck = cls(slides, drive, pres_id, template)
+        deck = cls(slides, drive, copied["id"], template)
         if not keep_existing:
             deck._delete_existing_slides()
+        else:
+            # 残したスライドの実枚数を数え、ページ番号の起点をずらす。
+            # template.json の existingSlideIds はテンプレート更新で古くなり得るため実物を見る
+            pres = _retry(
+                lambda: deck.slides.presentations().get(
+                    presentationId=deck.presentation_id, fields="slides.objectId"
+                ).execute(),
+                what="presentations.get")
+            deck.kept_slides = len(pres.get("slides", []))
         return deck
 
     def _delete_existing_slides(self) -> None:
         """複製直後に残っているテンプレート同梱スライドを削除する。"""
-        pres = self.slides.presentations().get(
-            presentationId=self.presentation_id, fields="slides.objectId"
-        ).execute()
+        pres = _retry(
+            lambda: self.slides.presentations().get(
+                presentationId=self.presentation_id, fields="slides.objectId"
+            ).execute(),
+            what="presentations.get")
         present = [s["objectId"] for s in pres.get("slides", [])]
         expected = set(self.template.get("existingSlideIds", []))
         stale = expected - set(present)
@@ -98,7 +138,7 @@ class TemplateDeck:
             print(
                 f"  warn: template.json の existingSlideIds に実在しない ID があります: "
                 f"{sorted(stale)}\n"
-                f"        テンプレートが更新された可能性があります。inspect-template.py で再解析してください。",
+                f"        テンプレートが更新された可能性があります。inspect_template.py で再解析してください。",
                 file=sys.stderr,
             )
         # 実在するスライドは全て削除する（テンプレート側でスライドが増えていても取りこぼさない）
@@ -123,7 +163,8 @@ class TemplateDeck:
 
     def _next_id(self, prefix: str) -> str:
         self._counter += 1
-        return f"{prefix}_{self._counter:03d}"
+        # objectId は 50 文字まで。長いレイアウト名でも収まるよう prefix を丸める
+        return f"{prefix[:40]}_{_RUN_TOKEN}_{self._counter:03d}"
 
     def add_slide(
         self,
@@ -137,6 +178,8 @@ class TemplateDeck:
         index: int | None = None,
         body_font_size: float | None = None,
         body_line_spacing: float | None = None,
+        body_space_above: float | None = None,
+        body_space_below: float | None = None,
     ) -> dict:
         """レイアウトを指定してスライドを追加し、プレースホルダを埋める。
 
@@ -147,15 +190,7 @@ class TemplateDeck:
         追加の図形を描きたい場合はこの slideId を pageObjectId に使う。
         """
         resolved_key, layout = self.resolve_layout(layout_key)
-        declared = list(layout.get("placeholders", []))
-        # drawText を持つレイアウトは、プレースホルダの代わりに座標指定のテキストボックスを
-        # 描く。Slides API に要素のサイズを変更するリクエストが無いため、既定レイアウト
-        # （predefinedLayout）では文字幅を制御できず折り返してしまう。これを避ける手段。
-        drawn = layout.get("drawText", {})
-        for key in drawn:
-            name = key.upper().replace("X", "#") if "x" in key and key[-1].isdigit() else key.upper()
-            if name not in declared:
-                declared.append(name)
+        declared = layout.get("placeholders", [])
 
         if body is not None and bodies is not None:
             raise ValueError("body と bodies は同時に指定できません")
@@ -167,7 +202,7 @@ class TemplateDeck:
             if value is not None and ph_type not in declared:
                 raise ValueError(
                     f"レイアウト '{layout_key}' ({layout['displayName']}) は "
-                    f"{ph_type} を持ちません。保持しているのは {declared}"
+                    f"{ph_type} プレースホルダを持ちません。保持しているのは {declared}"
                 )
         body_slots = [p for p in declared if p.split("#")[0] == "BODY"]
         if bodies is not None and len(bodies) > len(body_slots):
@@ -180,35 +215,20 @@ class TemplateDeck:
         slide_id = self._next_id("slide")
         ph_ids: dict[str, str] = {}
         mappings = []
-        # 既定レイアウトでは論理名と API のプレースホルダ型が違うことがある
-        # （例: predefinedLayout=TITLE の見出しは CENTERED_TITLE）
-        type_map = layout.get("placeholderTypeMap", {})
         # SLIDE_NUMBER はマッピングしても API に無視されるため対象外（add_page_numbers で描画）
-        # drawText で描くものはプレースホルダを割り当てない
-        for name in [t for t in declared
-                     if t.split("#")[0] in FILLABLE
-                     and t.replace("#", "x").lower() not in drawn]:
+        for name in [t for t in declared if t.split("#")[0] in FILLABLE]:
             ph_type, _, idx = name.partition("#")
             idx = int(idx) if idx else 0
             safe = name.replace("#", "x").lower()
             oid = self._next_id(f"{resolved_key.lower()}_{safe}")
             ph_ids[name] = oid
             mappings.append(
-                {"layoutPlaceholder": {"type": type_map.get(ph_type, ph_type),
-                                       "index": idx},
-                 "objectId": oid}
+                {"layoutPlaceholder": {"type": ph_type, "index": idx}, "objectId": oid}
             )
 
-        if layout.get("layoutId"):
-            layout_ref = {"layoutId": layout["layoutId"]}
-        elif layout.get("predefinedLayout"):
-            layout_ref = {"predefinedLayout": layout["predefinedLayout"]}
-        else:
-            raise ValueError(
-                f"レイアウト '{layout_key}' に layoutId も predefinedLayout もありません")
         create_req: dict = {
             "objectId": slide_id,
-            "slideLayoutReference": layout_ref,
+            "slideLayoutReference": {"layoutId": layout["layoutId"]},
         }
         if mappings:
             create_req["placeholderIdMappings"] = mappings
@@ -223,19 +243,6 @@ class TemplateDeck:
         fills = [("TITLE", title), ("SUBTITLE", subtitle)]
         filled_bodies = list(zip(body_slots, bodies or []))
         fills += filled_bodies
-
-        # drawText 指定のものは座標指定のテキストボックスとして描く
-        for name, value in list(fills):
-            key = name.replace("#", "x").lower()
-            spec = drawn.get(key)
-            if value is None or spec is None:
-                continue
-            text = "\n".join(value) if isinstance(value, list) else value
-            self._draw_text_box(slide_id, spec, text, f"{resolved_key.lower()}_{key}")
-            fills.remove((name, value))
-            if (name, value) in filled_bodies:
-                filled_bodies.remove((name, value))
-
         for name, value in fills:
             if value is None:
                 continue
@@ -243,59 +250,6 @@ class TemplateDeck:
             self.requests.append(
                 {"insertText": {"objectId": ph_ids[name], "text": text}}
             )
-
-        # 既定レイアウト（predefinedLayout）は Google の想定する位置・文字サイズのままなので、
-        # template.json の elements / textStyles に寄せる。マスター複製の場合は
-        # レイアウト側が既に正しいので applyElementGeometry を立てない。
-        #
-        # Slides API に「要素のサイズを後から変える」リクエストは無いため、
-        # 位置（ABSOLUTE な translate）・上寄せ・文字サイズ・揃えの4点で見た目を合わせる。
-        # プレースホルダの枠は透明なので、枠が大きいままでも実害はない。
-        if layout.get("applyElementGeometry"):
-            for name in ph_ids:
-                if dict(fills).get(name) is None:
-                    continue
-                key = name.split("#")[0].lower()
-                el = layout.get("elements", {}).get(key)
-                if not el:
-                    continue
-                oid = ph_ids[name]
-                self.requests.append({"updatePageElementTransform": {
-                    "objectId": oid,
-                    "applyMode": "ABSOLUTE",
-                    "transform": {
-                        "scaleX": 1, "scaleY": 1,
-                        "translateX": _auth.inches(el["x"]),
-                        "translateY": _auth.inches(el["y"]),
-                        "unit": "EMU",
-                    },
-                }})
-                self.requests.append({"updateShapeProperties": {
-                    "objectId": oid,
-                    "shapeProperties": {"contentAlignment": "TOP"},
-                    "fields": "contentAlignment",
-                }})
-                st = layout.get("textStyles", {}).get(key, {})
-                style, sfields = {}, []
-                if st.get("fontSize"):
-                    style["fontSize"] = {"magnitude": st["fontSize"], "unit": "PT"}
-                    sfields.append("fontSize")
-                if st.get("fontFamily"):
-                    style["fontFamily"] = st["fontFamily"]
-                    sfields.append("fontFamily")
-                if "bold" in st:
-                    style["bold"] = st["bold"]
-                    sfields.append("bold")
-                if sfields:
-                    self.requests.append({"updateTextStyle": {
-                        "objectId": oid, "style": style,
-                        "textRange": {"type": "ALL"}, "fields": ",".join(sfields),
-                    }})
-                if el.get("align"):
-                    self.requests.append({"updateParagraphStyle": {
-                        "objectId": oid, "style": {"alignment": el["align"]},
-                        "textRange": {"type": "ALL"}, "fields": "alignment",
-                    }})
 
         # 本文の見た目調整。プレースホルダの既定サイズは手書き向けに大きめなことが多く、
         # 日本語の本文は行間を広げないと詰まって見える（既定 100〜115%）。
@@ -309,12 +263,23 @@ class TemplateDeck:
                     "textRange": {"type": "ALL"},
                     "fields": "fontSize",
                 }})
+            # プレースホルダの既定は段落前後にも余白を持つことがあり、行数の
+            # 見積もりから大きくずれる。spaceAbove / spaceBelow も明示できる
+            para_style: dict = {}
             if body_line_spacing is not None:
+                para_style["lineSpacing"] = body_line_spacing
+            if body_space_above is not None:
+                para_style["spaceAbove"] = {
+                    "magnitude": body_space_above, "unit": "PT"}
+            if body_space_below is not None:
+                para_style["spaceBelow"] = {
+                    "magnitude": body_space_below, "unit": "PT"}
+            if para_style:
                 self.requests.append({"updateParagraphStyle": {
                     "objectId": ph_ids[name],
-                    "style": {"lineSpacing": body_line_spacing},
+                    "style": para_style,
                     "textRange": {"type": "ALL"},
-                    "fields": "lineSpacing",
+                    "fields": ",".join(para_style),
                 }})
 
         if notes:
@@ -327,61 +292,6 @@ class TemplateDeck:
             "layoutKey": resolved_key,
         }
 
-    def _draw_text_box(self, slide_id: str, spec: dict, text: str, prefix: str) -> str:
-        """座標・書式を完全に指定したテキストボックスを描く。
-
-        既定レイアウトのプレースホルダは幅を変更できないため、タイトルなどを
-        確実に 1 行に収めたい場合はプレースホルダを使わずこちらで描く。
-        spec は {x, y, w, h, size, bold, align, valign, color, lineSpacing}。
-        """
-        oid = self._next_id(prefix)
-        self.requests.append({"createShape": {
-            "objectId": oid, "shapeType": "TEXT_BOX",
-            "elementProperties": {
-                "pageObjectId": slide_id,
-                "size": {
-                    "width": {"magnitude": _auth.inches(spec["w"]), "unit": "EMU"},
-                    "height": {"magnitude": _auth.inches(spec["h"]), "unit": "EMU"},
-                },
-                "transform": {
-                    "scaleX": 1, "scaleY": 1,
-                    "translateX": _auth.inches(spec["x"]),
-                    "translateY": _auth.inches(spec["y"]),
-                    "unit": "EMU",
-                },
-            },
-        }})
-        self.requests.append({"updateShapeProperties": {
-            "objectId": oid,
-            "shapeProperties": {"contentAlignment": spec.get("valign", "TOP")},
-            "fields": "contentAlignment",
-        }})
-        self.requests.append({"insertText": {"objectId": oid, "text": text}})
-        style = {
-            "fontFamily": spec.get("fontFamily", "Noto Sans JP"),
-            "fontSize": {"magnitude": spec.get("size", 14), "unit": "PT"},
-            "bold": spec.get("bold", False),
-        }
-        fields = "fontFamily,fontSize,bold"
-        if spec.get("color"):
-            style["foregroundColor"] = {
-                "opaqueColor": {"rgbColor": _auth.hex_to_rgb(spec["color"])}}
-            fields += ",foregroundColor"
-        self.requests.append({"updateTextStyle": {
-            "objectId": oid, "style": style,
-            "textRange": {"type": "ALL"}, "fields": fields,
-        }})
-        pstyle = {"alignment": spec.get("align", "START")}
-        pfields = ["alignment"]
-        if spec.get("lineSpacing"):
-            pstyle["lineSpacing"] = spec["lineSpacing"]
-            pfields.append("lineSpacing")
-        self.requests.append({"updateParagraphStyle": {
-            "objectId": oid, "style": pstyle,
-            "textRange": {"type": "ALL"}, "fields": ",".join(pfields),
-        }})
-        return oid
-
     # ---------- ページ番号 ----------
 
     def add_page_numbers(self, start: int | None = None) -> int:
@@ -390,9 +300,13 @@ class TemplateDeck:
         Slides API は SLIDE_NUMBER プレースホルダを生成できない（createSlide の
         placeholderIdMappings に指定してもエラーにならず黙って無視される）ため、
         レイアウトの slideNumber 座標に合わせて自前で描画する。
+
+        注意: 番号は add_slide() の呼び出し順に振る。add_slide(index=...) で
+        挿入位置を指定したデッキでは実際の並び順と一致しない。
         """
         cfg = self.template.get("pageNumber", {})
-        start = cfg.get("startAt", 1) if start is None else start
+        # keep_existing で残したスライドの後に積む場合は、その枚数分だけ番号を進める
+        start = cfg.get("startAt", 1) + self.kept_slides if start is None else start
         font = cfg.get("font", "Arial")
         size = cfg.get("fontSize", 7)
         color = cfg.get("color", "#666666")
@@ -460,27 +374,43 @@ class TemplateDeck:
 
     def commit(self, chunk_size: int = 500) -> str:
         """溜めたリクエストを batchUpdate で実行し、プレゼンテーション URL を返す。"""
-        for i in range(0, len(self.requests), chunk_size):
-            chunk = self.requests[i : i + chunk_size]
-            self.slides.presentations().batchUpdate(
-                presentationId=self.presentation_id, body={"requests": chunk}
-            ).execute()
-            print(f"  batch {i // chunk_size + 1}: {len(chunk)} requests")
-        self.requests = []
-        if self._notes:
-            self._write_notes()
+        try:
+            for i in range(0, len(self.requests), chunk_size):
+                chunk = self.requests[i : i + chunk_size]
+                _retry(
+                    lambda: self.slides.presentations().batchUpdate(
+                        presentationId=self.presentation_id, body={"requests": chunk}
+                    ).execute(),
+                    what=f"batchUpdate ({len(chunk)} requests)")
+                print(f"  batch {i // chunk_size + 1}: {len(chunk)} requests")
+            self.requests = []
+            if self._notes or self.image_fixups:
+                self._post_pass()
+        finally:
+            # Slides は挿入時に画像を中へコピーする。batchUpdate が失敗した場合も、
+            # 「リンクを知る全員が閲覧可」で共有した一時アップロードを残さないよう
+            # 必ずここで畳む
+            if self.assets is not None:
+                self.assets.cleanup()
         return f"https://docs.google.com/presentation/d/{self.presentation_id}/edit"
 
-    def _write_notes(self) -> None:
-        """スピーカーノートを書き込む。
+    def _post_pass(self) -> None:
+        """スライド作成後にしか分からない情報を使う 2 回目の batchUpdate。
 
-        ノートの objectId はスライド作成後にしか判明しないため、本体の batchUpdate を
-        実行してから presentation を取り直して 2 回目の batchUpdate を投げる。
+        - スピーカーノート … ノート枠の objectId は createSlide のレスポンスに無い
+        - 画像の寸法補正 … createImage は**指定サイズに関係なく元の縦横比を保つ**ため、
+          枠を埋める配置（fit="cover" / "stretch"）は作成時には実現できない。
+          生成された要素の素の大きさを読み、transform を絶対値で置き換えて直す。
         """
-        pres = self.slides.presentations().get(
-            presentationId=self.presentation_id,
-            fields="slides(objectId,slideProperties.notesPage.notesProperties.speakerNotesObjectId)",
-        ).execute()
+        pres = _retry(
+            lambda: self.slides.presentations().get(
+                presentationId=self.presentation_id,
+                fields=("slides(objectId,"
+                        "slideProperties.notesPage.notesProperties.speakerNotesObjectId,"
+                        "pageElements(objectId,size))"),
+            ).execute(),
+            what="presentations.get (post pass)")
+        slides = pres.get("slides", [])
         note_ids = {
             s["objectId"]: (
                 s.get("slideProperties", {})
@@ -488,8 +418,13 @@ class TemplateDeck:
                 .get("notesProperties", {})
                 .get("speakerNotesObjectId")
             )
-            for s in pres.get("slides", [])
+            for s in slides
         }
+        sizes = {
+            el["objectId"]: el.get("size", {})
+            for s in slides for el in s.get("pageElements", [])
+        }
+
         reqs = []
         for slide_id, text in self._notes:
             oid = note_ids.get(slide_id)
@@ -497,15 +432,309 @@ class TemplateDeck:
                 print(f"  warn: {slide_id} のノート枠が見つからずスキップしました", file=sys.stderr)
                 continue
             reqs.append({"insertText": {"objectId": oid, "text": text}})
+        n_notes = len(reqs)
+
+        n_img = 0
+        for oid, x, y, w, h in self.image_fixups:
+            size = sizes.get(oid) or {}
+            mw = size.get("width", {}).get("magnitude")
+            mh = size.get("height", {}).get("magnitude")
+            if not mw or not mh:
+                print(f"  warn: 画像 {oid} の寸法が取れず、枠ぴったりの配置を"
+                      f"適用できませんでした", file=sys.stderr)
+                continue
+            reqs.append({"updatePageElementTransform": {
+                "objectId": oid,
+                "applyMode": "ABSOLUTE",
+                "transform": {
+                    "scaleX": _auth.inches(w) / mw,
+                    "scaleY": _auth.inches(h) / mh,
+                    "translateX": _auth.inches(x),
+                    "translateY": _auth.inches(y),
+                    "unit": "EMU",
+                },
+            }})
+            n_img += 1
+
         if reqs:
-            self.slides.presentations().batchUpdate(
-                presentationId=self.presentation_id, body={"requests": reqs}
-            ).execute()
-            print(f"  speaker notes: {len(reqs)} slides")
+            _retry(
+                lambda: self.slides.presentations().batchUpdate(
+                    presentationId=self.presentation_id, body={"requests": reqs}
+                ).execute(),
+                what=f"batchUpdate (post pass, {len(reqs)} requests)")
+            if n_notes:
+                print(f"  speaker notes: {n_notes} slides")
+            if n_img:
+                print(f"  image fit: {n_img} images")
         self._notes = []
+        self.image_fixups = []
+
+
+# ---------- 図・画像のブロック ----------
+
+# spec の "figures" で使える type と、位置引数として渡すキーの並び。
+# ここに無いキーは snake_case に直してキーワード引数として渡す。
+FIGURES: dict[str, tuple[str, list[str]]] = {
+    # イメージ図（illustrations.py・図形だけで描く。ネットワーク不要）
+    "icon":         ("icon",         ["name", "x", "y", "size"]),
+    "icon_row":     ("icon_row",     ["x", "y", "w", "items"]),
+    "icon_flow":    ("icon_flow",    ["x", "y", "w", "items"]),
+    "icon_grid":    ("icon_grid",    ["x", "y", "w", "items"]),
+    "pyramid":      ("pyramid",      ["x", "y", "w", "h", "items"]),
+    "funnel":       ("funnel",       ["x", "y", "w", "h", "items"]),
+    "venn":         ("venn",         ["x", "y", "w", "h", "items"]),
+    "iceberg":      ("iceberg",      ["x", "y", "w", "h", "above", "below"]),
+    "balance":      ("balance",      ["x", "y", "w", "h", "left", "right"]),
+    "steps":        ("steps",        ["x", "y", "w", "h", "items"]),
+    "layers":       ("layers",       ["x", "y", "w", "h", "items"]),
+    "hub":          ("hub",          ["x", "y", "w", "h", "center", "items"]),
+    "matrix":       ("matrix",       ["x", "y", "w", "h", "items"]),
+    "before_after": ("before_after", ["x", "y", "w", "h", "before", "after"]),
+    "journey":      ("journey",      ["x", "y", "w", "h", "items"]),
+    "timeline":     ("timeline",     ["x", "y", "w", "items"]),
+    # ブランドのアイコン素材（icons.py・Drive 経由で貼るので通信が要る。
+    # --dry-run では同じ大きさの矩形に置き換えて座標だけ検査する）
+    "asset_icon":       ("asset_icon",       ["name", "x", "y", "size"]),
+    "asset_icon_row":   ("asset_icon_row",   ["x", "y", "w", "items"]),
+    "asset_icon_flow":  ("asset_icon_flow",  ["x", "y", "w", "items"]),
+    "asset_icon_grid":  ("asset_icon_grid",  ["x", "y", "w", "items"]),
+    "asset_icon_cards": ("asset_icon_cards", ["x", "y", "w", "h", "items"]),
+    # クラウドベンダーの公式アイコン（cloud_icons.py）。asset_icon と同じく
+    # --dry-run では矩形に置き換えて座標だけ検査する
+    "cloud_icon":      ("cloud_icon",      ["name", "x", "y", "size"]),
+    "cloud_icon_row":  ("cloud_icon_row",  ["x", "y", "w", "items"]),
+    "cloud_icon_flow": ("cloud_icon_flow", ["x", "y", "w", "items"]),
+    "cloud_icon_grid": ("cloud_icon_grid", ["x", "y", "w", "items"]),
+    "cloud_zone":      ("cloud_zone",      ["x", "y", "w", "h"]),
+    # 構造図（diagrams.py の既存パーツ）
+    # band は塗りだけの角丸矩形。図の下地（表紙・章扉の白カード等）に使う。
+    # 中身より先に書くこと（後ろに書くと中身を覆う）
+    "band":         ("band",         ["x", "y", "w", "h"]),
+    "cards":        ("cards",        ["x", "y", "w", "h", "items"]),
+    "flow":         ("flow",         ["x", "y", "w", "h", "items"]),
+    "hbars":        ("hbars",        ["x", "y", "w", "items"]),
+    "metric":       ("metric",       ["x", "y", "w", "h", "value", "caption"]),
+    # 表・グラフ（charts.py）。pie は画像で貼るが、--dry-run では
+    # プレースホルダに置き換えて自分で座標検査を通す
+    "table":         ("table",         ["x", "y", "w", "headers", "rows"]),
+    "vbars":         ("vbars",         ["x", "y", "w", "h", "items"]),
+    "vbars_grouped": ("vbars_grouped", ["x", "y", "w", "h", "categories", "series"]),
+    "vbars_stacked": ("vbars_stacked", ["x", "y", "w", "h", "categories", "series"]),
+    "linechart":     ("linechart",     ["x", "y", "w", "h", "labels", "series"]),
+    "pie":           ("pie",           ["x", "y", "size", "items"]),
+    # ビジネスフレームワーク図（patterns.py・図形だけで描く。ネットワーク不要）
+    "posmap":         ("posmap",         ["x", "y", "w", "h", "points"]),
+    "gantt":          ("gantt",          ["x", "y", "w", "h", "columns", "rows"]),
+    "orgchart":       ("orgchart",       ["x", "y", "w", "h", "tree"]),
+    "lean_canvas":    ("lean_canvas",    ["x", "y", "w", "h", "blocks"]),
+    "nested_circles": ("nested_circles", ["x", "y", "w", "h", "rings"]),
+    "testimonial":    ("testimonial",    ["x", "y", "w", "h", "quote", "name"]),
+    # ページ部品と分析図（pages.py・図形だけで描く。ネットワーク不要）
+    "governing_message": ("governing_message", ["x", "y", "w", "text"]),
+    "lead_in":           ("lead_in",           ["x", "y", "w", "text"]),
+    "so_what":           ("so_what",           ["x", "y", "w", "h", "text"]),
+    "source_note":       ("source_note",       ["x", "y", "w", "source"]),
+    # exhibit_frame の戻り値（内側領域）は JSON からは受け取れない。枠を描き、
+    # 中身は内側座標（x+0.2 / ヘッダー下 +0.45 目安）を手で合わせて別の図で描く
+    "exhibit_frame":     ("exhibit_frame",     ["x", "y", "w", "h", "number", "title"]),
+    "mece_tree":         ("mece_tree",         ["x", "y", "w", "h", "tree"]),
+    "waterfall":         ("waterfall",         ["x", "y", "w", "h", "items"]),
+    "rating_matrix":     ("rating_matrix",     ["x", "y", "w", "columns", "rows"]),
+    "exec_summary":      ("exec_summary",      ["x", "y", "w", "h", "situation",
+                                                "complication", "resolution"]),
+    "storyline":         ("storyline",         ["x", "y", "w", "titles"]),
+    "ghost":             ("ghost",             ["x", "y", "w", "h", "slides"]),
+    # コードサンプル（diagrams.py。等幅 + シンタックスハイライト。ネットワーク不要）
+    "code_block":   ("code_block",   ["x", "y", "w", "h", "code"]),
+    # 画像（images.py）
+    "image":        ("image",        ["x", "y", "w", "h", "source"]),
+    "aiImage":      ("ai_image",     ["x", "y", "w", "h", "prompt"]),
+}
+
+# API を呼ぶ（＝ --dry-run では実行できない）type
+NETWORK_FIGURES = {"image", "aiImage"}
+
+def min_table_row_h(size: float) -> float:
+    """Slides のテーブル行が実際に取る最小の高さ（インチ）。
+
+    `minRowHeight` をこれより小さくしても行は縮まない。文字の行高にセルの
+    余白が乗った値で、実測（size 9 で約 0.34in、size 8.5 で約 0.32in）に
+    合わせてある。高さの見積もりはこの値で下から抑える。
+    """
+    return max(0.28, size * 1.45 / 72 + 0.16)
+
+
+def _snake(key: str) -> str:
+    out = []
+    for ch in key:
+        if ch.isupper():
+            out.append("_")
+            out.append(ch.lower())
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def _figure_args(fig: dict) -> tuple[list, dict]:
+    """図のブロックを (位置引数, キーワード引数) に振り分ける。"""
+    _, order = FIGURES[fig["type"]]
+    args = [fig[k] for k in order if k in fig]
+    kwargs = {_snake(k): v for k, v in fig.items()
+              if k != "type" and k not in order}
+    return args, kwargs
+
+
+def draw_figures(canvas, figures: list, *, skip_network: bool = False) -> None:
+    """figures ブロックを Canvas に描く。"""
+    for fig in figures:
+        kind = fig["type"]
+        if skip_network and kind in NETWORK_FIGURES:
+            continue
+        method, _ = FIGURES[kind]
+        args, kwargs = _figure_args(fig)
+        getattr(canvas, method)(*args, **kwargs)
+
+
+def validate_figures(spec: dict, page: dict, template: dict | None = None) -> list[str]:
+    """figures ブロックを、API を呼ばずに検証する。
+
+    `template` を渡すと、マスターのロゴ・フッター帯への重なりも検査する。
+    ページ内に収まっていても帯に重なれば読めなくなるので、座標だけで分かる
+    不具合としてここで止める。
+    """
+    problems = []
+    pw = page.get("widthInches", 10.0)
+    ph = page.get("heightInches", 5.625)
+    band = footer_band(template) if template else None
+    layouts = (template or {}).get("layouts", {})
+    roles = (template or {}).get("roles", {})
+    for i, s in enumerate(spec.get("slides", [])):
+        figs = s.get("figures")
+        if figs is None:
+            continue
+        # 全面の矩形を持つレイアウトはマスターの装飾を覆い隠すので、帯の検査から外す
+        layout = layouts.get(roles.get(s.get("layout"), s.get("layout")), {})
+        covers_footer = any(
+            d.get("w", 0) > pw * 0.95 and d.get("h", 0) > ph * 0.9
+            for d in (layout.get("decorations") or []))
+        if not isinstance(figs, list):
+            problems.append(f"slides[{i}]: 'figures' は配列である必要があります")
+            continue
+        for j, fig in enumerate(figs):
+            where = f"slides[{i}].figures[{j}]"
+            if not isinstance(fig, dict) or "type" not in fig:
+                problems.append(f"{where}: 'type' がありません")
+                continue
+            kind = fig["type"]
+            if kind not in FIGURES:
+                problems.append(
+                    f"{where}: 未知の type '{kind}'（利用可能: {sorted(FIGURES)}）")
+                continue
+            _, order = FIGURES[kind]
+            missing = [k for k in order if k not in fig]
+            if missing:
+                problems.append(f"{where}: type '{kind}' に必要なキーがありません: {missing}")
+                continue
+            for k in ("x", "y", "w", "h"):
+                if k in fig and not isinstance(fig[k], (int, float)):
+                    problems.append(f"{where}: '{k}' は数値（インチ）である必要があります")
+            # "size" が空間量（インチ）なのは位置引数に size を持つ type
+            # （icon 系・pie）だけ。table 等ではフォントサイズ（pt）なので、
+            # 高さの代わりに使うと 8.5pt を 8.5in と誤読してしまう
+            spatial_size = fig.get("size", 0) if "size" in order else 0
+            x, y = fig.get("x", 0), fig.get("y", 0)
+            w = fig.get("w", spatial_size)
+            h = fig.get("h", spatial_size)
+            # 表は h を宣言しない。行数から見積もる。Slides のテーブル行には
+            # フォントに応じた最小内寸があり、row_h をそれ未満にしても縮まない
+            # （実測 ≒ 0.28in）。折り返せばさらに伸びるので、これは下限の見積もり
+            if kind == "table" and isinstance(fig.get("rows"), list):
+                floor = min_table_row_h(fig.get("size", 10))
+                rh = max(fig.get("rowH", fig.get("row_h", 0.34)), floor)
+                hh = max(fig.get("headerH", fig.get("header_h", 0.38)), floor)
+                h = hh + rh * len(fig["rows"])
+            if isinstance(x, (int, float)) and isinstance(w, (int, float)):
+                if x < 0 or x + w > pw + 0.01:
+                    problems.append(
+                        f"{where}: 横方向がページ({pw}in)からはみ出します"
+                        f"（x={x} w={w} → 右端 {x + w:.2f}in）")
+            if isinstance(y, (int, float)) and isinstance(h, (int, float)):
+                if y < 0 or y + h > ph + 0.01:
+                    problems.append(
+                        f"{where}: 縦方向がページ({ph}in)からはみ出します"
+                        f"（y={y} h={h} → 下端 {y + h:.2f}in）")
+                # 帯への重なりは **表だけ** 検査する。表は h を宣言せず、行数から
+                # 出した高さがほぼそのまま実寸になるので判定が当たる。図形の図は
+                # 宣言した枠の下端に余白があること（posmap の軸ラベル領域など）が
+                # 多く、宣言値で判定すると誤検出になる。図形側は audit_bounds が
+                # 実際に描いた座標で見ている
+                elif (kind == "table" and band and not covers_footer
+                      and y + h > band[0] + 0.01
+                      and isinstance(x, (int, float)) and isinstance(w, (int, float))
+                      and x < band[2] and x + w > band[1]):
+                    problems.append(
+                        f"{where}: 表がマスターのロゴ・フッター帯（y={band[0]:.2f}in 以下）に"
+                        f"重なります（下端 {y + h:.2f}in）。行数を減らすか複数枚に分けること")
+    return problems
+
+
+class _StubDeck:
+    """--dry-run で Canvas を動かすためのダミー。API は一切呼ばない。"""
+
+    # ブランドアイコンは画像なので実物を取りに行けない。Canvas 側はこの旗を見て
+    # 同じ大きさの矩形に置き換え、座標の検査だけ通す
+    dry = True
+
+    def __init__(self):
+        self.requests: list[dict] = []
+        self.assets = None
+        self.image_fixups: list[tuple] = []
+
+
+def audit_figures(template: dict, spec: dict) -> list[str]:
+    """figures を実際に座標へ展開し、重なり・文字溢れを API 抜きで検査する。
+
+    生成してサムネイルを見るまで気づけない不具合を、仕様の段階で拾う。
+    画像は実物を取りに行く必要があるためこの検査からは外れる。
+    """
+    from diagrams import Canvas  # 遅延 import（--dry-run 以外では毎回は要らない）
+
+    out = []
+    for i, s in enumerate(spec.get("slides", [])):
+        figs = s.get("figures")
+        if not figs:
+            continue
+        canvas = Canvas(_StubDeck(), f"dry_{i}", template)
+        try:
+            draw_figures(canvas, figs, skip_network=True)
+        except Exception as e:  # 引数の不整合はここで初めて分かることがある
+            out.append(f"slides[{i}]: 図の描画に失敗しました: {type(e).__name__}: {e}")
+            continue
+        for msg in (canvas.audit_bounds() + canvas.audit_connectors()
+                    + canvas.audit_overlaps() + canvas.audit_text_fit()):
+            out.append(f"slides[{i}]: {msg}")
+    return out
 
 
 # ---------- 仕様の検証と組み立て ----------
+
+def footer_band(template: dict) -> tuple[float, float, float] | None:
+    """マスターが下端に敷く帯（ロゴ・著作権表記）の上端 y と x 範囲を返す。
+
+    ページの下端まで使えると思って図を置くと、ロゴやフッターに重なる。
+    ページサイズだけを見る検査ではこれを拾えないので、装飾の実座標から
+    「ここより下には置けない」線を出す。該当が無ければ None。
+    """
+    page_h = template.get("pageSize", {}).get("heightInches", 5.625)
+    decs = [d for d in template.get("masterDecorations", []) or []
+            if isinstance(d.get("y"), (int, float)) and d["y"] > page_h * 0.75]
+    if not decs:
+        return None
+    top = min(d["y"] for d in decs)
+    x0 = min(d.get("x", 0.0) for d in decs)
+    x1 = max(d.get("x", 0.0) + d.get("w", 0.0) for d in decs)
+    return top, x0, x1
+
 
 def validate_spec(template: dict, spec: dict) -> list[str]:
     """デッキ仕様をテンプレートと突き合わせ、問題点のリストを返す（空なら OK）。"""
@@ -561,10 +790,12 @@ def validate_spec(template: dict, spec: dict) -> list[str]:
     return problems
 
 
-def build_from_spec(deck: TemplateDeck, spec: dict) -> None:
+def build_from_spec(deck: TemplateDeck, spec: dict) -> list[str]:
+    """spec からスライドを積む。図を描いた場合は検査結果を返す。"""
     defaults = spec.get("defaults", {})
-    for s in spec.get("slides", []):
-        deck.add_slide(
+    warnings: list[str] = []
+    for i, s in enumerate(spec.get("slides", [])):
+        ref = deck.add_slide(
             s["layout"],
             title=s.get("title"),
             subtitle=s.get("subtitle"),
@@ -573,7 +804,19 @@ def build_from_spec(deck: TemplateDeck, spec: dict) -> None:
             notes=s.get("notes"),
             body_font_size=s.get("bodyFontSize", defaults.get("bodyFontSize")),
             body_line_spacing=s.get("bodyLineSpacing", defaults.get("bodyLineSpacing")),
+            body_space_above=s.get("bodySpaceAbove", defaults.get("bodySpaceAbove")),
+            body_space_below=s.get("bodySpaceBelow", defaults.get("bodySpaceBelow")),
         )
+        figs = s.get("figures")
+        if not figs:
+            continue
+        from diagrams import Canvas  # 図を使う spec のときだけ読み込む
+        canvas = Canvas(deck, ref["slideId"], deck.template)
+        draw_figures(canvas, figs)
+        for msg in (canvas.audit_bounds() + canvas.audit_connectors()
+                    + canvas.audit_overlaps() + canvas.audit_text_fit()):
+            warnings.append(f"slides[{i}] ({s.get('title') or s['layout']}): {msg}")
+    return warnings
 
 
 def main() -> int:
@@ -585,6 +828,8 @@ def main() -> int:
     p.add_argument("--dry-run", action="store_true", help="API を呼ばず仕様の検証だけ行う")
     p.add_argument("--no-page-numbers", action="store_true", help="ページ番号を描画しない")
     p.add_argument("--keep-existing", action="store_true", help="テンプレート同梱スライドを残す")
+    p.add_argument("--strict", action="store_true",
+                   help="図の検査（重なり・文字溢れ）で 1 件でも出たら失敗にする")
     args = p.parse_args()
 
     template = load_template(args.template)
@@ -592,6 +837,7 @@ def main() -> int:
         spec = json.load(f)
 
     problems = validate_spec(template, spec)
+    problems += validate_figures(spec, template.get("pageSize", {}), template)
     if problems:
         print("仕様に問題があります:", file=sys.stderr)
         for msg in problems:
@@ -607,20 +853,36 @@ def main() -> int:
         print(f"OK: {len(spec['slides'])} 枚のスライド仕様はテンプレートと整合しています")
         for i, s in enumerate(spec["slides"], 1):
             resolved = template.get("roles", {}).get(s["layout"], s["layout"])
-            print(f"  {i:2d}. {s['layout']:24s} -> {template['layouts'][resolved]['displayName']}")
+            n_fig = len(s.get("figures") or [])
+            extra = f"  + 図 {n_fig} 個" if n_fig else ""
+            print(f"  {i:2d}. {s['layout']:24s} -> "
+                  f"{template['layouts'][resolved]['displayName']}{extra}")
+        findings = audit_figures(template, spec)
+        if findings:
+            print(f"\n図の検査で {len(findings)} 件（画像は実物が要るため対象外）:",
+                  file=sys.stderr)
+            for msg in findings:
+                print(f"  - {msg}", file=sys.stderr)
+            return 1 if args.strict else 0
+        if any(s.get("figures") for s in spec["slides"]):
+            print("図の検査（コネクタ・重なり・文字溢れ）: 問題なし")
         return 0
 
     deck = TemplateDeck.create(
         template, title=title, folder=args.folder, keep_existing=args.keep_existing
     )
-    build_from_spec(deck, spec)
+    warnings = build_from_spec(deck, spec)
     if not args.no_page_numbers:
         n = deck.add_page_numbers()
         print(f"  page numbers: {n} slides")
     url = deck.commit()
     print(f"Done! {len(deck.slide_ids)} slides created.")
+    if warnings:
+        print(f"\n図の検査で {len(warnings)} 件:", file=sys.stderr)
+        for msg in warnings:
+            print(f"  - {msg}", file=sys.stderr)
     print(f"Open: {url}")
-    return 0
+    return 1 if (warnings and args.strict) else 0
 
 
 if __name__ == "__main__":

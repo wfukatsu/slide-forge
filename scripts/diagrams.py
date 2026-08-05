@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """スライド上に図解を描くためのプリミティブ。
 
-`build-deck.py` の `TemplateDeck` と組み合わせて使う。プレースホルダだけでは
+`build_deck.py` の `TemplateDeck` と組み合わせて使う。プレースホルダだけでは
 表現できない図（比較図、フロー、アーキテクチャ、バーチャート等）を、
 テンプレートの配色を使って描く。
 
     import sys; sys.path.insert(0, "<skill>/scripts")
-    from importlib.machinery import SourceFileLoader
-    bd = SourceFileLoader("bd", "<skill>/scripts/build-deck.py").load_module()
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("bd", "<skill>/scripts/build_deck.py")
+    bd = importlib.util.module_from_spec(spec); spec.loader.exec_module(bd)
     from diagrams import Canvas
 
     deck = bd.TemplateDeck.create(template, title="…")
@@ -29,80 +30,51 @@ Slides API はエラーにしないため、手書きの座標は事故のもと
 
     for msg in d.audit_connectors():   # 浮いた線・埋まった線を座標の段階で拾う
         print(msg)
+
+構造を正確に示す図はこのモジュール、概念を絵で示す「イメージ図」は
+`illustrations`（図形で描く）、`icons`（ブランドのアイコン素材）、
+`images`（AI 生成・手持ちの画像）が担当する。すべて Canvas のメソッドとして
+生えている。
+
+    d.icon_flow(0.7, 1.2, 8.6, [("person", "利用者"), ("server", "API")])
+    d.asset_icon_flow(0.7, 2.4, 8.6, [("job-seeker", "求職者"), ("interview", "面接")])
+    d.pyramid(1.6, 2.4, 6.8, 2.4, ["経営指標", "業務指標", "システム指標"])
+    d.image(0.6, 1.1, 4.2, 2.6, "assets/photo.png", fit="contain")
+    d.ai_image(5.2, 1.1, 4.2, 2.6, "夜間に自動でビルドが回っている様子")
 """
 from __future__ import annotations
 
 import math
 import os
+import re
 import sys
 import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
-
-
-# ---------- 色ユーティリティ ----------
-
-def _clamp(v: float) -> int:
-    return max(0, min(255, int(round(v))))
-
-
-def mix(hex_a: str, hex_b: str, t: float) -> str:
-    """hex_a と hex_b を t (0→a, 1→b) で混ぜる。"""
-    a = [int(hex_a.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)]
-    b = [int(hex_b.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)]
-    return "#%02X%02X%02X" % tuple(_clamp(a[i] + (b[i] - a[i]) * t) for i in range(3))
-
-
-def lighten(hex_color: str, t: float) -> str:
-    """白へ寄せる。t=0 で元の色、t=1 で白。"""
-    return mix(hex_color, "#FFFFFF", t)
-
-
-def darken(hex_color: str, t: float) -> str:
-    return mix(hex_color, "#000000", t)
-
-
-def relative_luminance(hex_color: str) -> float:
-    ch = []
-    for i in (0, 2, 4):
-        c = int(hex_color.lstrip("#")[i:i + 2], 16) / 255
-        ch.append(c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4)
-    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2]
-
-
-def contrast_ratio(a: str, b: str) -> float:
-    l1, l2 = relative_luminance(a), relative_luminance(b)
-    return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
-
-
-def readable_on(bg: str, dark: str = "#0F172A", light: str = "#FFFFFF") -> str:
-    """背景色に対してコントラストの高い方の文字色を返す。"""
-    return dark if contrast_ratio(bg, dark) >= contrast_ratio(bg, light) else light
-
-
-class Palette:
-    """テンプレートの colorScheme から図解用の色を組み立てる。"""
-
-    def __init__(self, colors: dict):
-        c = colors
-        self.primary = c.get("accent5", "#2673BB")
-        self.primaryDark = darken(self.primary, 0.35)
-        self.success = c.get("accent1", "#63C045")
-        self.danger = c.get("accent2", "#EE2155")
-        self.info = c.get("accent3", "#0985FD")
-        self.warning = c.get("accent4", "#FFEF24")
-        self.text = c.get("dark1", "#0F172A")
-        self.muted = c.get("dark2", "#6B7280")
-        self.surface = lighten(self.primary, 0.92)
-        self.surfaceAlt = c.get("light2", "#F9FAFB")
-        self.border = lighten(self.primary, 0.65)
-        self.white = "#FFFFFF"
+# 色ユーティリティは colors.py に移した。`from diagrams import lighten` のような
+# 既存の import を壊さないよう、ここから re-export している。
+from colors import (  # noqa: E402,F401
+    Palette, contrast_ratio, darken, lighten, mix, readable_on, relative_luminance,
+)
+from charts import ChartMixin  # noqa: E402
+from cloud_icons import CloudIconMixin  # noqa: E402
+from icons import IconLibraryMixin  # noqa: E402
+from illustrations import IllustrationMixin  # noqa: E402
+from images import ImageMixin  # noqa: E402
+from patterns import PatternMixin  # noqa: E402
+from pages import PageMixin  # noqa: E402
 
 
 # ---------- 描画 ----------
 
-class Canvas:
+# オブジェクト ID をプロセス間で衝突させないためのランダムトークン
+import uuid  # noqa: E402
+_RUN_TOKEN = uuid.uuid4().hex[:4]
+
+
+class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
+             ChartMixin, PatternMixin, PageMixin):
     """1 枚のスライドに図形を描くための薄いラッパー。"""
 
     _seq = 0
@@ -113,7 +85,11 @@ class Canvas:
     def __init__(self, deck, slide_id: str, template: dict):
         self.deck = deck
         self.slide_id = slide_id
-        self.P = Palette(template.get("colors", {}))
+        self._template_colors = template.get("colors", {})
+        self.P = Palette(self._template_colors)
+        page = template.get("pageSize", {})
+        self.page_w = page.get("widthInches", 10.0)
+        self.page_h = page.get("heightInches", 5.625)
         # 描いた図形の実座標。コネクタの接続先を自動で決めるために保持する
         self.rects: dict[str, tuple] = {}
         # 引いた線の記録。端点がどこにも接していないコネクタを検査で拾うために使う
@@ -126,51 +102,119 @@ class Canvas:
 
     def _oid(self, prefix: str) -> str:
         Canvas._seq += 1
-        return f"dg{prefix}{Canvas._seq:04d}"
+        # _RUN_TOKEN はプロセスごとのランダム値。連番だけだと、既存デッキへ
+        # 別プロセスから 2 回目の描画を行ったとき dg*0001 から再採番して衝突する
+        return f"dg{_RUN_TOKEN}{prefix}{Canvas._seq:04d}"
 
-    def _elem_props(self, x, y, w, h):
+    def _elem_props(self, x, y, w, h, rotation: float = 0.0,
+                    flip_x: bool = False, flip_y: bool = False):
+        """要素の位置と大きさ。rotation は度。中心を保ったまま回す。
+
+        Slides API に回転角のフィールドは無く、アフィン変換で表す。
+            x' = scaleX·x + shearX·y + translateX
+            y' = shearY·x + scaleY·y + translateY
+
+        flip_x / flip_y は鏡像（scale を負にする）。RIGHT_TRIANGLE のように
+        左右非対称な図形で、4 隅どの向きの直角三角形も作れるようにするために要る。
+        rotation とは併用しない。
+        """
+        if (flip_x or flip_y) and not rotation:
+            transform = {
+                "scaleX": -1 if flip_x else 1,
+                "scaleY": -1 if flip_y else 1,
+                "translateX": _auth.inches(x + (w if flip_x else 0)),
+                "translateY": _auth.inches(y + (h if flip_y else 0)),
+                "unit": "EMU",
+            }
+        elif rotation:
+            th = math.radians(rotation)
+            cos, sin = math.cos(th), math.sin(th)
+            cx, cy = x + w / 2, y + h / 2
+            transform = {
+                "scaleX": cos, "scaleY": cos, "shearX": -sin, "shearY": sin,
+                "translateX": _auth.inches(cx - (cos * (w / 2) - sin * (h / 2))),
+                "translateY": _auth.inches(cy - (sin * (w / 2) + cos * (h / 2))),
+                "unit": "EMU",
+            }
+        else:
+            transform = {
+                "scaleX": 1, "scaleY": 1,
+                "translateX": _auth.inches(x), "translateY": _auth.inches(y),
+                "unit": "EMU",
+            }
         return {
             "pageObjectId": self.slide_id,
             "size": {
                 "width": {"magnitude": _auth.inches(w), "unit": "EMU"},
                 "height": {"magnitude": _auth.inches(h), "unit": "EMU"},
             },
-            "transform": {
-                "scaleX": 1, "scaleY": 1,
-                "translateX": _auth.inches(x), "translateY": _auth.inches(y),
-                "unit": "EMU",
-            },
+            "transform": transform,
         }
 
-    def _solid(self, hex_color):
-        return {"solidFill": {"color": {"rgbColor": _auth.hex_to_rgb(hex_color)}, "alpha": 1}}
+    @staticmethod
+    def _aabb(x, y, w, h, rotation: float = 0.0):
+        """回転後の外接矩形。当たり判定・検査はこちらを使う。"""
+        if not rotation:
+            return (x, y, w, h)
+        th = math.radians(rotation)
+        cos, sin = abs(math.cos(th)), abs(math.sin(th))
+        nw, nh = w * cos + h * sin, w * sin + h * cos
+        return (x + (w - nw) / 2, y + (h - nh) / 2, nw, nh)
+
+    def _solid(self, hex_color, alpha: float = 1.0):
+        return {"solidFill": {"color": {"rgbColor": _auth.hex_to_rgb(hex_color)},
+                              "alpha": alpha}}
 
     # ---- 図形 ----
 
     def shape(self, x, y, w, h, *, kind="RECTANGLE", fill=None, stroke=None,
-              stroke_weight=1.0, text=None, color=None, size=11, bold=False,
-              align="CENTER", valign="MIDDLE", line_spacing=None) -> str:
-        """図形を描き、objectId を返す。fill=None で塗りなし。"""
+              stroke_weight=1.0, dash="SOLID", text=None, color=None, size=11,
+              bold=False, align="CENTER", valign="MIDDLE", line_spacing=None,
+              alpha: float = 1.0, rotation: float = 0.0,
+              flip_x: bool = False, flip_y: bool = False,
+              font: str | None = None) -> str:
+        """図形を描き、objectId を返す。fill=None で塗りなし。
+
+        dash は枠線の線種（SOLID / DASH / DOT / DASH_DOT …）。クラウドの
+        ゾーン枠のように「囲い」を示す矩形は破線にする。
+
+        font はフォントファミリー（省略時 Noto Sans JP）。コードブロックには
+        "Roboto Mono" のような等幅フォントを指定する。
+
+        alpha は塗りの不透明度（0〜1）。ベン図など重ねて見せる図で使う。
+        rotation は度。中心を保ったまま回す。回転した図形は外接矩形で記録するため、
+        検査（audit_*）の判定はやや保守的になる。
+
+        **回転した図形に text を入れてはいけない。** 文字も一緒に回るため、180 度なら
+        上下逆さま、45 度なら斜めに出る。台形や五角形を反転して使うときは、
+        図形は text 無しで描き、文字は別に label() で重ねること
+        （label(rotation=270) のような、意図して縦にする用途だけが例外）。
+        """
+        if text and rotation % 360 not in (0, 90, 270):
+            print(f"  warn: 回転 {rotation}度 の図形に文字を入れています。"
+                  f"文字も回ります（「{str(text)[:12]}」）。"
+                  f"図形は text 無しで描き、label() を重ねてください", file=sys.stderr)
         oid = self._oid("s")
         reqs = [{"createShape": {
             "objectId": oid, "shapeType": kind,
-            "elementProperties": self._elem_props(x, y, w, h)}}]
+            "elementProperties": self._elem_props(
+                x, y, w, h, rotation, flip_x, flip_y)}}]
 
         props, fields = {}, []
         if fill is None:
             props["shapeBackgroundFill"] = {"propertyState": "NOT_RENDERED"}
             fields.append("shapeBackgroundFill")
         else:
-            props["shapeBackgroundFill"] = self._solid(fill)
-            fields.append("shapeBackgroundFill.solidFill.color")
+            props["shapeBackgroundFill"] = self._solid(fill, alpha)
+            fields.append("shapeBackgroundFill.solidFill")
         if stroke is None:
             props["outline"] = {"propertyState": "NOT_RENDERED"}
             fields.append("outline")
         else:
             props["outline"] = {
                 "outlineFill": self._solid(stroke),
-                "weight": {"magnitude": int(stroke_weight * 12700), "unit": "EMU"},
-                "dashStyle": "SOLID",
+                "weight": {"magnitude": int(stroke_weight * _auth.EMU_PER_PT), "unit": "EMU"},
+                "dashStyle": dash,
             }
             fields.append("outline")
         props["contentAlignment"] = valign
@@ -184,7 +228,7 @@ class Canvas:
             reqs.append({"updateTextStyle": {
                 "objectId": oid,
                 "style": {
-                    "fontFamily": "Noto Sans JP",
+                    "fontFamily": font or "Noto Sans JP",
                     "fontSize": {"magnitude": size, "unit": "PT"},
                     "bold": bold,
                     "foregroundColor": {"opaqueColor": {"rgbColor": _auth.hex_to_rgb(fg)}},
@@ -202,15 +246,20 @@ class Canvas:
 
         self.deck.requests += reqs
         self._seq += 1
-        self.rects[oid] = (x, y, w, h, kind)
-        if fill is not None:
-            self.solids.append({"rect": (x, y, w, h), "seq": self._seq,
+        box = self._aabb(x, y, w, h, rotation)
+        self.rects[oid] = (*box, kind)
+        # 半透明の塗りは下の文字を透かすので「隠している」とは扱わない
+        if fill is not None and alpha >= 0.9:
+            self.solids.append({"rect": box, "seq": self._seq,
                                 "name": (text or kind).replace("\n", " ")[:20]})
         if text:
-            self.texts[oid] = {"rect": (x, y, w, h), "kind": kind, "text": text,
+            # 回転した枠の中の文字は行送りの向きが変わり、外接矩形での判定が
+            # 当てにならない。90/270 度は幅と高さを入れ替えて評価する
+            trect = (box[0], box[1], h, w) if rotation % 180 == 90 else box
+            self.texts[oid] = {"rect": trect, "kind": kind, "text": text,
                                "size": size, "ls": line_spacing or 100,
-                               "fill": fill is not None, "align": align,
-                               "valign": valign, "seq": self._seq}
+                               "fill": fill is not None and alpha >= 0.9,
+                               "align": align, "valign": valign, "seq": self._seq}
         return oid
 
     def box(self, x, y, w, h, text=None, **kw) -> str:
@@ -228,16 +277,119 @@ class Canvas:
         return self.shape(x, y, w, h, text=text, **kw)
 
     def label(self, x, y, w, h, text, *, size=10, color=None, bold=False,
-              align="START", valign="TOP", line_spacing=None) -> str:
-        """枠も塗りもないテキスト。"""
+              align="START", valign="TOP", line_spacing=None, rotation=0,
+              font=None) -> str:
+        """枠も塗りもないテキスト。rotation=270 で縦軸のラベルなどに使える。"""
         return self.shape(x, y, w, h, kind="TEXT_BOX", fill=None, stroke=None,
                           text=text, size=size, color=color or self.P.text, bold=bold,
-                          align=align, valign=valign, line_spacing=line_spacing)
+                          align=align, valign=valign, line_spacing=line_spacing,
+                          rotation=rotation, font=font)
 
-    def band(self, x, y, w, h, *, fill=None) -> str:
-        """背景の帯。図のグループ化に使う。"""
-        return self.shape(x, y, w, h, kind="ROUND_RECTANGLE",
-                          fill=fill or self.P.surfaceAlt, stroke=None)
+    def band(self, x, y, w, h, *, fill=None, kind="ROUND_RECTANGLE",
+             stroke=None) -> str:
+        """背景の帯。図のグループ化に使う。
+
+        `kind="RECTANGLE"` にすると直角の下地になる。表紙・章扉に敷く白カードの
+        ように、角丸だと元のテンプレートの図版と揃わない場面で使う。
+        """
+        return self.shape(x, y, w, h, kind=kind,
+                          fill=fill or self.P.surfaceAlt, stroke=stroke)
+
+    # ---- コードブロック ----
+
+    # VS Code Dark+ 風。濃色背景 CODE_BG 上でコントラスト比 4.5:1 以上を満たす
+    CODE_BG, CODE_FG = "#1F2933", "#E8ECF1"
+    _CODE_STYLES = {
+        "comment": "#7DBA7D",   # コメント（緑）
+        "string":  "#E2A37E",   # 文字列（橙）
+        "keyword": "#6FB6EA",   # 予約語（青）
+        "number":  "#B5CEA8",   # 数値（淡緑）
+        "type":    "#56C9B4",   # 型・クラス（青緑）
+        "func":    "#DCDCAA",   # 関数・メソッド（黄）
+        "anno":    "#D19FD3",   # アノテーション・ディレクティブ（紫）
+        "prop":    "#9CDCFE",   # プロパティ名・フラグ（水色）
+    }
+    # 言語ごとの字句規則。上にあるものが優先（コメント・文字列を最優先に置く）
+    _CODE_RULES = {
+        "java": [
+            ("comment", r"//[^\n]*"),
+            ("string", r'"(?:[^"\\\n]|\\.)*"'),
+            ("anno", r"@\w+"),
+            ("keyword", r"\b(?:public|class|extends|return|try|catch|new|"
+                        r"if|else|null|int|long|void|static|final|import)\b"),
+            ("number", r"\b\d[\d_.]*[FLfl]?\b"),
+            ("type", r"\b[A-Z][A-Za-z0-9_]*\b"),
+            ("func", r"\b[a-z]\w*(?=\()"),
+        ],
+        "graphql": [
+            ("comment", r"#[^\n]*"),
+            ("string", r'"(?:[^"\\\n]|\\.)*"'),
+            ("anno", r"@\w+"),
+            ("keyword", r"\b(?:query|mutation|true|false)\b"),
+            ("number", r"\b\d+\b"),
+            ("prop", r"\b\w+(?=\s*:)"),
+        ],
+        "json": [
+            ("prop", r'"(?:[^"\\\n]|\\.)*"(?=\s*:)'),
+            ("string", r'"(?:[^"\\\n]|\\.)*"'),
+            ("keyword", r"\b(?:true|false|null)\b"),
+            ("number", r"-?\b\d[\d.]*\b"),
+        ],
+        # シェル。二重引用符の中身は素通しにして、SQL キーワードを拾えるようにする
+        # （TableStore の --statement "CREATE TABLE …" のため）
+        "bash": [
+            ("comment", r"#[^\n]*"),
+            ("string", r"'[^'\n]*'"),
+            ("prop", r"(?<!\w)--[\w-]+"),
+            ("func", r"(?<=\$ )[\w./-]+|\bhistory(?=\()"),
+            ("keyword", r"\b(?:CREATE|TABLE|INSERT|INTO|VALUES|SELECT|FROM|"
+                        r"JOIN|ON|WHERE|UPDATE|SET|PRIMARY|KEY|STRING|LIMIT)\b"),
+        ],
+    }
+
+    @classmethod
+    def _highlight(cls, code: str, lang: str):
+        """(start, end, hex) のリスト。インデックスは UTF-16 単位と一致する
+        （BMP 外の文字を含むコードは想定しない）。"""
+        rules = cls._CODE_RULES.get(lang)
+        if not rules:
+            return []
+        if any(ord(ch) > 0xFFFF for ch in code):
+            print("  warn: code_block に BMP 外の文字（絵文字等）が含まれています。"
+                  "Slides API の文字範囲は UTF-16 単位のため、ハイライトの色範囲が"
+                  "ずれる可能性があります", file=sys.stderr)
+        pattern = "|".join(f"(?P<{name}_{i}>{rx})"
+                           for i, (name, rx) in enumerate(rules))
+        spans = []
+        for m in re.finditer(pattern, code):
+            kind = m.lastgroup.rsplit("_", 1)[0]
+            spans.append((m.start(), m.end(), cls._CODE_STYLES[kind]))
+        return spans
+
+    def code_block(self, x, y, w, h, code, *, lang="java", size=7.5,
+                   line_spacing=104, bg=None, fg=None,
+                   font="Roboto Mono") -> str:
+        """シンタックスハイライト付きのコードパネル。
+
+        lang は _CODE_RULES のキー（java / graphql / json / bash）。未知の言語は
+        単色で描く。高さの見積もりは実効行高（fontSize × lineSpacing × 約1.45）で
+        行うこと。
+        """
+        # 角は直角にする（角丸だと 1 行目・最終行のインデントが角に食われて
+        # 見え、他のカード類の直角規約とも揃わない）
+        oid = self.shape(x, y, w, h, kind="RECTANGLE",
+                         fill=bg or self.CODE_BG, stroke=None, text=code,
+                         size=size, color=fg or self.CODE_FG, align="START",
+                         valign="MIDDLE", line_spacing=line_spacing, font=font)
+        for start, end, color in self._highlight(code, lang):
+            self.deck.requests.append({"updateTextStyle": {
+                "objectId": oid,
+                "style": {"foregroundColor": {
+                    "opaqueColor": {"rgbColor": _auth.hex_to_rgb(color)}}},
+                "textRange": {"type": "FIXED_RANGE",
+                              "startIndex": start, "endIndex": end},
+                "fields": "foregroundColor"}})
+        return oid
 
     # ---- 線・矢印 ----
 
@@ -272,7 +424,7 @@ class Canvas:
                 "objectId": oid,
                 "lineProperties": {
                     "lineFill": self._solid(color or self.P.muted),
-                    "weight": {"magnitude": int(weight * 12700), "unit": "EMU"},
+                    "weight": {"magnitude": int(weight * _auth.EMU_PER_PT), "unit": "EMU"},
                     "dashStyle": "DASH" if dashed else "SOLID",
                     "startArrow": start_arrow,
                     "endArrow": end_arrow,
@@ -385,7 +537,7 @@ class Canvas:
                     "endConnection": {"connectedObjectId": dst,
                                       "connectionSiteIndex": e_site},
                     "lineFill": self._solid(color or self.P.primary),
-                    "weight": {"magnitude": int(weight * 12700), "unit": "EMU"},
+                    "weight": {"magnitude": int(weight * _auth.EMU_PER_PT), "unit": "EMU"},
                     "dashStyle": "DASH" if dashed else "SOLID",
                     "startArrow": start_arrow,
                     "endArrow": end_arrow,
@@ -469,9 +621,18 @@ class Canvas:
                 and inner[0] + inner[2] <= outer[0] + outer[2] + slack
                 and inner[1] + inner[3] <= outer[1] + outer[3] + slack)
 
+    # Slides のテキスト枠の既定インセット（左右 0.1in）。ここを引かずに幅で割ると
+    # 「1 行に入る文字数」を 1〜2 字多く見積もり、実際には折り返しているのに
+    # 検査が素通りする。
+    #
+    # 縦方向のインセット（0.05in）は**引かない**。Slides は枠から縦に溢れた文字を
+    # 切り取らずそのまま描くため、引くと 1 行のラベルが軒並み誤検知になる
+    # （実測: 0.24in の枠に 9.5pt の 1 行は問題なく出る）。
+    TEXT_INSET_X = 0.10
+
     def _text_lines(self, m):
         """折り返しを見込んだ行数と、1 行に入る文字数を返す。"""
-        w = m["rect"][2]
+        w = max(m["rect"][2] - self.TEXT_INSET_X * 2, 0.01)
         per = (w * 72.0) / m["size"]
         if per <= 0:
             return 1, per
@@ -558,11 +719,49 @@ class Canvas:
                        f"「{ta}」と「{tb}」", ("hit", *sorted((ta, tb))))
         return out
 
-    def audit_text_fit(self) -> list[str]:
-        """枠に対して文字が多すぎるものを報告する。
+    BOUNDS_SLACK = 0.02     # この量までのはみ出しは許す（丸め誤差）
 
-        1 行に入る文字数を「幅(pt) ÷ フォントサイズ(pt)」で見積もり、必要な行数から
-        必要な高さを出して、宣言した高さと比べる。枠から溢れた文字は切れて見える。
+    def audit_bounds(self) -> list[str]:
+        """スライドの外へ出た図形・線を報告する。
+
+        図の部品は与えられた枠から自分で座標を計算するため、枠の中に収まっていても
+        中身が外へ突き抜けることがある（比率のかけ違い）。図形単位で見ないと拾えない。
+        """
+        out = []
+        s = self.BOUNDS_SLACK
+        for oid, r in self.rects.items():
+            x, y, w, h, kind = r
+            over = []
+            if x < -s:
+                over.append(f"左に {-x:.2f}in")
+            if y < -s:
+                over.append(f"上に {-y:.2f}in")
+            if x + w > self.page_w + s:
+                over.append(f"右に {x + w - self.page_w:.2f}in")
+            if y + h > self.page_h + s:
+                over.append(f"下に {y + h - self.page_h:.2f}in")
+            if over:
+                name = self.texts.get(oid, {}).get("text", kind)
+                out.append(f"図形がスライドの外に出ています（{'/'.join(over)}）:"
+                           f"「{str(name).replace(chr(10), ' ')[:20]}」")
+        for conn in self.connectors:
+            for p in (conn["p1"], conn["p2"]):
+                if not (-s <= p[0] <= self.page_w + s and -s <= p[1] <= self.page_h + s):
+                    out.append(f"線の端点がスライドの外にあります: "
+                               f"({p[0]:.2f}, {p[1]:.2f})")
+        return out
+
+    ORPHAN_EM = 1.0     # 折り返しの最終行がこれ以下なら「1文字だけこぼれた」とみなす
+
+    def audit_text_fit(self) -> list[str]:
+        """枠に収まらない文字と、みっともない折り返しを報告する。
+
+        1. **溢れ** … 1 行に入る文字数を「幅(pt) ÷ フォントサイズ(pt)」で見積もり、
+           必要な行数から必要な高さを出して、宣言した高さと比べる。溢れた文字は
+           切れて見える。
+        2. **孤立行** … 折り返した結果、最後の行に 1 文字しか残らない状態。
+           「…デプロ / イ」のような割れ方は、収まってはいるが明らかに不格好。
+           枠を数 mm 広げるか文言を詰めれば消える。
         """
         out = []
         for m in self.texts.values():
@@ -575,6 +774,15 @@ class Canvas:
                 t = m["text"].replace("\n", " ")[:22]
                 out.append(f"枠に対して文字が多すぎます"
                            f"（必要 {need:.2f}in > 枠 {h:.2f}in / {lines}行）:「{t}」")
+                continue
+            for ln in m["text"].split("\n"):
+                e = self._em(ln)
+                if e <= per:
+                    continue
+                tail = e % per
+                if 0 < tail <= self.ORPHAN_EM:
+                    out.append(f"折り返しの最終行に文字が {tail:.1f} 字しか残りません"
+                               f"（1行 {per:.1f} 字）:「{ln[:22]}」")
         return out
 
     def link(self, src, dst, *, gap=0.04, color=None, weight=1.4, dashed=False,
@@ -605,14 +813,18 @@ class Canvas:
 
     def cards(self, x, y, w, h, items, *, gap=0.22, fill=None, stroke=None,
               title_size=12, body_size=10, accent=None):
-        """横並びのカード。items は (見出し, 本文) のリスト。戻り値は下端 y。"""
+        """横並びのカード。items は (見出し, 本文) のリスト。戻り値は下端 y。
+
+        上端に直線のアクセントバーを重ねるため、角は丸めない（RECTANGLE）。
+        角丸の縁と直線バーの端が噛み合わず、不揃いに見えるため。
+        """
         n = len(items)
         cw = (w - gap * (n - 1)) / n
         out = []
         for i, item in enumerate(items):
             head, body = (item if isinstance(item, (tuple, list)) else (item, None))
             cx = x + i * (cw + gap)
-            out.append(self.shape(cx, y, cw, h, kind="ROUND_RECTANGLE",
+            out.append(self.shape(cx, y, cw, h, kind="RECTANGLE",
                                   fill=fill or self.P.surface,
                                   stroke=stroke or self.P.border))
             bar_c = accent[i] if isinstance(accent, (list, tuple)) else (accent or self.P.primary)
@@ -633,7 +845,11 @@ class Canvas:
 
         出典のある数値にだけ使うこと。
         """
-        mx = max_value or max(r[1] for r in rows)
+        if not rows:
+            raise ValueError("hbars: rows が空です")
+        mx = max_value if max_value is not None else max(r[1] for r in rows)
+        if mx <= 0:
+            mx = 1.0  # 全行 0 のときは空のトラックだけ描く（ゼロ除算回避）
         track_x = x + label_w
         track_w = w - label_w - value_w
         for i, (name, value, caption) in enumerate(rows):

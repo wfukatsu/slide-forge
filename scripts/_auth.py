@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
-"""Google Slides / Drive API の共通認証ヘルパー。
+"""Shared OAuth helper for the Google Slides / Drive APIs.
 
-credentials.json / token.json は以下の順で探索する:
+credentials.json / token.json are discovered in this order:
 
-1. 環境変数 `SLIDE_FORGE_CONFIG_DIR`（後方互換で `GSLIDES_CONFIG_DIR` も見る）
-2. `~/.config/slide-forge/`
-3. 本プラグインの `config/`
-
-2 を既定の置き場所にしているのは、プラグインを更新・再インストールしても
-認証情報が消えないようにするため。3 はリポジトリ内で完結させたい場合に使う
-（`.gitignore` で除外済み）。
+1. `$GSLIDES_CONFIG_DIR` environment variable
+2. `<repo>/config/` — the canonical location
+3. `~/.claude/skills/google-slides/config/` — transitional fallback to the
+   pre-consolidation skill layout; remove once the old skills are deleted.
 """
 from __future__ import annotations
 
@@ -17,6 +14,7 @@ import os
 import re
 import sys
 
+from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -28,16 +26,16 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
 ]
 EMU_PER_INCH = 914400
+EMU_PER_PT = 12700
 
 
 def config_dirs() -> list[str]:
     dirs = []
-    for var in ("SLIDE_FORGE_CONFIG_DIR", "GSLIDES_CONFIG_DIR"):
-        env = os.environ.get(var)
-        if env:
-            dirs.append(os.path.expanduser(env))
-    dirs.append(os.path.expanduser("~/.config/slide-forge"))
+    env = os.environ.get("GSLIDES_CONFIG_DIR")
+    if env:
+        dirs.append(os.path.expanduser(env))
     dirs.append(os.path.join(SKILL_DIR, "config"))
+    dirs.append(os.path.expanduser("~/.claude/skills/google-slides/config"))
     return dirs
 
 
@@ -59,23 +57,28 @@ def get_credentials():
             + "\n\nGoogle Cloud Console で OAuth 2.0 デスクトップクライアントを作成し、"
             "Slides API と Drive API を有効化してください。"
         )
-    token_path = _find("token.json")
-    if not token_path:
-        # 既存の token が無い場合は credentials と同じ場所に作る
-        token_path = os.path.join(os.path.dirname(creds_path), "token.json")
-        os.makedirs(os.path.dirname(token_path), exist_ok=True)
+    token_path = _find("token.json") or os.path.join(
+        os.path.dirname(creds_path), "token.json"
+    )
 
     creds = None
     if os.path.exists(token_path):
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
+            try:
+                creds.refresh(Request())
+            except RefreshError:
+                # トークンが失効・取り消し済み（invalid_grant）。再認証に落とす
+                print("トークンが失効しています。再認証します...", file=sys.stderr)
+                creds = None
+        if not creds or not creds.valid:
             print("ブラウザで OAuth 認証を行います...", file=sys.stderr)
             flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
             creds = flow.run_local_server(port=0)
-        with open(token_path, "w") as f:
+        # リフレッシュトークンを含むため所有者のみ読み書き可で保存する
+        fd = os.open(token_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "w") as f:
             f.write(creds.to_json())
     return creds
 

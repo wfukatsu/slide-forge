@@ -1,0 +1,427 @@
+[
+  {
+    "layout": "SECTION",
+    "title": "評価",
+    "subtitle": "第7章\nRAG Triad、RAGAS、ARES",
+    "notes": "第7章。改善ループを回すための観測設計。ここがないと本番運用は続かない。",
+    "figures": [
+      {
+        "type": "band",
+        "x": 0.5,
+        "y": 2.85,
+        "w": 3.25,
+        "h": 2.34,
+        "fill": "#FFFFFF",
+        "kind": "RECTANGLE"
+      },
+      {
+        "type": "icon_grid",
+        "x": 0.74,
+        "y": 3.04,
+        "w": 2.77,
+        "items": [
+          "chart",
+          "search",
+          "document",
+          "gear"
+        ],
+        "cols": 2,
+        "size": 0.8,
+        "rowGap": 0.36,
+        "color": "#2673BB"
+      }
+    ]
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "評価は採点ではなく観測設計",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "RAG 評価は「回答がそれっぽいか」ではなく、失敗箇所を分解して測る。LLM 単体の評価では、検索起因の失敗を見分けられない。"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 2.3,
+        "items": [
+          [
+            "よくある失敗",
+            "検索漏れ：正解根拠が Top-k にない\n検索ノイズ：無関係な文書が混ざる\n根拠無視：正しい文書があるのに別回答\n質問逸脱：自然だが質問に答えていない"
+          ],
+          [
+            "評価で切り分ける",
+            "Retriever の問題か\nChunking の問題か\nRerank の問題か\nPrompt / LLM の問題か\n権限・鮮度の問題か"
+          ],
+          [
+            "改善に使う",
+            "モデル・Embedding 比較\nBM25 / Hybrid / Rerank 比較\nチャンクサイズ最適化\nリリース前の回帰テスト\n本番ログから golden set 化"
+          ]
+        ],
+        "titleSize": 10.5,
+        "bodySize": 8.5
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "評価は「採点」ではなく、改善ループを回すための観測設計。総合点が1つ出ても、次に何を直せばよいかは分からない。"
+      }
+    ],
+    "notes": "「精度80%です」という報告に意味はない。どこで落ちているかを言えるようにするのが評価の目的。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "RAG 評価の全体像は3層",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Retriever 評価、Generator 評価、System 評価の3層に分ける。RAGAS / ARES / RAG Triad は主に上2層を分解して測る。"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 2.3,
+        "items": [
+          [
+            "Retriever 評価",
+            "Context Recall\nContext Precision\nMRR / nDCG\n→ Top-k に正解根拠が入るか"
+          ],
+          [
+            "Generator 評価",
+            "Faithfulness / Groundedness\nAnswer Relevance\nCitation Accuracy\n→ 根拠に沿って答えるか"
+          ],
+          [
+            "System 評価",
+            "Task Success\nLatency / Cost\nSafety / Policy\n→ 業務タスクとして成立するか"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "3層のうち System 評価だけが業務価値に直結する。ただし上2層が測れていないと、System が悪いときに直し方が分からない。"
+      }
+    ],
+    "notes": "経営に報告するのはSystem層、改善に使うのはRetriever層とGenerator層。用途が違う。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "RAG Triad：3観点で切り分ける",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Question / Context / Answer の3点間を、3つの関係で評価する。ground truth がなくても診断しやすいのが利点。"
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 0.7,
+        "items": [
+          "Question（ユーザーの質問）",
+          "Context（検索された根拠）",
+          "Answer（生成された回答）"
+        ],
+        "size": 10.5
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 2.5,
+        "w": 9.0,
+        "h": 1.27,
+        "items": [
+          [
+            "Context Relevance",
+            "質問に対して、検索された文脈は関連しているか"
+          ],
+          [
+            "Groundedness",
+            "回答は検索文脈に支えられているか"
+          ],
+          [
+            "Answer Relevance",
+            "回答は質問に答えているか"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9.5
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "どれが低いかで直す場所が決まる。Context Relevance なら検索、Groundedness なら Prompt / Verifier。"
+      }
+    ],
+    "notes": "最も導入コストが低い評価。正解データを作る前に、まずTriadで当たりをつけるのがおすすめ。"
+  },
+  {
+    "layout": "CONTENT",
+    "title": "RAGAS：OSS で体系的に評価する",
+    "body": [
+      "RAGAS は、RAG パイプラインを reference-free に評価する枠組みとして提案された。",
+      "現在のドキュメントでは、LLM アプリの評価ループを体系化するライブラリとして説明されている。",
+      "質問・回答・検索文脈・必要に応じて正解を使い、検索品質と生成品質を指標化する。",
+      "",
+      "【代表指標（生成側）】",
+      "  ・Faithfulness：回答が文脈に忠実か",
+      "  ・Answer Relevancy：質問に答えているか",
+      "",
+      "【検索系指標】",
+      "  ・Context Precision：関連文脈が上位にあるか",
+      "  ・Context Recall：必要根拠を取得できたか",
+      "  ・Context Relevancy：文脈が質問に関係するか",
+      "",
+      "【使いどころ】",
+      "  PoC 比較、チャンク / Embedding / 検索方式の A/B、リリース前の回帰テスト",
+      "",
+      "注意点：LLM Judge を使うためコストとばらつきがある。閾値運用は別途設計する。"
+    ],
+    "bodyFontSize": 11.5,
+    "notes": "reference-freeで始められるのが利点。ただし重要な質問には人手で正解根拠を付けたほうが精度が出る。",
+    "bodyLineSpacing": 113,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 1.5
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "ARES：評価そのものを自動化する",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Automated RAG Evaluation System。人手アノテーションを最小化して RAG を評価する。合成データと軽量 Judge、少量の人手ラベルを組み合わせる。"
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 0.7,
+        "items": [
+          "Synthetic Data",
+          "LM Judges",
+          "Few Human Labels",
+          "PPI",
+          "Scores"
+        ],
+        "size": 10
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 2.5,
+        "w": 9.0,
+        "h": 1.55,
+        "items": [
+          [
+            "評価軸",
+            "Context Relevance\nAnswer Faithfulness\nAnswer Relevance"
+          ],
+          [
+            "強み",
+            "大量評価を自動化しやすい\nドメインシフトにも対応しやすい設計"
+          ],
+          [
+            "注意点",
+            "Judge の学習・評価設計が必要\n少量でも人手ラベルは重要"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "PPI（Prediction-Powered Inference）で、少量の人手ラベルから全体の品質を統計的に推定する。大規模評価基盤向け。"
+      }
+    ],
+    "notes": "導入の設計負荷は高い。まずRAG TriadとRAGASで回して、規模が大きくなってから検討する順序でよい。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "3フレームワークの使い分け",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "3つは競合ではなく、目的と規模で使い分ける。設計レビューには Triad、日次評価には RAGAS、大規模基盤には ARES。"
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.45,
+        "w": 9.0,
+        "headers": [
+          "観点",
+          "RAG Triad",
+          "RAGAS",
+          "ARES"
+        ],
+        "rows": [
+          [
+            "主目的",
+            "失敗箇所の理解",
+            "OSS 指標で定量評価",
+            "評価の自動化・大規模化"
+          ],
+          [
+            "必要データ",
+            "質問・文脈・回答",
+            "質問・回答・文脈・任意で正解",
+            "合成データ + 少量人手ラベル"
+          ],
+          [
+            "強み",
+            "シンプルで説明しやすい",
+            "PoC / 回帰テストに使いやすい",
+            "Judge を適応させやすい"
+          ],
+          [
+            "注意点",
+            "スコア運用は別途設計",
+            "LLM Judge のコスト / ばらつき",
+            "導入の設計負荷が高い"
+          ],
+          [
+            "向く場面",
+            "設計レビュー",
+            "日次 / リリース評価",
+            "大規模評価基盤"
+          ]
+        ],
+        "colWidths": [
+          1,
+          1.6,
+          2,
+          2
+        ],
+        "size": 9.5,
+        "aligns": [
+          "START",
+          "START",
+          "START",
+          "START"
+        ]
+      }
+    ],
+    "notes": "最初はTriadで手動、次にRAGASで自動化、規模が出てからARES。段階を飛ばす必要はない。"
+  },
+  {
+    "layout": "CONTENT",
+    "title": "評価セット設計：日本語で特に重要",
+    "body": [
+      "  ・実際の業務質問を 50〜200 件から始める",
+      "  ・正解根拠は文書 ID・版・ページ・表／セル位置まで付与する",
+      "  ・表記ゆれ、略語、固有名詞、英日混在、古い版の文書を含める",
+      "  ・「正解がない / 権限上答えてはいけない」質問も含める",
+      "  ・自動評価だけでなく、人手レビューで校正する",
+      "",
+      "【Golden Set の単位】",
+      "  Question ／ Expected evidence ／ Expected answer or refusal ／ Required policy",
+      "",
+      "【日本語固有の観点】",
+      "  形態素解析の差分 ／ 表記ゆれ ／ PDF・表の抽出品質 ／ 引用ページの正確性",
+      "",
+      "【運用ルール】",
+      "  本番ログから定期的に追加し、リリース前に回帰テストする。",
+      "",
+      "4番目の「答えてはいけない質問」を必ず入れること。これがないと、",
+      "棄却できない RAG を「精度が高い」と誤って評価してしまう。"
+    ],
+    "bodyFontSize": 11.5,
+    "notes": "権限上答えてはいけない質問を評価セットに入れるのは、業務RAG特有だが決定的に重要。",
+    "bodyLineSpacing": 113,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 1.5
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "評価を改善ループに組み込む",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "RAG は文書更新・権限変更・モデル変更で劣化する。継続評価が前提であり、一度測って終わりではない。"
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 0.7,
+        "items": [
+          "Collect",
+          "Label",
+          "Evaluate",
+          "Diagnose",
+          "Improve",
+          "Release Gate"
+        ],
+        "size": 10
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 2.5,
+        "w": 9.0,
+        "h": 1.27,
+        "items": [
+          [
+            "閾値設計",
+            "Context Recall が低いなら検索を改善\nFaithfulness が低いなら Prompt / Verifier を改善\nAnswer Relevance が低いなら質問理解を改善"
+          ],
+          [
+            "リリースゲート",
+            "前回版より悪化しない\n重要質問の正答率を維持する\n禁止回答はゼロ許容"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.89,
+        "w": 9.0,
+        "h": 1.15,
+        "text": "評価指標は「一つの総合点」ではなく、原因別のダッシュボードとして扱う。失敗分類（検索漏れ・ノイズ・根拠矛盾・回答逸脱・古い情報・権限違反）で並べる。"
+      }
+    ],
+    "notes": "高リスク領域には人手承認を残す。全自動にできる領域とできない領域を分けるのが運用設計。"
+  }
+]

@@ -1,0 +1,90 @@
+{
+  "defaults": {
+    "bodyFontSize": 13,
+    "bodyLineSpacing": 115,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 3
+  },
+  "slides": [
+    {
+      "layout": "COVER",
+      "title": "AI Agent のための RAG System",
+      "subtitle": "#1 RAG の基礎と日本語実装",
+      "body": "全2回の技術勉強会（第1回・60分）\n2026年8月\n株式会社Scalar",
+      "notes": "全2回の勉強会の第1回。前編はRAGを自分で設計・実装できるようになることがゴール。後編はAgentから安全に使えるようにするための設計を扱う。",
+      "figures": [
+        {
+          "type": "band",
+          "x": 6.4,
+          "y": 3.442,
+          "w": 3.15,
+          "h": 1.772,
+          "fill": "#FFFFFF",
+          "kind": "RECTANGLE"
+        },
+        {
+          "type": "icon_row",
+          "x": 6.58,
+          "y": 3.928,
+          "w": 2.79,
+          "items": [
+            "documents",
+            "search",
+            "bot"
+          ],
+          "size": 0.8,
+          "color": "#2673BB"
+        }
+      ]
+    },
+    {
+      "layout": "TWO_COLUMN",
+      "title": "本勉強会のゴールと対象者",
+      "bodies": [
+        [
+          "【ゴール】",
+          "",
+          "RAG の基本構造と限界を理解する",
+          "最近の RAG 技術、特に Agentic RAG の方向性を理解する",
+          "日本語文書・業務文書で RAG を実装する際の課題を理解する",
+          "AI Agent から RAG を使う際の Tool 化・権限・監査・評価を理解する",
+          "企業向け RAG / Agent 基盤の作り方を理解する"
+        ],
+        [
+          "【対象者】",
+          "",
+          "AI Agent / RAG を実装するエンジニア",
+          "エンタープライズ AI 基盤を設計するアーキテクト",
+          "社内データ活用を進める情シス・DX 部門",
+          "AI / RAG / Agent 提案を行う営業・プリセールス",
+          "データ基盤・DB・ガバナンスに関心がある技術リーダー"
+        ]
+      ],
+      "bodyFontSize": 12,
+      "notes": "対象者は幅広い。実装者だけでなく、提案する側もRAGの限界を知っておく必要がある。",
+      "bodyLineSpacing": 115,
+      "bodySpaceAbove": 0,
+      "bodySpaceBelow": 2
+    },
+    {
+      "layout": "CONTENT",
+      "title": "全2回の進め方",
+      "body": [
+        "前編は「RAG を作れるようにする」、後編は「Agent から安全に使えるようにする」。",
+        "",
+        "【前編（本日）】RAG の基礎と日本語実装",
+        "  1. なぜ AI Agent に RAG が必要か",
+        "  2. RAG の基本構成 — Query / Retriever / Vector / Prompt / Answer",
+        "  3. なぜ RAG の精度が上がらないのか — 落とし穴とハードネガティブ",
+        "  4. Naive RAG から Advanced RAG へ — rewrite / hybrid / rerank",
+        "  5. 日本語 RAG の難しさ — 形態素解析・表記ゆれ・PDF・表",
+        "  6. 日本語検索の実装 — Sudachi / kuromoji / GiNZA / BM25 / Embedding",
+        "  7. Embedding モデル選定 — BGE-M3 / multilingual E5 / 日本語特化",
+        "",
+        "【後編】Agent 時代の RAG",
+        "  Self-RAG / CRAG、RAPTOR / GraphRAG、Multi-Hop、Agentic RAG、MCP、セキュリティ、評価"
+      ],
+      "notes": "前編を聞けば、社内文書に対するRAGをひととおり設計・実装できる状態を目指す。後編は運用と自律化。"
+    }
+  ]
+}

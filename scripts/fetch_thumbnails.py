@@ -24,7 +24,8 @@ def main() -> int:
     p.add_argument("--out", required=True, help="出力ディレクトリ")
     p.add_argument("--size", default="MEDIUM", choices=["SMALL", "MEDIUM", "LARGE"],
                    help="サムネイルサイズ（既定: MEDIUM = 800px 幅相当）")
-    p.add_argument("--pages", help="取得するページ番号をカンマ区切りで指定（例: 1,3,5）")
+    p.add_argument("--pages",
+                   help="取得するページ番号。カンマ区切りと範囲が使える（例: 1,3,5 / 9-16 / 1,4-6）")
     args = p.parse_args()
 
     pres_id = _auth.presentation_id(args.source)
@@ -36,7 +37,20 @@ def main() -> int:
     all_slides = pres.get("slides", [])
     wanted = None
     if args.pages:
-        wanted = {int(x) for x in args.pages.split(",") if x.strip()}
+        # "1,4-6,9" のような指定を受ける。QA を複数のエージェントで分担するとき、
+        # 担当範囲を "17-24" のように渡せるほうが取り違えが起きにくい
+        wanted = set()
+        for part in args.pages.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if "-" in part:
+                lo, hi = (int(v) for v in part.split("-", 1))
+                if lo > hi:
+                    raise SystemExit(f"--pages: 範囲が逆です: {part}")
+                wanted.update(range(lo, hi + 1))
+            else:
+                wanted.add(int(part))
 
     os.makedirs(args.out, exist_ok=True)
     print(f"{pres.get('title')}: {len(all_slides)} slides")

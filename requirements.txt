@@ -1,5 +1,15 @@
-# slide-forge の依存パッケージ
-#   python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+# google-slides / google-slides-template スキル共有の依存
+# 更新: ~/.claude/venvs/gslides/bin/pip install -U -r ~/.claude/venvs/gslides-requirements.txt
+# Requires Python 3.10+
+
+# 必須
 google-auth-oauthlib>=1.2.0
 google-auth-httplib2>=0.2.0
 google-api-python-client>=2.120.0
+
+# アイコンライブラリ（google-slides-template の scripts/icons.py）の SVG→PNG 変換。
+# 無い場合は rsvg-convert / ImageMagick を探し、どれも無ければ同梱 PNG を色そのままで使う
+cairosvg>=2.7.0
+
+# 任意（google-slides スキルのアセット処理・チャートデータ管理で使う場合）
+# gspread>=6.0.0

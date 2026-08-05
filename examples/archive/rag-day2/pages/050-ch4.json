@@ -1,0 +1,731 @@
+[
+  {
+    "layout": "SECTION",
+    "title": "Agentic RAG",
+    "subtitle": "第4章\nRAG as Tool と Planner / Router / Retriever / Verifier",
+    "notes": "第4章。ここが後編の中心。RAGをAgentの道具として設計し直す。",
+    "figures": [
+      {
+        "type": "band",
+        "x": 0.5,
+        "y": 2.85,
+        "w": 3.25,
+        "h": 2.34,
+        "fill": "#FFFFFF",
+        "kind": "RECTANGLE"
+      },
+      {
+        "type": "icon_grid",
+        "x": 0.74,
+        "y": 3.04,
+        "w": 2.77,
+        "items": [
+          "bot",
+          "gear",
+          "search",
+          "network"
+        ],
+        "cols": 2,
+        "size": 0.8,
+        "rowGap": 0.36,
+        "color": "#2673BB"
+      }
+    ]
+  },
+  {
+    "layout": "CONTENT",
+    "title": "Agent 視点で RAG を再定義する",
+    "body": [
+      "RAG は「LLM の前処理」ではなく、Agent が使う信頼できる情報アクセス層になる。",
+      "",
+      "  ・従来 RAG ― 質問 → 検索 → 文脈投入 → 回答（固定手順）",
+      "  ・Agentic RAG ― Agent が「検索するか」を判断する",
+      "  ・RAG as Tool ― 検索・要約・引用を再利用可能な道具にする",
+      "",
+      "【見るべき論点】",
+      "  1. Agent はいつ RAG を呼ぶべきか",
+      "  2. RAG Tool の入出力契約をどう設計するか",
+      "  3. 権限・鮮度・根拠・評価をどこで担保するか",
+      "",
+      "この3つを決めないまま Agent に検索させると、過剰検索・文脈汚染・権限漏れが",
+      "同時に起きる。Tool の設計が Agent の品質を決める。"
+    ],
+    "notes": "Agentが賢くなればRAGは要らなくなる、という誤解が多い。逆で、Agentが強くなるほどTool設計が効いてくる。"
+  },
+  {
+    "layout": "TWO_COLUMN",
+    "title": "パイプラインから Tool へ",
+    "bodies": [
+      [
+        "【Pipeline RAG】",
+        "User Query → Retriever → Prompt → Answer",
+        "",
+        "固定手順。単純な Q&A では速いが、複雑タスクでは過剰検索・文脈汚染が起きやすい。",
+        "",
+        "・検索するかどうかを選べない",
+        "・検索結果を検証する場所がない",
+        "・失敗しても再試行できない"
+      ],
+      [
+        "【RAG as Tool】",
+        "Agent が Search Docs / Search DB / Verify Evidence / Summarize を選んで呼ぶ",
+        "",
+        "Agent が必要な Tool を選び、結果を検証し、足りなければ再検索する。",
+        "",
+        "・検索の要否を Agent が判断する",
+        "・複数 Tool の順序を制御できる",
+        "・失敗時に別 Tool へ切り替えられる"
+      ]
+    ],
+    "bodyFontSize": 11.5,
+    "notes": "Pipelineは「必ず検索する」設計。Toolは「必要なら検索する」設計。この差がコストと精度の両方に効く。",
+    "bodyLineSpacing": 113,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 1.5
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "実行ループでの RAG Tool の位置",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Agent の実行ループは5段階。RAG Tool はそのうち「Call Tool」に入るが、返すべきものは検索結果そのものではない。"
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 0.7,
+        "items": [
+          "1. Plan",
+          "2. Decide",
+          "3. Call Tool",
+          "4. Check",
+          "5. Act / Answer"
+        ],
+        "size": 11
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 2.5,
+        "w": 9.0,
+        "h": 2.0,
+        "items": [
+          [
+            "RAG Tool が返すべきもの",
+            "検索結果そのものではなく「使える証拠」\n出典、更新日時、権限、信頼度、引用可能範囲\n足りない情報や不確実性"
+          ],
+          [
+            "Agent が担うべきもの",
+            "検索するかどうかの判断\n複数 Tool の順序制御\n回答に使う根拠の取捨選択\n追加検索・確認・人間確認への分岐"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9.5
+      }
+    ],
+    "notes": "責務の分界点を決めるのが設計の第一歩。Tool側で判断しすぎるとAgentが制御できなくなる。"
+  },
+  {
+    "layout": "TWO_COLUMN",
+    "title": "RAG Tool の入出力契約",
+    "bodies": [
+      [
+        "【Input Contract】",
+        "",
+        "・query — 検索したい内容",
+        "・filters / tenant / ACL — 誰として検索するか",
+        "・time range / freshness — いつ時点の情報か",
+        "・topK / rerank policy — どれだけ、どう並べるか",
+        "・required evidence level — どこまでの根拠が必要か",
+        "",
+        "呼び出し側が「誰として、いつ時点で、どこまで確実な情報が欲しいか」を渡せる形にする。"
+      ],
+      [
+        "【Output Contract】",
+        "",
+        "・answer draft / summary — 回答案または要約",
+        "・evidence chunks — 根拠となるチャンク",
+        "・citations / source IDs — 引用と出典 ID",
+        "・confidence / caveats — 信頼度と留保",
+        "・permission trace — どの権限で何を見たか",
+        "",
+        "重要：Tool の責務は「検索」だけではない。Agent が安全に判断できるメタデータを返すことが価値。"
+      ]
+    ],
+    "bodyFontSize": 11,
+    "notes": "permission trace を返すのがEnterprise要件。後から「なぜこの人にこれが見えたか」を説明できる。",
+    "bodyLineSpacing": 112,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 1
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "3つの代表パターンの使い分け",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "判断基準：ユーザー質問が「答え」だけを求めるなら単純 RAG。「調べて、比較して、実行して、説明する」なら RAG as Tool。"
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "headers": [
+          "方式",
+          "向く用途",
+          "強み",
+          "注意点"
+        ],
+        "rows": [
+          [
+            "単純 RAG",
+            "FAQ・単一文書検索",
+            "速い / 実装容易",
+            "複雑タスクに弱い"
+          ],
+          [
+            "Agentic RAG",
+            "調査・分析・判断",
+            "必要時だけ検索する",
+            "制御と評価が難しい"
+          ],
+          [
+            "RAG as Tool",
+            "業務 Agent の情報アクセス",
+            "再利用・権限制御しやすい",
+            "Tool 契約設計が必要"
+          ]
+        ],
+        "colWidths": [
+          1.2,
+          2,
+          1.8,
+          1.8
+        ],
+        "size": 10,
+        "aligns": [
+          "START",
+          "START",
+          "START",
+          "START"
+        ]
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "3つは排他ではない。同じシステムの中で、FAQ 系は単純 RAG、調査系は Agentic RAG、と経路を分けるのが現実的。"
+      }
+    ],
+    "notes": "全部をAgentic RAGにすると、単純な質問にも余計なコストとレイテンシがかかる。経路を分けるのが実務解。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "Enterprise RAG as Tool",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Agent が複数の Tool を持つほど、共通の統制層が必要になる。権限・鮮度・監査を各 Tool に散らさず、Governance Layer に内蔵する。"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 1.45,
+        "items": [
+          [
+            "Doc RAG",
+            "PDF / Wiki"
+          ],
+          [
+            "SQL Tool",
+            "業務 DB"
+          ],
+          [
+            "Graph RAG",
+            "関係探索"
+          ],
+          [
+            "API Tool",
+            "SaaS"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9.5
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.1,
+        "w": 9.0,
+        "h": 0.95,
+        "items": [
+          [
+            "Governance Layer",
+            "認証 / 認可 / テナント分離 / マスキング / 監査ログ / レート制限"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9.5
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "統制を Tool ごとに実装すると、必ずどこかで抜ける。Tool の下に共通層を1枚敷く。"
+      }
+    ],
+    "notes": "Tool が増えるたびに権限チェックを書くと、必ず漏れる。共通層に集約して、Tool は使うだけにする。"
+  },
+  {
+    "layout": "TWO_COLUMN",
+    "title": "Agentic RAG は何を変えるのか",
+    "bodies": [
+      [
+        "【従来 RAG】",
+        "・質問をそのまま検索する",
+        "・上位チャンクを投入する",
+        "・LLM が回答する",
+        "・失敗しても再探索しにくい",
+        "",
+        "【Advanced RAG】",
+        "・Query rewrite",
+        "・Hybrid search",
+        "・Rerank",
+        "・検索精度を高める"
+      ],
+      [
+        "【Agentic RAG】",
+        "・目的を分解する",
+        "・検索先を選ぶ",
+        "・結果を検証する",
+        "・不足時に再計画する",
+        "",
+        "【本質】",
+        "固定的な「検索 → 回答」から、判断を含む「計画 → 検索 → 検証 → 再実行」へ。",
+        "",
+        "RAG を「検索機能」から「意思決定を持つ情報探索プロセス」へ拡張する。"
+      ]
+    ],
+    "bodyFontSize": 11.5,
+    "notes": "Naive RAG = 固定パイプライン、Agentic RAG = 状態を見て次の行動を選ぶ。ここが定義の違い。",
+    "bodyLineSpacing": 113,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 1.5
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "全体アーキテクチャ：4つの役割",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Planner、Router、Retriever、Verifier が役割分担し、状態を持って探索する。不足・矛盾があれば Planner に戻って再計画する。"
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 0.7,
+        "items": [
+          "User Question",
+          "Planner",
+          "Router",
+          "Retriever",
+          "Verifier",
+          "Answer"
+        ],
+        "size": 10
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 2.5,
+        "w": 9.0,
+        "h": 1.55,
+        "items": [
+          [
+            "状態管理",
+            "計画、検索履歴、根拠、評価結果、再試行回数を保持する"
+          ],
+          [
+            "ツール群",
+            "ベクトル検索、BM25、SQL、Web、社内 API、グラフ検索"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9.5
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "この4つを1つの LLM プロンプトに混ぜないこと。役割を分けておくと、どこが失敗したかを切り分けられる。"
+      }
+    ],
+    "notes": "第2章までの手法（rewrite / hybrid / rerank / CRAG）は、この4役割のどこかに載る。全体の見取り図。"
+  },
+  {
+    "layout": "CONTENT",
+    "title": "Planner：探索計画に変換する",
+    "body": [
+      "複雑な質問ほど、先に検索戦略を立てることで取りこぼしを減らせる。",
+      "",
+      "【Planner の役割】",
+      "  ・質問意図を分類する（事実確認 / 比較 / 手続き / 集計）",
+      "  ・サブクエリに分解する",
+      "  ・必要な情報源を想定する",
+      "  ・検索順序と終了条件を決める",
+      "",
+      "【例：業務質問】",
+      "  「A製品の最新 SLA と契約上の例外条件を踏まえ、顧客 X に適用されるか？」",
+      "    1. 最新 SLA を確認する",
+      "    2. 契約例外を確認する",
+      "    3. 顧客 X の契約条件を確認する",
+      "",
+      "Planner がない場合：1回の検索結果に依存し、必要な文書を横断しにくい。"
+    ],
+    "notes": "Planner は Multi-Hop の Question Decomposition と同じ仕事。Agentic RAG では常設の役割になる。",
+    "bodyFontSize": 12.5,
+    "bodyLineSpacing": 115,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 2.5
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "Router：どこを検索するかを選ぶ",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "すべてを同じ検索器に投げるのではなく、質問に応じて最適な経路へ振り分ける。Router は検索品質とコスト・レイテンシ・権限を同時に制御する。"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 1.45,
+        "items": [
+          [
+            "文書検索",
+            "PDF、規程、議事録、FAQ"
+          ],
+          [
+            "構造化検索",
+            "顧客 DB、契約 DB、権限 DB"
+          ],
+          [
+            "外部・更新情報",
+            "Web、API、ナレッジ更新"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9.5
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.02,
+        "w": 9.0,
+        "h": 1.03,
+        "items": [
+          [
+            "質問タイプ",
+            "事実確認・比較・集計など"
+          ],
+          [
+            "データ鮮度",
+            "固定文書か、最新情報か"
+          ],
+          [
+            "権限",
+            "参照可能な範囲か"
+          ],
+          [
+            "コスト",
+            "高価な検索をいつ使うか"
+          ]
+        ],
+        "titleSize": 10.5,
+        "bodySize": 8.5
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "Routing の判断軸は4つ。権限を Router に持たせると、そもそも見えない領域は検索対象にならない。"
+      }
+    ],
+    "notes": "権限をRouterで効かせるのが最も安全。Retriever以降で弾く設計だと、ログには残ってしまう。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "Retriever：道具箱として扱う",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Agentic RAG では Retriever を単一の検索器ではなく「道具箱」として扱う。質問の性質に応じて使い分ける。"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 2.3,
+        "items": [
+          [
+            "Vector / Embedding",
+            "意味的に近い文章を探す\n言い換え・類似概念に強い\n固有名詞・数値条件は弱い場合あり"
+          ],
+          [
+            "BM25 / Keyword",
+            "製品名・型番・条文番号に強い\n表記ゆれや同義語には弱い\n日本語では Analyzer 設計が重要"
+          ],
+          [
+            "SQL / Graph / API",
+            "構造化データを正確に取得する\n関係探索や集計に強い\nツール呼び出しの検証が必要"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "実務では「Hybrid search + Rerank + Metadata / ACL filter」が基本形。前編で作ったものが、そのまま道具箱の1つになる。"
+      }
+    ],
+    "notes": "前編の内容がここで再利用される。良い Retriever がなければ、Agentを賢くしても意味がない。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "Verifier：信用してよいか判定する",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "Agentic RAG の品質は「取ってきた情報を疑う」工程で大きく変わる。Verifier は Self-RAG / CRAG の判断をアーキテクチャ化したもの。"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 2.3,
+        "items": [
+          [
+            "検索結果の検証",
+            "質問に答える根拠が含まれるか\n古い文書や重複が混ざっていないか\n権限外・機密情報が混入していないか"
+          ],
+          [
+            "回答の検証",
+            "主張ごとに出典があるか\n数値・日付・条件を取り違えていないか\n根拠不足なら「不明」と言えるか"
+          ],
+          [
+            "再実行判断",
+            "追加検索する\n別 Retriever に切り替える\nPlanner に戻って質問を分解する"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.17,
+        "w": 9.0,
+        "h": 0.87,
+        "text": "Verifier がない Agentic RAG は、ただ「よく検索する Naive RAG」でしかない。検証こそが自律化の前提条件。"
+      }
+    ],
+    "notes": "第1章のSelf-RAG/CRAGが、ここでアーキテクチャ上の1コンポーネントとして位置づけられる。"
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "制御ループと終了条件",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "一度の検索で答えを出すのではなく、証拠の不足を検知して探索を続ける。重要なのは、失敗したときに戻れること。"
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.45,
+        "w": 9.0,
+        "h": 0.68,
+        "items": [
+          "1. 計画",
+          "2. 経路選択",
+          "3. 検索",
+          "4. 検証",
+          "5. 回答生成"
+        ],
+        "size": 11
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 2.35,
+        "w": 9.0,
+        "h": 0.68,
+        "items": [
+          "6. 不足検知",
+          "7. 再検索",
+          "8. 再計画（Planner へ戻る）"
+        ],
+        "size": 11
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.3,
+        "w": 9.0,
+        "h": 1.4,
+        "items": [
+          [
+            "終了条件 1",
+            "十分な根拠が集まった"
+          ],
+          [
+            "終了条件 2",
+            "最大試行回数に達した"
+          ],
+          [
+            "終了条件 3",
+            "コスト上限に達した"
+          ],
+          [
+            "終了条件 4",
+            "ユーザー確認が必要"
+          ]
+        ],
+        "titleSize": 10.5,
+        "bodySize": 9
+      }
+    ],
+    "notes": "「戻れる」ことが自律化の条件。戻れないなら、それは長いパイプラインでしかない。"
+  },
+  {
+    "layout": "TWO_COLUMN",
+    "title": "実装パターンと避けたい設計",
+    "bodies": [
+      [
+        "【Step 1：決定的な RAG】",
+        "Hybrid search / Rerank / 出典付き回答 / 評価セット作成",
+        "",
+        "【Step 2：限定 Agent 化】",
+        "Planner で質問分解 / Router で検索先選択 / Verifier で根拠チェック / 失敗時のみ再検索",
+        "",
+        "【Step 3：業務統合】",
+        "権限制御 / 監査ログ / コスト管理 / 人間承認 / データ基盤で整合性管理"
+      ],
+      [
+        "【避けたい設計】",
+        "",
+        "・無制限ループ（停止条件がない）",
+        "・全ツール常時実行（コストとノイズが増える）",
+        "・根拠なし生成（引用を必須にしていない）",
+        "・権限チェック後付け（設計に組み込んでいない）",
+        "",
+        "【PoC のコツ】",
+        "「再検索が必要なケース」を先に明確にし、Verifier の評価指標から作る。",
+        "",
+        "最初から完全自律にせず、制御可能なワークフローとして始める。"
+      ]
+    ],
+    "bodyFontSize": 11,
+    "notes": "Step 1 を飛ばしてStep 2に行く案件が多い。決定的なRAGが安定していないと、Agent化しても何も改善しない。",
+    "bodyLineSpacing": 112,
+    "bodySpaceAbove": 0,
+    "bodySpaceBelow": 1
+  },
+  {
+    "layout": "TITLE_ONLY",
+    "title": "評価は4層に分けて測る",
+    "figures": [
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 0.78,
+        "w": 9.0,
+        "text": "RAG 単体ではなく、Agent のタスク完了まで測る。検索が良くても、Tool 選択を誤ればタスクは完了しない。"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 2.27,
+        "items": [
+          [
+            "Retrieval",
+            "Recall@K / MRR\nRerank 精度\n重複・ノイズ率"
+          ],
+          [
+            "Grounding",
+            "引用一致率\nUnsupported claim 率\n根拠の新鮮度"
+          ],
+          [
+            "Agent",
+            "Tool 選択精度\n不要 Tool 呼び出し率\n再検索成功率"
+          ],
+          [
+            "Business",
+            "タスク完了率\n人間確認の削減\n監査対応時間"
+          ]
+        ],
+        "titleSize": 11,
+        "bodySize": 9
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.89,
+        "w": 9.0,
+        "h": 1.15,
+        "text": "評価データは「実業務質問・正解文書・期待 Tool・許容回答・禁止回答」をセットで管理する。禁止回答を持つのが業務 Agent の要件。"
+      }
+    ],
+    "notes": "「期待Tool」を評価データに含めるのがAgent評価の特徴。どのToolを呼ぶべきだったかを正解として持つ。"
+  }
+]
