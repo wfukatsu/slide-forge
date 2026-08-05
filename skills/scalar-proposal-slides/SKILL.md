@@ -16,7 +16,9 @@ description: >-
 
 # Scalar Solution Proposal Slides
 
-Working directory: the repo root, `/Users/wfukatsu/work/slide-forge`.
+Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running
+from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone
+(literal `cd` paths below assume the local clone).
 
 ## Important
 

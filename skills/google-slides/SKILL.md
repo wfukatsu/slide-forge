@@ -23,7 +23,7 @@ description: >-
   - Dense cloud architecture / data-flow / network diagrams (nested containers, 10+ nodes) → author them with the `drawio-diagrams` skill (draw.io → PNG → insert); simple concept figures stay on `diagrams.py`
   - PPTX files → `document-skills:pptx`; Slidev → `slidev` skill
   - A bare "make slides" request uses this skill only when a Google Drive / Google Slides context is explicit
-- **Working directory**: the repo root `/Users/wfukatsu/work/slide-forge`. All commands below run from there.
+- **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone. All commands below run from there (literal paths assume the local clone).
 - **Auth** is centralized in `scripts/_auth.py`. It finds `credentials.json` / `token.json` in: `$GSLIDES_CONFIG_DIR` → `config/` at the repo root (canonical) → the old skill layout (transitional fallback). Never write per-script inline auth.
 - **Visual QA is mandatory** (Phase 5). Never declare a deck done without inspecting thumbnails.
 - On QA failure, **delete the broken presentation and regenerate** from the fixed spec/module. Never patch a live deck with incremental API edits.

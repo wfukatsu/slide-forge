@@ -18,7 +18,7 @@ description: >-
 ## Important
 
 - **Scope of this skill**: duplicate an existing Google Slides presentation as the **design source of truth** and flow text into its layouts.
-- **Run every command from the repository root (`/Users/wfukatsu/work/slide-forge`) as cwd.** The relative paths `scripts/…`, `templates/…`, and `.venv/bin/python` resolve from there.
+- **Run every command from the slide-forge root as cwd.** The relative paths `scripts/…`, `templates/…`, and `.venv/bin/python` resolve from there. The root is `${CLAUDE_PLUGIN_ROOT}` when this skill runs from an installed plugin (the placeholder is substituted to the install path); on a local clone it is `/Users/wfukatsu/work/slide-forge`. Literal `cd` paths below assume the local clone — substitute the plugin root when installed.
 - **Out of scope**:
   - Designing from scratch without a template → `google-slides` skill (composer, infographics, code-first `deckkit` decks)
   - Scalar company/product/feature decks → `scalar-product-slides` skill (a dedicated workflow layered on top of this one)

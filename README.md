@@ -43,6 +43,23 @@ config/       credentials.json + token.json (gitignored, 0600)
 cache/ out/   transient render cache and QA output (gitignored)
 ```
 
+## Install as a Claude Code plugin
+
+The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
+one plugin bundling all five skills):
+
+```
+/plugin marketplace add wfukatsu/slide-forge
+/plugin install slide-forge@slide-forge
+```
+
+Skills become available as `slide-forge:<skill-name>`. After installing,
+run the Setup below inside the plugin root (`${CLAUDE_PLUGIN_ROOT}`) — the
+venv, OAuth credentials, and cloud icons are machine-local and not bundled.
+Alternatively, clone the repo and symlink `skills/*` into `~/.claude/skills/`
+(the layout used during development); pick one of the two, not both, or the
+skills will be listed twice.
+
 ## Setup
 
 1. Python venv — the repo expects `.venv` (symlink to a shared venv is fine):

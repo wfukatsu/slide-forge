@@ -5,15 +5,15 @@
     "url": "https://github.com/wfukatsu"
   },
   "metadata": {
-    "description": "Google Slides deck generation: template-driven, from-scratch, and Scalar product workflows with a shared Python engine and visual QA",
-    "version": "1.0.0"
+    "description": "Google Slides deck generation: template-driven, from-scratch, Scalar product and proposal workflows, plus draw.io diagrams, on a shared Python engine with visual QA",
+    "version": "1.1.0"
   },
   "plugins": [
     {
       "name": "slide-forge",
       "strict": false,
-      "description": "Generate Google Slides decks with Python + the Slides API. Three skills on one shared engine: google-slides-template (generate from a registered master template with interactive intake, spec validation, and thumbnail-based visual QA), google-slides (from-scratch decks via a blank template spec path or a code-first deckkit path with offline layout validation), and scalar-product-slides (Scalar Inc. company/product deck workflow). Includes charts, business-framework figures, pictogram and cloud-vendor icon libraries, AI image generation, and parallel per-page spec authoring for large decks.",
-      "version": "1.0.0",
+      "description": "Generate Google Slides decks with Python + the Slides API. Five skills on one shared engine: google-slides-template (generate from a registered master template with interactive intake, spec validation, and thumbnail-based visual QA), google-slides (from-scratch decks via a blank template spec path or a code-first deckkit path with offline layout validation), scalar-product-slides (Scalar Inc. company/product deck workflow), scalar-proposal-slides (customer-challenge-driven Scalar solution proposals with challenge-to-product mapping, 3-environment architecture diagrams, and a BOM with quantities and monthly costs), and drawio-diagrams (dense cloud architecture / data-flow diagrams authored as draw.io files and exported to PNG headlessly). Includes charts, business-framework figures, pictogram and cloud-vendor icon libraries, AI image generation, and parallel per-page spec authoring for large decks.",
+      "version": "1.1.0",
       "author": {
         "name": "Wataru Fukatsu",
         "url": "https://github.com/wfukatsu"
@@ -26,6 +26,10 @@
         "template",
         "diagram",
         "architecture-diagram",
+        "drawio",
+        "proposal",
+        "scalar",
+        "scalardb",
         "slides-api",
         "charts",
         "icons",
@@ -37,7 +41,9 @@
       "skills": [
         "./skills/google-slides-template",
         "./skills/google-slides",
-        "./skills/scalar-product-slides"
+        "./skills/scalar-product-slides",
+        "./skills/scalar-proposal-slides",
+        "./skills/drawio-diagrams"
       ],
       "license": "MIT"
     }
