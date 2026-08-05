@@ -257,9 +257,10 @@
     "CONTENT_PROPOSAL": "DEFAULT_PROPOSAL",
     "TITLE_ONLY_PROPOSAL": "TITLE_ONLY_PROPOSAL",
     "TITLE_ONLY_PRESENTATION": "TITLE_ONLY_PRESENTATION",
-    "CLOSING": "FINAL_SLIDE"
+    "CLOSING": "FINAL_SLIDE",
+    "SUB_SECTION": "SLIDE_SUB_SECTION"
   },
-  "__roles_note": "人間確認済み (2026-08-01、再解析)。M1 マスター（g1b3a74d17bb_0_0 / AIxDevOps 共同ブランド）の レイアウトのみを割り当てている。M2（g3f9599793cc_0_234、後から貼り付けられた Scalar 標準系統）は レイアウトキーに *_2 の接尾辞が付き、ロールには割り当てない。2026-07-29 版からの差分: M1 に 'Title Only - Proposal' / 'Default - Proposal' / 'Final Slide' / 'Title Only - Presentation' の 4 レイアウトが追加された。これに伴い M2 側の同名レイアウトのキーが DEFAULT_PROPOSAL → DEFAULT_PROPOSAL_2、TITLE_ONLY_PROPOSAL → TITLE_ONLY_PROPOSAL_2、TITLE_ONLY_PRESENTATION → TITLE_ONLY_PRESENTATION_2 に変わっている（旧仕様ファイルがこれらの キーを直接指定していた場合は M1 側を指すようになる）。CLOSING は M1 の FINAL_SLIDE（AIxDevOps Study の QR コード付きエンドページ）に割当。CONTENT_PROPOSAL / TITLE_ONLY_PROPOSAL はフッター・© 表記・ページ番号を持つ提案書系、TITLE_ONLY_PRESENTATION は Scalar ロゴのみの登壇系。",
+  "__roles_note": "SECTION -> TITLE_AND_2_COLUMNS_1 is CORRECT despite the misleading layout name: visually it is the chapter-divider design (diagonal blue split + brand mark), placeholders TITLE+SUBTITLE only (no BODY) — verified against layout thumbnails 2026-08-05. Do not 'fix' it to SLIDE_SUB_SECTION, which is a sub-heading page (rule + bullet list, TITLE+BODY) now exposed as the SUB_SECTION role.",
   "roleCandidates": {
     "COVER": [
       "TITLE_SLIDE",
