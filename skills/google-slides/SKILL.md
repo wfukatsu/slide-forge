@@ -26,6 +26,7 @@ description: >-
 - **Auth** is centralized in `scripts/_auth.py`. It finds `credentials.json` / `token.json` in: `$GSLIDES_CONFIG_DIR` → `config/` at the repo root (canonical) → the old skill layout (transitional fallback). Never write per-script inline auth.
 - **Visual QA is mandatory** (Phase 5). Never declare a deck done without inspecting thumbnails.
 - On QA failure, **delete the broken presentation and regenerate** from the fixed spec/module. Never patch a live deck with incremental API edits.
+- The delete-and-regenerate rule applies only to decks generated in the current session. **When updating an existing deck the user already has** (inserting or fixing slides in place, keeping the same URL), first run `scripts/snapshot_version.py <URL>` to record the pre-edit revision (keepForever pin attempt + local PPTX backup), report the revision ID to the user, and only then edit. Rollback is via the Slides UI "File → Version history".
 
 ## Quick Reference
 
@@ -36,6 +37,7 @@ description: >-
 | Validate layout offline (no API) | `scripts/validate_layout.py` + `references/layout-contract.md` |
 | Render a Python deck | `scripts/render_deck.py` |
 | Visual QA thumbnails | `scripts/fetch_thumbnails.py` |
+| Snapshot a version before editing an existing deck | `scripts/snapshot_version.py` |
 | Diagrams (flows, architecture) | `scripts/diagrams.py` (Canvas) + `references/diagrams.md`, `references/diagram-cookbook.md` |
 | Charts and tables | `scripts/charts.py` + `references/charts.md` |
 | Shape-drawn pictograms and metaphor figures | `scripts/illustrations.py` + `references/pictogram-catalog.md` |

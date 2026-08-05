@@ -26,6 +26,7 @@ description: >-
   - Changing the template's own design → **the Slides API does not support creating or editing masters/layouts.** Do it in the Google Slides UI.
 - Python 3.10+ is required. `.venv` is a **symlink** to `~/.claude/venvs/gslides`, shared with the pre-consolidation skills. Changing dependencies affects everything that uses this venv.
 - Credentials are discovered in this order: `$GSLIDES_CONFIG_DIR` → `config/` in the repo (canonical) → `~/.claude/skills/google-slides/config/` (legacy fallback). If OAuth was already set up for the old skills, it keeps working unchanged.
+- **When updating an existing deck the user already has** (same URL, in-place edits — as opposed to the normal flow of generating a fresh copy), run `.venv/bin/python scripts/snapshot_version.py <URL>` first to record the pre-edit revision and take a local PPTX backup, and report the revision ID to the user before editing. Rollback is via the Slides UI "File → Version history".
 - **Never skip visual verification.** A clean API response cannot tell you whether text overflows, whether an arrow crosses over another shape, or whether a connector attaches to the semantically correct shape. After generating, always fetch thumbnails and inspect them.
 - **If the premises are unspecified, settle them with `AskUserQuestion` before generating.** Template, purpose, outline, and length are the branch points that force a full rebuild when wrong. Phase 1 and `references/interactive-intake.md` give the procedure. Do not ask about items the user already specified or when they said "your call" — state the adopted premise in one line and proceed.
 
@@ -40,6 +41,7 @@ description: >-
 | Validate a deck spec (no API calls) | `.venv/bin/python scripts/build_deck.py --template … --spec … --dry-run` |
 | Generate a deck | `.venv/bin/python scripts/build_deck.py --template … --spec … --title "…"` |
 | Visual QA of the output | `.venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa [--pages 9-16]` |
+| Snapshot a version before editing an existing deck | `.venv/bin/python scripts/snapshot_version.py <URL> [--out out/backups]` |
 | Assemble page fragments into one spec | `.venv/bin/python scripts/assemble_spec.py --out deck.json --title "…" out/<deck>/pages` |
 | Fan-out generation of large decks (sub-agents) | `references/parallel-generation.md` |
 | Validation gates (offline check + thumbnail QA) | `references/validation.md` |

@@ -33,6 +33,11 @@ Working directory: the repo root, `/Users/wfukatsu/work/slide-forge`.
   stock).
 - **Never skip visual QA** (fetch every page with `scripts/fetch_thumbnails.py`
   and inspect them).
+- **When updating an existing deck the user already has** (same URL, in-place
+  edits — not the normal copy-the-boilerplate flow), run
+  `.venv/bin/python scripts/snapshot_version.py <URL>` first to record the
+  pre-edit revision and take a local PPTX backup, and report the revision ID
+  before editing (rule shared with `google-slides-template`).
 - **If the premises are unspecified, settle them with `AskUserQuestion` before
   researching** (Phase 1). Follow the interaction conventions in
   `references/interactive-intake.md` (sections 0, 3, 4, 5). Only the question

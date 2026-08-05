@@ -72,6 +72,10 @@ JSON 仕様（`figures`）からも使える:
 実例: `~/Documents/Slides/scalar-intro-2026/add_code_samples.py`
 （既存デッキへの挿入・ページ番号の振り直しまで含む）。
 
+既存デッキへ挿入する場合は、編集前に必ず
+`scripts/snapshot_version.py <URL>` で版を確保し（リビジョン ID の記録と
+PPTX バックアップ）、リビジョン ID をユーザーに報告してから実行する。
+
 ```python
 d.label(CX, y, CW, 0.2, "Java — CRUD インターフェース", size=8.5,
         bold=True, color=accent)                     # ブロック見出し
