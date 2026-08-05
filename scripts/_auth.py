@@ -5,8 +5,6 @@ credentials.json / token.json are discovered in this order:
 
 1. `$GSLIDES_CONFIG_DIR` environment variable
 2. `<repo>/config/` — the canonical location
-3. `~/.claude/skills/google-slides/config/` — transitional fallback to the
-   pre-consolidation skill layout; remove once the old skills are deleted.
 """
 from __future__ import annotations
 
@@ -35,7 +33,6 @@ def config_dirs() -> list[str]:
     if env:
         dirs.append(os.path.expanduser(env))
     dirs.append(os.path.join(SKILL_DIR, "config"))
-    dirs.append(os.path.expanduser("~/.claude/skills/google-slides/config"))
     return dirs
 
 
