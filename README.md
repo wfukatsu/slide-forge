@@ -1,6 +1,6 @@
 # slide-forge
 
-Google Slides deck generation for Claude Code: four skills on one shared
+Google Slides deck generation for Claude Code: five skills on one shared
 Python engine, from corporate-template decks to from-scratch architecture
 diagrams, with validation before generation and thumbnail-based visual QA
 after it.
@@ -17,6 +17,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `google-slides-template` | Generate a deck from a registered Google Slides master template: interactive intake, template analysis/registration (`template.json`), spec authoring with `--dry-run` validation, parallel per-page authoring for large decks, generation, mandatory thumbnail QA. The main workflow. |
 | `google-slides` | From-scratch decks without a corporate master. Spec path (`templates/blank-16x9.json` + the same engine) or code-first path (`deckkit.py` + offline layout validation for connector-heavy diagrams). |
 | `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
+| `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
 | `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
 
 ## Repository layout

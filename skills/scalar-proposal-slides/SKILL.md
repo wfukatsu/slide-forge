@@ -1,0 +1,140 @@
+---
+name: scalar-proposal-slides
+description: >-
+  Builds customer-specific Scalar solution-proposal decks in Google Slides —
+  starting from the customer's challenges (hearing notes, meeting minutes) and
+  mapping them to ScalarDB / ScalarDL, following the problem-solving proposal
+  structure (exec summary → challenge agreement → solution → effects → PoC plan
+  → costs → risks → next steps). A Scalar-specific workflow layered on top of
+  google-slides-template (scalar-2026 template) alongside scalar-product-slides.
+  Triggers: "提案書を作って", "提案スライド", "顧客課題", "ソリューション提案",
+  "〈顧客名〉向けの提案資料", "scalar-proposal-slides", "ScalarDB/ScalarDL の提案資料".
+  Out of scope: product/company introduction decks with no specific customer
+  (use scalar-product-slides), non-Scalar proposals (google-slides-template),
+  and PPTX generation (document-skills:pptx).
+---
+
+# Scalar Solution Proposal Slides
+
+Working directory: the repo root, `/Users/wfukatsu/work/slide-forge`.
+
+## Important
+
+- **Prerequisite skill**: `google-slides-template` (same repo) — auth, the
+  shared venv, the `scalar-2026` template, drawing API, and QA tooling. This
+  skill owns only what is proposal-specific: the hearing checklist, the
+  challenge→product mapping, and the proposal deck structure.
+- **The customer's challenges drive everything.** A proposal without agreed
+  challenges is a product intro — route it to `scalar-product-slides`. Collect
+  hearing material (minutes, notes, RFP) before designing slides; what is not
+  known must surface as "本日確認したい" on the deck, never as a guess.
+- **Never fabricate customer-specific numbers.** Quantified effects need a
+  calculation basis from the hearing; otherwise write qualitative effects and
+  route quantification to the PoC ("PoC で実測し稟議材料にする"). Public case
+  numbers (ENS 約1/5 など) are usable with sources.
+- **Check the constraints before proposing** —
+  `references/scalar/proposal-map.md` §4 (cases where ScalarDB/DL does not
+  fit). Do not force a challenge onto a Scalar product; saying so is part of
+  proposal quality.
+- **Research freshness**: facts come from `references/scalar/research-2026-08.md`
+  and `references/scalar/proposal-map.md` (§3/§5 dated 2026-08-05). Both follow
+  the **3-month rule** — re-research via parallel agents if stale (Phase 2 of
+  the scalar-product-slides SKILL.md describes the agent setup).
+- **Shared rules with the sibling skills** (see google-slides-template
+  SKILL.md): Drive folder per deck (`scripts/drive_folder.py`), version
+  snapshot before in-place edits (`scripts/snapshot_version.py`), never skip
+  thumbnail QA, interactive intake conventions
+  (`references/interactive-intake.md` sections 0, 3, 4, 5).
+
+## Quick Reference
+
+| Task | Use |
+|------|-----|
+| Hearing checklist / proposal structure / challenge→product map / constraints / pricing | `references/scalar/proposal-map.md` |
+| Proposal deck builder (worked example, 20 slides) | `scripts/scalar/build_scalar_proposal.py` |
+| Researched company/product facts + pitfalls | `references/scalar/research-2026-08.md` |
+| Section ordering rationale (problem-solving outline) | `references/deck-outlines.md` |
+| Run | `cd /Users/wfukatsu/work/slide-forge && .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <Drive URL>]` |
+
+## Phase 1: Collect the challenges and settle premises
+
+Follow `references/interactive-intake.md` sections 0/3/4/5. Ask in one batch:
+
+| # | header | Question | Options |
+|---|---|---|---|
+| 1 | 課題の材料 | 顧客課題の材料はありますか? | 議事録・ヒアリングメモを渡す(ファイル/貼り付け) / 口頭でこれから説明 / まだ無い(ヒアリング項目の提示から始める) |
+| 2 | 課題カテゴリ | 主な課題はどれに近いですか? | proposal-map.md §3 の A〜H から材料に合いそうな 3 つ + その他(複数選択可) |
+| 3 | 提案の段階 | どの段階の提案ですか? | 初回提案(課題合意が主目的) / PoC 提案(スコープ・成功基準まで) / 本導入提案(費用・体制を確定粒度で) |
+| 4 | 決裁者 | 主な読み手は? | 経営層・決裁者 / 情報システム部門 / 業務部門 / 混合 |
+
+- Material first: if minutes/notes exist, **read them before asking Q2** and
+  pre-select the likely categories in the option descriptions.
+- If nothing is known yet, present the hearing checklist
+  (proposal-map.md §1) as the deliverable instead of forcing a deck.
+- Second round if unspecified: output Drive folder, cover date, language.
+- **Do not ask about** diagram composition, coordinates, colors, or which
+  part draws which section — that is fixed by the worked example and
+  design conventions.
+
+Then **present the slide outline (page count + each slide's action title,
+challenge→product mapping made explicit) and get approval before generating**
+(the outline gate of interactive-intake.md §3).
+
+## Phase 2: Map challenges to products
+
+1. Classify each agreed challenge into proposal-map.md §3 categories (A–H);
+   pull the product/feature line and the public cases from the same row.
+2. Check §4 (unsuitable cases) — direct-write bypass, DB-specific features,
+   OLAP-only workloads, "改ざん防止" wording, Community-edition gaps. Surface
+   any hit as a risk-slide item or descope it honestly.
+3. Verify freshness (3-month rule) of §3/§5 and research-2026-08.md; re-run
+   research agents if stale, and check the pitfall list at the end of
+   research-2026-08.md before writing slides.
+
+## Phase 3: Build the deck
+
+`scripts/scalar/build_scalar_proposal.py` is a worked example (fictional
+manufacturing scenario, 20 slides) that encodes the standard structure —
+proposal-map.md §2 has the section-by-section rationale. To build a real
+proposal, rewrite only the `PROPOSAL` dict at the top of the script
+(customer, summary, challenges, mapping, alternatives, effects, cases,
+journey, gantt, team, costs, risks, next) with hearing results, keeping:
+
+- Challenge slides ≤ 3 items, same order and wording as the mapping table
+- The alternatives table's comparison axes rewritten to the customer's actual
+  KBF (what they will evaluate proposals on)
+- Cases picked from the mapped categories (§3), with sources in speaker notes
+- Cost figures only from §5 with `source_note`; anything else stays
+  "個別お見積り"
+- Dense architecture diagrams (10+ nodes, cloud-specific) → author with the
+  `drawio-diagrams` skill and insert as an image instead of the built-in
+  solution diagram
+
+Design conventions are shared with scalar-product-slides: action titles,
+square corners on accent-bar cards, pictograms from `illustrations`.
+
+## Phase 4: Generate and QA
+
+```bash
+cd /Users/wfukatsu/work/slide-forge
+.venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <URL>]
+```
+
+1. The script prints "検査:" lines from `audit_*` on every drawn slide.
+   **If any audit fires, fix the data/spec and rebuild** (delete the old deck
+   from Drive first; rebuilding changes the URL — tell the user).
+2. Fetch every page with `scripts/fetch_thumbnails.py` and inspect with Read.
+3. Content QA specific to proposals: no customer-specific number without a
+   hearing basis, no case/price without a source note, challenge wording
+   consistent across slides 3 / 7 (整理と対応表), scope-out line present.
+4. Offer follow-ups via `AskUserQuestion` (interactive-intake.md §4):
+   finalize / adjust wording / swap cases / add-remove sections.
+
+## File layout
+
+| Path | Role |
+|------|------|
+| `scripts/scalar/build_scalar_proposal.py` | Proposal deck builder (worked example; rewrite `PROPOSAL` per customer) |
+| `references/scalar/proposal-map.md` | Hearing items, proposal structure + rationale, challenge→product map, constraints, pricing |
+| `references/scalar/research-2026-08.md` | Company/product facts, cases, slide pitfalls (shared with scalar-product-slides) |
+| `templates/scalar-2026.json` | Scalar 2026 template |
