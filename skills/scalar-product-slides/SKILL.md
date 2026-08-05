@@ -35,8 +35,11 @@ from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone
   if more than 3 months have passed since the research date** (Phase 2 below).
   Never fill gaps with guesses. Omit items you cannot confirm (e.g. capital
   stock).
-- **Never skip visual QA** (fetch every page with `scripts/fetch_thumbnails.py`
-  and inspect them).
+- **Visual QA is a separate skill (`slide-qa`), chosen at generation time**
+  (Phase 1 asks; default and recommended: run). When it runs, follow that
+  skill — fetch every page with `scripts/fetch_thumbnails.py`, inspect, then
+  delete the local QA files with `scripts/cleanup_qa.py`. When skipped, say
+  so in the report and offer `slide-qa` as a follow-up.
 - **Drive folder rule** (shared with `google-slides-template`): create a Drive
   folder for the deck first (`scripts/drive_folder.py create "<title>"`), pass
   its ID as the output folder, and collect the spec / figure sources there
@@ -85,8 +88,10 @@ Question set (specific to this skill; ask all 4 questions of Q1 in one round):
   research date, put "Re-research" first as the recommended option and state the
   reason (research date and months elapsed) in the `description`.
 - These 4 questions fill one round. If unspecified, ask for the output Drive
-  folder, the cover date, and the language (Japanese / English) together in a
-  second round (without `--folder`, the deck goes directly to My Drive).
+  folder, the cover date, the language (Japanese / English), and whether to
+  run visual QA after generation (default and recommended: run; skipping means
+  the deck ships unverified) together in a second round (without `--folder`,
+  the deck goes directly to My Drive).
 - **Do not ask about**: how diagrams are composed, coordinates, colors, or
   which diagram each feature gets. Those are fixed by `FEATURES_DB` /
   `FEATURES_DL` and the design conventions.
@@ -181,8 +186,11 @@ cd /Users/wfukatsu/work/slide-forge
    audit_overlaps / audit_text_fit` on every slide and print "検査:" lines.
    **If any audit fires, fix the spec and rebuild** (faster than patching).
    Delete the old deck from Drive before rebuilding
-2. Fetch every page with `scripts/fetch_thumbnails.py` and inspect them with
-   Read (overflow, overlaps, wrong layout picked)
+2. **If the user chose visual QA (the default)**, run the `slide-qa` skill:
+   fetch every page with `scripts/fetch_thumbnails.py`, inspect with Read
+   (overflow, overlaps, wrong layout picked), and when done delete the local
+   QA files with `scripts/cleanup_qa.py`. If QA was skipped, state so in the
+   report and offer `slide-qa` as a follow-up
 3. **Rebuilding changes the URL.** Tell the user the new URL and be explicit
    about what happens to the old deck (deletion)
 4. Pass QA yourself before presenting results. If there is room to improve,

@@ -30,7 +30,7 @@ description: >-
 - **Drive folder rule**: every generated deck gets its own Drive folder with all related files under it. Create it with `.venv/bin/python scripts/drive_folder.py create "<Deck title>" [--parent <URL/ID>]`, pass the printed ID as `--folder` to `build_deck.py`, then `drive_folder.py upload <FOLDER_ID> deck.json …` for the spec, `.drawio` sources, and figure PNGs. Report the folder URL together with the deck URL.
 - Dense cloud architecture / data-flow / network diagrams (nested containers, 10+ nodes) → author the figure with the `drawio-diagrams` skill (draw.io → PNG → insert as an `image` part).
 - **When updating an existing deck the user already has** (same URL, in-place edits — as opposed to the normal flow of generating a fresh copy), run `.venv/bin/python scripts/snapshot_version.py <URL>` first to record the pre-edit revision and take a local PPTX backup, and report the revision ID to the user before editing. Rollback is via the Slides UI "File → Version history".
-- **Never skip visual verification.** A clean API response cannot tell you whether text overflows, whether an arrow crosses over another shape, or whether a connector attaches to the semantically correct shape. After generating, always fetch thumbnails and inspect them.
+- **Visual QA is a separate skill (`slide-qa`), chosen at generation time.** A clean API response cannot tell you whether text overflows, whether an arrow crosses over another shape, or whether a connector attaches to the semantically correct shape — so QA defaults to **run** and is recommended as such. Settle the choice during intake (Phase 1, `references/interactive-intake.md`); when the user opts out, skip Phase 5, state clearly in the report that the deck is unverified, and offer `slide-qa` as a follow-up. When QA runs, it ends by deleting the local QA files (`scripts/cleanup_qa.py`).
 - **If the premises are unspecified, settle them with `AskUserQuestion` before generating.** Template, purpose, outline, and length are the branch points that force a full rebuild when wrong. Phase 1 and `references/interactive-intake.md` give the procedure. Do not ask about items the user already specified or when they said "your call" — state the adopted premise in one line and proceed.
 
 ## Quick Reference
@@ -43,7 +43,8 @@ description: >-
 | Fetch layout thumbnails | `.venv/bin/python scripts/inspect_template.py <URL> --thumbnails out/layouts` |
 | Validate a deck spec (no API calls) | `.venv/bin/python scripts/build_deck.py --template … --spec … --dry-run` |
 | Generate a deck | `.venv/bin/python scripts/build_deck.py --template … --spec … --title "…"` |
-| Visual QA of the output | `.venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa [--pages 9-16]` |
+| Visual QA of the output (optional, default: run) | `slide-qa` skill — `.venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa [--pages 9-16]` |
+| Delete local QA files after verification | `.venv/bin/python scripts/cleanup_qa.py` |
 | Snapshot a version before editing an existing deck | `.venv/bin/python scripts/snapshot_version.py <URL> [--out out/backups]` |
 | Create the deck's Drive folder / collect related files | `.venv/bin/python scripts/drive_folder.py create "<title>"` / `upload <FOLDER> <files…>` |
 | Dense cloud/data-flow diagrams (draw.io → PNG) | `drawio-diagrams` skill + `references/drawio.md` |
@@ -381,50 +382,28 @@ the demo specs in `examples/`.
 
 ---
 
-## Phase 5: Visual QA (Never Skip)
+## Phase 5: Visual QA (optional — `slide-qa` skill)
+
+Run this phase **when the user chose to run QA at intake (the default)**. When
+they opted out, skip it, say explicitly in the report that no visual
+verification was done, and offer the `slide-qa` skill as a follow-up.
+
+The procedure — thumbnail fetch, inspection priorities, checklist, fix loop,
+and cleanup — is owned by the **`slide-qa` skill**; follow it. In short:
 
 ```bash
-.venv/bin/python scripts/fetch_thumbnails.py "<generated deck URL>" --out out/qa
+.venv/bin/python scripts/fetch_thumbnails.py "<generated deck URL>" --out out/qa --size LARGE
+# … inspect with Read, fix the spec and regenerate on any defect …
+.venv/bin/python scripts/cleanup_qa.py   # always delete the local QA files when done
 ```
 
-`--size` accepts SMALL / MEDIUM / LARGE; judge with LARGE.
-`--pages 3,8,12,20` or `--pages 9-16` restricts the range.
-
-**If the deck exceeds 15 slides, split the QA too.** Thumbnail images are the
-heaviest load on the main agent's context. Divide the range with `--pages
-9-16`, give each agent 6-8 slides, and **have them return only findings as
-text** (procedure in `references/parallel-generation.md`).
-
-Open the emitted PNGs with the Read tool. If the deck is large, prioritize:
-
-1. **The page with the most elements** (overlaps show up there first)
-2. **The page with the most complex figure** (swimlanes, branching flows, multi-panel)
-3. **Pages with tables** (rows grow and overflow downward)
-4. **The first page of each section** (how the structure reads)
-5. Cover, section dividers, closing (collisions between master decorations and your drawing)
-
-Minimum checklist:
-
-- [ ] No text overflows or is truncated in any placeholder
-- [ ] No text overlaps the template's decorations (bands, shapes)
-- [ ] Page numbers appear in the right position (not clipped even at 2 digits)
-- [ ] Logos and footers are not drawn twice
-- [ ] The intended layouts were used (e.g. no Proposal/Presentation family mix-up)
-- [ ] No single trailing character wraps to its own line ("〜へ", "〜出") — shorten the wording or widen the box
-- [ ] Arrows do not cross over unrelated shapes, and each connects to the *semantically* correct shape — coordinate audits cannot judge meaning
-- [ ] Labels are not overlapping arrows or rules; contrast is sufficient (4.5:1 for body text; use `readable_on()`)
-- [ ] **Squint test**: viewed with eyes narrowed (or at SMALL size), the first thing that draws the eye is the page's main message. If not, the emphasis (fill, bold, color) is wrong.
-
-The full QA checklist, the fix loop, and reporting rules are in
-`references/validation.md`.
-
-If there is a problem, fix `deck.json` or the layout choice and **regenerate**.
-Fixing the spec and rebuilding is faster and reproducible; patching the
-existing artifact is neither.
-
-Delete artifacts that are no longer needed from Drive
-(`drive.files().delete(fileId=…)`). Do not leave intermediate decks created
-during verification. Keep exactly one URL in the user's hands — the latest.
+- If the deck exceeds 15 slides, split the QA across sub-agents with
+  `--pages 9-16` (6-8 slides each, findings returned as text only —
+  `references/parallel-generation.md`).
+- On any defect, fix `deck.json` or the layout choice and **regenerate**;
+  never patch the artifact. Delete superseded decks from Drive
+  (`drive.files().delete(fileId=…)`) — the user holds exactly one URL.
+- The full checklist and reporting rules are in `references/validation.md`.
 
 **Pass QA yourself before presenting results.** Do not let the user find
 defects that a visual pass would have caught. Then, if there is still room to
@@ -464,7 +443,8 @@ All paths are relative to the repository root `/Users/wfukatsu/work/slide-forge`
 | `scripts/_auth.py` | OAuth (discovery: `$GSLIDES_CONFIG_DIR` → `config/` → legacy), unit conversion, color conversion, URL → ID extraction |
 | `scripts/inspect_template.py` | Template analysis → `template.json`, layout thumbnail fetch |
 | `scripts/build_deck.py` | Template copy → deck generation (`TemplateDeck`). Also owns spec validation (`--dry-run` / `--strict`) |
-| `scripts/fetch_thumbnails.py` | Thumbnail fetch for visual QA. `--pages 9-16` restricts the range (for split QA); `--size SMALL/MEDIUM/LARGE` |
+| `scripts/fetch_thumbnails.py` | Thumbnail fetch for visual QA (used via the `slide-qa` skill). `--pages 9-16` restricts the range (for split QA); `--size SMALL/MEDIUM/LARGE` |
+| `scripts/cleanup_qa.py` | Deletes local QA files when verification is done (`out/qa`, `out/qa-*`, `out/*/qa`; only touches `out/`). `--dry-run` previews |
 | `scripts/assemble_spec.py` | Concatenates per-page JSON fragments in ascending order into one deck spec. The assembler for fan-out generation |
 | `scripts/layout_sample.py` | Generates a layout sample deck, one slide per layout. For visually verifying role assignments |
 | `scripts/list_templates.py` | Lists registered templates (roles, layout count, bundled slide count). Material for interactive template choices. Has `--json` |

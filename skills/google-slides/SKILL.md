@@ -25,7 +25,7 @@ description: >-
   - A bare "make slides" request uses this skill only when a Google Drive / Google Slides context is explicit
 - **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone. All commands below run from there (literal paths assume the local clone).
 - **Auth** is centralized in `scripts/_auth.py`. It finds `credentials.json` / `token.json` in: `$GSLIDES_CONFIG_DIR` → `config/` at the repo root (canonical) → the old skill layout (transitional fallback). Never write per-script inline auth.
-- **Visual QA is mandatory** (Phase 5). Never declare a deck done without inspecting thumbnails.
+- **Visual QA is a separate skill (`slide-qa`), chosen at generation time** (Phase 5). Default: run — recommend it when asking (Phase 1); a clean API response cannot show overflow or misattached arrows. If the user opts out, skip Phase 5, state in the report that the deck is unverified, and offer `slide-qa` as a follow-up. When QA runs, it ends by deleting the local QA files (`scripts/cleanup_qa.py`).
 - On QA failure, **delete the broken presentation and regenerate** from the fixed spec/module. Never patch a live deck with incremental API edits.
 - The delete-and-regenerate rule applies only to decks generated in the current session. **When updating an existing deck the user already has** (inserting or fixing slides in place, keeping the same URL), first run `scripts/snapshot_version.py <URL>` to record the pre-edit revision (keepForever pin attempt + local PPTX backup), report the revision ID to the user, and only then edit. Rollback is via the Slides UI "File → Version history".
 
@@ -37,7 +37,8 @@ description: >-
 | Write a deck as Python | `scripts/deckkit.py` (+ `examples/pattern-gallery/deck.py`, `examples/scalardb-scalardl/deck.py`) |
 | Validate layout offline (no API) | `scripts/validate_layout.py` + `references/layout-contract.md` |
 | Render a Python deck | `scripts/render_deck.py` |
-| Visual QA thumbnails | `scripts/fetch_thumbnails.py` |
+| Visual QA (optional, default: run) | `slide-qa` skill (`scripts/fetch_thumbnails.py` + checklist + cleanup) |
+| Delete local QA files after verification | `scripts/cleanup_qa.py` |
 | Snapshot a version before editing an existing deck | `scripts/snapshot_version.py` |
 | Diagrams (flows, architecture) | `scripts/diagrams.py` (Canvas) + `references/diagrams.md`, `references/diagram-cookbook.md` |
 | Dense cloud/data-flow diagrams (draw.io → PNG) | `drawio-diagrams` skill + `scripts/drawio_export.py` + `references/drawio.md` |
@@ -91,7 +92,7 @@ description: >-
 
 Guidance: default to the **spec path**. Switch to **code-first** when the deck centers on architecture/flow diagrams with many connectors — the offline validator checks connector endpoints, overlaps, and overflow that a spec dry-run cannot see.
 
-Also settle with the user (1–2 questions max): audience and purpose, approximate page count, output Drive folder (URL/ID, optional), copyright/footer text if any. For structuring help see `references/deck-outlines.md` and `references/composers/`.
+Also settle with the user (1–2 questions max): audience and purpose, approximate page count, output Drive folder (URL/ID, optional), copyright/footer text if any, and whether to run visual QA after generation (default and recommended: run; see Phase 5). For structuring help see `references/deck-outlines.md` and `references/composers/`.
 
 ---
 
@@ -172,12 +173,20 @@ For large decks, page-level fan-out to subagents is possible; see `references/pa
 
 ---
 
-## Phase 5: Visual QA (mandatory)
+## Phase 5: Visual QA (optional — `slide-qa` skill)
+
+Run when the user chose QA in Phase 1 (the default). When they opted out, skip
+this phase, state in the report that no visual verification was done, and offer
+the `slide-qa` skill as a follow-up.
+
+The procedure is owned by the **`slide-qa` skill** — follow it. In short:
 
 ```bash
-.venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa [--size LARGE]
+.venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa --size LARGE
+# … inspect every PNG with Read …
+.venv/bin/python scripts/cleanup_qa.py   # always delete the local QA files when done
 ```
 
-Open every PNG with the Read tool and check: text clipped or overflowing its frame, elements overlapping decorations, detached connector arrows, unreadable contrast, awkward line wraps. These are invisible in API responses — never skip this step.
+Check: text clipped or overflowing its frame, elements overlapping decorations, detached connector arrows, unreadable contrast, awkward line wraps. These are invisible in API responses.
 
-On any failure: fix the spec/module, re-run Phase 3 validation, **delete the broken presentation, and regenerate**. Repeat until the thumbnails are clean, then report the final URL.
+On any failure: fix the spec/module, re-run Phase 3 validation, **delete the broken presentation, and regenerate**. Repeat until the thumbnails are clean, clean up the QA files, then report the final URL.

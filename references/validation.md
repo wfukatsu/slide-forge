@@ -11,8 +11,12 @@ catch defects at two different costs:
    other shapes, connectors attached to the *wrong* shape, weak contrast,
    whether the figure actually communicates.
 
-Run the offline check **every time before generating**. Run thumbnail QA
-**every time after generating**. Neither replaces the other.
+Run the offline check **every time before generating**. Thumbnail QA is owned
+by the **`slide-qa` skill** and is **chosen at generation time** (intake asks;
+default and recommended: run). When it runs it covers Gate 2 end to end —
+fetch, inspection, the fix loop, and deleting the local QA files
+(`scripts/cleanup_qa.py`). When the user skips it, the deck ships unverified
+and the report must say so. Neither gate replaces the other.
 
 All commands run from the repository root (`/Users/wfukatsu/work/slide-forge`).
 
@@ -100,11 +104,11 @@ real capacity to roughly 60% of the estimate).
 
 ---
 
-## Gate 2: Thumbnail QA
+## Gate 2: Thumbnail QA (the `slide-qa` skill)
 
 Coordinate checks catch overflow, overlap, text fit, and connector attachment.
-**Defects invisible to coordinates still remain.** After generating, always
-look at the images.
+**Defects invisible to coordinates still remain.** When the user chose QA at
+generation time (the default), look at the images after generating.
 
 ```bash
 .venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa --size LARGE
@@ -170,6 +174,21 @@ fetch thumbnails → identify defects → fix the spec / deck module
   confirmation on a full run.
 - Delete intermediate decks created during verification from Drive
   (`drive.files().delete(fileId=…)`).
+
+## Cleaning Up QA Files (mandatory)
+
+The thumbnails exist only for verification and can be re-fetched at any time.
+When QA finishes — pass, fail-and-fixed, or aborted — delete them before
+reporting:
+
+```bash
+.venv/bin/python scripts/cleanup_qa.py            # removes out/qa, out/qa-*, out/*/qa
+.venv/bin/python scripts/cleanup_qa.py --dry-run  # preview the targets
+.venv/bin/python scripts/cleanup_qa.py out/mydeck/qa   # a specific directory
+```
+
+The script refuses anything outside `out/` (all gitignored), so it is safe to
+run unconditionally.
 
 ## Reporting Rules
 

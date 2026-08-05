@@ -5,15 +5,15 @@
     "url": "https://github.com/wfukatsu"
   },
   "metadata": {
-    "description": "Google Slides deck generation: template-driven, from-scratch, Scalar product and proposal workflows, plus draw.io diagrams, on a shared Python engine with visual QA",
-    "version": "1.1.1"
+    "description": "Google Slides deck generation: template-driven, from-scratch, Scalar product and proposal workflows, plus draw.io diagrams and an optional visual-QA skill, on a shared Python engine",
+    "version": "1.2.0"
   },
   "plugins": [
     {
       "name": "slide-forge",
       "strict": false,
-      "description": "Generate Google Slides decks with Python + the Slides API. Five skills on one shared engine: google-slides-template (generate from a registered master template with interactive intake, spec validation, and thumbnail-based visual QA), google-slides (from-scratch decks via a blank template spec path or a code-first deckkit path with offline layout validation), scalar-product-slides (Scalar Inc. company/product deck workflow), scalar-proposal-slides (customer-challenge-driven Scalar solution proposals with challenge-to-product mapping, 3-environment architecture diagrams, and a BOM with quantities and monthly costs), and drawio-diagrams (dense cloud architecture / data-flow diagrams authored as draw.io files and exported to PNG headlessly). Includes charts, business-framework figures, pictogram and cloud-vendor icon libraries, AI image generation, and parallel per-page spec authoring for large decks.",
-      "version": "1.1.1",
+      "description": "Generate Google Slides decks with Python + the Slides API. Six skills on one shared engine: google-slides-template (generate from a registered master template with interactive intake and spec validation), google-slides (from-scratch decks via a blank template spec path or a code-first deckkit path with offline layout validation), scalar-product-slides (Scalar Inc. company/product deck workflow), scalar-proposal-slides (customer-challenge-driven Scalar solution proposals with challenge-to-product mapping, 3-environment architecture diagrams, and a BOM with quantities and monthly costs), drawio-diagrams (dense cloud architecture / data-flow diagrams authored as draw.io files and exported to PNG headlessly), and slide-qa (thumbnail-based visual QA of a generated deck — optional at generation time, default on, with cleanup of the local QA files when done). Includes charts, business-framework figures, pictogram and cloud-vendor icon libraries, AI image generation, and parallel per-page spec authoring for large decks. The /forge command runs the whole pipeline (skill routing → intake → outline approval → validation → generation → optional visual QA → cleanup → report) as one continuous flow.",
+      "version": "1.2.0",
       "author": {
         "name": "Wataru Fukatsu",
         "url": "https://github.com/wfukatsu"
@@ -43,9 +43,13 @@
         "./skills/google-slides",
         "./skills/scalar-product-slides",
         "./skills/scalar-proposal-slides",
-        "./skills/drawio-diagrams"
+        "./skills/drawio-diagrams",
+        "./skills/slide-qa"
       ],
-      "license": "MIT"
+      "license": "MIT",
+      "commands": [
+        "./commands/forge.md"
+      ]
     }
   ]
 }

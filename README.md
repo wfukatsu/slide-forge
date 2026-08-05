@@ -1,29 +1,37 @@
 # slide-forge
 
-Google Slides deck generation for Claude Code: five skills on one shared
+Google Slides deck generation for Claude Code: six skills on one shared
 Python engine, from corporate-template decks to from-scratch architecture
-diagrams, with validation before generation and thumbnail-based visual QA
-after it.
+diagrams, with validation before generation and optional thumbnail-based
+visual QA after it (chosen at generation time, on by default).
 
 ```
-intake → author (spec JSON or Python) → validate (offline, free) → generate → visual QA
-                                            ↑____________fix____________|
+intake → author (spec JSON or Python) → validate (offline, free) → generate → visual QA (opt-in, default on) → cleanup
+                                            ↑____________fix_____________________|
 ```
 
 ## Skills
 
 | Skill | What it does |
 |---|---|
-| `google-slides-template` | Generate a deck from a registered Google Slides master template: interactive intake, template analysis/registration (`template.json`), spec authoring with `--dry-run` validation, parallel per-page authoring for large decks, generation, mandatory thumbnail QA. The main workflow. |
+| `google-slides-template` | Generate a deck from a registered Google Slides master template: interactive intake, template analysis/registration (`template.json`), spec authoring with `--dry-run` validation, parallel per-page authoring for large decks, generation. The main workflow. |
 | `google-slides` | From-scratch decks without a corporate master. Spec path (`templates/blank-16x9.json` + the same engine) or code-first path (`deckkit.py` + offline layout validation for connector-heavy diagrams). |
 | `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
 | `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
 | `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
+| `slide-qa` | Thumbnail-based visual QA of a generated deck: fetch every page as PNG, inspect against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files (`scripts/cleanup_qa.py`). Invoked by the generation skills when the user opts in at intake (the default), or standalone on any deck URL. |
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `/forge` (`/slide-forge:forge`) | Runs the whole pipeline as one continuous flow: route to the right generation skill → interactive intake (including the visual-QA choice) → outline approval → spec + offline validation → generation → visual QA via `slide-qa` (when chosen) → QA-file cleanup → final report. |
 
 ## Repository layout
 
 ```
 skills/       SKILL.md per skill (symlinked into ~/.claude/skills/)
+commands/     slash commands (/forge — the end-to-end pipeline)
 scripts/      shared engine — one importable package
   _auth.py        OAuth helper (Slides + Drive)
   build_deck.py   template-driven generator (TemplateDeck); --dry-run validation
@@ -31,7 +39,7 @@ scripts/      shared engine — one importable package
   charts.py illustrations.py patterns.py pages.py   figure libraries
   icons.py cloud_icons.py images.py                 pictograms, vendor icons, AI images
   inspect_template.py assemble_spec.py layout_sample.py list_templates.py
-  fetch_thumbnails.py fetch_cloud_icons.py
+  fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py
   deckkit.py render_deck.py validate_layout.py      code-first path (offline checks)
   drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
   scalar/         Scalar deck builders
@@ -46,14 +54,15 @@ cache/ out/   transient render cache and QA output (gitignored)
 ## Install as a Claude Code plugin
 
 The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all five skills):
+one plugin bundling all six skills):
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
 /plugin install slide-forge@slide-forge
 ```
 
-Skills become available as `slide-forge:<skill-name>`. After installing,
+Skills become available as `slide-forge:<skill-name>`, and the pipeline
+command as `/slide-forge:forge`. After installing,
 run the Setup below inside the plugin root (`${CLAUDE_PLUGIN_ROOT}`) — the
 venv, OAuth credentials, and cloud icons are machine-local and not bundled.
 Alternatively, clone the repo and symlink `skills/*` into `~/.claude/skills/`
@@ -136,6 +145,7 @@ belong to a **billed** project — the image model has zero free-tier quota.
 | `scalar-product-slides` | ✔ | when drawing cloud diagrams | — | — |
 | `scalar-proposal-slides` | ✔ | — | to edit the bundled environment diagram | — |
 | `drawio-diagrams` | ✔ (for deck insertion) | — | ✔ | — |
+| `slide-qa` | ✔ | — | — | — |
 
 Secrets hygiene: `config/` (credentials, tokens, API keys), `out/`, `cache/`,
 and `assets/cloud-icons/` are gitignored — nothing machine-local is ever
@@ -150,7 +160,8 @@ appear in `templates/*.json`.
     --template templates/scalar-2026.json --spec deck.json --dry-run --strict
 .venv/bin/python scripts/build_deck.py \
     --template templates/scalar-2026.json --spec deck.json
-.venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa
+.venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa   # visual QA (slide-qa skill)
+.venv/bin/python scripts/cleanup_qa.py                            # delete QA files when done
 ```
 
 Register a new master: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`,
@@ -170,7 +181,7 @@ A deck is one Python module; a function is one slide. See
 wrapping, floating/buried connector endpoints, text hidden behind
 later-drawn shapes, and text overflow — before any API call. What it cannot
 judge (arrow routing, contrast, whether the figure communicates) is what the
-mandatory thumbnail QA is for: see `references/validation.md`.
+thumbnail QA of the `slide-qa` skill is for: see `references/validation.md`.
 
 ## License
 
