@@ -60,29 +60,87 @@ Alternatively, clone the repo and symlink `skills/*` into `~/.claude/skills/`
 (the layout used during development); pick one of the two, not both, or the
 skills will be listed twice.
 
+## Requirements
+
+- **Python 3.10+** (macOS / Linux)
+- A Google account that can create Google Slides / Drive files
+- **draw.io desktop** — only for the `drawio-diagrams` skill:
+  `brew install --cask drawio` (the export script also finds the app-bundle
+  binary at `/Applications/draw.io.app`)
+- A Gemini API key — only for optional AI image generation
+
 ## Setup
 
-1. Python venv — the repo expects `.venv` (symlink to a shared venv is fine):
+All commands run from the slide-forge root (the clone directory, or
+`${CLAUDE_PLUGIN_ROOT}` for a plugin install).
 
-   ```bash
-   python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-   ```
+### 1. Python environment
 
-2. Enable the **Slides API** and **Drive API** in a Google Cloud project.
+The repo expects `.venv` at its root; a symlink to a shared venv is fine
+(the skills use `~/.claude/venvs/gslides` so plugin updates don't wipe it):
 
-3. Put an OAuth desktop-client `credentials.json` into `config/`
-   (first run opens a browser consent and writes `token.json`).
-   Override the location with `$GSLIDES_CONFIG_DIR`.
+```bash
+python3 -m venv ~/.claude/venvs/gslides
+~/.claude/venvs/gslides/bin/pip install -r requirements.txt
+ln -sfn ~/.claude/venvs/gslides .venv        # absolute target recommended
+# or simply: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+```
 
-4. Cloud vendor icons (AWS / Google Cloud / Azure) are not redistributed:
+### 2. Google Cloud OAuth client (one-time)
 
-   ```bash
-   .venv/bin/python scripts/fetch_cloud_icons.py
-   ```
+The engine calls the Slides + Drive APIs as **you**, via an OAuth desktop
+client (scopes: `auth/presentations`, `auth/drive`). In
+[Google Cloud Console](https://console.cloud.google.com/):
 
-5. Optional, for AI image generation (`scripts/images.py`): set `GEMINI_API_KEY`,
-   or save the key to `config/gemini_api_key` (gitignored, like the OAuth files).
-   The key must belong to a billed project — the image model has zero free-tier quota.
+1. Create (or pick) a project.
+2. **APIs & Services → Library** — enable **Google Slides API** and
+   **Google Drive API**.
+3. **APIs & Services → OAuth consent screen** — configure the app
+   (Internal for a Workspace org; External works too — add yourself as a
+   test user while the app is in Testing).
+4. **APIs & Services → Credentials → Create credentials → OAuth client ID →
+   Desktop app** — download the JSON and save it as `config/credentials.json`
+   (`chmod 600`). Override the directory with `$GSLIDES_CONFIG_DIR` if you
+   keep credentials elsewhere.
+
+### 3. First run / verify
+
+```bash
+.venv/bin/python scripts/list_templates.py
+```
+
+The first call opens a browser consent screen and writes `config/token.json`
+(refreshed automatically afterwards). If a template list prints, auth works.
+
+### 4. Cloud vendor icons (only for cloud architecture figures)
+
+AWS / Google Cloud / Azure icon sets are vendor assets and are **not
+committed**; fetch them once:
+
+```bash
+.venv/bin/python scripts/fetch_cloud_icons.py
+```
+
+### 5. Optional: AI image generation
+
+For `scripts/images.py`, set `GEMINI_API_KEY` or save the key to
+`config/gemini_api_key` (gitignored, like the OAuth files). The key must
+belong to a **billed** project — the image model has zero free-tier quota.
+
+### What each skill needs
+
+| Skill | venv + OAuth | Cloud icons | draw.io CLI | Gemini key |
+|---|---|---|---|---|
+| `google-slides-template` | ✔ | when drawing cloud diagrams | — | optional |
+| `google-slides` | ✔ | when drawing cloud diagrams | — | optional |
+| `scalar-product-slides` | ✔ | when drawing cloud diagrams | — | — |
+| `scalar-proposal-slides` | ✔ | — | to edit the bundled environment diagram | — |
+| `drawio-diagrams` | ✔ (for deck insertion) | — | ✔ | — |
+
+Secrets hygiene: `config/` (credentials, tokens, API keys), `out/`, `cache/`,
+and `assets/cloud-icons/` are gitignored — nothing machine-local is ever
+committed. Keep Drive sharing on your master decks restricted; their file IDs
+appear in `templates/*.json`.
 
 ## Quick start (template-driven)
 
