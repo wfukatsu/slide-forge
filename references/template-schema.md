@@ -161,16 +161,18 @@
 | 構造図 | `band` `cards` `flow` `hbars` `metric` |
 | 表・グラフ | `table` `vbars` `vbars_grouped` `vbars_stacked` `linechart` `pie` |
 | フレームワーク図 | `posmap` `gantt` `orgchart` `lean_canvas` `nested_circles` `testimonial` |
+| イベント案内 | `event_mode_badge` `event_overview` `event_timetable` `event_speakers` `event_access` |
 | コード | `code_block` |
 | 画像 | `image` `aiImage` |
 
 各 `type` の引数は `references/images.md` / `references/icons.md` /
 `references/cloud-icons.md` / `references/charts.md`（表・グラフ）/
-`references/patterns.md`（フレームワーク図）/ `references/code-blocks.md`（コード）、
+`references/patterns.md`（フレームワーク図）/ `references/events.md`（イベント案内）/
+`references/code-blocks.md`（コード）、
 動く実例は `examples/illustration-gallery.json` /
 `examples/icon-gallery.json` / `examples/cloud-architecture.json` /
 `examples/charts-demo.json` / `examples/patterns-demo.json` /
-`examples/code-blocks-demo.json`。
+`examples/event-announcement.json` / `examples/code-blocks-demo.json`。
 
 **`cloud_zone` と `band` は中身より先に書くこと。** 後ろに書くと矩形が中身を覆う。
 

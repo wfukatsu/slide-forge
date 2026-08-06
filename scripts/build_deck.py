@@ -651,6 +651,12 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "lean_canvas":    ("lean_canvas",    ["x", "y", "w", "h", "blocks"]),
     "nested_circles": ("nested_circles", ["x", "y", "w", "h", "rings"]),
     "testimonial":    ("testimonial",    ["x", "y", "w", "h", "quote", "name"]),
+    # イベント案内図（events.py・図形だけで描く。ネットワーク不要）
+    "event_mode_badge": ("event_mode_badge", ["x", "y", "mode"]),
+    "event_overview":   ("event_overview",   ["x", "y", "w", "rows"]),
+    "event_timetable":  ("event_timetable",  ["x", "y", "w", "rows"]),
+    "event_speakers":   ("event_speakers",   ["x", "y", "w", "speakers"]),
+    "event_access":     ("event_access",     ["x", "y", "w", "h"]),
     # ページ部品と分析図（pages.py・図形だけで描く。ネットワーク不要）
     "governing_message": ("governing_message", ["x", "y", "w", "text"]),
     "lead_in":           ("lead_in",           ["x", "y", "w", "text"]),

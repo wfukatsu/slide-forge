@@ -65,6 +65,7 @@ from illustrations import IllustrationMixin  # noqa: E402
 from images import ImageMixin  # noqa: E402
 from patterns import PatternMixin  # noqa: E402
 from pages import PageMixin  # noqa: E402
+from events import EventMixin  # noqa: E402
 
 register({
     "  warn: text inside a shape rotated {rotation} degrees will rotate with it "
@@ -124,7 +125,7 @@ _RUN_TOKEN = uuid.uuid4().hex[:4]
 
 
 class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
-             ChartMixin, PatternMixin, PageMixin):
+             ChartMixin, PatternMixin, PageMixin, EventMixin):
     """1 枚のスライドに図形を描くための薄いラッパー。"""
 
     _seq = 0

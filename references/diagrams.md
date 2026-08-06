@@ -17,14 +17,15 @@ d.metric(8.0, 3.6, 1.4, 1.0, "22x", "工数削減", color=d.P.success)          
 d.box(...) / d.solid(...) / d.label(...) / d.band(...) / d.arrow(...)       # 基本部品
 ```
 
-8 つの手段（構造図・表グラフ・イメージ図・フレームワーク図・アイコン・クラウドアイコン・
-画像・コードブロック）はすべて同じ `Canvas` のメソッドなので、1 枚のスライドに混ぜて使える。
+9 つの手段（構造図・表グラフ・イメージ図・フレームワーク図・イベント案内・アイコン・
+クラウドアイコン・画像・コードブロック）はすべて同じ `Canvas` のメソッドなので、
+1 枚のスライドに混ぜて使える。
 ファミリー別の詳細は `references/charts.md` / `references/patterns.md` /
-`references/images.md` / `references/icons.md` / `references/cloud-icons.md` /
-`references/code-blocks.md`、実例は
+`references/events.md` / `references/images.md` / `references/icons.md` /
+`references/cloud-icons.md` / `references/code-blocks.md`、実例は
 `examples/charts-demo.json` / `examples/patterns-demo.json` /
-`examples/illustration-gallery.json` / `examples/icon-gallery.json` /
-`examples/cloud-architecture.json`。
+`examples/event-announcement.json` / `examples/illustration-gallery.json` /
+`examples/icon-gallery.json` / `examples/cloud-architecture.json`。
 
 ## イメージ図・アイコン・画像
 
