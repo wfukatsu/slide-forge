@@ -42,7 +42,7 @@ scripts/      shared engine — one importable package
   _auth.py        OAuth helper (Slides + Drive)
   build_deck.py   template-driven generator (TemplateDeck); --dry-run validation
   diagrams.py     Canvas drawing hub (aggregates the mixins below)
-  charts.py illustrations.py patterns.py pages.py   figure libraries
+  charts.py illustrations.py patterns.py pages.py events.py   figure libraries
   icons.py cloud_icons.py images.py                 pictograms, vendor icons, AI images
   inspect_template.py assemble_spec.py layout_sample.py list_templates.py
   fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py

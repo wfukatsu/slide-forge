@@ -49,6 +49,7 @@ ICONS = (
     "gear", "lock", "shield", "browser", "mobile", "bot", "chart", "clock",
     "check", "cross", "warning", "mail", "key", "network", "code", "stack",
     "folder", "bulb", "search", "sync", "flag", "coin", "chip",
+    "calendar", "pin",
 )
 
 
@@ -347,6 +348,31 @@ class IllustrationMixin:
                    kind="TRIANGLE", fill=c, stroke=None, rotation=90)
         self.shape(x + 0.02 * s, y + 0.78 * s, 0.26 * s, 0.24 * s,
                    kind="TRIANGLE", fill=c, stroke=None, rotation=270)
+
+    def _icon_calendar(self, x, y, s, c):
+        # 綴じリング 2 本 + 本体 + ヘッダー帯 + 日付ドット
+        for rx in (0.24, 0.70):
+            self.shape(x + rx * s, y + 0.02 * s, 0.06 * s, 0.16 * s,
+                       kind="RECTANGLE", fill=darken(c, 0.2), stroke=None)
+        self.shape(x + 0.06 * s, y + 0.10 * s, 0.88 * s, 0.84 * s,
+                   kind="ROUND_RECTANGLE", fill="#FFFFFF", stroke=c,
+                   stroke_weight=1.8)
+        self.shape(x + 0.06 * s, y + 0.10 * s, 0.88 * s, 0.24 * s,
+                   kind="RECTANGLE", fill=c, stroke=None)
+        for row in range(2):
+            for col in range(3):
+                self.shape(x + (0.20 + 0.24 * col) * s,
+                           y + (0.46 + 0.22 * row) * s, 0.10 * s, 0.10 * s,
+                           kind="RECTANGLE", fill=lighten(c, 0.55), stroke=None)
+
+    def _icon_pin(self, x, y, s, c):
+        # 地図ピン: 丸い頭 + 下向きの脚 + 白い中心
+        self.shape(x + 0.30 * s, y + 0.50 * s, 0.40 * s, 0.44 * s,
+                   kind="TRIANGLE", fill=c, stroke=None, rotation=180)
+        self.shape(x + 0.18 * s, y + 0.04 * s, 0.64 * s, 0.64 * s,
+                   kind="ELLIPSE", fill=c, stroke=None)
+        self.shape(x + 0.40 * s, y + 0.24 * s, 0.20 * s, 0.20 * s,
+                   kind="ELLIPSE", fill="#FFFFFF", stroke=None)
 
     def _icon_flag(self, x, y, s, c):
         self.shape(x + 0.16 * s, y + 0.04 * s, 0.07 * s, 0.92 * s,
