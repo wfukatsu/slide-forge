@@ -10,7 +10,8 @@ description: >-
   Triggers: "製品紹介スライドを作って", "機能紹介スライド", "会社紹介スライド",
   "Scalar 紹介資料", "ユースケーススライド", "scalar-product-slides",
   "ScalarDB/ScalarDL の紹介資料を作って".
-  Out of scope: PPTX generation (document-skills:pptx), decks about anything
+  Out of scope: from-scratch PPTX authoring (document-skills:pptx; exporting
+  a generated deck to .pptx is pptx-export), decks about anything
   other than Scalar (use google-slides / google-slides-template), and
   customer-specific solution proposals driven by a customer's challenges
   (use scalar-proposal-slides).

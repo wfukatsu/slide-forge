@@ -12,7 +12,8 @@ description: >-
   "生成したスライドをチェック", "slide-qa", "visual QA", "verify the deck",
   "check the generated slides".
   Out of scope: pre-generation offline checks (--dry-run / validate_layout.py
-  stay in the generation skills), content fact-checking, and PPTX files.
+  stay in the generation skills), content fact-checking, and PPTX files
+  (exporting a verified deck to .pptx is the pptx-export skill).
 ---
 
 # Visual QA for Generated Slides (thumbnail-based)

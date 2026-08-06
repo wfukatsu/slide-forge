@@ -1,0 +1,46 @@
+{
+  "title": "ScalarDB Cluster 導入見積もり（サンプル）",
+  "sheets": [
+    {
+      "name": "見積もり明細",
+      "heading": "ScalarDB Cluster 導入見積もり（月額）",
+      "note": "有効期限: 2026-09-30 / 金額は税抜。単価・数量はサンプルであり実際の見積もりではありません。",
+      "columns": [
+        {"header": "No.", "type": "int", "width": 6},
+        {"header": "項目", "width": 30},
+        {"header": "説明", "width": 42},
+        {"header": "数量", "type": "int", "width": 8},
+        {"header": "単位", "width": 8},
+        {"header": "単価（月額）", "type": "currency", "width": 14},
+        {"header": "金額（月額）", "type": "currency", "width": 14, "formula": "=D{row}*F{row}"}
+      ],
+      "rows": [
+        [1, "ScalarDB Cluster ライセンス", "本番環境（Standard、3 ノード）", 3, "ノード", 200000, null],
+        [2, "ScalarDB Cluster ライセンス", "ステージング環境（1 ノード）", 1, "ノード", 200000, null],
+        [3, "EKS ワーカーノード", "m6i.xlarge（本番 3 + ステージング 1）", 4, "台", 28000, null],
+        [4, "Aurora PostgreSQL", "バックエンド DB（db.r6g.large、Multi-AZ）", 1, "式", 65000, null],
+        [5, "監視・ログ基盤", "CloudWatch + Grafana Cloud", 1, "式", 15000, null],
+        [6, "テクニカルサポート", "平日 9-18 時、応答 SLA 4 時間", 1, "式", 80000, null]
+      ],
+      "summary": [
+        {"label": "小計", "formula": "=SUM(G{first}:G{last})"},
+        {"label": "消費税 (10%)", "formula": "=G{s1}*0.1"},
+        {"label": "合計（月額）", "formula": "=G{s1}+G{s2}", "emphasis": true}
+      ]
+    },
+    {
+      "name": "前提条件",
+      "columns": [
+        {"header": "No.", "type": "int", "width": 6},
+        {"header": "前提", "width": 44},
+        {"header": "備考", "width": 50}
+      ],
+      "rows": [
+        [1, "リージョンは ap-northeast-1（東京）", "他リージョンの場合はインフラ費を再見積もり"],
+        [2, "初期構築費は本見積もりに含まない", "別途、導入支援の個別見積もりを提示"],
+        [3, "ライセンスは年間契約の月割り", "年払い一括の場合の割引は営業に確認"],
+        [4, "為替変動によりクラウド利用費は増減する", "1 USD = 150 円で試算"]
+      ]
+    }
+  ]
+}

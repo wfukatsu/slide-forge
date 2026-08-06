@@ -11,7 +11,8 @@ description: >-
   "〈顧客名〉向けの提案資料", "scalar-proposal-slides", "ScalarDB/ScalarDL の提案資料".
   Out of scope: product/company introduction decks with no specific customer
   (use scalar-product-slides), non-Scalar proposals (google-slides-template),
-  and PPTX generation (document-skills:pptx).
+  and from-scratch PPTX authoring (document-skills:pptx; exporting the
+  generated proposal to .pptx is pptx-export).
 ---
 
 # Scalar Solution Proposal Slides
@@ -120,6 +121,12 @@ challenge→product mapping made explicit) and get approval before generating**
    products with quantities; compute monthly license cost with the §6 formula
    when quantities are not customer-specified. Premium features or ScalarDL
    change the unit prices (§5/§6).
+4. **When the customer needs an editable estimate** (明細付きの見積もり) —
+   typical for 本導入提案, or when the user asks — build it from the BOM with
+   the `spreadsheets` skill (Excel / Google Spreadsheet, real formulas for
+   quantities × unit prices and tax) into the deck's Drive folder. The cost
+   slide keeps the summary; the spreadsheet carries the line items, and the
+   two totals must match.
 
 ## Phase 3: Build the deck
 

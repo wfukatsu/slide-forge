@@ -11,5 +11,8 @@ google-api-python-client>=2.120.0
 # 無い場合は rsvg-convert / ImageMagick を探し、どれも無ければ同梱 PNG を色そのままで使う
 cairosvg>=2.7.0
 
+# spreadsheets スキル（scripts/build_sheet.py）の xlsx 生成
+openpyxl>=3.1.0
+
 # 任意（google-slides スキルのアセット処理・チャートデータ管理で使う場合）
 # gspread>=6.0.0
