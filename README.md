@@ -1,12 +1,14 @@
 # slide-forge
 
-Google Slides deck generation for Claude Code: six skills on one shared
+Google Slides deck generation for Claude Code: eight skills on one shared
 Python engine, from corporate-template decks to from-scratch architecture
-diagrams, with validation before generation and optional thumbnail-based
-visual QA after it (chosen at generation time, on by default).
+diagrams, with validation before generation, optional thumbnail-based
+visual QA after it (chosen at generation time, on by default), optional
+PowerPoint (.pptx) export as a delivery format, and line-item spreadsheets
+(Excel / Google Spreadsheet) for estimates and BOMs.
 
 ```
-intake → author (spec JSON or Python) → validate (offline, free) → generate → visual QA (opt-in, default on) → cleanup
+intake → author (spec JSON or Python) → validate (offline, free) → generate → visual QA (opt-in, default on) → cleanup → PPTX export (opt-in)
                                             ↑____________fix_____________________|
 ```
 
@@ -20,12 +22,14 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
 | `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
 | `slide-qa` | Thumbnail-based visual QA of a generated deck: fetch every page as PNG, inspect against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files (`scripts/cleanup_qa.py`). Invoked by the generation skills when the user opts in at intake (the default), or standalone on any deck URL. |
+| `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (出力形式) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
+| `spreadsheets` | Line-item spreadsheets — estimates, BOMs, cost breakdowns — as Excel and/or Google Spreadsheet from one JSON spec (`scripts/build_sheet.py`): typed columns, real formulas for amounts and subtotal/tax/total, `--dry-run` validation, and in-place updates that keep the Spreadsheet URL stable. Companion to a proposal deck's cost slide (same Drive folder), or standalone. Worked example: `examples/estimate-sample.json`. |
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| `/forge` (`/slide-forge:forge`) | Runs the whole pipeline as one continuous flow: route to the right generation skill → interactive intake (including the visual-QA choice) → outline approval → spec + offline validation → generation → visual QA via `slide-qa` (when chosen) → QA-file cleanup → final report. |
+| `/forge` (`/slide-forge:forge`) | Runs the whole pipeline as one continuous flow: route to the right generation skill → interactive intake (including the visual-QA and output-format choices) → outline approval → spec + offline validation → generation → visual QA via `slide-qa` (when chosen) → QA-file cleanup → PPTX export via `pptx-export` (when chosen) → final report. |
 
 ## Repository layout
 
@@ -39,7 +43,8 @@ scripts/      shared engine — one importable package
   charts.py illustrations.py patterns.py pages.py   figure libraries
   icons.py cloud_icons.py images.py                 pictograms, vendor icons, AI images
   inspect_template.py assemble_spec.py layout_sample.py list_templates.py
-  fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py
+  fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
+  build_sheet.py  line-item spreadsheets (xlsx + Google Spreadsheet)
   deckkit.py render_deck.py validate_layout.py      code-first path (offline checks)
   drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
   scalar/         Scalar deck builders
@@ -54,7 +59,7 @@ cache/ out/   transient render cache and QA output (gitignored)
 ## Install as a Claude Code plugin
 
 The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all six skills):
+one plugin bundling all eight skills):
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -146,6 +151,8 @@ belong to a **billed** project — the image model has zero free-tier quota.
 | `scalar-proposal-slides` | ✔ | — | to edit the bundled environment diagram | — |
 | `drawio-diagrams` | ✔ (for deck insertion) | — | ✔ | — |
 | `slide-qa` | ✔ | — | — | — |
+| `pptx-export` | ✔ | — | — | — |
+| `spreadsheets` | ✔ (OAuth only for Google Spreadsheet output) | — | — | — |
 
 Secrets hygiene: `config/` (credentials, tokens, API keys), `out/`, `cache/`,
 and `assets/cloud-icons/` are gitignored — nothing machine-local is ever
@@ -162,6 +169,7 @@ appear in `templates/*.json`.
     --template templates/scalar-2026.json --spec deck.json
 .venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa   # visual QA (slide-qa skill)
 .venv/bin/python scripts/cleanup_qa.py                            # delete QA files when done
+.venv/bin/python scripts/export_pptx.py <URL> --folder <FOLDER>   # optional PPTX delivery (pptx-export skill)
 ```
 
 Register a new master: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`,

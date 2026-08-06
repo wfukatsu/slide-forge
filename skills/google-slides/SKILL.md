@@ -21,7 +21,7 @@ description: >-
   - User has a template/master URL, or wants text flowed into an existing corporate layout → `google-slides-template` skill
   - Scalar company/product/use-case decks → `scalar-product-slides` skill
   - Dense cloud architecture / data-flow / network diagrams (nested containers, 10+ nodes) → author them with the `drawio-diagrams` skill (draw.io → PNG → insert); simple concept figures stay on `diagrams.py`
-  - PPTX files → `document-skills:pptx`; Slidev → `slidev` skill
+  - Authoring PPTX files from scratch → `document-skills:pptx` (exporting a deck generated here to `.pptx` → `pptx-export` skill); Slidev → `slidev` skill
   - A bare "make slides" request uses this skill only when a Google Drive / Google Slides context is explicit
 - **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone. All commands below run from there (literal paths assume the local clone).
 - **Auth** is centralized in `scripts/_auth.py`. It finds `credentials.json` / `token.json` in: `$GSLIDES_CONFIG_DIR` → `config/` at the repo root (canonical) → the old skill layout (transitional fallback). Never write per-script inline auth.

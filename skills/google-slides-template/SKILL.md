@@ -23,7 +23,7 @@ description: >-
   - Designing from scratch without a template → `google-slides` skill (composer, infographics, code-first `deckkit` decks)
   - Scalar company/product/feature decks → `scalar-product-slides` skill (a dedicated workflow layered on top of this one)
   - Customer-specific Scalar solution proposals (challenge-driven) → `scalar-proposal-slides` skill (same layering)
-  - Generating PPTX files → `document-skills:pptx`
+  - Authoring PPTX files from scratch → `document-skills:pptx`. Exporting a deck generated here to `.pptx` (delivery format) → `pptx-export` skill, chosen via the 出力形式 intake question
   - Changing the template's own design → **the Slides API does not support creating or editing masters/layouts.** Do it in the Google Slides UI.
 - Python 3.10+ is required. `.venv` is a **symlink** to `~/.claude/venvs/gslides`, shared with the pre-consolidation skills. Changing dependencies affects everything that uses this venv.
 - Credentials are discovered in this order: `$GSLIDES_CONFIG_DIR` → `config/` in the repo (canonical) → `~/.claude/skills/google-slides/config/` (legacy fallback). If OAuth was already set up for the old skills, it keeps working unchanged.
