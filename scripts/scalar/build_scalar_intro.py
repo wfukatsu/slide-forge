@@ -17,6 +17,13 @@ sys.path.insert(0, os.path.join(REPO_DIR, "scripts"))
 import build_deck as bd  # noqa: E402
 import _auth  # noqa: E402
 from diagrams import Canvas, lighten  # noqa: E402
+from _i18n import t, register  # noqa: E402
+
+register({
+    "Expected 12 bundled slides, got {n}": "同梱スライドが 12 枚でない: {n}",
+    "  audit: {message}": "  検査: {message}",
+    "Done! {n} slides. Open: {url}": "完了! スライド {n} 枚。URL: {url}",
+})
 
 TEMPLATE = os.path.join(REPO_DIR, "templates", "scalar-2026-boilerplate.json")
 BRAND = os.path.join(REPO_DIR, "assets", "scalar", "product-logos")
@@ -420,7 +427,7 @@ def main() -> int:
     pres = deck.slides.presentations().get(
         presentationId=deck.presentation_id, fields="slides.objectId").execute()
     ids = [s["objectId"] for s in pres.get("slides", [])]
-    assert len(ids) == 12, f"同梱スライドが 12 枚でない: {len(ids)}"
+    assert len(ids) == 12, t("Expected 12 bundled slides, got {n}", n=len(ids))
     for pos in DROP_KEPT_POSITIONS:
         deck.requests.append({"deleteObject": {"objectId": ids[pos]}})
 
@@ -459,10 +466,10 @@ def main() -> int:
         draw_page_number(deck, ref, i + 1)
 
     for m in problems:
-        print(f"  検査: {m}")
+        print(t("  audit: {message}", message=m))
 
     url = deck.commit()
-    print(f"Done! {len(plan)} slides. Open: {url}")
+    print(t("Done! {n} slides. Open: {url}", n=len(plan), url=url))
     return 0
 
 

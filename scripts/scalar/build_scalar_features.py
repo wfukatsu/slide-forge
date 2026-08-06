@@ -16,6 +16,12 @@ sys.path.insert(0, os.path.join(REPO_DIR, "scripts"))
 
 import build_deck as bd  # noqa: E402
 from diagrams import Canvas, lighten  # noqa: E402
+from _i18n import t, register  # noqa: E402
+
+register({
+    "  audit: {message}": "  検査: {message}",
+    "Done! {n} slides. Open: {url}": "完了! スライド {n} 枚。URL: {url}",
+})
 
 TEMPLATE = os.path.join(REPO_DIR, "templates", "scalar-2026.json")
 
@@ -843,10 +849,10 @@ def main() -> int:
 
     deck.add_page_numbers()
     for m in problems:
-        print(f"  検査: {m}")
+        print(t("  audit: {message}", message=m))
     url = deck.commit()
     total = 2 + 2 * 2 + len(FEATURES_DB) + len(FEATURES_DL) + 1
-    print(f"Done! {total} slides. Open: {url}")
+    print(t("Done! {n} slides. Open: {url}", n=total, url=url))
     return 0
 
 

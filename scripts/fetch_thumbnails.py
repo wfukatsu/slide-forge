@@ -16,16 +16,29 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+from _i18n import t, register  # noqa: E402
+
+register({
+    "Fetch slide thumbnails": "スライドのサムネイルを取得する",
+    "presentation URL or ID": "プレゼンテーションの URL または ID",
+    "output directory": "出力ディレクトリ",
+    "thumbnail size (default: MEDIUM, ~800px wide)":
+        "サムネイルサイズ（既定: MEDIUM = 800px 幅相当）",
+    "page numbers to fetch; commas and ranges allowed (e.g. 1,3,5 / 9-16 / 1,4-6)":
+        "取得するページ番号。カンマ区切りと範囲が使える（例: 1,3,5 / 9-16 / 1,4-6）",
+    "--pages: range is reversed: {part}": "--pages: 範囲が逆です: {part}",
+})
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="スライドのサムネイルを取得する")
-    p.add_argument("source", help="プレゼンテーションの URL または ID")
-    p.add_argument("--out", required=True, help="出力ディレクトリ")
+    p = argparse.ArgumentParser(description=t("Fetch slide thumbnails"))
+    p.add_argument("source", help=t("presentation URL or ID"))
+    p.add_argument("--out", required=True, help=t("output directory"))
     p.add_argument("--size", default="MEDIUM", choices=["SMALL", "MEDIUM", "LARGE"],
-                   help="サムネイルサイズ（既定: MEDIUM = 800px 幅相当）")
+                   help=t("thumbnail size (default: MEDIUM, ~800px wide)"))
     p.add_argument("--pages",
-                   help="取得するページ番号。カンマ区切りと範囲が使える（例: 1,3,5 / 9-16 / 1,4-6）")
+                   help=t("page numbers to fetch; commas and ranges allowed "
+                          "(e.g. 1,3,5 / 9-16 / 1,4-6)"))
     args = p.parse_args()
 
     pres_id = _auth.presentation_id(args.source)
@@ -47,7 +60,7 @@ def main() -> int:
             if "-" in part:
                 lo, hi = (int(v) for v in part.split("-", 1))
                 if lo > hi:
-                    raise SystemExit(f"--pages: 範囲が逆です: {part}")
+                    raise SystemExit(t("--pages: range is reversed: {part}", part=part))
                 wanted.update(range(lo, hi + 1))
             else:
                 wanted.add(int(part))

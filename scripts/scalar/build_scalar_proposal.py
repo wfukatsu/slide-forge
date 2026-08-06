@@ -24,6 +24,16 @@ sys.path.insert(0, os.path.join(REPO_DIR, "scripts"))
 
 import build_deck as bd  # noqa: E402
 from diagrams import Canvas, lighten  # noqa: E402
+from _i18n import t, register  # noqa: E402
+
+register({
+    "  audit: {message}": "  検査: {message}",
+    "Done! Open: {url}": "完了! URL: {url}",
+    "=== Bill of Materials (BOM) ===": "=== 構成内訳（BOM） ===",
+    "[Cloud services ({cloud})]": "[クラウドサービス（{cloud}）]",
+    "[Scalar products]": "[Scalar 製品]",
+    "  Total (estimated monthly license): {total}": "  合計（ライセンス月額概算）: {total}",
+})
 
 TEMPLATE = os.path.join(REPO_DIR, "templates", "scalar-2026.json")
 
@@ -373,14 +383,15 @@ def draw_next(d: Canvas, steps: list) -> None:
 
 def print_bom(arch: dict) -> None:
     """構成内訳（サービス一覧と Scalar 製品・数量・月額）をコンソールにも出す。"""
-    print("\n=== 構成内訳（BOM） ===")
-    print(f"[クラウドサービス（{arch['cloud']}）]")
+    print("\n" + t("=== Bill of Materials (BOM) ==="))
+    print(t("[Cloud services ({cloud})]", cloud=arch["cloud"]))
     for e in arch["envs"]:
         print(f"  - {e['name']}: {e['services']}")
-    print("[Scalar 製品]")
+    print(t("[Scalar products]"))
     for e in arch["envs"]:
         print(f"  - {e['name']}: {e['scalar']} × {e['qty']} — {e['monthly']}")
-    print(f"  合計（ライセンス月額概算）: {arch['monthly_total']}")
+    print(t("  Total (estimated monthly license): {total}",
+            total=arch["monthly_total"]))
     print(f"  {arch['monthly_note']}")
 
 
@@ -491,9 +502,9 @@ def main() -> int:
 
     deck.add_page_numbers()
     for m in problems:
-        print(f"  検査: {m}")
+        print(t("  audit: {message}", message=m))
     url = deck.commit()
-    print(f"Done! Open: {url}")
+    print(t("Done! Open: {url}", url=url))
     print_bom(P["architecture"])
     return 0
 

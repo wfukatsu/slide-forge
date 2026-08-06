@@ -13,6 +13,29 @@ import argparse
 import glob
 import json
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _i18n import t, register  # noqa: E402
+
+register({
+    "List registered templates": "登録済みテンプレートの一覧を出す",
+    "output as JSON": "JSON で出力する",
+    "No registered templates ({dir}).": "登録済みテンプレートがありません（{dir}）。",
+    "Analyze and register one from a URL: scripts/inspect_template.py <URL>"
+    " --emit templates/<id>.json --name <id>":
+        "URL から解析して登録する: scripts/inspect_template.py <URL>"
+        " --emit templates/<id>.json --name <id>",
+    "{n} templates\n": "{n} 件のテンプレート\n",
+    "{n} layouts": "レイアウト {n} 種",
+    "aspect ratio {ratio}": "比率 {ratio}",
+    "{n} boilerplate slides included": "定型スライド {n} 枚同梱",
+    "derived from {id}": "派生元 {id}",
+    "roles: {roles}": "ロール: {roles}",
+    "(unassigned)": "（未割当）",
+    "... (see --json for the full text)": "。…（全文は --json）",
+    "note: {note}": "メモ: {note}",
+})
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SKILL_DIR = os.path.dirname(HERE)
@@ -45,9 +68,8 @@ def summarize(path: str) -> dict:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--json", action="store_true", help="JSON で出力する")
+    ap = argparse.ArgumentParser(description=t("List registered templates"))
+    ap.add_argument("--json", action="store_true", help=t("output as JSON"))
     args = ap.parse_args()
 
     items = [summarize(p) for p in sorted(glob.glob(os.path.join(TEMPLATES, "*.json")))]
@@ -56,27 +78,30 @@ def main() -> int:
         return 0
 
     if not items:
-        print(f"登録済みテンプレートがありません（{TEMPLATES}）。")
-        print("URL から解析して登録する: scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>")
+        print(t("No registered templates ({dir}).", dir=TEMPLATES))
+        print(t("Analyze and register one from a URL: scripts/inspect_template.py <URL>"
+                " --emit templates/<id>.json --name <id>"))
         return 0
 
-    print(f"{len(items)} 件のテンプレート\n")
+    print(t("{n} templates\n", n=len(items)))
     for it in items:
         head = f"{it['id']}  —  {it['displayName']}" if it["displayName"] else it["id"]
         print(head)
-        bits = [f"レイアウト {it['layouts']} 種", f"比率 {it['aspectRatio']}"]
+        bits = [t("{n} layouts", n=it["layouts"]),
+                t("aspect ratio {ratio}", ratio=it["aspectRatio"])]
         if it["boilerplateSlides"]:
-            bits.append(f"定型スライド {it['boilerplateSlides']} 枚同梱")
+            bits.append(t("{n} boilerplate slides included", n=it["boilerplateSlides"]))
         if it["derivedFrom"]:
-            bits.append(f"派生元 {it['derivedFrom']}")
+            bits.append(t("derived from {id}", id=it["derivedFrom"]))
         print("  " + " / ".join(bits))
-        print("  ロール: " + (", ".join(it["roleNames"]) or "（未割当）"))
+        print("  " + t("roles: {roles}",
+                       roles=", ".join(it["roleNames"]) or t("(unassigned)")))
         if it["rolesNote"]:
             # ロールのメモは長いので 1 行目だけ。全文は --json か template.json を見る
             note = it["rolesNote"].split("。")[0]
             if len(note) < len(it["rolesNote"]):
-                note += "。…（全文は --json）"
-            print(f"  メモ: {note}")
+                note += t("... (see --json for the full text)")
+            print("  " + t("note: {note}", note=note))
         print(f"  spec: --template {it['path']}")
         print()
     return 0

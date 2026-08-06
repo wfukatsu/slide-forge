@@ -44,6 +44,61 @@ import subprocess
 import sys
 import tempfile
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _i18n import t, register  # noqa: E402
+
+register({
+    "Icon manifest not found: {path}\n"
+    "  assets/scalar/pictograms/ is broken; re-fetch the repo.":
+        "アイコンのマニフェストがありません: {path}\n"
+        "  assets/scalar/pictograms/ is broken; re-fetch the repo.",
+    "Icon name '{name}' matches multiple icons: {hits}\n"
+    "  Specify a slug (python scripts/icons.py --search lists candidates)":
+        "アイコン名 '{name}' が複数に当たります: {hits}\n"
+        "  slug で指定してください（python scripts/icons.py --search で一覧）",
+    "Unknown icon '{name}'. Did you mean: {near}":
+        "未知のアイコン '{name}'。もしかして: {near}",
+    "Unknown icon '{name}'. Run python scripts/icons.py --list to see all icons":
+        "未知のアイコン '{name}'。python scripts/icons.py --list で一覧を出せます",
+    "  * artwork identical to {slug}": "  ※ 素材の絵が {slug} と同一",
+    "  warn: cairosvg conversion failed ({error}); trying rsvg-convert / magick":
+        "  warn: cairosvg での変換に失敗しました（{error}）。"
+        "rsvg-convert / magick を試します",
+    "color must be in #RRGGBB format: {color}":
+        "color は #RRGGBB 形式で指定してください: {color}",
+    "  note: '{slug}' keeps its fixed brand colors; ignoring color={color}":
+        "  note: '{slug}' はブランド色で固定のため color={color} は無視します",
+    "Cannot rasterize the SVG and no bundled PNG exists: {slug}\n"
+    "  Run pip install cairosvg (or brew install librsvg)":
+        "SVG をラスタライズできず、同梱 PNG もありません: {slug}\n"
+        "  pip install cairosvg（または brew install librsvg）を実行してください",
+    "  warn: no rasterizer available; using '{slug}' in its source color"
+    " (color {color} ignored). pip install cairosvg fixes this":
+        "  warn: ラスタライザが無いため '{slug}' を素材の色のまま使います"
+        "（色 {color} は無視）。pip install cairosvg で解決します",
+    "Generating the contact sheet requires cairosvg (pip install cairosvg)":
+        "一覧画像の生成には cairosvg が必要です（pip install cairosvg）",
+    "Compositing the contact sheet requires ImageMagick (brew install imagemagick)":
+        "一覧画像の合成には ImageMagick が必要です（brew install imagemagick）",
+    "Look up / export the Scalar icon library":
+        "Scalar アイコンライブラリを引く / 書き出す",
+    "List all icons": "全アイコンを一覧する",
+    "Search by partial match on Japanese name, English name, or tags":
+        "日本語名・英語名・タグの部分一致で探す",
+    "Export one icon to PNG (slug or Japanese name)":
+        "1 個を PNG に書き出す（slug でも日本語名でも可）",
+    "Build one PNG contact sheet of all icons (requires --out)":
+        "全アイコンを 1 枚に並べた PNG を作る（--out が要る）",
+    "Tint color #RRGGBB (defaults to the source gray)":
+        "染める色 #RRGGBB（省略で素材のグレー）",
+    "Output size in pixels (default {px})": "書き出す画素数（既定 {px}）",
+    "Output file path": "書き出し先のパス",
+    "Ignore the cache and rebuild": "キャッシュを無視して作り直す",
+    "--sheet requires --out": "--sheet には --out が要ります",
+    "No matches: {query}": "該当なし: {query}",
+    "\n{shown} / {total} icons": "\n{shown} / {total} 件",
+})
+
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Brand pictograms live under assets/scalar/ so the generic engine stays
 # brand-neutral; point this at another directory to swap the icon set.
@@ -66,8 +121,9 @@ def manifest() -> dict:
     if _MANIFEST is None:
         if not os.path.exists(MANIFEST):
             raise FileNotFoundError(
-                f"アイコンのマニフェストがありません: {MANIFEST}\n"
-                "  assets/scalar/pictograms/ is broken; re-fetch the repo.")
+                t("Icon manifest not found: {path}\n"
+                  "  assets/scalar/pictograms/ is broken; re-fetch the repo.",
+                  path=MANIFEST))
         with open(MANIFEST, encoding="utf-8") as f:
             _MANIFEST = json.load(f)
     return _MANIFEST
@@ -101,13 +157,16 @@ def resolve(name: str) -> str:
         return hits[0]
     if hits:
         raise ValueError(
-            f"アイコン名 '{name}' が複数に当たります: {sorted(hits)}\n"
-            "  slug で指定してください（python scripts/icons.py --search で一覧）")
+            t("Icon name '{name}' matches multiple icons: {hits}\n"
+              "  Specify a slug (python scripts/icons.py --search lists candidates)",
+              name=name, hits=sorted(hits)))
     near = search(name)[:6]
+    if near:
+        raise ValueError(t("Unknown icon '{name}'. Did you mean: {near}",
+                           name=name, near=near))
     raise ValueError(
-        f"未知のアイコン '{name}'。"
-        + (f"もしかして: {near}" if near else
-           "python scripts/icons.py --list で一覧を出せます"))
+        t("Unknown icon '{name}'. Run python scripts/icons.py --list to see all icons",
+          name=name))
 
 
 def search(query: str) -> list[str]:
@@ -127,7 +186,7 @@ def describe(slug: str) -> str:
     m = icons()[slug]
     line = f"{slug:26} {m['ja']:20} {m['en']}"
     if m.get("sameArtAs"):
-        line += f"  ※ 素材の絵が {m['sameArtAs']} と同一"
+        line += t("  * artwork identical to {slug}", slug=m["sameArtAs"])
     return line
 
 
@@ -156,8 +215,8 @@ def _try_cairosvg(svg: str, out: str, px: int) -> bool:
                          output_width=px, output_height=px)
     except Exception as e:
         # 変換自体の失敗（未対応の SVG 機能など）も CLI フォールバックに回す
-        print(f"  warn: cairosvg での変換に失敗しました（{e}）。"
-              f"rsvg-convert / magick を試します", file=sys.stderr)
+        print(t("  warn: cairosvg conversion failed ({error}); "
+                "trying rsvg-convert / magick", error=e), file=sys.stderr)
         return False
     return True
 
@@ -202,11 +261,12 @@ def render(name: str, *, color: str | None = None, px: int = DEFAULT_PX,
     meta = icons()[slug]
     if color:
         if not _HEX_RE.match(color):
-            raise ValueError(f"color は #RRGGBB 形式で指定してください: {color}")
+            raise ValueError(t("color must be in #RRGGBB format: {color}", color=color))
         color = color.upper()
         if not meta.get("recolorable", True):
             # ブランド色を持つアイコン（ロゴ）は染めない。勝手に色が変わる方が事故
-            print(f"  note: '{slug}' はブランド色で固定のため color={color} は無視します",
+            print(t("  note: '{slug}' keeps its fixed brand colors; "
+                    "ignoring color={color}", slug=slug, color=color),
                   file=sys.stderr)
             color = None
 
@@ -224,11 +284,13 @@ def render(name: str, *, color: str | None = None, px: int = DEFAULT_PX,
             fallback = os.path.join(PNG_DIR, f"{slug}.png")
             if not os.path.exists(fallback):
                 raise RasterizeError(
-                    f"SVG をラスタライズできず、同梱 PNG もありません: {slug}\n"
-                    "  pip install cairosvg（または brew install librsvg）を実行してください")
+                    t("Cannot rasterize the SVG and no bundled PNG exists: {slug}\n"
+                      "  Run pip install cairosvg (or brew install librsvg)",
+                      slug=slug))
             if color:
-                print(f"  warn: ラスタライザが無いため '{slug}' を素材の色のまま使います"
-                      f"（色 {color} は無視）。pip install cairosvg で解決します",
+                print(t("  warn: no rasterizer available; using '{slug}' in its "
+                        "source color (color {color} ignored). "
+                        "pip install cairosvg fixes this", slug=slug, color=color),
                       file=sys.stderr)
             shutil.copyfile(fallback, path)
             return path
@@ -381,12 +443,12 @@ def _contact_sheet(out: str, color: str | None, px: int) -> int:
     try:
         import cairosvg  # noqa: F401
     except Exception:
-        print("一覧画像の生成には cairosvg が必要です（pip install cairosvg）",
+        print(t("Generating the contact sheet requires cairosvg (pip install cairosvg)"),
               file=sys.stderr)
         return 1
     if not shutil.which("magick"):
-        print("一覧画像の合成には ImageMagick が必要です（brew install imagemagick）",
-              file=sys.stderr)
+        print(t("Compositing the contact sheet requires ImageMagick "
+                "(brew install imagemagick)"), file=sys.stderr)
         return 1
     slugs = sorted(icons())
     tiles = [render(s, color=color, px=px) for s in slugs]
@@ -405,21 +467,23 @@ def _contact_sheet(out: str, color: str | None, px: int) -> int:
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Scalar アイコンライブラリを引く / 書き出す")
-    p.add_argument("--list", action="store_true", help="全アイコンを一覧する")
-    p.add_argument("--search", help="日本語名・英語名・タグの部分一致で探す")
-    p.add_argument("--render", help="1 個を PNG に書き出す（slug でも日本語名でも可）")
+    p = argparse.ArgumentParser(description=t("Look up / export the Scalar icon library"))
+    p.add_argument("--list", action="store_true", help=t("List all icons"))
+    p.add_argument("--search",
+                   help=t("Search by partial match on Japanese name, English name, or tags"))
+    p.add_argument("--render", help=t("Export one icon to PNG (slug or Japanese name)"))
     p.add_argument("--sheet", action="store_true",
-                   help="全アイコンを 1 枚に並べた PNG を作る（--out が要る）")
-    p.add_argument("--color", help="染める色 #RRGGBB（省略で素材のグレー）")
-    p.add_argument("--px", type=int, default=DEFAULT_PX, help=f"書き出す画素数（既定 {DEFAULT_PX}）")
-    p.add_argument("--out", help="書き出し先のパス")
-    p.add_argument("--force", action="store_true", help="キャッシュを無視して作り直す")
+                   help=t("Build one PNG contact sheet of all icons (requires --out)"))
+    p.add_argument("--color", help=t("Tint color #RRGGBB (defaults to the source gray)"))
+    p.add_argument("--px", type=int, default=DEFAULT_PX,
+                   help=t("Output size in pixels (default {px})", px=DEFAULT_PX))
+    p.add_argument("--out", help=t("Output file path"))
+    p.add_argument("--force", action="store_true", help=t("Ignore the cache and rebuild"))
     args = p.parse_args()
 
     if args.sheet:
         if not args.out:
-            print("--sheet には --out が要ります", file=sys.stderr)
+            print(t("--sheet requires --out"), file=sys.stderr)
             return 1
         return _contact_sheet(args.out, args.color, min(args.px, 128))
 
@@ -438,11 +502,12 @@ def main() -> int:
 
     slugs = search(args.search) if args.search else sorted(icons())
     if not slugs:
-        print(f"該当なし: {args.search}", file=sys.stderr)
+        print(t("No matches: {query}", query=args.search), file=sys.stderr)
         return 1
     for s in slugs:
         print(describe(s))
-    print(f"\n{len(slugs)} / {len(icons())} 件", file=sys.stderr)
+    print(t("\n{shown} / {total} icons", shown=len(slugs), total=len(icons())),
+          file=sys.stderr)
     return 0
 
 

@@ -24,6 +24,38 @@ import json
 import os
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _i18n import t, register  # noqa: E402
+
+register({
+    "Merge per-page spec fragments into one deck spec":
+        "ページ単位のスペック断片を 1 つのデッキスペックに統合する",
+    "{path}: not readable as JSON: {e}": "{path}: JSON として読めません: {e}",
+    "{path}: must be an object or an array":
+        "{path}: オブジェクトか配列である必要があります",
+    "{path}: 'slides' must be an array":
+        "{path}: 'slides' は配列である必要があります",
+    "{path}: slides[{i}] is not an object":
+        "{path}: slides[{i}] がオブジェクトではありません",
+    "{path}: slides[{i}] has no 'layout'":
+        "{path}: slides[{i}] に 'layout' がありません",
+    "fragment JSON files / directories / globs":
+        "断片の JSON / ディレクトリ / グロブ",
+    "output spec file": "出力する仕様ファイル",
+    "deck title (takes precedence over fragment titles)":
+        "デッキのタイトル（断片側の title より優先）",
+    "defaults as a JSON string (e.g. '{\"bodyFontSize\": 14}')":
+        "defaults を JSON 文字列で指定（例: '{\"bodyFontSize\": 14}'）",
+    "no fragments found": "断片が 1 つも見つかりません",
+    "  {name}: {n} slides": "  {name}: {n} 枚",
+    "--title is required (fragments have no title either)":
+        "--title が要ります（断片にも title がありません）",
+    "{fragments} fragments → {slides} slides → {out}":
+        "{fragments} 断片 → {slides} 枚 → {out}",
+    "Next: validate with build_deck.py --dry-run --strict, then generate":
+        "次: build_deck.py --dry-run --strict で検証してから生成する",
+})
+
 
 def load_fragment(path: str) -> tuple[list, dict]:
     """断片を (スライドのリスト, 仕様レベルのキー) に正規化する。"""
@@ -31,7 +63,8 @@ def load_fragment(path: str) -> tuple[list, dict]:
         try:
             data = json.load(f)
         except json.JSONDecodeError as e:
-            raise SystemExit(f"{path}: JSON として読めません: {e}")
+            raise SystemExit(t("{path}: not readable as JSON: {e}",
+                               path=path, e=e))
 
     if isinstance(data, list):
         slides, top = data, {}
@@ -41,15 +74,17 @@ def load_fragment(path: str) -> tuple[list, dict]:
     elif isinstance(data, dict):
         slides, top = [data], {}
     else:
-        raise SystemExit(f"{path}: オブジェクトか配列である必要があります")
+        raise SystemExit(t("{path}: must be an object or an array", path=path))
 
     if not isinstance(slides, list):
-        raise SystemExit(f"{path}: 'slides' は配列である必要があります")
+        raise SystemExit(t("{path}: 'slides' must be an array", path=path))
     for i, s in enumerate(slides):
         if not isinstance(s, dict):
-            raise SystemExit(f"{path}: slides[{i}] がオブジェクトではありません")
+            raise SystemExit(t("{path}: slides[{i}] is not an object",
+                               path=path, i=i))
         if "layout" not in s:
-            raise SystemExit(f"{path}: slides[{i}] に 'layout' がありません")
+            raise SystemExit(t("{path}: slides[{i}] has no 'layout'",
+                               path=path, i=i))
     return slides, top
 
 
@@ -67,17 +102,22 @@ def expand(inputs: list[str]) -> list[str]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("inputs", nargs="+", help="断片の JSON / ディレクトリ / グロブ")
-    ap.add_argument("--out", required=True, help="出力する仕様ファイル")
-    ap.add_argument("--title", help="デッキのタイトル（断片側の title より優先）")
-    ap.add_argument("--defaults", help="defaults を JSON 文字列で指定（例: '{\"bodyFontSize\": 14}'）")
+    ap = argparse.ArgumentParser(
+        description=t("Merge per-page spec fragments into one deck spec"))
+    ap.add_argument("inputs", nargs="+",
+                    help=t("fragment JSON files / directories / globs"))
+    ap.add_argument("--out", required=True, help=t("output spec file"))
+    ap.add_argument("--title",
+                    help=t("deck title (takes precedence over fragment "
+                           "titles)"))
+    ap.add_argument("--defaults",
+                    help=t("defaults as a JSON string "
+                           "(e.g. '{\"bodyFontSize\": 14}')"))
     args = ap.parse_args()
 
     paths = expand(args.inputs)
     if not paths:
-        raise SystemExit("断片が 1 つも見つかりません")
+        raise SystemExit(t("no fragments found"))
 
     spec: dict = {"title": "", "slides": []}
     for path in paths:
@@ -87,20 +127,25 @@ def main() -> int:
         for k, v in top.items():
             spec.setdefault(k, v)
         spec["slides"].extend(slides)
-        print(f"  {os.path.basename(path)}: {len(slides)} 枚", file=sys.stderr)
+        print(t("  {name}: {n} slides", name=os.path.basename(path),
+                n=len(slides)), file=sys.stderr)
 
     if args.title:
         spec["title"] = args.title
     if not spec.get("title"):
-        raise SystemExit("--title が要ります（断片にも title がありません）")
+        raise SystemExit(t("--title is required (fragments have no title "
+                           "either)"))
     if args.defaults:
         spec["defaults"] = json.loads(args.defaults)
 
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(spec, f, ensure_ascii=False, indent=2)
         f.write("\n")
-    print(f"{len(paths)} 断片 → {len(spec['slides'])} 枚 → {args.out}", file=sys.stderr)
-    print("次: build_deck.py --dry-run --strict で検証してから生成する", file=sys.stderr)
+    print(t("{fragments} fragments → {slides} slides → {out}",
+            fragments=len(paths), slides=len(spec["slides"]), out=args.out),
+          file=sys.stderr)
+    print(t("Next: validate with build_deck.py --dry-run --strict, then "
+            "generate"), file=sys.stderr)
     return 0
 
 

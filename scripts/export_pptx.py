@@ -27,6 +27,21 @@ from googleapiclient.http import MediaIoBaseDownload
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 import drive_folder  # noqa: E402
+from _i18n import t, register  # noqa: E402
+
+register({
+    "exportLinks has no PPTX URL (possibly missing permissions)":
+        "exportLinks に PPTX の URL がありません（権限不足の可能性）",
+    "files.export failed ({err}); retrying via exportLinks...":
+        "files.export が失敗（{err}）。exportLinks 経由で再取得します...",
+    "Export a Google Slides deck as .pptx":
+        "Google Slides デッキを .pptx に書き出す",
+    "presentation URL or ID": "プレゼンテーションの URL または ID",
+    "output path (default: out/pptx/<deck name>.pptx)":
+        "出力パス（省略時: out/pptx/<デッキ名>.pptx）",
+    "Drive folder URL or ID to upload the exported .pptx into":
+        "書き出した .pptx をアップロードする Drive フォルダの URL または ID",
+})
 
 PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presentation"
 
@@ -44,7 +59,7 @@ def _export_via_link(drive, creds, pres_id: str, path: str) -> None:
     meta = drive.files().get(fileId=pres_id, fields="exportLinks").execute()
     link = meta.get("exportLinks", {}).get(PPTX_MIME)
     if not link:
-        raise SystemExit("exportLinks に PPTX の URL がありません（権限不足の可能性）")
+        raise SystemExit(t("exportLinks has no PPTX URL (possibly missing permissions)"))
     session = AuthorizedSession(creds)
     with session.get(link, stream=True) as r:
         r.raise_for_status()
@@ -65,17 +80,18 @@ def export_pptx(drive, creds, pres_id: str, path: str) -> None:
     except HttpError as e:
         if os.path.exists(path):
             os.remove(path)
-        print(f"files.export が失敗（{e.status_code if hasattr(e, 'status_code') else e}）。"
-              "exportLinks 経由で再取得します...", file=sys.stderr)
+        print(t("files.export failed ({err}); retrying via exportLinks...",
+                err=e.status_code if hasattr(e, "status_code") else e),
+              file=sys.stderr)
         _export_via_link(drive, creds, pres_id, path)
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Google Slides デッキを .pptx に書き出す")
-    p.add_argument("source", help="プレゼンテーションの URL または ID")
-    p.add_argument("--out", help="出力パス（省略時: out/pptx/<デッキ名>.pptx）")
+    p = argparse.ArgumentParser(description=t("Export a Google Slides deck as .pptx"))
+    p.add_argument("source", help=t("presentation URL or ID"))
+    p.add_argument("--out", help=t("output path (default: out/pptx/<deck name>.pptx)"))
     p.add_argument("--folder",
-                   help="書き出した .pptx をアップロードする Drive フォルダの URL または ID")
+                   help=t("Drive folder URL or ID to upload the exported .pptx into"))
     args = p.parse_args()
 
     pres_id = _auth.presentation_id(args.source)

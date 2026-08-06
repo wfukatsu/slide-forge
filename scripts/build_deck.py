@@ -26,6 +26,113 @@ import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+from _i18n import t, register  # noqa: E402
+
+register({
+    "  warn: {what} failed with HTTP {code}; retrying in {wait:.0f}s "
+    "({attempt}/{attempts})":
+        "  warn: {what} が HTTP {code} で失敗。{wait:.0f} 秒後に再試行 "
+        "({attempt}/{attempts})",
+    "template copy": "テンプレートの複製",
+    "template.json has no presentationId":
+        "template.json に presentationId がありません",
+    "  warn: template.json existingSlideIds contains IDs that do not exist: "
+    "{ids}\n        The template may have been updated; re-analyze it with "
+    "inspect_template.py.":
+        "  warn: template.json の existingSlideIds に実在しない ID があります: "
+        "{ids}\n        テンプレートが更新された可能性があります。"
+        "inspect_template.py で再解析してください。",
+    "cannot resolve layout '{key}'; available roles: {roles} / "
+    "layout keys: {keys}":
+        "レイアウト '{key}' を解決できません。"
+        "利用可能なロール: {roles} / レイアウトキー: {keys}",
+    "body and bodies cannot be specified together":
+        "body と bodies は同時に指定できません",
+    "layout '{key}' ({name}) has no {ph} placeholder; it declares {declared}":
+        "レイアウト '{key}' ({name}) は {ph} プレースホルダを持ちません。"
+        "保持しているのは {declared}",
+    "layout '{key}' ({name}) has only {slots} BODY slots but {given} were "
+    "given (declares: {declared})":
+        "レイアウト '{key}' ({name}) の BODY は {slots} 枠しかありませんが "
+        "{given} 個指定されています（保持: {declared}）",
+    "  warn: notes placeholder for {slide_id} not found; skipped":
+        "  warn: {slide_id} のノート枠が見つからずスキップしました",
+    "  warn: could not read the size of image {oid}; frame-filling placement "
+    "was not applied":
+        "  warn: 画像 {oid} の寸法が取れず、枠ぴったりの配置を適用できませんでした",
+    "slides[{i}]: 'figures' must be an array":
+        "slides[{i}]: 'figures' は配列である必要があります",
+    "{where}: missing 'type'": "{where}: 'type' がありません",
+    "{where}: unknown type '{kind}' (available: {available})":
+        "{where}: 未知の type '{kind}'（利用可能: {available}）",
+    "{where}: type '{kind}' is missing required keys: {missing}":
+        "{where}: type '{kind}' に必要なキーがありません: {missing}",
+    "{where}: '{k}' must be a number (inches)":
+        "{where}: '{k}' は数値（インチ）である必要があります",
+    "{where}: extends horizontally past the page ({pw}in) "
+    "(x={x} w={w} → right edge {right:.2f}in)":
+        "{where}: 横方向がページ({pw}in)からはみ出します"
+        "（x={x} w={w} → 右端 {right:.2f}in）",
+    "{where}: extends vertically past the page ({ph}in) "
+    "(y={y} h={h} → bottom edge {bottom:.2f}in)":
+        "{where}: 縦方向がページ({ph}in)からはみ出します"
+        "（y={y} h={h} → 下端 {bottom:.2f}in）",
+    "{where}: the table overlaps the master logo/footer band "
+    "(below y={band:.2f}in) (bottom edge {bottom:.2f}in); reduce the rows or "
+    "split it across slides":
+        "{where}: 表がマスターのロゴ・フッター帯（y={band:.2f}in 以下）に"
+        "重なります（下端 {bottom:.2f}in）。行数を減らすか複数枚に分けること",
+    "slides[{i}]: failed to draw figures: {etype}: {e}":
+        "slides[{i}]: 図の描画に失敗しました: {etype}: {e}",
+    "spec has no slides array": "spec に slides 配列がありません",
+    "{where}: missing 'layout'": "{where}: 'layout' がありません",
+    "{where}: cannot resolve layout '{key}' (roles: {roles} / keys: {keys})":
+        "{where}: レイアウト '{key}' を解決できません "
+        "(ロール: {roles} / キー: {keys})",
+    "{where}: layout '{key}' ({name}) has no {ph} but '{field}' is specified "
+    "(declares: {declared})":
+        "{where}: レイアウト '{key}' ({name}) は {ph} を持たないのに "
+        "'{field}' が指定されています（保持: {declared}）",
+    "{where}: 'body' and 'bodies' cannot be specified together":
+        "{where}: 'body' と 'bodies' は同時に指定できません",
+    "{where}: 'bodies' must be an array":
+        "{where}: 'bodies' は配列である必要があります",
+    "{where}: layout '{key}' ({name}) has no BODY but body text is specified "
+    "(declares: {declared})":
+        "{where}: レイアウト '{key}' ({name}) は BODY を持たないのに"
+        "本文が指定されています（保持: {declared}）",
+    "{where}: layout '{key}' ({name}) has {slots} BODY slots but {given} were "
+    "given (declares: {declared})":
+        "{where}: レイアウト '{key}' ({name}) の BODY は {slots} 枠ですが "
+        "{given} 個指定されています（保持: {declared}）",
+    "generate a presentation from a template":
+        "テンプレートからプレゼンテーションを生成する",
+    "path to template.json": "template.json のパス",
+    "path to the deck-spec JSON": "デッキ仕様 JSON のパス",
+    "presentation title (defaults to spec.title)":
+        "生成するプレゼンテーションのタイトル（既定は spec.title）",
+    "destination Drive folder URL or ID":
+        "出力先 Drive フォルダの URL または ID",
+    "validate the spec only, without calling the API":
+        "API を呼ばず仕様の検証だけ行う",
+    "do not draw page numbers": "ページ番号を描画しない",
+    "keep the slides bundled with the template":
+        "テンプレート同梱スライドを残す",
+    "fail if the figure audit (overlaps / text overflow) reports anything":
+        "図の検査（重なり・文字溢れ）で 1 件でも出たら失敗にする",
+    "The spec has problems:": "仕様に問題があります:",
+    "No title (specify --title or spec.title)":
+        "タイトルがありません（--title か spec.title を指定してください）",
+    "OK: the {n}-slide spec is consistent with the template":
+        "OK: {n} 枚のスライド仕様はテンプレートと整合しています",
+    "  + {n} figures": "  + 図 {n} 個",
+    "Figure audit found {n} findings (images excluded; they need the real "
+    "file):":
+        "図の検査で {n} 件（画像は実物が要るため対象外）:",
+    "figure audit (connectors / overlaps / text overflow): no problems":
+        "図の検査（コネクタ・重なり・文字溢れ）: 問題なし",
+    "Figure audit found {n} findings:": "図の検査で {n} 件:",
+})
 
 FILLABLE = ("TITLE", "SUBTITLE", "BODY")
 
@@ -54,8 +161,10 @@ def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0):
                 raise
             code = code or type(e).__name__
             wait = base_delay * (2 ** i)
-            print(f"  warn: {what} が HTTP {code} で失敗。{wait:.0f} 秒後に再試行 "
-                  f"({i + 1}/{attempts - 1})", file=sys.stderr)
+            print(t("  warn: {what} failed with HTTP {code}; retrying in "
+                    "{wait:.0f}s ({attempt}/{attempts})", what=what, code=code,
+                    wait=wait, attempt=i + 1, attempts=attempts - 1),
+                  file=sys.stderr)
             time.sleep(wait)
 
 
@@ -99,7 +208,7 @@ class TemplateDeck:
     ) -> "TemplateDeck":
         src = template.get("presentationId")
         if not src:
-            raise ValueError("template.json に presentationId がありません")
+            raise ValueError(t("template.json has no presentationId"))
         slides, drive = _auth.services(creds)
 
         body: dict = {"name": title}
@@ -108,7 +217,7 @@ class TemplateDeck:
             body["parents"] = [fid]
         copied = _retry(
             lambda: drive.files().copy(fileId=src, body=body, fields="id").execute(),
-            what="テンプレートの複製")
+            what=t("template copy"))
 
         deck = cls(slides, drive, copied["id"], template)
         if not keep_existing:
@@ -136,9 +245,10 @@ class TemplateDeck:
         stale = expected - set(present)
         if stale:
             print(
-                f"  warn: template.json の existingSlideIds に実在しない ID があります: "
-                f"{sorted(stale)}\n"
-                f"        テンプレートが更新された可能性があります。inspect_template.py で再解析してください。",
+                t("  warn: template.json existingSlideIds contains IDs that "
+                  "do not exist: {ids}\n        The template may have been "
+                  "updated; re-analyze it with inspect_template.py.",
+                  ids=sorted(stale)),
                 file=sys.stderr,
             )
         # 実在するスライドは全て削除する（テンプレート側でスライドが増えていても取りこぼさない）
@@ -154,8 +264,9 @@ class TemplateDeck:
         if resolved not in layouts:
             roles = sorted(self.template.get("roles", {}))
             raise KeyError(
-                f"レイアウト '{key}' を解決できません。"
-                f"利用可能なロール: {roles} / レイアウトキー: {sorted(layouts)}"
+                t("cannot resolve layout '{key}'; available roles: {roles} / "
+                  "layout keys: {keys}", key=key, roles=roles,
+                  keys=sorted(layouts))
             )
         return resolved, layouts[resolved]
 
@@ -193,7 +304,7 @@ class TemplateDeck:
         declared = layout.get("placeholders", [])
 
         if body is not None and bodies is not None:
-            raise ValueError("body と bodies は同時に指定できません")
+            raise ValueError(t("body and bodies cannot be specified together"))
         if body is not None:
             bodies = [body]
 
@@ -201,15 +312,18 @@ class TemplateDeck:
         for ph_type, value in (("TITLE", title), ("SUBTITLE", subtitle)):
             if value is not None and ph_type not in declared:
                 raise ValueError(
-                    f"レイアウト '{layout_key}' ({layout['displayName']}) は "
-                    f"{ph_type} プレースホルダを持ちません。保持しているのは {declared}"
+                    t("layout '{key}' ({name}) has no {ph} placeholder; "
+                      "it declares {declared}", key=layout_key,
+                      name=layout["displayName"], ph=ph_type,
+                      declared=declared)
                 )
         body_slots = [p for p in declared if p.split("#")[0] == "BODY"]
         if bodies is not None and len(bodies) > len(body_slots):
             raise ValueError(
-                f"レイアウト '{layout_key}' ({layout['displayName']}) の BODY は "
-                f"{len(body_slots)} 枠しかありませんが {len(bodies)} 個指定されています"
-                f"（保持: {declared}）"
+                t("layout '{key}' ({name}) has only {slots} BODY slots but "
+                  "{given} were given (declares: {declared})", key=layout_key,
+                  name=layout["displayName"], slots=len(body_slots),
+                  given=len(bodies), declared=declared)
             )
 
         slide_id = self._next_id("slide")
@@ -429,7 +543,8 @@ class TemplateDeck:
         for slide_id, text in self._notes:
             oid = note_ids.get(slide_id)
             if not oid:
-                print(f"  warn: {slide_id} のノート枠が見つからずスキップしました", file=sys.stderr)
+                print(t("  warn: notes placeholder for {slide_id} not found; "
+                        "skipped", slide_id=slide_id), file=sys.stderr)
                 continue
             reqs.append({"insertText": {"objectId": oid, "text": text}})
         n_notes = len(reqs)
@@ -440,8 +555,9 @@ class TemplateDeck:
             mw = size.get("width", {}).get("magnitude")
             mh = size.get("height", {}).get("magnitude")
             if not mw or not mh:
-                print(f"  warn: 画像 {oid} の寸法が取れず、枠ぴったりの配置を"
-                      f"適用できませんでした", file=sys.stderr)
+                print(t("  warn: could not read the size of image {oid}; "
+                        "frame-filling placement was not applied", oid=oid),
+                      file=sys.stderr)
                 continue
             reqs.append({"updatePageElementTransform": {
                 "objectId": oid,
@@ -618,26 +734,31 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
             d.get("w", 0) > pw * 0.95 and d.get("h", 0) > ph * 0.9
             for d in (layout.get("decorations") or []))
         if not isinstance(figs, list):
-            problems.append(f"slides[{i}]: 'figures' は配列である必要があります")
+            problems.append(t("slides[{i}]: 'figures' must be an array", i=i))
             continue
         for j, fig in enumerate(figs):
             where = f"slides[{i}].figures[{j}]"
             if not isinstance(fig, dict) or "type" not in fig:
-                problems.append(f"{where}: 'type' がありません")
+                problems.append(t("{where}: missing 'type'", where=where))
                 continue
             kind = fig["type"]
             if kind not in FIGURES:
-                problems.append(
-                    f"{where}: 未知の type '{kind}'（利用可能: {sorted(FIGURES)}）")
+                problems.append(t(
+                    "{where}: unknown type '{kind}' (available: {available})",
+                    where=where, kind=kind, available=sorted(FIGURES)))
                 continue
             _, order = FIGURES[kind]
             missing = [k for k in order if k not in fig]
             if missing:
-                problems.append(f"{where}: type '{kind}' に必要なキーがありません: {missing}")
+                problems.append(t(
+                    "{where}: type '{kind}' is missing required keys: "
+                    "{missing}", where=where, kind=kind, missing=missing))
                 continue
             for k in ("x", "y", "w", "h"):
                 if k in fig and not isinstance(fig[k], (int, float)):
-                    problems.append(f"{where}: '{k}' は数値（インチ）である必要があります")
+                    problems.append(t(
+                        "{where}: '{k}' must be a number (inches)",
+                        where=where, k=k))
             # "size" が空間量（インチ）なのは位置引数に size を持つ type
             # （icon 系・pie）だけ。table 等ではフォントサイズ（pt）なので、
             # 高さの代わりに使うと 8.5pt を 8.5in と誤読してしまう
@@ -655,14 +776,16 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
                 h = hh + rh * len(fig["rows"])
             if isinstance(x, (int, float)) and isinstance(w, (int, float)):
                 if x < 0 or x + w > pw + 0.01:
-                    problems.append(
-                        f"{where}: 横方向がページ({pw}in)からはみ出します"
-                        f"（x={x} w={w} → 右端 {x + w:.2f}in）")
+                    problems.append(t(
+                        "{where}: extends horizontally past the page ({pw}in) "
+                        "(x={x} w={w} → right edge {right:.2f}in)",
+                        where=where, pw=pw, x=x, w=w, right=x + w))
             if isinstance(y, (int, float)) and isinstance(h, (int, float)):
                 if y < 0 or y + h > ph + 0.01:
-                    problems.append(
-                        f"{where}: 縦方向がページ({ph}in)からはみ出します"
-                        f"（y={y} h={h} → 下端 {y + h:.2f}in）")
+                    problems.append(t(
+                        "{where}: extends vertically past the page ({ph}in) "
+                        "(y={y} h={h} → bottom edge {bottom:.2f}in)",
+                        where=where, ph=ph, y=y, h=h, bottom=y + h))
                 # 帯への重なりは **表だけ** 検査する。表は h を宣言せず、行数から
                 # 出した高さがほぼそのまま実寸になるので判定が当たる。図形の図は
                 # 宣言した枠の下端に余白があること（posmap の軸ラベル領域など）が
@@ -672,9 +795,11 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
                       and y + h > band[0] + 0.01
                       and isinstance(x, (int, float)) and isinstance(w, (int, float))
                       and x < band[2] and x + w > band[1]):
-                    problems.append(
-                        f"{where}: 表がマスターのロゴ・フッター帯（y={band[0]:.2f}in 以下）に"
-                        f"重なります（下端 {y + h:.2f}in）。行数を減らすか複数枚に分けること")
+                    problems.append(t(
+                        "{where}: the table overlaps the master logo/footer "
+                        "band (below y={band:.2f}in) (bottom edge "
+                        "{bottom:.2f}in); reduce the rows or split it across "
+                        "slides", where=where, band=band[0], bottom=y + h))
     return problems
 
 
@@ -708,7 +833,8 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
         try:
             draw_figures(canvas, figs, skip_network=True)
         except Exception as e:  # 引数の不整合はここで初めて分かることがある
-            out.append(f"slides[{i}]: 図の描画に失敗しました: {type(e).__name__}: {e}")
+            out.append(t("slides[{i}]: failed to draw figures: {etype}: {e}",
+                         i=i, etype=type(e).__name__, e=e))
             continue
         for msg in (canvas.audit_bounds() + canvas.audit_connectors()
                     + canvas.audit_overlaps() + canvas.audit_text_fit()):
@@ -741,7 +867,7 @@ def validate_spec(template: dict, spec: dict) -> list[str]:
     problems = []
     slides = spec.get("slides")
     if not isinstance(slides, list) or not slides:
-        return ["spec に slides 配列がありません"]
+        return [t("spec has no slides array")]
 
     layouts = template["layouts"]
     roles = template.get("roles", {})
@@ -749,43 +875,51 @@ def validate_spec(template: dict, spec: dict) -> list[str]:
         where = f"slides[{i}]"
         key = s.get("layout")
         if not key:
-            problems.append(f"{where}: 'layout' がありません")
+            problems.append(t("{where}: missing 'layout'", where=where))
             continue
         resolved = roles.get(key, key)
         layout = layouts.get(resolved)
         if not layout:
             problems.append(
-                f"{where}: レイアウト '{key}' を解決できません "
-                f"(ロール: {sorted(roles)} / キー: {sorted(layouts)})"
+                t("{where}: cannot resolve layout '{key}' "
+                  "(roles: {roles} / keys: {keys})", where=where, key=key,
+                  roles=sorted(roles), keys=sorted(layouts))
             )
             continue
         declared = layout.get("placeholders", [])
         for field, ph in (("title", "TITLE"), ("subtitle", "SUBTITLE")):
             if s.get(field) is not None and ph not in declared:
                 problems.append(
-                    f"{where}: レイアウト '{key}' ({layout['displayName']}) は "
-                    f"{ph} を持たないのに '{field}' が指定されています（保持: {declared}）"
+                    t("{where}: layout '{key}' ({name}) has no {ph} but "
+                      "'{field}' is specified (declares: {declared})",
+                      where=where, key=key, name=layout["displayName"], ph=ph,
+                      field=field, declared=declared)
                 )
         if s.get("body") is not None and s.get("bodies") is not None:
-            problems.append(f"{where}: 'body' と 'bodies' は同時に指定できません")
+            problems.append(t("{where}: 'body' and 'bodies' cannot be "
+                              "specified together", where=where))
             continue
         bodies = s.get("bodies")
         if bodies is None and s.get("body") is not None:
             bodies = [s["body"]]
         if bodies is not None:
             if not isinstance(bodies, list):
-                problems.append(f"{where}: 'bodies' は配列である必要があります")
+                problems.append(t("{where}: 'bodies' must be an array",
+                                  where=where))
                 continue
             slots = [p for p in declared if p.split("#")[0] == "BODY"]
             if not slots:
                 problems.append(
-                    f"{where}: レイアウト '{key}' ({layout['displayName']}) は "
-                    f"BODY を持たないのに本文が指定されています（保持: {declared}）"
+                    t("{where}: layout '{key}' ({name}) has no BODY but body "
+                      "text is specified (declares: {declared})", where=where,
+                      key=key, name=layout["displayName"], declared=declared)
                 )
             elif len(bodies) > len(slots):
                 problems.append(
-                    f"{where}: レイアウト '{key}' ({layout['displayName']}) の BODY は "
-                    f"{len(slots)} 枠ですが {len(bodies)} 個指定されています（保持: {declared}）"
+                    t("{where}: layout '{key}' ({name}) has {slots} BODY "
+                      "slots but {given} were given (declares: {declared})",
+                      where=where, key=key, name=layout["displayName"],
+                      slots=len(slots), given=len(bodies), declared=declared)
                 )
     return problems
 
@@ -820,16 +954,24 @@ def build_from_spec(deck: TemplateDeck, spec: dict) -> list[str]:
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="テンプレートからプレゼンテーションを生成する")
-    p.add_argument("--template", required=True, help="template.json のパス")
-    p.add_argument("--spec", required=True, help="デッキ仕様 JSON のパス")
-    p.add_argument("--title", help="生成するプレゼンテーションのタイトル（既定は spec.title）")
-    p.add_argument("--folder", help="出力先 Drive フォルダの URL または ID")
-    p.add_argument("--dry-run", action="store_true", help="API を呼ばず仕様の検証だけ行う")
-    p.add_argument("--no-page-numbers", action="store_true", help="ページ番号を描画しない")
-    p.add_argument("--keep-existing", action="store_true", help="テンプレート同梱スライドを残す")
+    p = argparse.ArgumentParser(
+        description=t("generate a presentation from a template"))
+    p.add_argument("--template", required=True,
+                   help=t("path to template.json"))
+    p.add_argument("--spec", required=True,
+                   help=t("path to the deck-spec JSON"))
+    p.add_argument("--title",
+                   help=t("presentation title (defaults to spec.title)"))
+    p.add_argument("--folder", help=t("destination Drive folder URL or ID"))
+    p.add_argument("--dry-run", action="store_true",
+                   help=t("validate the spec only, without calling the API"))
+    p.add_argument("--no-page-numbers", action="store_true",
+                   help=t("do not draw page numbers"))
+    p.add_argument("--keep-existing", action="store_true",
+                   help=t("keep the slides bundled with the template"))
     p.add_argument("--strict", action="store_true",
-                   help="図の検査（重なり・文字溢れ）で 1 件でも出たら失敗にする")
+                   help=t("fail if the figure audit (overlaps / text "
+                          "overflow) reports anything"))
     args = p.parse_args()
 
     template = load_template(args.template)
@@ -839,33 +981,36 @@ def main() -> int:
     problems = validate_spec(template, spec)
     problems += validate_figures(spec, template.get("pageSize", {}), template)
     if problems:
-        print("仕様に問題があります:", file=sys.stderr)
+        print(t("The spec has problems:"), file=sys.stderr)
         for msg in problems:
             print(f"  - {msg}", file=sys.stderr)
         return 1
 
     title = args.title or spec.get("title")
     if not title:
-        print("タイトルがありません（--title か spec.title を指定してください）", file=sys.stderr)
+        print(t("No title (specify --title or spec.title)"), file=sys.stderr)
         return 1
 
     if args.dry_run:
-        print(f"OK: {len(spec['slides'])} 枚のスライド仕様はテンプレートと整合しています")
+        print(t("OK: the {n}-slide spec is consistent with the template",
+                n=len(spec["slides"])))
         for i, s in enumerate(spec["slides"], 1):
             resolved = template.get("roles", {}).get(s["layout"], s["layout"])
             n_fig = len(s.get("figures") or [])
-            extra = f"  + 図 {n_fig} 個" if n_fig else ""
+            extra = t("  + {n} figures", n=n_fig) if n_fig else ""
             print(f"  {i:2d}. {s['layout']:24s} -> "
                   f"{template['layouts'][resolved]['displayName']}{extra}")
         findings = audit_figures(template, spec)
         if findings:
-            print(f"\n図の検査で {len(findings)} 件（画像は実物が要るため対象外）:",
+            print("\n" + t("Figure audit found {n} findings (images excluded; "
+                           "they need the real file):", n=len(findings)),
                   file=sys.stderr)
             for msg in findings:
                 print(f"  - {msg}", file=sys.stderr)
             return 1 if args.strict else 0
         if any(s.get("figures") for s in spec["slides"]):
-            print("図の検査（コネクタ・重なり・文字溢れ）: 問題なし")
+            print(t("figure audit (connectors / overlaps / text overflow): "
+                    "no problems"))
         return 0
 
     deck = TemplateDeck.create(
@@ -878,7 +1023,8 @@ def main() -> int:
     url = deck.commit()
     print(f"Done! {len(deck.slide_ids)} slides created.")
     if warnings:
-        print(f"\n図の検査で {len(warnings)} 件:", file=sys.stderr)
+        print("\n" + t("Figure audit found {n} findings:", n=len(warnings)),
+              file=sys.stderr)
         for msg in warnings:
             print(f"  - {msg}", file=sys.stderr)
     print(f"Open: {url}")

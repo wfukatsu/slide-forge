@@ -25,6 +25,18 @@
 from __future__ import annotations
 
 from colors import darken, lighten, readable_on
+from _i18n import t, register
+
+register({
+    "w={w} h={h} leaves no room for the plot area":
+        "w={w} h={h} ではプロット領域が確保できません",
+    "point '{name}' has coordinates ({px}, {py}); both must be within 0-1":
+        "点「{name}」の座標 ({px}, {py}) は 0〜1 で指定します",
+    "Unknown blocks {unknown}. Available: {available}":
+        "未知のブロック {unknown}。利用可能: {available}",
+    "nested_circles needs at least 2 rings": "nested_circles はリングが 2 個以上必要です",
+    "w={w} leaves no room for the labels": "w={w} ではラベル領域が確保できません",
+})
 
 # lean_canvas のブロック定義。(キー, 見出し) を標準のリーンキャンバスの並びで持つ
 LEAN_CANVAS_KEYS = {
@@ -86,7 +98,8 @@ class PatternMixin:
         gx, gy = x + side_w, y + cap_h
         gw, gh = w - side_w * 2, h - cap_h * 2
         if gw < 1.0 or gh < 1.0:
-            raise ValueError(f"w={w} h={h} ではプロット領域が確保できません")
+            raise ValueError(t("w={w} h={h} leaves no room for the plot area",
+                               w=w, h=h))
         self.shape(gx, gy, gw, gh, kind="RECTANGLE", fill=self.P.surfaceAlt,
                    stroke=None)
         cx, cy = gx + gw / 2, gy + gh / 2
@@ -113,7 +126,9 @@ class PatternMixin:
         r = bubble / 2
         for name, px, py in points:
             if not (0 <= px <= 1 and 0 <= py <= 1):
-                raise ValueError(f"点「{name}」の座標 ({px}, {py}) は 0〜1 で指定します")
+                raise ValueError(t("point '{name}' has coordinates ({px}, {py}); "
+                                   "both must be within 0-1",
+                                   name=name, px=px, py=py))
             bx = gx + (gw - bubble) * px
             by = gy + (gh - bubble) * (1 - py)
             fill = ((highlight_color or self.P.success) if name in hi
@@ -277,8 +292,9 @@ class PatternMixin:
         """
         unknown = set(blocks) - set(LEAN_CANVAS_KEYS)
         if unknown:
-            raise ValueError(f"未知のブロック {sorted(unknown)}。"
-                             f"利用可能: {list(LEAN_CANVAS_KEYS)}")
+            raise ValueError(t("Unknown blocks {unknown}. Available: {available}",
+                               unknown=sorted(unknown),
+                               available=list(LEAN_CANVAS_KEYS)))
         g = 0.06
         top_h = (h - g) * 0.66
         bot_h = h - g - top_h
@@ -327,7 +343,7 @@ class PatternMixin:
         """
         n = len(rings)
         if n < 2:
-            raise ValueError("nested_circles はリングが 2 個以上必要です")
+            raise ValueError(t("nested_circles needs at least 2 rings"))
         d0 = min(h, w * 0.52)
         ccx = x + d0 / 2
         base = y + (h + d0) / 2            # 円の下端（縦中央に配置）
@@ -336,7 +352,7 @@ class PatternMixin:
         lab_x = ccx + d0 / 2 + 0.35
         lab_w = x + w - lab_x
         if lab_w < 1.2:
-            raise ValueError(f"w={w} ではラベル領域が確保できません")
+            raise ValueError(t("w={w} leaves no room for the labels", w=w))
         # ラベルは行間を広めに取る。詰めると「値」と次のリングの「名前」が
         # ひとかたまりに見え、どの円の値か読み違える
         lab_h = 0.52

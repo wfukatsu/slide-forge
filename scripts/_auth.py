@@ -18,6 +18,23 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _i18n import t, register  # noqa: E402
+
+register({
+    "credentials.json not found. Place it in one of:\n  {dirs}\n\n"
+    "Create an OAuth 2.0 desktop client in the Google Cloud Console and "
+    "enable the Slides API and the Drive API.":
+        "credentials.json が見つかりません。次のいずれかに配置してください:\n  {dirs}\n\n"
+        "Google Cloud Console で OAuth 2.0 デスクトップクライアントを作成し、"
+        "Slides API と Drive API を有効化してください。",
+    "Token expired; re-authenticating...": "トークンが失効しています。再認証します...",
+    "Opening the browser for OAuth consent...": "ブラウザで OAuth 認証を行います...",
+    "Invalid hex color: {value}": "不正な hex カラー: {value}",
+    "Cannot extract a presentation ID from: {value}":
+        "プレゼンテーション ID を抽出できません: {value}",
+})
+
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCOPES = [
     "https://www.googleapis.com/auth/presentations",
@@ -48,12 +65,12 @@ def get_credentials():
     """OAuth 認証情報を返す。token が失効していれば自動リフレッシュする。"""
     creds_path = _find("credentials.json")
     if not creds_path:
-        raise SystemExit(
-            "credentials.json が見つかりません。次のいずれかに配置してください:\n  "
-            + "\n  ".join(config_dirs())
-            + "\n\nGoogle Cloud Console で OAuth 2.0 デスクトップクライアントを作成し、"
-            "Slides API と Drive API を有効化してください。"
-        )
+        raise SystemExit(t(
+            "credentials.json not found. Place it in one of:\n  {dirs}\n\n"
+            "Create an OAuth 2.0 desktop client in the Google Cloud Console and "
+            "enable the Slides API and the Drive API.",
+            dirs="\n  ".join(config_dirs()),
+        ))
     token_path = _find("token.json") or os.path.join(
         os.path.dirname(creds_path), "token.json"
     )
@@ -67,10 +84,10 @@ def get_credentials():
                 creds.refresh(Request())
             except RefreshError:
                 # トークンが失効・取り消し済み（invalid_grant）。再認証に落とす
-                print("トークンが失効しています。再認証します...", file=sys.stderr)
+                print(t("Token expired; re-authenticating..."), file=sys.stderr)
                 creds = None
         if not creds or not creds.valid:
-            print("ブラウザで OAuth 認証を行います...", file=sys.stderr)
+            print(t("Opening the browser for OAuth consent..."), file=sys.stderr)
             flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
             creds = flow.run_local_server(port=0)
         # リフレッシュトークンを含むため所有者のみ読み書き可で保存する
@@ -112,7 +129,7 @@ def rgb_to_hex(c: dict) -> str:
 def hex_to_rgb(hex_color: str) -> dict:
     h = hex_color.lstrip("#")
     if len(h) != 6:
-        raise ValueError(f"不正な hex カラー: {hex_color}")
+        raise ValueError(t("Invalid hex color: {value}", value=hex_color))
     return {
         "red": int(h[0:2], 16) / 255,
         "green": int(h[2:4], 16) / 255,
@@ -131,7 +148,8 @@ def presentation_id(url_or_id: str) -> str:
     if m:
         return m.group(1)
     if "/" in url_or_id or " " in url_or_id:
-        raise ValueError(f"プレゼンテーション ID を抽出できません: {url_or_id}")
+        raise ValueError(t("Cannot extract a presentation ID from: {value}",
+                           value=url_or_id))
     return url_or_id
 
 

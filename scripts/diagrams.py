@@ -52,6 +52,7 @@ import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+from _i18n import t, register  # noqa: E402
 # 色ユーティリティは colors.py に移した。`from diagrams import lighten` のような
 # 既存の import を壊さないよう、ここから re-export している。
 from colors import (  # noqa: E402,F401
@@ -64,6 +65,55 @@ from illustrations import IllustrationMixin  # noqa: E402
 from images import ImageMixin  # noqa: E402
 from patterns import PatternMixin  # noqa: E402
 from pages import PageMixin  # noqa: E402
+
+register({
+    "  warn: text inside a shape rotated {rotation} degrees will rotate with it "
+    "(\"{head}\"). Draw the shape without text and overlay a label()":
+        "  warn: 回転 {rotation}度 の図形に文字を入れています。"
+        "文字も回ります（「{head}」）。"
+        "図形は text 無しで描き、label() を重ねてください",
+    "  warn: code_block contains characters outside the BMP (emoji etc.). "
+    "Slides API text ranges are in UTF-16 units, so highlight ranges may shift":
+        "  warn: code_block に BMP 外の文字（絵文字等）が含まれています。"
+        "Slides API の文字範囲は UTF-16 単位のため、ハイライトの色範囲が"
+        "ずれる可能性があります",
+    "Shape has no recorded geometry: {id}": "座標が分からない図形です: {id}",
+    "connect() can only join shapes drawn by this Canvas":
+        "connect() は Canvas が描いた図形どうしにのみ使えます",
+    "start point": "始点",
+    "end point": "終点",
+    "The {endpoint} of a connector does not touch any shape "
+    "(nearest shape is {near:.2f}in away)":
+        "コネクタの{endpoint}がどの図形にも接していません"
+        "（最寄りの図形まで {near:.2f}in）",
+    "The {endpoint} of a connector is buried inside a shape ({depth:.2f}in deep)":
+        "コネクタの{endpoint}が図形の内部に埋まっています（{depth:.2f}in 食い込み）",
+    "Text is hidden behind a shape drawn later ({area:.3f}in²): "
+    "\"{text}\" is covered by \"{cover}\"":
+        "文字が後から描いた図形に隠れています（{area:.3f}in²）:"
+        "「{text}」を「{cover}」が覆っている",
+    "Text labels collide ({area:.3f}in²): \"{a}\" and \"{b}\"":
+        "文字どうしがぶつかっています（{area:.3f}in²）:「{a}」と「{b}」",
+    "{v:.2f}in past the left edge": "左に {v:.2f}in",
+    "{v:.2f}in past the top edge": "上に {v:.2f}in",
+    "{v:.2f}in past the right edge": "右に {v:.2f}in",
+    "{v:.2f}in past the bottom edge": "下に {v:.2f}in",
+    "A shape extends beyond the slide ({over}): \"{name}\"":
+        "図形がスライドの外に出ています（{over}）:「{name}」",
+    "A line endpoint is outside the slide: ({x:.2f}, {y:.2f})":
+        "線の端点がスライドの外にあります: ({x:.2f}, {y:.2f})",
+    "Too much text for the box (needs {need:.2f}in > box {h:.2f}in / {lines} lines): "
+    "\"{text}\"":
+        "枠に対して文字が多すぎます"
+        "（必要 {need:.2f}in > 枠 {h:.2f}in / {lines}行）:「{text}」",
+    "The wrapped last line keeps only {tail:.1f} characters ({per:.1f} per line): "
+    "\"{text}\"":
+        "折り返しの最終行に文字が {tail:.1f} 字しか残りません"
+        "（1行 {per:.1f} 字）:「{text}」",
+    "link() can only join shapes with known geometry":
+        "link() は座標の分かる図形どうしにのみ使えます",
+    "hbars: rows is empty": "hbars: rows が空です",
+})
 
 
 # ---------- 描画 ----------
@@ -191,9 +241,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         （label(rotation=270) のような、意図して縦にする用途だけが例外）。
         """
         if text and rotation % 360 not in (0, 90, 270):
-            print(f"  warn: 回転 {rotation}度 の図形に文字を入れています。"
-                  f"文字も回ります（「{str(text)[:12]}」）。"
-                  f"図形は text 無しで描き、label() を重ねてください", file=sys.stderr)
+            print(t("  warn: text inside a shape rotated {rotation} degrees will "
+                    "rotate with it (\"{head}\"). Draw the shape without text and "
+                    "overlay a label()", rotation=rotation, head=str(text)[:12]),
+                  file=sys.stderr)
         oid = self._oid("s")
         reqs = [{"createShape": {
             "objectId": oid, "shapeType": kind,
@@ -355,9 +406,9 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         if not rules:
             return []
         if any(ord(ch) > 0xFFFF for ch in code):
-            print("  warn: code_block に BMP 外の文字（絵文字等）が含まれています。"
-                  "Slides API の文字範囲は UTF-16 単位のため、ハイライトの色範囲が"
-                  "ずれる可能性があります", file=sys.stderr)
+            print(t("  warn: code_block contains characters outside the BMP "
+                    "(emoji etc.). Slides API text ranges are in UTF-16 units, "
+                    "so highlight ranges may shift"), file=sys.stderr)
         pattern = "|".join(f"(?P<{name}_{i}>{rx})"
                            for i, (name, rx) in enumerate(rules))
         spans = []
@@ -476,7 +527,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         """
         rect = self.rects.get(rect_or_id) if isinstance(rect_or_id, str) else rect_or_id
         if rect is None:
-            raise ValueError(f"座標が分からない図形です: {rect_or_id}")
+            raise ValueError(t("Shape has no recorded geometry: {id}", id=rect_or_id))
         cx, cy = self._center(rect)
         w, h = rect[2], rect[3]
         dx, dy = toward[0] - cx, toward[1] - cy
@@ -506,7 +557,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         """
         ra, rb = self.rects.get(src), self.rects.get(dst)
         if ra is None or rb is None:
-            raise ValueError("connect() は Canvas が描いた図形どうしにのみ使えます")
+            raise ValueError(t("connect() can only join shapes drawn by this Canvas"))
         s_site = self._facing_site(ra, rb) if start_site is None else start_site
         e_site = self._facing_site(rb, ra) if end_site is None else end_site
         p1 = self._site_point(ra, s_site)
@@ -588,15 +639,18 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         for conn in self.connectors:
             if conn["free"]:
                 continue
-            for name, p in (("始点", conn["p1"]), ("終点", conn["p2"])):
+            for name, p in ((t("start point"), conn["p1"]),
+                            (t("end point"), conn["p2"])):
                 near = min((self._dist_to_rect(p[0], p[1], r) for r in targets),
                            key=abs)
                 if near > self.CONN_REACH:
-                    out.append(f"コネクタの{name}がどの図形にも接していません"
-                               f"（最寄りの図形まで {near:.2f}in）")
+                    out.append(t("The {endpoint} of a connector does not touch any "
+                                 "shape (nearest shape is {near:.2f}in away)",
+                                 endpoint=name, near=near))
                 elif near < -self.CONN_BURY:
-                    out.append(f"コネクタの{name}が図形の内部に埋まっています"
-                               f"（{-near:.2f}in 食い込み）")
+                    out.append(t("The {endpoint} of a connector is buried inside a "
+                                 "shape ({depth:.2f}in deep)",
+                                 endpoint=name, depth=-near))
         return out
 
     # 重なり・文字溢れの判定しきい値
@@ -697,8 +751,9 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                     continue
                 if area / max(ra[2] * ra[3], 1e-9) < self.OVERLAP_RATIO:
                     continue
-                record(f"文字が後から描いた図形に隠れています（{area:.3f}in²）:"
-                       f"「{ta}」を「{sol['name']}」が覆っている",
+                record(t("Text is hidden behind a shape drawn later ({area:.3f}in²): "
+                         "\"{text}\" is covered by \"{cover}\"",
+                         area=area, text=ta, cover=sol["name"]),
                        ("hide", ta, sol["name"]))
 
         # 2. 塗りの無いラベルどうしの衝突
@@ -715,8 +770,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                     continue
                 ta = a["text"].replace("\n", " ")[:20]
                 tb = b["text"].replace("\n", " ")[:20]
-                record(f"文字どうしがぶつかっています（{area:.3f}in²）:"
-                       f"「{ta}」と「{tb}」", ("hit", *sorted((ta, tb))))
+                record(t("Text labels collide ({area:.3f}in²): \"{a}\" and \"{b}\"",
+                         area=area, a=ta, b=tb), ("hit", *sorted((ta, tb))))
         return out
 
     BOUNDS_SLACK = 0.02     # この量までのはみ出しは許す（丸め誤差）
@@ -733,22 +788,23 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             x, y, w, h, kind = r
             over = []
             if x < -s:
-                over.append(f"左に {-x:.2f}in")
+                over.append(t("{v:.2f}in past the left edge", v=-x))
             if y < -s:
-                over.append(f"上に {-y:.2f}in")
+                over.append(t("{v:.2f}in past the top edge", v=-y))
             if x + w > self.page_w + s:
-                over.append(f"右に {x + w - self.page_w:.2f}in")
+                over.append(t("{v:.2f}in past the right edge", v=x + w - self.page_w))
             if y + h > self.page_h + s:
-                over.append(f"下に {y + h - self.page_h:.2f}in")
+                over.append(t("{v:.2f}in past the bottom edge", v=y + h - self.page_h))
             if over:
                 name = self.texts.get(oid, {}).get("text", kind)
-                out.append(f"図形がスライドの外に出ています（{'/'.join(over)}）:"
-                           f"「{str(name).replace(chr(10), ' ')[:20]}」")
+                out.append(t("A shape extends beyond the slide ({over}): \"{name}\"",
+                             over="/".join(over),
+                             name=str(name).replace(chr(10), " ")[:20]))
         for conn in self.connectors:
             for p in (conn["p1"], conn["p2"]):
                 if not (-s <= p[0] <= self.page_w + s and -s <= p[1] <= self.page_h + s):
-                    out.append(f"線の端点がスライドの外にあります: "
-                               f"({p[0]:.2f}, {p[1]:.2f})")
+                    out.append(t("A line endpoint is outside the slide: "
+                                 "({x:.2f}, {y:.2f})", x=p[0], y=p[1]))
         return out
 
     ORPHAN_EM = 1.0     # 折り返しの最終行がこれ以下なら「1文字だけこぼれた」とみなす
@@ -771,9 +827,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 continue
             need = lines * m["size"] * self.LINE_EM * (m["ls"] / 100.0) / 72.0
             if need > h + self.TEXT_SLACK:
-                t = m["text"].replace("\n", " ")[:22]
-                out.append(f"枠に対して文字が多すぎます"
-                           f"（必要 {need:.2f}in > 枠 {h:.2f}in / {lines}行）:「{t}」")
+                txt = m["text"].replace("\n", " ")[:22]
+                out.append(t("Too much text for the box (needs {need:.2f}in > box "
+                             "{h:.2f}in / {lines} lines): \"{text}\"",
+                             need=need, h=h, lines=lines, text=txt))
                 continue
             for ln in m["text"].split("\n"):
                 e = self._em(ln)
@@ -781,8 +838,9 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                     continue
                 tail = e % per
                 if 0 < tail <= self.ORPHAN_EM:
-                    out.append(f"折り返しの最終行に文字が {tail:.1f} 字しか残りません"
-                               f"（1行 {per:.1f} 字）:「{ln[:22]}」")
+                    out.append(t("The wrapped last line keeps only {tail:.1f} "
+                                 "characters ({per:.1f} per line): \"{text}\"",
+                                 tail=tail, per=per, text=ln[:22]))
         return out
 
     def link(self, src, dst, *, gap=0.04, color=None, weight=1.4, dashed=False,
@@ -796,7 +854,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         ra = self.rects.get(src) if isinstance(src, str) else src
         rb = self.rects.get(dst) if isinstance(dst, str) else dst
         if ra is None or rb is None:
-            raise ValueError("link() は座標の分かる図形どうしにのみ使えます")
+            raise ValueError(t("link() can only join shapes with known geometry"))
         p1 = self.edge_point(ra, self._center(rb), gap=gap)
         p2 = self.edge_point(rb, self._center(ra), gap=gap)
         return self.line(p1[0], p1[1], p2[0], p2[1], color=color, weight=weight,
@@ -846,7 +904,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         出典のある数値にだけ使うこと。
         """
         if not rows:
-            raise ValueError("hbars: rows が空です")
+            raise ValueError(t("hbars: rows is empty"))
         mx = max_value if max_value is not None else max(r[1] for r in rows)
         if mx <= 0:
             mx = 1.0  # 全行 0 のときは空のトラックだけ描く（ゼロ除算回避）

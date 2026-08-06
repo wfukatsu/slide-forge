@@ -48,6 +48,44 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+from _i18n import t, register  # noqa: E402
+
+register({
+    "title is missing": "title がありません",
+    "sheets is empty": "sheets が空です",
+    "{where}: name is missing": "{where}: name がありません",
+    "{where}: columns is empty": "{where}: columns が空です",
+    "{where}.columns[{i}]: header is missing": "{where}.columns[{i}]: header がありません",
+    "{where}.columns[{i}]: unknown type '{type}' (allowed: {allowed})":
+        "{where}.columns[{i}]: 未知の type '{type}'（使えるのは {allowed}）",
+    "{where}.columns[{i}]: only {{row}} may be used in a column formula "
+    "({{{name}}} was given)":
+        "{where}.columns[{i}]: 列 formula で使えるのは {{row}} のみ"
+        "（{{{name}}} が指定された）",
+    "{where}.rows[{i}]: {got} cells do not match the {want} columns":
+        "{where}.rows[{i}]: 列数 {got} が columns の {want} と一致しません",
+    "{where}.summary[{i}]: label and formula are required":
+        "{where}.summary[{i}]: label と formula が必須です",
+    "{where}.summary[{i}]: {{{name}}} refers to a later summary row "
+    "(forward references only)":
+        "{where}.summary[{i}]: {{{name}}} は自分より後の集計行を参照しています"
+        "（前方参照のみ可）",
+    "The sheet spec has problems:": "スペックに問題があります:",
+    "Validation OK: {sheets} sheet(s) / {rows} line item(s)":
+        "検証 OK: {sheets} シート / 明細 {rows} 行",
+    "  updated the Google Spreadsheet (existing file with the same name)":
+        "  Google Spreadsheet を更新（同名の既存ファイル）",
+    "Build an Excel / Google Spreadsheet from a line-item spec":
+        "明細表スペックから Excel / Google Spreadsheet を生成する",
+    "path to the spec JSON": "スペック JSON のパス",
+    "xlsx output path (default: out/sheets/<title>.xlsx)":
+        "xlsx の出力パス（省略時: out/sheets/<title>.xlsx）",
+    "validate only (no build, no API calls)": "検証のみ（生成しない・API を呼ばない）",
+    "also create a Google Spreadsheet (converted upload of the xlsx)":
+        "Google Spreadsheet も作成する（xlsx を変換アップロード）",
+    "Drive folder URL or ID for the Google Spreadsheet":
+        "Google Spreadsheet を置く Drive フォルダの URL または ID",
+})
 
 XLSX_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 GSHEET_MIME = "application/vnd.google-apps.spreadsheet"
@@ -71,41 +109,47 @@ _PLACEHOLDER_RE = re.compile(r"\{(row|first|last|s\d+)\}")
 def validate(spec: dict) -> list[str]:
     errors: list[str] = []
     if not spec.get("title"):
-        errors.append("title がありません")
+        errors.append(t("title is missing"))
     sheets = spec.get("sheets")
     if not isinstance(sheets, list) or not sheets:
-        return errors + ["sheets が空です"]
+        return errors + [t("sheets is empty")]
 
     for si, sheet in enumerate(sheets):
         where = f"sheets[{si}]"
         if not sheet.get("name"):
-            errors.append(f"{where}: name がありません")
+            errors.append(t("{where}: name is missing", where=where))
         cols = sheet.get("columns") or []
         if not cols:
-            errors.append(f"{where}: columns が空です")
+            errors.append(t("{where}: columns is empty", where=where))
         for ci, col in enumerate(cols):
             if not col.get("header"):
-                errors.append(f"{where}.columns[{ci}]: header がありません")
+                errors.append(t("{where}.columns[{i}]: header is missing",
+                                where=where, i=ci))
             ctype = col.get("type", "text")
             if ctype not in NUMBER_FORMATS:
-                errors.append(f"{where}.columns[{ci}]: 未知の type '{ctype}'"
-                              f"（使えるのは {'/'.join(NUMBER_FORMATS)}）")
+                errors.append(t("{where}.columns[{i}]: unknown type '{type}' "
+                                "(allowed: {allowed})", where=where, i=ci,
+                                type=ctype, allowed="/".join(NUMBER_FORMATS)))
             for m in _PLACEHOLDER_RE.findall(col.get("formula") or ""):
                 if m != "row":
-                    errors.append(f"{where}.columns[{ci}]: 列 formula で使えるのは "
-                                  f"{{row}} のみ（{{{m}}} が指定された）")
+                    errors.append(t("{where}.columns[{i}]: only {{row}} may be used "
+                                    "in a column formula ({{{name}}} was given)",
+                                    where=where, i=ci, name=m))
         for ri, row in enumerate(sheet.get("rows") or []):
             if len(row) != len(cols):
-                errors.append(f"{where}.rows[{ri}]: 列数 {len(row)} が columns の "
-                              f"{len(cols)} と一致しません")
+                errors.append(t("{where}.rows[{i}]: {got} cells do not match the "
+                                "{want} columns", where=where, i=ri,
+                                got=len(row), want=len(cols)))
         for gi, item in enumerate(sheet.get("summary") or []):
             if not item.get("label") or not item.get("formula"):
-                errors.append(f"{where}.summary[{gi}]: label と formula が必須です")
+                errors.append(t("{where}.summary[{i}]: label and formula are required",
+                                where=where, i=gi))
                 continue
             for m in _PLACEHOLDER_RE.findall(item["formula"]):
                 if m.startswith("s") and int(m[1:]) > gi:
-                    errors.append(f"{where}.summary[{gi}]: {{{m}}} は自分より後の"
-                                  "集計行を参照しています（前方参照のみ可）")
+                    errors.append(t("{where}.summary[{i}]: {{{name}}} refers to a "
+                                    "later summary row (forward references only)",
+                                    where=where, i=gi, name=m))
     return errors
 
 
@@ -215,7 +259,7 @@ def upload_gsheet(drive, xlsx_path: str, name: str, folder: str | None) -> str:
         f = drive.files().update(
             fileId=hits[0]["id"], media_body=media, fields="id,webViewLink"
         ).execute()
-        print("  Google Spreadsheet を更新（同名の既存ファイル）")
+        print(t("  updated the Google Spreadsheet (existing file with the same name)"))
     else:
         body: dict = {"name": name, "mimeType": GSHEET_MIME}
         if fid:
@@ -227,13 +271,16 @@ def upload_gsheet(drive, xlsx_path: str, name: str, folder: str | None) -> str:
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="明細表スペックから Excel / Google Spreadsheet を生成する")
-    p.add_argument("spec", help="スペック JSON のパス")
-    p.add_argument("--out", help="xlsx の出力パス（省略時: out/sheets/<title>.xlsx）")
-    p.add_argument("--dry-run", action="store_true", help="検証のみ（生成しない・API を呼ばない）")
+    p = argparse.ArgumentParser(
+        description=t("Build an Excel / Google Spreadsheet from a line-item spec"))
+    p.add_argument("spec", help=t("path to the spec JSON"))
+    p.add_argument("--out", help=t("xlsx output path (default: out/sheets/<title>.xlsx)"))
+    p.add_argument("--dry-run", action="store_true",
+                   help=t("validate only (no build, no API calls)"))
     p.add_argument("--gsheet", action="store_true",
-                   help="Google Spreadsheet も作成する（xlsx を変換アップロード）")
-    p.add_argument("--folder", help="Google Spreadsheet を置く Drive フォルダの URL または ID")
+                   help=t("also create a Google Spreadsheet (converted upload of the xlsx)"))
+    p.add_argument("--folder",
+                   help=t("Drive folder URL or ID for the Google Spreadsheet"))
     args = p.parse_args()
 
     with open(args.spec, encoding="utf-8") as f:
@@ -241,12 +288,13 @@ def main() -> int:
 
     errors = validate(spec)
     if errors:
-        print("スペックに問題があります:", file=sys.stderr)
+        print(t("The sheet spec has problems:"), file=sys.stderr)
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
         return 1
     nrows = sum(len(s.get("rows") or []) for s in spec["sheets"])
-    print(f"検証 OK: {len(spec['sheets'])} シート / 明細 {nrows} 行")
+    print(t("Validation OK: {sheets} sheet(s) / {rows} line item(s)",
+            sheets=len(spec["sheets"]), rows=nrows))
     if args.dry_run:
         return 0
 

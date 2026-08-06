@@ -137,7 +137,7 @@ ScalarDL:
   `scripts/drawio_export.py` で再生成）。顧客要件での書き換えは
   `drawio-diagrams` スキルの流儀に従う
 - **デッキとは別に、生成後の報告でもサービス一覧と Scalar 製品・数量・月額の
-  リストを提示する**（ビルダーが `=== 構成内訳（BOM） ===` として stdout に出す）
+  リストを提示する**（ビルダーが `=== Bill of Materials (BOM) ===` として stdout に出す）
 
 ## 7. 出典
 
