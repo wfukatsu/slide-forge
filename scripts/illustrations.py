@@ -30,6 +30,12 @@ from colors import darken, lighten, readable_on
 from _i18n import t, register
 
 register({
+    "icon_flow: pictograms are too large to leave arrow gaps (w={w}, {n} items, "
+    "size={size} -> gap {gap:.3f}in). Reduce size to {max_size:.2f} or less, "
+    "widen w, or use icon_row (no arrows)":
+        "icon_flow: 絵が大きすぎて矢印の隙間がありません（w={w}, {n} 個, "
+        "size={size} → 隙間 {gap:.3f}in）。size を {max_size:.2f} 以下にするか、"
+        "w を広げるか、矢印の要らない icon_row を使うこと",
     "Unknown pictogram '{name}'. Available: {available}":
         "未知のピクトグラム '{name}'。利用可能: {available}",
     "venn supports exactly 2 or 3 labels": "venn は 2 個か 3 個のラベルにのみ対応します",
@@ -104,11 +110,13 @@ class IllustrationMixin:
         n = len(items)
         cell = w / n
         if n > 1 and cell - size - 0.20 < 0.06:
-            raise ValueError(
-                f"icon_flow: 絵が大きすぎて矢印の隙間がありません"
-                f"（w={w}, {n} 個, size={size} → 隙間 {cell - size - 0.20:.3f}in）。"
-                f"size を {cell - 0.26:.2f} 以下にするか、w を広げるか、"
-                f"矢印の要らない icon_row を使うこと")
+            raise ValueError(t(
+                "icon_flow: pictograms are too large to leave arrow gaps "
+                "(w={w}, {n} items, size={size} -> gap {gap:.3f}in). Reduce "
+                "size to {max_size:.2f} or less, widen w, or use icon_row "
+                "(no arrows)",
+                w=w, n=n, size=size, gap=cell - size - 0.20,
+                max_size=cell - 0.26))
         bottom = y
         for i, item in enumerate(items):
             name, label = item if isinstance(item, (tuple, list)) else (item, None)
