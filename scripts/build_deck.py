@@ -134,7 +134,9 @@ register({
     "Figure audit found {n} findings:": "図の検査で {n} 件:",
 })
 
-FILLABLE = ("TITLE", "SUBTITLE", "BODY")
+# CENTERED_TITLE は Google 既定マスター(template-forge の blank ベース)の
+# 表紙タイトル。spec 上は 'title' で受け、TITLE が無いレイアウトではこちらに流す
+FILLABLE = ("TITLE", "CENTERED_TITLE", "SUBTITLE", "BODY")
 
 # オブジェクト ID をプロセス間で衝突させないためのランダムトークン。
 # 連番だけだと、既存デッキへ別プロセスから追記したとき slide_001 等が衝突する
@@ -309,7 +311,11 @@ class TemplateDeck:
             bodies = [body]
 
         # リクエストを積む前に検証する。失敗しても中途半端な状態を残さないため。
-        for ph_type, value in (("TITLE", title), ("SUBTITLE", subtitle)):
+        title_slot = ("TITLE" if "TITLE" in declared
+                      else "CENTERED_TITLE" if "CENTERED_TITLE" in declared
+                      else None)
+        for ph_type, value in ((title_slot or "TITLE", title),
+                               ("SUBTITLE", subtitle)):
             if value is not None and ph_type not in declared:
                 raise ValueError(
                     t("layout '{key}' ({name}) has no {ph} placeholder; "
@@ -354,7 +360,7 @@ class TemplateDeck:
             {"slideId": slide_id, "layoutKey": resolved_key, "layout": layout}
         )
 
-        fills = [("TITLE", title), ("SUBTITLE", subtitle)]
+        fills = [(title_slot or "TITLE", title), ("SUBTITLE", subtitle)]
         filled_bodies = list(zip(body_slots, bodies or []))
         fills += filled_bodies
         for name, value in fills:
@@ -887,7 +893,9 @@ def validate_spec(template: dict, spec: dict) -> list[str]:
             )
             continue
         declared = layout.get("placeholders", [])
-        for field, ph in (("title", "TITLE"), ("subtitle", "SUBTITLE")):
+        title_ph = "CENTERED_TITLE" if ("CENTERED_TITLE" in declared
+                                        and "TITLE" not in declared) else "TITLE"
+        for field, ph in (("title", title_ph), ("subtitle", "SUBTITLE")):
             if s.get(field) is not None and ph not in declared:
                 problems.append(
                     t("{where}: layout '{key}' ({name}) has no {ph} but "

@@ -1,10 +1,11 @@
 # slide-forge
 
-Google Slides deck generation for Claude Code: eight skills on one shared
+Google Slides deck generation for Claude Code: nine skills on one shared
 Python engine, from corporate-template decks to from-scratch architecture
-diagrams, with validation before generation, optional thumbnail-based
-visual QA after it (chosen at generation time, on by default), optional
-PowerPoint (.pptx) export as a delivery format, and line-item spreadsheets
+diagrams — plus creating the templates themselves from a design spec — with
+validation before generation, optional thumbnail-based visual QA after it
+(chosen at generation time, on by default), optional PowerPoint (.pptx)
+export as a delivery format, and line-item spreadsheets
 (Excel / Google Spreadsheet) for estimates and BOMs.
 
 ```
@@ -18,6 +19,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 |---|---|
 | `google-slides-template` | Generate a deck from a registered Google Slides master template: interactive intake, template analysis/registration (`template.json`), spec authoring with `--dry-run` validation, parallel per-page authoring for large decks, generation. The main workflow. |
 | `google-slides` | From-scratch decks without a corporate master. Spec path (`templates/blank-16x9.json` + the same engine) or code-first path (`deckkit.py` + offline layout validation for connector-heavy diagrams). |
+| `template-forge` | Create and register a **new template (master)** from a design spec — brand colors, fonts, logo, footer (`scripts/build_template.py`). The Slides API cannot create masters, so a base (Google default or a registered template) is copied and its layouts restyled via batchUpdate; roles are assigned deterministically and the result lands in `templates/<id>.json`, ready for `google-slides-template`. Ships 3 design presets (`templates/presets/`). |
 | `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
 | `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
 | `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
@@ -48,7 +50,7 @@ scripts/      shared engine — one importable package
   deckkit.py render_deck.py validate_layout.py      code-first path (offline checks)
   drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
   scalar/         Scalar deck builders
-templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/
+templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
 assets/       scalar/ (brand: pictograms, logos, product-logos), cloud-icons/ (gitignored)
 references/   engine and workflow docs (validation.md, diagrams.md, charts.md, …)
 examples/     runnable spec catalogs and code-first example decks
@@ -59,7 +61,7 @@ cache/ out/   transient render cache and QA output (gitignored)
 ## Install as a Claude Code plugin
 
 The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all eight skills):
+one plugin bundling all nine skills):
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -157,6 +159,7 @@ belong to a **billed** project — the image model has zero free-tier quota.
 | `slide-qa` | ✔ | — | — | — |
 | `pptx-export` | ✔ | — | — | — |
 | `spreadsheets` | ✔ (OAuth only for Google Spreadsheet output) | — | — | — |
+| `template-forge` | ✔ | — | — | — |
 
 Secrets hygiene: `config/` (credentials, tokens, API keys), `out/`, `cache/`,
 and `assets/cloud-icons/` are gitignored — nothing machine-local is ever

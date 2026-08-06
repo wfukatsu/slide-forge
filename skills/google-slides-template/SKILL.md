@@ -146,6 +146,11 @@ For a new deck with unspecified premises, **settle the decisions with
 `AskUserQuestion` before generating anything**. Skipping this and producing 40
 slides means a full rebuild when a premise turns out wrong.
 
+When the user has **no usable template at all** and wants one designed to
+their brand (colors/fonts/logo), hand off to the **`template-forge`** skill
+first — it creates and registers a new master; then come back here to
+generate the deck against the new id.
+
 Decisions to settle (each one forces a rebuild when wrong):
 
 | Decision | Default | Impact when wrong |
@@ -499,6 +504,11 @@ ones** (`references/api-notes.md`, section 1). If a good template already
 exists, you can duplicate it and swap only the colors and brand elements to
 produce a derived master. `templates/corporate.json` was made this way from
 `aixdevops`.
+
+> This procedure is now automated: the **`template-forge`** skill /
+> `scripts/build_template.py` runs the whole derivation (or styles Google's
+> default master from scratch) from a design spec, including registration.
+> The manual steps below remain as the reference for what it does.
 
 Procedure:
 
