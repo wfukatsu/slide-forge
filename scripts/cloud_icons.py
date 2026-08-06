@@ -26,6 +26,53 @@ import sys
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 SKILL_DIR = os.path.dirname(SCRIPT_DIR)
 
+sys.path.insert(0, SCRIPT_DIR)
+from _i18n import t, register  # noqa: E402
+
+register({
+    "Cloud icons have not been fetched yet.\n"
+    "  The icons are vendor assets, so they are not included in the repository.\n"
+    "  Fetch them into your environment with this command (1-2 min, ~8.6MB):\n"
+    "    .venv/bin/python scripts/fetch_cloud_icons.py\n"
+    "  Destination: {dir}\n"
+    "  Details: assets/cloud-icons/README.md":
+        "クラウドアイコンがまだ取り込まれていません。\n"
+        "  アイコンは各ベンダーの資産のためリポジトリには含めていません。\n"
+        "  次のコマンドで自分の環境に取り込んでください（1〜2 分・約 8.6MB）:\n"
+        "    .venv/bin/python scripts/fetch_cloud_icons.py\n"
+        "  配置先: {dir}\n"
+        "  詳細: assets/cloud-icons/README.md",
+    "'{name}' matches multiple icons: {hits}\n"
+    "  Specify a vendor-qualified slug (e.g. aws:ec2)":
+        "'{name}' が複数に当たります: {hits}\n"
+        "  vendor 付きの slug（例 aws:ec2）で指定してください",
+    "'{name}' matches multiple icons ({count} hits): {hits}\n"
+    "  Specify a vendor-qualified slug or narrow it down with --search":
+        "'{name}' が複数に当たります（{count} 件）: {hits}\n"
+        "  vendor 付きの slug で指定するか、--search で絞り込んでください",
+    "Cloud icon '{name}' not found.\n"
+    "  Search with: python scripts/cloud_icons.py --search <word>":
+        "クラウドアイコン '{name}' が見つかりません。\n"
+        "  python scripts/cloud_icons.py --search <語> で探せます",
+    "Asset file missing: {path}": "素材がありません: {path}",
+    "Could not convert the SVG to PNG: {key}\n  Run pip install cairosvg":
+        "SVG を PNG にできませんでした: {key}\n"
+        "  pip install cairosvg を実行してください",
+    "Look up the official cloud vendor icons": "クラウドベンダーの公式アイコンを引く",
+    "List icons": "一覧する",
+    "Search by partial match on name or alias": "名前・別名の部分一致で探す",
+    "Filter by vendor": "ベンダーで絞る",
+    "Filter by category": "カテゴリで絞る",
+    "List the categories": "カテゴリの一覧を出す",
+    "Export one icon to PNG": "1 個を PNG に書き出す",
+    "Output file path": "書き出し先のパス",
+    "Show the versions of the fetched packages": "取り込み元の版を表示する",
+    "No matches: {query}": "該当なし: {query}",
+    "... {count} more (narrow down with --vendor / --category / --kind)":
+        "... 他 {count} 件（--vendor / --category / --kind で絞れます）",
+    "\n{shown} / {total} icons": "\n{shown} / {total} 件",
+})
+
 ICON_DIR = os.path.join(SKILL_DIR, "assets", "cloud-icons")
 MANIFEST = os.path.join(ICON_DIR, "cloud-icons.json")
 DEFAULT_CACHE = os.path.join(SKILL_DIR, "cache", "cloud-icons")
@@ -49,12 +96,12 @@ def manifest() -> dict:
     if _MANIFEST is None:
         if not os.path.exists(MANIFEST):
             raise FileNotFoundError(
-                "クラウドアイコンがまだ取り込まれていません。\n"
-                "  アイコンは各ベンダーの資産のためリポジトリには含めていません。\n"
-                "  次のコマンドで自分の環境に取り込んでください（1〜2 分・約 8.6MB）:\n"
-                "    .venv/bin/python scripts/fetch_cloud_icons.py\n"
-                f"  配置先: {ICON_DIR}\n"
-                "  詳細: assets/cloud-icons/README.md")
+                t("Cloud icons have not been fetched yet.\n"
+                  "  The icons are vendor assets, so they are not included in the repository.\n"
+                  "  Fetch them into your environment with this command (1-2 min, ~8.6MB):\n"
+                  "    .venv/bin/python scripts/fetch_cloud_icons.py\n"
+                  "  Destination: {dir}\n"
+                  "  Details: assets/cloud-icons/README.md", dir=ICON_DIR))
         with open(MANIFEST, encoding="utf-8") as f:
             _MANIFEST = json.load(f)
     return _MANIFEST
@@ -95,19 +142,21 @@ def resolve(name: str, *, vendor: str | None = None) -> str:
         return exact[0]
     if exact:
         raise CloudIconError(
-            f"'{name}' が複数に当たります: {sorted(exact)[:8]}\n"
-            "  vendor 付きの slug（例 aws:ec2）で指定してください")
+            t("'{name}' matches multiple icons: {hits}\n"
+              "  Specify a vendor-qualified slug (e.g. aws:ec2)",
+              name=name, hits=sorted(exact)[:8]))
 
     hits = search(name, vendor=vendor)
     if len(hits) == 1:
         return hits[0]
     if hits:
         raise CloudIconError(
-            f"'{name}' が複数に当たります（{len(hits)} 件）: {hits[:8]}\n"
-            "  vendor 付きの slug で指定するか、--search で絞り込んでください")
+            t("'{name}' matches multiple icons ({count} hits): {hits}\n"
+              "  Specify a vendor-qualified slug or narrow it down with --search",
+              name=name, count=len(hits), hits=hits[:8]))
     raise CloudIconError(
-        f"クラウドアイコン '{name}' が見つかりません。\n"
-        "  python scripts/cloud_icons.py --search <語> で探せます")
+        t("Cloud icon '{name}' not found.\n"
+          "  Search with: python scripts/cloud_icons.py --search <word>", name=name))
 
 
 def search(query: str, *, vendor: str | None = None, category: str | None = None,
@@ -200,7 +249,7 @@ def render(name: str, *, px: int = DEFAULT_PX, vendor: str | None = None,
 
     svg = os.path.join(ICON_DIR, m["file"])
     if not os.path.exists(svg):
-        raise CloudIconError(f"素材がありません: {svg}")
+        raise CloudIconError(t("Asset file missing: {path}", path=svg))
     tmp = out + f".{os.getpid()}.part"
     try:
         if not _rasterize(svg, tmp, px):
@@ -208,8 +257,8 @@ def render(name: str, *, px: int = DEFAULT_PX, vendor: str | None = None,
                 shutil.copyfile(os.path.join(ICON_DIR, m["raster"]), out)
                 return out
             raise CloudIconError(
-                f"SVG を PNG にできませんでした: {key}\n"
-                "  pip install cairosvg を実行してください")
+                t("Could not convert the SVG to PNG: {key}\n"
+                  "  Run pip install cairosvg", key=key))
         os.replace(tmp, out)
     finally:
         if os.path.exists(tmp):
@@ -342,18 +391,19 @@ class CloudIconMixin:
 # ---------- CLI ----------
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="クラウドベンダーの公式アイコンを引く")
-    p.add_argument("--list", action="store_true", help="一覧する")
-    p.add_argument("--search", help="名前・別名の部分一致で探す")
-    p.add_argument("--vendor", choices=VENDORS, help="ベンダーで絞る")
-    p.add_argument("--category", help="カテゴリで絞る")
+    p = argparse.ArgumentParser(description=t("Look up the official cloud vendor icons"))
+    p.add_argument("--list", action="store_true", help=t("List icons"))
+    p.add_argument("--search", help=t("Search by partial match on name or alias"))
+    p.add_argument("--vendor", choices=VENDORS, help=t("Filter by vendor"))
+    p.add_argument("--category", help=t("Filter by category"))
     p.add_argument("--kind", choices=("service", "resource", "group", "category"))
-    p.add_argument("--categories", action="store_true", help="カテゴリの一覧を出す")
-    p.add_argument("--render", help="1 個を PNG に書き出す")
+    p.add_argument("--categories", action="store_true", help=t("List the categories"))
+    p.add_argument("--render", help=t("Export one icon to PNG"))
     p.add_argument("--px", type=int, default=DEFAULT_PX)
-    p.add_argument("--out", help="書き出し先のパス")
+    p.add_argument("--out", help=t("Output file path"))
     p.add_argument("--force", action="store_true")
-    p.add_argument("--sources", action="store_true", help="取り込み元の版を表示する")
+    p.add_argument("--sources", action="store_true",
+                   help=t("Show the versions of the fetched packages"))
     args = p.parse_args()
 
     if args.sources:
@@ -391,13 +441,15 @@ def main() -> int:
     hits = search(args.search or "", vendor=args.vendor, category=args.category,
                   kind=args.kind)
     if not hits:
-        print(f"該当なし: {args.search}", file=sys.stderr)
+        print(t("No matches: {query}", query=args.search), file=sys.stderr)
         return 1
     for k in hits[:400]:
         print(describe(k))
     if len(hits) > 400:
-        print(f"... 他 {len(hits) - 400} 件（--vendor / --category / --kind で絞れます）")
-    print(f"\n{len(hits)} / {len(icons())} 件", file=sys.stderr)
+        print(t("... {count} more (narrow down with --vendor / --category / --kind)",
+                count=len(hits) - 400))
+    print(t("\n{shown} / {total} icons", shown=len(hits), total=len(icons())),
+          file=sys.stderr)
     return 0
 
 

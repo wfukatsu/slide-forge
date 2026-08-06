@@ -184,7 +184,7 @@ cd /Users/wfukatsu/work/slide-forge
 ```
 
 1. Before committing, the scripts run `audit_bounds / audit_connectors /
-   audit_overlaps / audit_text_fit` on every slide and print "検査:" lines.
+   audit_overlaps / audit_text_fit` on every slide and print "audit:" lines ("検査:" with GSLIDES_LANG=ja).
    **If any audit fires, fix the spec and rebuild** (faster than patching).
    Delete the old deck from Drive before rebuilding
 2. **If the user chose visual QA (the default)**, run the `slide-qa` skill:

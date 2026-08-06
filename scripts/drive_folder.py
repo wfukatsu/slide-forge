@@ -24,6 +24,29 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+from _i18n import t, register  # noqa: E402
+
+register({
+    "Cannot extract a file ID from: {value}": "ファイル ID を抽出できません: {value}",
+    "Reusing existing folder: {name}": "既存フォルダを再利用: {name}",
+    "Created folder: {name}": "フォルダを作成: {name}",
+    "  skip (file not found): {path}": "  skip（ファイルなし）: {path}",
+    "  updated: {name}": "  更新: {name}",
+    "  added: {name}": "  追加: {name}",
+    "  moved: {name}": "  移動: {name}",
+    "Folder: {url}": "フォルダ: {url}",
+    "Create and organize Drive folders": "Drive フォルダの作成・集約",
+    "create a folder (reused if one with the same name exists)":
+        "フォルダを作成する（同名があれば再利用）",
+    "folder name": "フォルダ名",
+    "parent folder URL or ID (defaults to My Drive root)":
+        "親フォルダの URL または ID（省略時はマイドライブ直下）",
+    "upload local files into a folder": "ローカルファイルをフォルダへアップロードする",
+    "folder URL or ID": "フォルダの URL または ID",
+    "files to upload": "アップロードするファイル",
+    "move Drive files into a folder": "Drive 上のファイルをフォルダへ移動する",
+    "file URLs or IDs to move": "移動するファイルの URL または ID",
+})
 
 FOLDER_MIME = "application/vnd.google-apps.folder"
 
@@ -36,7 +59,7 @@ def file_id(url_or_id: str) -> str:
     if m:
         return m.group(1)
     if "/" in url_or_id:
-        raise SystemExit(f"ファイル ID を抽出できません: {url_or_id}")
+        raise SystemExit(t("Cannot extract a file ID from: {value}", value=url_or_id))
     return url_or_id
 
 
@@ -59,13 +82,13 @@ def cmd_create(drive, name: str, parent: str | None) -> int:
     ).execute().get("files", [])
     if hits:
         fid = hits[0]["id"]
-        print(f"既存フォルダを再利用: {name}")
+        print(t("Reusing existing folder: {name}", name=name))
     else:
         body: dict = {"name": name, "mimeType": FOLDER_MIME}
         if parent_id:
             body["parents"] = [parent_id]
         fid = drive.files().create(body=body, fields="id").execute()["id"]
-        print(f"フォルダを作成: {name}")
+        print(t("Created folder: {name}", name=name))
     print(f"  ID:  {fid}")
     print(f"  URL: {folder_url(fid)}")
     return 0
@@ -78,7 +101,7 @@ def cmd_upload(drive, folder: str, paths: list[str]) -> int:
     failed = False
     for path in paths:
         if not os.path.exists(path):
-            print(f"  skip（ファイルなし）: {path}", file=sys.stderr)
+            print(t("  skip (file not found): {path}", path=path), file=sys.stderr)
             failed = True
             continue
         name = os.path.basename(path)
@@ -93,14 +116,14 @@ def cmd_upload(drive, folder: str, paths: list[str]) -> int:
             drive.files().update(
                 fileId=hits[0]["id"], media_body=media, fields="id"
             ).execute()
-            print(f"  更新: {name}")
+            print(t("  updated: {name}", name=name))
         else:
             drive.files().create(
                 body={"name": name, "parents": [fid]},
                 media_body=media, fields="id",
             ).execute()
-            print(f"  追加: {name}")
-    print(f"フォルダ: {folder_url(fid)}")
+            print(t("  added: {name}", name=name))
+    print(t("Folder: {url}", url=folder_url(fid)))
     return 1 if failed else 0
 
 
@@ -113,26 +136,27 @@ def cmd_move(drive, folder: str, sources: list[str]) -> int:
         drive.files().update(
             fileId=sid, addParents=fid, removeParents=prev, fields="id,parents"
         ).execute()
-        print(f"  移動: {meta['name']}")
-    print(f"フォルダ: {folder_url(fid)}")
+        print(t("  moved: {name}", name=meta["name"]))
+    print(t("Folder: {url}", url=folder_url(fid)))
     return 0
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Drive フォルダの作成・集約")
+    p = argparse.ArgumentParser(description=t("Create and organize Drive folders"))
     sub = p.add_subparsers(dest="cmd", required=True)
 
-    c = sub.add_parser("create", help="フォルダを作成する（同名があれば再利用）")
-    c.add_argument("name", help="フォルダ名")
-    c.add_argument("--parent", help="親フォルダの URL または ID（省略時はマイドライブ直下）")
+    c = sub.add_parser("create",
+                       help=t("create a folder (reused if one with the same name exists)"))
+    c.add_argument("name", help=t("folder name"))
+    c.add_argument("--parent", help=t("parent folder URL or ID (defaults to My Drive root)"))
 
-    u = sub.add_parser("upload", help="ローカルファイルをフォルダへアップロードする")
-    u.add_argument("folder", help="フォルダの URL または ID")
-    u.add_argument("paths", nargs="+", help="アップロードするファイル")
+    u = sub.add_parser("upload", help=t("upload local files into a folder"))
+    u.add_argument("folder", help=t("folder URL or ID"))
+    u.add_argument("paths", nargs="+", help=t("files to upload"))
 
-    m = sub.add_parser("move", help="Drive 上のファイルをフォルダへ移動する")
-    m.add_argument("folder", help="フォルダの URL または ID")
-    m.add_argument("sources", nargs="+", help="移動するファイルの URL または ID")
+    m = sub.add_parser("move", help=t("move Drive files into a folder"))
+    m.add_argument("folder", help=t("folder URL or ID"))
+    m.add_argument("sources", nargs="+", help=t("file URLs or IDs to move"))
 
     args = p.parse_args()
     _, drive = _auth.services()

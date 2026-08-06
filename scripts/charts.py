@@ -36,8 +36,50 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+from _i18n import t, register  # noqa: E402
 from colors import lighten, readable_on  # noqa: E402
 from icons import _try_cairosvg, _try_cli  # noqa: E402
+
+register({
+    "rows[{i}] has {n} columns but headers has {ncols}":
+        "rows[{i}] の列数 {n} が見出しの {ncols} と合いません",
+    "col_widths length does not match headers":
+        "col_widths の要素数が headers と合いません",
+    "aligns length does not match headers": "aligns の要素数が headers と合いません",
+    "table {head}": "表 {head}",
+    "h={h} leaves no room for the plot area (use at least 0.94in)":
+        "h={h} ではプロット領域が確保できません（0.94in 以上に）",
+    "vbars cannot take negative values (the baseline is fixed at zero)":
+        "vbars は負値を扱えません（基線ゼロ固定）",
+    "series \"{name}\" has {n} values but categories has {ncat}":
+        "系列「{name}」の値が {n} 個で、categories の {ncat} と合いません",
+    "vbars_grouped cannot take negative values (the baseline is fixed at zero)":
+        "vbars_grouped は負値を扱えません（基線ゼロ固定）",
+    "h={h} leaves no room for the plot area":
+        "h={h} ではプロット領域が確保できません",
+    "vbars_stacked cannot take negative values (the baseline is fixed at zero)":
+        "vbars_stacked は負値を扱えません（基線ゼロ固定）",
+    "  warn: the legend does not fit in {w:.1f}in (needs {need:.1f}in). "
+    "Shorten the series names":
+        "  warn: 凡例が幅 {w:.1f}in に収まっていません"
+        "（必要 {need:.1f}in）。系列名を短くしてください",
+    "series \"{name}\" has {n} values but labels has {npt}":
+        "系列「{name}」の値が {n} 個で、labels の {npt} と合いません",
+    "y_max ({mx}) must be greater than y_min ({mn})":
+        "y_max({mx}) は y_min({mn}) より大きい必要があります",
+    "w={w} h={h} leaves no room for the plot area":
+        "w={w} h={h} ではプロット領域が確保できません",
+    "pie needs positive values with a positive sum":
+        "pie の値は正の数の合計が必要です",
+    "  warn: {n} slices is too many for a pie chart. "
+    "Fold them into \"other\" or consider a bar chart":
+        "  warn: 円グラフに {n} 系列は多すぎます。"
+        "「その他」に畳むか棒グラフを検討してください",
+    "Failed to rasterize the pie chart. "
+    "Run pip install cairosvg (or brew install librsvg)":
+        "円グラフのラスタライズに失敗しました。"
+        "pip install cairosvg（または brew install librsvg）を実行してください",
+})
 
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          "..", "cache", "charts")
@@ -97,15 +139,16 @@ class ChartMixin:
         ncols = len(headers)
         for i, r in enumerate(rows):
             if len(r) != ncols:
-                raise ValueError(f"rows[{i}] の列数 {len(r)} が見出しの {ncols} と合いません")
+                raise ValueError(t("rows[{i}] has {n} columns but headers has {ncols}",
+                                   i=i, n=len(r), ncols=ncols))
         weights = list(col_widths) if col_widths else [1.0] * ncols
         if len(weights) != ncols:
-            raise ValueError("col_widths の要素数が headers と合いません")
+            raise ValueError(t("col_widths length does not match headers"))
         total_w = sum(weights)
         widths = [w * wt / total_w for wt in weights]
         aligns = list(aligns) if aligns else ["START"] + ["CENTER"] * (ncols - 1)
         if len(aligns) != ncols:
-            raise ValueError("aligns の要素数が headers と合いません")
+            raise ValueError(t("aligns length does not match headers"))
         head_c = header_fill or self.P.primary
         head_fg = readable_on(head_c)
         border_c = border or self.P.border
@@ -203,7 +246,7 @@ class ChartMixin:
         self._seq += 1
         self.rects[oid] = (x, y, w, h_total, "TABLE")
         self.solids.append({"rect": (x, y, w, h_total), "seq": self._seq,
-                            "name": f"表 {str(headers[0])[:12]}"})
+                            "name": t("table {head}", head=str(headers[0])[:12])})
         # セルごとの文字を audit_text_fit / audit_overlaps の対象に登録する。
         # セルの内側余白は左右 0.05in（図形の 0.1in より狭い）だが、検査側の
         # 見積もり（TEXT_INSET_X）に合わせて保守的に評価される
@@ -239,10 +282,12 @@ class ChartMixin:
         """
         plot_h = h - self.VBAR_VAL_H - self.VBAR_LAB_H
         if plot_h < 0.4:
-            raise ValueError(f"h={h} ではプロット領域が確保できません（0.94in 以上に）")
+            raise ValueError(t("h={h} leaves no room for the plot area "
+                               "(use at least 0.94in)", h=h))
         vals = [it[1] for it in items]
         if any(v < 0 for v in vals):
-            raise ValueError("vbars は負値を扱えません（基線ゼロ固定）")
+            raise ValueError(t("vbars cannot take negative values "
+                               "(the baseline is fixed at zero)"))
         mx = max_value or _nice_ceil(max(vals))
         n = len(items)
         cell = w / n
@@ -282,10 +327,11 @@ class ChartMixin:
         ns, ncat = len(pairs), len(categories)
         for name, vs in pairs:
             if len(vs) != ncat:
-                raise ValueError(f"系列「{name}」の値が {len(vs)} 個で、"
-                                 f"categories の {ncat} と合いません")
+                raise ValueError(t("series \"{name}\" has {n} values but categories "
+                                   "has {ncat}", name=name, n=len(vs), ncat=ncat))
             if any(v < 0 for v in vs):
-                raise ValueError("vbars_grouped は負値を扱えません（基線ゼロ固定）")
+                raise ValueError(t("vbars_grouped cannot take negative values "
+                                   "(the baseline is fixed at zero)"))
         cols = list(colors) if colors else self.P.series(ns)
         leg_h = 0.28 if (legend and ns >= 2) else 0.0
         if leg_h:
@@ -295,7 +341,7 @@ class ChartMixin:
         plot_top = y + leg_h + self.VBAR_VAL_H
         plot_h = h - leg_h - self.VBAR_VAL_H - self.VBAR_LAB_H
         if plot_h < 0.4:
-            raise ValueError(f"h={h} ではプロット領域が確保できません")
+            raise ValueError(t("h={h} leaves no room for the plot area", h=h))
         mx = max_value or _nice_ceil(max(v for _, vs in pairs for v in vs))
         base_y = plot_top + plot_h
         cell = w / ncat
@@ -341,10 +387,11 @@ class ChartMixin:
         ns, ncat = len(pairs), len(categories)
         for name, vs in pairs:
             if len(vs) != ncat:
-                raise ValueError(f"系列「{name}」の値が {len(vs)} 個で、"
-                                 f"categories の {ncat} と合いません")
+                raise ValueError(t("series \"{name}\" has {n} values but categories "
+                                   "has {ncat}", name=name, n=len(vs), ncat=ncat))
             if any(v < 0 for v in vs):
-                raise ValueError("vbars_stacked は負値を扱えません（基線ゼロ固定）")
+                raise ValueError(t("vbars_stacked cannot take negative values "
+                                   "(the baseline is fixed at zero)"))
         cols = list(colors) if colors else self.P.series(ns)
         leg_h = 0.28 if (legend and ns >= 2) else 0.0
         if leg_h:
@@ -355,7 +402,7 @@ class ChartMixin:
         plot_top = y + leg_h + val_h
         plot_h = h - leg_h - val_h - self.VBAR_LAB_H
         if plot_h < 0.4:
-            raise ValueError(f"h={h} ではプロット領域が確保できません")
+            raise ValueError(t("h={h} leaves no room for the plot area", h=h))
         sums = [sum(vs[ci] for _, vs in pairs) for ci in range(ncat)]
         # 軸目盛りを描かないので「きりのよい上限」は要らない。_nice_ceil だと
         # 260 → 500 のような切り上げでプロットの上半分が空く
@@ -403,9 +450,9 @@ class ChartMixin:
                        align="START", valign="MIDDLE", color=self.P.text)
             ex += 0.20 + tw + 0.18
         if ex - 0.30 > x + w:
-            print(f"  warn: 凡例が幅 {w:.1f}in に収まっていません"
-                  f"（必要 {ex - 0.30 - x:.1f}in）。系列名を短くしてください",
-                  file=sys.stderr)
+            print(t("  warn: the legend does not fit in {w:.1f}in "
+                    "(needs {need:.1f}in). Shorten the series names",
+                    w=w, need=ex - 0.30 - x), file=sys.stderr)
         return y + 0.26
 
     # ---- 折れ線グラフ ----
@@ -426,8 +473,8 @@ class ChartMixin:
         ns, npt = len(pairs), len(labels)
         for name, vs in pairs:
             if len(vs) != npt:
-                raise ValueError(f"系列「{name}」の値が {len(vs)} 個で、"
-                                 f"labels の {npt} と合いません")
+                raise ValueError(t("series \"{name}\" has {n} values but labels "
+                                   "has {npt}", name=name, n=len(vs), npt=npt))
         cols = self.P.series(ns)
         leg_h = 0.28 if (legend and ns >= 2) else 0.0
         lab_h = 0.28
@@ -442,7 +489,8 @@ class ChartMixin:
             step = _nice_ceil((raw - mn) / grid) if raw > mn else 1.0
             mx = mn + step * grid
         if mx <= mn:
-            raise ValueError(f"y_max({mx}) は y_min({mn}) より大きい必要があります")
+            raise ValueError(t("y_max ({mx}) must be greater than y_min ({mn})",
+                               mx=mx, mn=mn))
 
         # 目盛り文字列を先に決め、最長のものが折り返さない軸幅を確保する
         # （Slides の実描画は見積もりより広く食うので係数は甘めに取る）
@@ -459,7 +507,8 @@ class ChartMixin:
         py0 = y + leg_h + 0.08
         ph = h - leg_h - lab_h - 0.08
         if ph < 0.6 or pw < 1.0:
-            raise ValueError(f"w={w} h={h} ではプロット領域が確保できません")
+            raise ValueError(t("w={w} h={h} leaves no room for the plot area",
+                               w=w, h=h))
 
         def ypos(v):
             return py0 + ph - (v - mn) / (mx - mn) * ph
@@ -518,10 +567,11 @@ class ChartMixin:
         """
         vals = [float(v) for _, v in items]
         if any(v < 0 for v in vals) or sum(vals) <= 0:
-            raise ValueError("pie の値は正の数の合計が必要です")
+            raise ValueError(t("pie needs positive values with a positive sum"))
         if len(items) > 6:
-            print(f"  warn: 円グラフに {len(items)} 系列は多すぎます。"
-                  "「その他」に畳むか棒グラフを検討してください", file=sys.stderr)
+            print(t("  warn: {n} slices is too many for a pie chart. "
+                    "Fold them into \"other\" or consider a bar chart",
+                    n=len(items)), file=sys.stderr)
         cols = list(colors) if colors else self.P.series(len(items))
         total = sum(vals)
 
@@ -592,8 +642,8 @@ class ChartMixin:
         try:
             if not (_try_cairosvg(svg, tmp, px) or _try_cli(svg, tmp, px)):
                 raise RuntimeError(
-                    "円グラフのラスタライズに失敗しました。"
-                    "pip install cairosvg（または brew install librsvg）を実行してください")
+                    t("Failed to rasterize the pie chart. "
+                      "Run pip install cairosvg (or brew install librsvg)"))
             os.replace(tmp, path)
         finally:
             if os.path.exists(tmp):

@@ -158,7 +158,7 @@ cd /Users/wfukatsu/work/slide-forge
 .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <URL>]
 ```
 
-1. The script prints "検査:" lines from `audit_*` on every drawn slide.
+1. The script prints "audit:" lines from `audit_*` on every drawn slide.
    **If any audit fires, fix the data/spec and rebuild** (delete the old deck
    from Drive first; rebuilding changes the URL — tell the user).
 2. **If the user chose visual QA (the default)**, run the `slide-qa` skill:
@@ -170,7 +170,7 @@ cd /Users/wfukatsu/work/slide-forge
    consistent across slides 3 / 7 (整理と対応表), scope-out line present.
 4. In the final report, alongside the deck/folder URLs, include the BOM
    lists (cloud services per environment; Scalar products with quantity and
-   monthly cost) — the builder prints them as `=== 構成内訳（BOM） ===`.
+   monthly cost) — the builder prints them as `=== Bill of Materials (BOM) ===`.
 5. Offer follow-ups via `AskUserQuestion` (interactive-intake.md §4):
    finalize / adjust wording / swap cases / add-remove sections.
 

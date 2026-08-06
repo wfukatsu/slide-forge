@@ -123,6 +123,10 @@ client (scopes: `auth/presentations`, `auth/drive`). In
 .venv/bin/python scripts/list_templates.py
 ```
 
+CLI messages are English by default; set `GSLIDES_LANG=ja` for Japanese
+(`export GSLIDES_LANG=ja`, or per command). This affects only the scripts'
+terminal output — never the generated deck or spreadsheet content.
+
 The first call opens a browser consent screen and writes `config/token.json`
 (refreshed automatically afterwards). If a template list prints, auth works.
 

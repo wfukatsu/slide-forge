@@ -17,7 +17,22 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import build_deck as bd  # noqa: E402
+from _i18n import t, register  # noqa: E402
 from diagrams import Canvas, lighten  # noqa: E402
+
+register({
+    "Generate a layout sample deck": "レイアウトサンプルを生成する",
+    "path to template.json": "template.json のパス",
+    "title of the generated presentation": "生成するプレゼンテーションのタイトル",
+    "URL or ID of the destination Drive folder": "出力先 Drive フォルダの URL または ID",
+    "output only layouts that have a role assigned":
+        "ロールが割り当てられたレイアウトだけを出力する",
+    "do not draw the annotation band at the bottom": "下部の説明帯を描かない",
+    "only list the target layouts": "対象レイアウトの一覧だけ表示する",
+    "{name}: {n} layouts": "{name}: {n} レイアウト",
+    "  {layouts} layouts / page numbers on {pages} slides":
+        "  {layouts} レイアウト / ページ番号 {pages} 枚",
+})
 
 SAMPLE_BODY = [
     "本文プレースホルダのサンプルです。",
@@ -77,14 +92,16 @@ def sample_text(key: str, layout: dict, template: dict) -> dict:
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="レイアウトサンプルを生成する")
-    p.add_argument("--template", required=True, help="template.json のパス")
-    p.add_argument("--title", help="生成するプレゼンテーションのタイトル")
-    p.add_argument("--folder", help="出力先 Drive フォルダの URL または ID")
+    p = argparse.ArgumentParser(description=t("Generate a layout sample deck"))
+    p.add_argument("--template", required=True, help=t("path to template.json"))
+    p.add_argument("--title", help=t("title of the generated presentation"))
+    p.add_argument("--folder", help=t("URL or ID of the destination Drive folder"))
     p.add_argument("--only-roles", action="store_true",
-                   help="ロールが割り当てられたレイアウトだけを出力する")
-    p.add_argument("--no-annotation", action="store_true", help="下部の説明帯を描かない")
-    p.add_argument("--dry-run", action="store_true", help="対象レイアウトの一覧だけ表示する")
+                   help=t("output only layouts that have a role assigned"))
+    p.add_argument("--no-annotation", action="store_true",
+                   help=t("do not draw the annotation band at the bottom"))
+    p.add_argument("--dry-run", action="store_true",
+                   help=t("only list the target layouts"))
     args = p.parse_args()
 
     template = bd.load_template(args.template)
@@ -94,7 +111,7 @@ def main() -> int:
         keys = [k for k in keys if k in used]
 
     if args.dry_run:
-        print(f"{template['displayName']}: {len(keys)} レイアウト")
+        print(t("{name}: {n} layouts", name=template["displayName"], n=len(keys)))
         for i, k in enumerate(keys, 1):
             l = template["layouts"][k]
             print(f"  {i:2d}. {k:28s} {str(roles_of(template, k)):34s} "
@@ -114,7 +131,8 @@ def main() -> int:
             annotate(deck, template, ref["slideId"], key, layout, i)
 
     n = deck.add_page_numbers()
-    print(f"  {len(keys)} レイアウト / ページ番号 {n} 枚")
+    print(t("  {layouts} layouts / page numbers on {pages} slides",
+            layouts=len(keys), pages=n))
     print(f"Open: {deck.commit()}")
     return 0
 

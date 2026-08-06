@@ -40,6 +40,47 @@ from datetime import datetime, timezone
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.path.dirname(SCRIPT_DIR)
 
+sys.path.insert(0, SCRIPT_DIR)
+from _i18n import t, register  # noqa: E402
+
+register({
+    "  warn: could not find the URL on the {vendor} page; using the known URL":
+        "  warn: {vendor} のページから URL を拾えず、既知の URL を使います",
+    "Could not find the {vendor} download URL on the page: {page}\n"
+    "  The page layout may have changed; fix the pattern in SOURCES":
+        "{vendor} の配布 URL をページから拾えませんでした: {page}\n"
+        "  ページの作りが変わった可能性があります。SOURCES の pattern を直してください",
+    "  skip: parent of {dest} does not exist; not copying":
+        "  skip: {dest} の親が無いので複製しません",
+    "  copied: {dest}": "  複製: {dest}",
+    "[{root}] not fetched yet (run this script with no arguments to fetch)":
+        "[{root}] 未取り込み（このスクリプトを引数なしで実行すると入ります）",
+    "not fetched: {root}": "未取り込み: {root}",
+    "files listed but missing on disk: {files}": "実体が無い: {files}",
+    "files not in the manifest: {files}": "マニフェストに無いファイル: {files}",
+    "icon sets differ between skills ({count} differences)":
+        "スキル間でアイコン集合が違う（差 {count} 件）",
+    "\nProblems:": "\n問題:",
+    "\nConsistency check: no problems": "\n整合チェック: 問題なし",
+    "Fetch the official cloud vendor icons": "クラウドベンダーの公式アイコンを取り込む",
+    "Target vendor (default: all)": "対象ベンダー（既定は全部）",
+    "Destination (default: the built-in destinations)": "配置先（既定は 2 スキル）",
+    "Resolve URLs only, do not download": "URL の解決だけ行う",
+    "Only check that fetched assets and the manifest are consistent":
+        "取り込み済みの素材とマニフェストの整合だけ調べる",
+    "Directory holding pre-downloaded ZIPs (skips re-downloading)":
+        "ダウンロード済み ZIP を置いたディレクトリ（再取得しない）",
+    "  -> {count} icons": "  → {count} 件",
+    "  warn: ALIAS_HINTS entry '{key}' not found in the assets"
+    " (the service name may have changed)":
+        "  warn: ALIAS_HINTS の '{key}' が素材に見つかりません"
+        "（サービス名が変わった可能性）",
+    "\nPlaced {count} icons in total ({png} with a PNG fallback)":
+        "\n合計 {count} 個のアイコンを配置しました（PNG 併置 {png} 件）",
+    "Destination: {dest}": "配置先: {dest}",
+    "  {vendor}: {count} categories": "  {vendor}: {count} カテゴリ",
+})
+
 # Single destination: the repo's shared asset tree (gitignored, restored on demand)
 DESTS = [
     os.path.join(REPO_DIR, "assets", "cloud-icons"),
@@ -154,12 +195,13 @@ def resolve_zip_url(vendor: str) -> str:
     hits = re.findall(src["pattern"], html)
     if not hits:
         if src.get("fallback"):
-            print(f"  warn: {vendor} のページから URL を拾えず、既知の URL を使います",
-                  file=sys.stderr)
+            print(t("  warn: could not find the URL on the {vendor} page; "
+                    "using the known URL", vendor=vendor), file=sys.stderr)
             return src["fallback"]
         raise RuntimeError(
-            f"{vendor} の配布 URL をページから拾えませんでした: {src['page']}\n"
-            "  ページの作りが変わった可能性があります。SOURCES の pattern を直してください")
+            t("Could not find the {vendor} download URL on the page: {page}\n"
+              "  The page layout may have changed; fix the pattern in SOURCES",
+              vendor=vendor, page=src["page"]))
     # 同じ URL が複数回出ることがあるので最初の 1 本
     return sorted(set(hits))[0]
 
@@ -410,12 +452,13 @@ def write_assets(idx: Index, dests: list[str], sources: dict,
     # 2 つめ以降のスキルへ複製する
     for d in dests[1:]:
         if not os.path.isdir(os.path.dirname(d)):
-            print(f"  skip: {d} の親が無いので複製しません", file=sys.stderr)
+            print(t("  skip: parent of {dest} does not exist; not copying", dest=d),
+                  file=sys.stderr)
             continue
         if os.path.isdir(d):
             shutil.rmtree(d)
         shutil.copytree(primary, d)
-        print(f"  複製: {d}")
+        print(t("  copied: {dest}", dest=d))
     return stats
 
 
@@ -428,8 +471,9 @@ def verify(dests: list[str]) -> int:
     for root in dests:
         mf = os.path.join(root, "cloud-icons.json")
         if not os.path.exists(mf):
-            print(f"[{root}] 未取り込み（このスクリプトを引数なしで実行すると入ります）")
-            problems.append(f"未取り込み: {root}")
+            print(t("[{root}] not fetched yet (run this script with no arguments "
+                    "to fetch)", root=root))
+            problems.append(t("not fetched: {root}", root=root))
             continue
         with open(mf, encoding="utf-8") as f:
             icons = json.load(f)["icons"]
@@ -446,30 +490,35 @@ def verify(dests: list[str]) -> int:
               f"icons={len(icons)} files={len(on_disk)} "
               f"missing={len(missing)} orphan={len(orphan)}")
         if missing:
-            problems.append(f"実体が無い: {missing[:5]}")
+            problems.append(t("files listed but missing on disk: {files}",
+                              files=missing[:5]))
         if orphan:
-            problems.append(f"マニフェストに無いファイル: {orphan[:5]}")
+            problems.append(t("files not in the manifest: {files}", files=orphan[:5]))
         sets.append(set(icons))
     if len(sets) > 1 and sets[0] != sets[1]:
-        problems.append(f"スキル間でアイコン集合が違う（差 {len(sets[0] ^ sets[1])} 件）")
+        problems.append(t("icon sets differ between skills ({count} differences)",
+                          count=len(sets[0] ^ sets[1])))
     if problems:
-        print("\n問題:")
+        print(t("\nProblems:"))
         for p in problems:
             print("  -", p)
         return 1
-    print("\n整合チェック: 問題なし")
+    print(t("\nConsistency check: no problems"))
     return 0
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="クラウドベンダーの公式アイコンを取り込む")
+    p = argparse.ArgumentParser(description=t("Fetch the official cloud vendor icons"))
     p.add_argument("--vendor", action="append", choices=sorted(SOURCES),
-                   help="対象ベンダー（既定は全部）")
-    p.add_argument("--dest", action="append", help="配置先（既定は 2 スキル）")
-    p.add_argument("--dry-run", action="store_true", help="URL の解決だけ行う")
+                   help=t("Target vendor (default: all)"))
+    p.add_argument("--dest", action="append",
+                   help=t("Destination (default: the built-in destinations)"))
+    p.add_argument("--dry-run", action="store_true",
+                   help=t("Resolve URLs only, do not download"))
     p.add_argument("--verify", action="store_true",
-                   help="取り込み済みの素材とマニフェストの整合だけ調べる")
-    p.add_argument("--zip-dir", help="ダウンロード済み ZIP を置いたディレクトリ（再取得しない）")
+                   help=t("Only check that fetched assets and the manifest are consistent"))
+    p.add_argument("--zip-dir",
+                   help=t("Directory holding pre-downloaded ZIPs (skips re-downloading)"))
     args = p.parse_args()
 
     vendors = args.vendor or sorted(SOURCES)
@@ -514,7 +563,7 @@ def main() -> int:
                 else:
                     collect_gcp(root, idx, flavor)
             n = sum(1 for k in idx.icons if k.startswith(vendor + ":"))
-            print(f"  → {n} 件")
+            print(t("  -> {count} icons", count=n))
 
         if args.dry_run:
             return 0
@@ -532,17 +581,18 @@ def main() -> int:
                     if a not in idx.icons[key]["aliases"]:
                         idx.icons[key]["aliases"].append(a)
             elif key.split(":")[0] in vendors:
-                print(f"  warn: ALIAS_HINTS の '{key}' が素材に見つかりません"
-                      "（サービス名が変わった可能性）", file=sys.stderr)
+                print(t("  warn: ALIAS_HINTS entry '{key}' not found in the assets"
+                        " (the service name may have changed)", key=key),
+                      file=sys.stderr)
 
         stats = write_assets(idx, dests, sources, vendors)
-        print(f"\n合計 {stats['icons']} 個のアイコンを配置しました"
-              f"（PNG 併置 {stats['png_fallback']} 件）")
-        print(f"配置先: {dests[0]}")
+        print(t("\nPlaced {count} icons in total ({png} with a PNG fallback)",
+                count=stats["icons"], png=stats["png_fallback"]))
+        print(t("Destination: {dest}", dest=dests[0]))
         for vendor in vendors:
             cats = sorted({m["category"] for k, m in idx.icons.items()
                            if k.startswith(vendor + ":")})
-            print(f"  {vendor}: {len(cats)} カテゴリ")
+            print(t("  {vendor}: {count} categories", vendor=vendor, count=len(cats)))
         return 0
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

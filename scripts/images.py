@@ -54,7 +54,85 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+from _i18n import t, register  # noqa: E402
 from colors import Palette  # noqa: E402
+
+register({
+    "Unknown style '{style}'. Available: {styles}":
+        "未知のスタイル '{style}'。利用可能: {styles}",
+    "GEMINI_API_KEY is not set.\n"
+    "  Create a key at https://aistudio.google.com/apikey, then "
+    "export GEMINI_API_KEY=... or save it to config/gemini_api_key.\n"
+    "  The image model has zero free-tier quota, so the key must belong to "
+    "a project with billing enabled.":
+        "GEMINI_API_KEY が設定されていません。\n"
+        "  https://aistudio.google.com/apikey でキーを作り、"
+        "export GEMINI_API_KEY=… するか、config/gemini_api_key に保存してください。\n"
+        "  画像モデルは無料枠のクォータが 0 のため、課金を有効にした"
+        "プロジェクトのキーが必要です。",
+    "Image generation quota exceeded (HTTP 429 / model={model}).\n"
+    "  {message}\n"
+    "  The image model has zero free-tier quota; use an API key from a "
+    "Google Cloud project with billing enabled.":
+        "画像生成のクォータを超えています（HTTP 429 / model={model}）。\n"
+        "  {message}\n"
+        "  画像モデルは無料枠のクォータが 0 です。"
+        "課金を有効にした Google Cloud プロジェクトの API キーを使ってください。",
+    "Image generation failed (HTTP {code} / model={model}): {message}":
+        "画像生成に失敗しました（HTTP {code} / model={model}）: {message}",
+    "Image generation failed: {message}": "画像生成に失敗しました: {message}",
+    "The model returned no candidates: {body}":
+        "モデルが候補を返しませんでした: {body}",
+    "No image was returned (finishReason={reason}). It may have been blocked "
+    "by the safety filter: {text}":
+        "画像が返りませんでした（finishReason={reason}）。"
+        "安全フィルタで止まった可能性があります: {text}",
+    "aspect must be one of {aspects} (got: {aspect})":
+        "aspect は {aspects} のいずれか（指定: {aspect}）",
+    "The model returned a format Slides cannot handle: {mime} (PNG/JPEG/GIF only)":
+        "Slides が扱えない形式が返りました: {mime}（PNG/JPEG/GIF のみ）",
+    "Cannot read image dimensions (only PNG / JPEG / GIF are supported)":
+        "画像の寸法を読めません（PNG / JPEG / GIF のみ対応）",
+    "Image not found: {source}": "画像が見つかりません: {source}",
+    "Slides cannot handle this format: {mime} ({file}). "
+    "Convert it to PNG / JPEG / GIF":
+        "Slides が扱えない形式です: {mime}（{file}）。"
+        "PNG / JPEG / GIF に変換してください",
+    "Image too large ({size:.1f}MB / 50MB limit)":
+        "画像が大きすぎます（{size:.1f}MB / 上限 50MB）",
+    "  warn: could not change the sharing settings of {file_id}: {error}":
+        "  warn: {file_id} の共有設定を変更できませんでした: {error}",
+    "  warn: could not delete the temporary image {file_id}: {error}":
+        "  warn: 一時画像 {file_id} を削除できませんでした: {error}",
+    "  warn: failed to remove public sharing from {file_id}: {error}":
+        "  warn: {file_id} の共有解除に失敗しました: {error}",
+    "Cannot extract the Drive file ID: {url}":
+        "Drive のファイル ID を抽出できません: {url}",
+    "fit must be one of contain / cover / stretch: {fit}":
+        "fit は contain / cover / stretch のいずれか: {fit}",
+    "  warn: cannot read the actual size of {source}, so fit=\"cover\" cannot "
+    "be applied; placing it as contain (aspect preserved)":
+        "  warn: {source} の実寸が取れないため fit=\"cover\" を"
+        "適用できません。contain 相当（比率保持）で配置します",
+    "  warn: this deck does not support image size fixups; "
+    "fit will behave like contain":
+        "  warn: この deck は画像の寸法補正に対応していません。"
+        "fit は contain 相当になります",
+    "  note: the Slides API cannot round image corners (rounded is ignored)":
+        "  note: 画像の角丸は Slides API では指定できません（rounded は無視）",
+    "Generate slide images with AI (results are cached)":
+        "スライド用の画像を AI で生成する（結果はキャッシュされる）",
+    "What to draw (Japanese OK)": "描いてほしい内容（日本語可）",
+    "Path of the template.json to borrow colors from":
+        "配色を借りる template.json のパス",
+    "Extra instructions": "追加の指示",
+    "Image model (default {model})": "画像モデル（既定 {model}）",
+    "Copy destination path (prints the cache path if omitted)":
+        "コピー先のパス（省略時はキャッシュのパスを表示）",
+    "Ignore the cache and regenerate": "キャッシュを無視して再生成",
+    "Print the assembled prompt and exit (does not call the API)":
+        "組み立てたプロンプトを表示して終了（API を呼ばない）",
+})
 
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_CACHE = os.path.join(SKILL_DIR, "cache", "images")
@@ -126,7 +204,8 @@ def build_prompt(subject: str, *, style: str = DEFAULT_STYLE,
     """被写体の説明から、実際に投げるプロンプト全文を組み立てる。"""
     if style not in STYLES:
         raise ValueError(
-            f"未知のスタイル '{style}'。利用可能: {sorted(STYLES)}"
+            t("Unknown style '{style}'. Available: {styles}",
+              style=style, styles=sorted(STYLES))
         )
     parts = [STYLES[style], subject.strip(), palette_hint(palette), GUARDRAILS]
     if extra:
@@ -159,11 +238,11 @@ def _api_key() -> str:
                     break
     if not key:
         raise ImageGenerationError(
-            "GEMINI_API_KEY が設定されていません。\n"
-            "  https://aistudio.google.com/apikey でキーを作り、"
-            "export GEMINI_API_KEY=… するか、config/gemini_api_key に保存してください。\n"
-            "  画像モデルは無料枠のクォータが 0 のため、課金を有効にした"
-            "プロジェクトのキーが必要です。"
+            t("GEMINI_API_KEY is not set.\n"
+              "  Create a key at https://aistudio.google.com/apikey, then "
+              "export GEMINI_API_KEY=... or save it to config/gemini_api_key.\n"
+              "  The image model has zero free-tier quota, so the key must "
+              "belong to a project with billing enabled.")
         )
     return key
 
@@ -201,25 +280,27 @@ def _call_model(prompt: str, *, model: str, aspect: str, key: str,
                 msg = body[:400]
             if e.code == 429:
                 raise ImageGenerationError(
-                    f"画像生成のクォータを超えています（HTTP 429 / model={model}）。\n"
-                    f"  {msg}\n"
-                    "  画像モデルは無料枠のクォータが 0 です。"
-                    "課金を有効にした Google Cloud プロジェクトの API キーを使ってください。"
+                    t("Image generation quota exceeded (HTTP 429 / model={model}).\n"
+                      "  {message}\n"
+                      "  The image model has zero free-tier quota; use an API key "
+                      "from a Google Cloud project with billing enabled.",
+                      model=model, message=msg)
                 ) from None
             if e.code in (500, 502, 503, 504) and attempt < retries:
                 last = msg
                 time.sleep(2 ** attempt)
                 continue
             raise ImageGenerationError(
-                f"画像生成に失敗しました（HTTP {e.code} / model={model}）: {msg}"
+                t("Image generation failed (HTTP {code} / model={model}): {message}",
+                  code=e.code, model=model, message=msg)
             ) from None
     else:  # pragma: no cover - 到達しない（break か raise で抜ける）
-        raise ImageGenerationError(f"画像生成に失敗しました: {last}")
+        raise ImageGenerationError(t("Image generation failed: {message}", message=last))
 
     cands = data.get("candidates") or []
     if not cands:
         raise ImageGenerationError(
-            f"モデルが候補を返しませんでした: {json.dumps(data)[:300]}"
+            t("The model returned no candidates: {body}", body=json.dumps(data)[:300])
         )
     reason = cands[0].get("finishReason")
     for part in cands[0].get("content", {}).get("parts", []):
@@ -229,8 +310,9 @@ def _call_model(prompt: str, *, model: str, aspect: str, key: str,
             return base64.b64decode(inline["data"]), inline.get("mimeType", "image/png")
     texts = [p.get("text", "") for p in cands[0].get("content", {}).get("parts", [])]
     raise ImageGenerationError(
-        f"画像が返りませんでした（finishReason={reason}）。"
-        f"安全フィルタで止まった可能性があります: {' '.join(texts)[:300]}"
+        t("No image was returned (finishReason={reason}). It may have been "
+          "blocked by the safety filter: {text}",
+          reason=reason, text=" ".join(texts)[:300])
     )
 
 
@@ -244,7 +326,8 @@ def generate(subject: str, *, style: str = DEFAULT_STYLE, palette: dict | None =
     デッキを作り直しても同じ絵が出るので、再現性がある。
     """
     if aspect not in ASPECTS:
-        raise ValueError(f"aspect は {ASPECTS} のいずれか（指定: {aspect}）")
+        raise ValueError(t("aspect must be one of {aspects} (got: {aspect})",
+                           aspects=ASPECTS, aspect=aspect))
     model = model or os.environ.get("GSLIDES_IMAGE_MODEL", DEFAULT_MODEL)
     prompt = build_prompt(subject, style=style, palette=palette, extra=extra)
 
@@ -261,7 +344,8 @@ def generate(subject: str, *, style: str = DEFAULT_STYLE, palette: dict | None =
     blob, mime = _call_model(prompt, model=model, aspect=aspect, key=key)
     if mime not in SLIDES_MIME:
         raise ImageGenerationError(
-            f"Slides が扱えない形式が返りました: {mime}（PNG/JPEG/GIF のみ）"
+            t("The model returned a format Slides cannot handle: {mime} "
+              "(PNG/JPEG/GIF only)", mime=mime)
         )
     # 中断で壊れた PNG がキャッシュに残ると exists() チェックで恒久的に再利用される
     # ため、一時ファイルに書いてから os.replace でアトミックに置く（icons.py と同じ流儀）
@@ -307,7 +391,8 @@ def image_size(data: bytes) -> tuple[int, int]:
                 h, w = struct.unpack(">HH", data[i + 5:i + 9])
                 return w, h
             i += 2 + seg
-    raise ValueError("画像の寸法を読めません（PNG / JPEG / GIF のみ対応）")
+    raise ValueError(t("Cannot read image dimensions (only PNG / JPEG / GIF "
+                       "are supported)"))
 
 
 def _remote_image_size(url: str, limit: int = 64 * 1024) -> tuple[int, int]:
@@ -378,17 +463,19 @@ class AssetStore:
 
         path = os.path.expanduser(source)
         if not os.path.exists(path):
-            raise FileNotFoundError(f"画像が見つかりません: {source}")
+            raise FileNotFoundError(t("Image not found: {source}", source=source))
         with open(path, "rb") as f:
             data = f.read()
         mime = sniff_mime(path, data)
         if mime not in SLIDES_MIME:
             raise ValueError(
-                f"Slides が扱えない形式です: {mime}（{os.path.basename(path)}）。"
-                "PNG / JPEG / GIF に変換してください"
+                t("Slides cannot handle this format: {mime} ({file}). "
+                  "Convert it to PNG / JPEG / GIF",
+                  mime=mime, file=os.path.basename(path))
             )
         if len(data) > 49 * 1024 * 1024:
-            raise ValueError(f"画像が大きすぎます（{len(data) / 1e6:.1f}MB / 上限 50MB）")
+            raise ValueError(t("Image too large ({size:.1f}MB / 50MB limit)",
+                               size=len(data) / 1e6))
         return self._drive_url(self._upload(path, mime))
 
     def _upload(self, path: str, mime: str) -> str:
@@ -414,8 +501,8 @@ class AssetStore:
             ).execute()
             self.shared_ids.append(file_id)
         except Exception as e:  # 既に公開済み、または組織ポリシーで禁止
-            print(f"  warn: {file_id} の共有設定を変更できませんでした: {e}",
-                  file=sys.stderr)
+            print(t("  warn: could not change the sharing settings of {file_id}: "
+                    "{error}", file_id=file_id, error=e), file=sys.stderr)
         return f"https://drive.google.com/uc?export=download&id={file_id}"
 
     # -- 後始末 --
@@ -426,8 +513,8 @@ class AssetStore:
             try:
                 self.drive.files().delete(fileId=fid).execute()
             except Exception as e:
-                print(f"  warn: 一時画像 {fid} を削除できませんでした: {e}",
-                      file=sys.stderr)
+                print(t("  warn: could not delete the temporary image {file_id}: "
+                        "{error}", file_id=fid, error=e), file=sys.stderr)
         temp = set(self.temp_ids)
         for fid in self.shared_ids:
             if fid in temp:
@@ -440,7 +527,8 @@ class AssetStore:
                         self.drive.permissions().delete(
                             fileId=fid, permissionId=p["id"]).execute()
             except Exception as e:
-                print(f"  warn: {fid} の共有解除に失敗しました: {e}", file=sys.stderr)
+                print(t("  warn: failed to remove public sharing from {file_id}: "
+                        "{error}", file_id=fid, error=e), file=sys.stderr)
         self.temp_ids = []
         self.shared_ids = []
         self._resolved = {}
@@ -452,7 +540,7 @@ def _drive_file_id(url: str) -> str:
         re.search(r"[?&]id=([a-zA-Z0-9_-]{10,})", url) or \
         re.search(r"/d/([a-zA-Z0-9_-]{10,})", url)
     if not m:
-        raise ValueError(f"Drive のファイル ID を抽出できません: {url}")
+        raise ValueError(t("Cannot extract the Drive file ID: {url}", url=url))
     return m.group(1)
 
 
@@ -514,7 +602,8 @@ class ImageMixin:
         戻り値は画像の objectId。
         """
         if fit not in ("contain", "cover", "stretch"):
-            raise ValueError(f"fit は contain / cover / stretch のいずれか: {fit}")
+            raise ValueError(t("fit must be one of contain / cover / stretch: {fit}",
+                               fit=fit))
         store = self._asset_store()
         url = store.url_for(source)
 
@@ -536,8 +625,9 @@ class ImageMixin:
                 px = (0, 0)
             if not px[0] and fit != "stretch":
                 if fit == "cover":
-                    print(f"  warn: {source} の実寸が取れないため fit=\"cover\" を"
-                          f"適用できません。contain 相当（比率保持）で配置します",
+                    print(t("  warn: cannot read the actual size of {source}, so "
+                            "fit=\"cover\" cannot be applied; placing it as "
+                            "contain (aspect preserved)", source=source),
                           file=sys.stderr)
                 fit = "contain"
 
@@ -552,8 +642,8 @@ class ImageMixin:
             # 上書きして直すしかない。commit() の後処理で拾わせる
             fixups = getattr(self.deck, "image_fixups", None)
             if fixups is None:
-                print("  warn: この deck は画像の寸法補正に対応していません。"
-                      "fit は contain 相当になります", file=sys.stderr)
+                print(t("  warn: this deck does not support image size fixups; "
+                        "fit will behave like contain"), file=sys.stderr)
             else:
                 fixups.append((oid, *rect))
 
@@ -578,8 +668,8 @@ class ImageMixin:
                 "objectId": oid, "description": alt}})
         if rounded:
             # Slides に角丸マスクは無い。枠線で代用する旨を明示しておく
-            print("  note: 画像の角丸は Slides API では指定できません（rounded は無視）",
-                  file=sys.stderr)
+            print(t("  note: the Slides API cannot round image corners "
+                    "(rounded is ignored)"), file=sys.stderr)
 
         self._seq += 1
         self.rects[oid] = (*rect, "IMAGE")
@@ -615,17 +705,21 @@ class ImageMixin:
 
 def main() -> int:
     p = argparse.ArgumentParser(
-        description="スライド用の画像を AI で生成する（結果はキャッシュされる）")
-    p.add_argument("--prompt", required=True, help="描いてほしい内容（日本語可）")
+        description=t("Generate slide images with AI (results are cached)"))
+    p.add_argument("--prompt", required=True, help=t("What to draw (Japanese OK)"))
     p.add_argument("--style", default=DEFAULT_STYLE, choices=sorted(STYLES))
     p.add_argument("--aspect", default="16:9", choices=list(ASPECTS))
-    p.add_argument("--template", help="配色を借りる template.json のパス")
-    p.add_argument("--extra", help="追加の指示")
-    p.add_argument("--model", help=f"画像モデル（既定 {DEFAULT_MODEL}）")
-    p.add_argument("--out", help="コピー先のパス（省略時はキャッシュのパスを表示）")
-    p.add_argument("--force", action="store_true", help="キャッシュを無視して再生成")
+    p.add_argument("--template",
+                   help=t("Path of the template.json to borrow colors from"))
+    p.add_argument("--extra", help=t("Extra instructions"))
+    p.add_argument("--model",
+                   help=t("Image model (default {model})", model=DEFAULT_MODEL))
+    p.add_argument("--out",
+                   help=t("Copy destination path (prints the cache path if omitted)"))
+    p.add_argument("--force", action="store_true",
+                   help=t("Ignore the cache and regenerate"))
     p.add_argument("--show-prompt", action="store_true",
-                   help="組み立てたプロンプトを表示して終了（API を呼ばない）")
+                   help=t("Print the assembled prompt and exit (does not call the API)"))
     args = p.parse_args()
 
     palette = None

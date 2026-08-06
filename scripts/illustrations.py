@@ -27,6 +27,15 @@ from __future__ import annotations
 import math
 
 from colors import darken, lighten, readable_on
+from _i18n import t, register
+
+register({
+    "Unknown pictogram '{name}'. Available: {available}":
+        "未知のピクトグラム '{name}'。利用可能: {available}",
+    "venn supports exactly 2 or 3 labels": "venn は 2 個か 3 個のラベルにのみ対応します",
+    "quadrants takes exactly 4 items (top-left, top-right, bottom-left, bottom-right)":
+        "quadrants は 4 個（左上・右上・左下・右下）",
+})
 
 # ピクトグラムの一覧。icon() の name に渡せる値。
 ICONS = (
@@ -52,7 +61,8 @@ class IllustrationMixin:
         既定で size の 2 倍（絵より広い）。横に並べるときは label_w で明示すること。
         """
         if name not in ICONS:
-            raise ValueError(f"未知のピクトグラム '{name}'。利用可能: {list(ICONS)}")
+            raise ValueError(t("Unknown pictogram '{name}'. Available: {available}",
+                               name=name, available=list(ICONS)))
         c = color or self.P.primary
         getattr(self, f"_icon_{name}")(x, y, size, c)
         bottom = y + size
@@ -461,7 +471,7 @@ class IllustrationMixin:
         """重なり。sets は 2 個または 3 個のラベル。center は共通部分のラベル。"""
         n = len(sets)
         if n not in (2, 3):
-            raise ValueError("venn は 2 個か 3 個のラベルにのみ対応します")
+            raise ValueError(t("venn supports exactly 2 or 3 labels"))
         cols = [self.P.primary, self.P.info, self.P.success][:n]
         if n == 2:
             r = min(h, w * 0.62) / 2
@@ -641,7 +651,8 @@ class IllustrationMixin:
                y_axis=("低", "高"), x_label=None, y_label=None, size=11) -> float:
         """2×2 のマトリクス。quadrants は左上・右上・左下・右下の順。"""
         if len(quadrants) != 4:
-            raise ValueError("quadrants は 4 個（左上・右上・左下・右下）")
+            raise ValueError(t("quadrants takes exactly 4 items "
+                               "(top-left, top-right, bottom-left, bottom-right)"))
         pad = 0.44          # 軸ラベルの領域
         gx, gy = x + pad, y
         gw, gh = w - pad, h - pad

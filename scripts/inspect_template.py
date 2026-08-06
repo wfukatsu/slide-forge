@@ -24,6 +24,34 @@ import urllib.request
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+from _i18n import t, register  # noqa: E402
+
+register({
+    "Analyze a Google Slides template": "Google Slides テンプレートを解析する",
+    "URL or presentation ID of the template": "テンプレートの URL または プレゼンテーション ID",
+    "output path for template.json": "template.json の出力先パス",
+    "template ID (lowercase letters and hyphens); defaults to the --emit filename":
+        "テンプレート ID（英小文字・ハイフン）。既定は --emit のファイル名",
+    "output directory for layout thumbnails": "レイアウトのサムネイル出力ディレクトリ",
+    "path to dump the raw API response (for debugging)":
+        "API の生レスポンスを書き出すパス（デバッグ用）",
+    "  existing slides: {n} (deleted on copy)": "  既存スライド: {n} 枚（複製時に削除）",
+    "\n  ⚠ This presentation has {n} masters (usually 1):":
+        "\n  ⚠ マスターが {n} 個あります（通常は 1 個）:",
+    "      {oid:22s} {name!r} {n} layouts": "      {oid:22s} {name!r} レイアウト {n} 種",
+    "      Pasting slides from another file adds masters. To use this as a template,":
+        "      別ファイルからスライドを貼り付けると増えます。テンプレートとして使うなら",
+    "      pick one master lineage and align the roles to it.":
+        "      どちらのマスター系統を使うか決め、roles をそちらに寄せること。",
+    "\n--- {n} layouts ---": "\n--- レイアウト {n} 種 ---",
+    "\n--- Role guesses ---": "\n--- ロール推測 ---",
+    "  ← {n} candidates, needs review": "  ← 候補 {n} 件、要確認",
+    "                 candidates: {keys}": "                 候補: {keys}",
+    "  unassigned roles: {missing}": "  未割当のロール: {missing}",
+    "  Always review and fix the roles by eye":
+        "  roles を必ず目視で確認・修正してください",
+    "\n--- Thumbnails ---": "\n--- サムネイル ---",
+})
 
 # レイアウト表示名からセマンティックロールを推測するためのキーワード
 ROLE_KEYWORDS = {
@@ -310,24 +338,25 @@ def build_template(pres: dict, name: str, source_url: str) -> dict:
     }
 
 
-def print_report(t: dict) -> None:
-    print(f"=== {t['displayName']} ===")
-    print(f"  id       : {t['presentationId']}")
-    ps = t["pageSize"]
+def print_report(tpl: dict) -> None:
+    print(f"=== {tpl['displayName']} ===")
+    print(f"  id       : {tpl['presentationId']}")
+    ps = tpl["pageSize"]
     print(f"  page size: {ps['widthInches']} x {ps['heightInches']} in")
-    print(f"  colors   : " + ", ".join(f"{k}={v}" for k, v in list(t["colors"].items())[:10]))
-    print(f"  既存スライド: {len(t['existingSlideIds'])} 枚（複製時に削除）")
-    ms = t.get("masters", [])
+    print(f"  colors   : " + ", ".join(f"{k}={v}" for k, v in list(tpl["colors"].items())[:10]))
+    print(t("  existing slides: {n} (deleted on copy)", n=len(tpl["existingSlideIds"])))
+    ms = tpl.get("masters", [])
     if len(ms) > 1:
-        print(f"\n  ⚠ マスターが {len(ms)} 個あります（通常は 1 個）:")
+        print(t("\n  ⚠ This presentation has {n} masters (usually 1):", n=len(ms)))
         for m in ms:
-            n = sum(1 for l in t["layouts"].values() if l.get("masterObjectId") == m["objectId"])
-            print(f"      {m['objectId']:22s} {m['displayName']!r} レイアウト {n} 種")
-        print("      別ファイルからスライドを貼り付けると増えます。テンプレートとして使うなら")
-        print("      どちらのマスター系統を使うか決め、roles をそちらに寄せること。")
-    print(f"\n--- レイアウト {len(t['layouts'])} 種 ---")
-    for key, l in t["layouts"].items():
-        role = next((r for r, k in t["roles"].items() if k == key), "")
+            n = sum(1 for l in tpl["layouts"].values() if l.get("masterObjectId") == m["objectId"])
+            print(t("      {oid:22s} {name!r} {n} layouts",
+                    oid=m["objectId"], name=m["displayName"], n=n))
+        print(t("      Pasting slides from another file adds masters. To use this as a template,"))
+        print(t("      pick one master lineage and align the roles to it."))
+    print(t("\n--- {n} layouts ---", n=len(tpl["layouts"])))
+    for key, l in tpl["layouts"].items():
+        role = next((r for r, k in tpl["roles"].items() if k == key), "")
         mtag = ""
         if len(ms) > 1:
             idx = next((i for i, m in enumerate(ms, 1)
@@ -343,15 +372,15 @@ def print_report(t: dict) -> None:
             desc = " ".join(f"{k}={v}" for k, v in st.items())
             print(f"      {ek:12s} x={geo['x']:.3f} y={geo['y']:.3f} "
                   f"w={geo['w']:.3f} h={geo['h']:.3f} {desc}")
-    print(f"\n--- ロール推測 ---")
-    for role, keys in t["roleCandidates"].items():
-        mark = "" if len(keys) == 1 else f"  ← 候補 {len(keys)} 件、要確認"
-        print(f"  {role:14s} -> {t['roles'][role]}{mark}")
+    print(t("\n--- Role guesses ---"))
+    for role, keys in tpl["roleCandidates"].items():
+        mark = "" if len(keys) == 1 else t("  ← {n} candidates, needs review", n=len(keys))
+        print(f"  {role:14s} -> {tpl['roles'][role]}{mark}")
         if len(keys) > 1:
-            print(f"                 候補: {keys}")
-    missing = [r for r in ("COVER", "SECTION", "CONTENT", "CLOSING") if r not in t["roles"]]
+            print(t("                 candidates: {keys}", keys=keys))
+    missing = [r for r in ("COVER", "SECTION", "CONTENT", "CLOSING") if r not in tpl["roles"]]
     if missing:
-        print(f"  未割当のロール: {missing}")
+        print(t("  unassigned roles: {missing}", missing=missing))
 
 
 def fetch_thumbnails(slides, pres_id: str, template: dict, out_dir: str) -> None:
@@ -372,12 +401,13 @@ def fetch_thumbnails(slides, pres_id: str, template: dict, out_dir: str) -> None
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Google Slides テンプレートを解析する")
-    p.add_argument("source", help="テンプレートの URL または プレゼンテーション ID")
-    p.add_argument("--emit", help="template.json の出力先パス")
-    p.add_argument("--name", help="テンプレート ID（英小文字・ハイフン）。既定は --emit のファイル名")
-    p.add_argument("--thumbnails", help="レイアウトのサムネイル出力ディレクトリ")
-    p.add_argument("--raw", help="API の生レスポンスを書き出すパス（デバッグ用）")
+    p = argparse.ArgumentParser(description=t("Analyze a Google Slides template"))
+    p.add_argument("source", help=t("URL or presentation ID of the template"))
+    p.add_argument("--emit", help=t("output path for template.json"))
+    p.add_argument("--name", help=t("template ID (lowercase letters and hyphens); "
+                                    "defaults to the --emit filename"))
+    p.add_argument("--thumbnails", help=t("output directory for layout thumbnails"))
+    p.add_argument("--raw", help=t("path to dump the raw API response (for debugging)"))
     args = p.parse_args()
 
     pres_id = _auth.presentation_id(args.source)
@@ -400,10 +430,10 @@ def main() -> int:
         with open(args.emit, "w") as f:
             json.dump(template, f, ensure_ascii=False, indent=2)
         print(f"\ntemplate -> {args.emit}")
-        print("  roles を必ず目視で確認・修正してください")
+        print(t("  Always review and fix the roles by eye"))
 
     if args.thumbnails:
-        print(f"\n--- サムネイル ---")
+        print(t("\n--- Thumbnails ---"))
         fetch_thumbnails(slides, pres_id, template, args.thumbnails)
 
     return 0

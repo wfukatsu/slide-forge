@@ -37,7 +37,66 @@
 """
 from __future__ import annotations
 
-from colors import lighten, readable_on
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _i18n import t, register  # noqa: E402
+from colors import lighten, readable_on  # noqa: E402
+
+register({
+    "  warn: the action title will wrap to {lines} lines. "
+    "Trim it to 2 lines or fewer (\"{head}…\")":
+        "  warn: アクションタイトルが {lines} 行になります。"
+        "2 行までに削ってください（「{head}…」）",
+    "governing_message: text is empty": "governing_message: text が空です",
+    "lead_in: text is empty": "lead_in: text が空です",
+    "so_what: text is empty": "so_what: text が空です",
+    "source_note: source is empty (never show numbers without a source)":
+        "source_note: source が空です（出典の無い数値は載せない）",
+    "exhibit_frame: the frame is too small (w={w}, h={h})":
+        "exhibit_frame: 枠が小さすぎます（w={w}, h={h}）",
+    "mece_tree: depth {depth} is unreadable. Split into at most 3 levels":
+        "mece_tree: 深さ {depth} は読めません。3 階層までに分割してください",
+    "mece_tree: a column of {w:.2f}in is too narrow. Widen w or reduce the depth":
+        "mece_tree: 1 列 {w:.2f}in は狭すぎます。w を広げるか階層を減らしてください",
+    "mece_tree: {leaves} leaves at {h:.2f}in per row is too tight":
+        "mece_tree: 葉が {leaves} 個で 1 行 {h:.2f}in は狭すぎます",
+    "waterfall: good must be 'up' or 'down' (got {good!r})":
+        "waterfall: good は 'up' か 'down'（指定: {good!r}）",
+    "waterfall: fewer than 3 items does not make a bridge":
+        "waterfall: 3 項目未満では橋渡しになりません",
+    "waterfall: unknown kind '{kind}' (use total or delta)":
+        "waterfall: 未知の種別 '{kind}'（total か delta）",
+    "waterfall: the first item must be a total (the starting sum)":
+        "waterfall: 先頭は total（起点の合計）である必要があります",
+    "waterfall: total '{label}' does not match the running sum "
+    "(given {value:g} / accumulated {cum:g})":
+        "waterfall: 合計 '{label}' が積算と一致しません "
+        "(指定 {value:g} / 積算 {cum:g})",
+    "waterfall: the axis maximum is 0 or less": "waterfall: 上限が 0 以下です",
+    "waterfall: series that go negative cannot be drawn (the baseline is fixed at zero)":
+        "waterfall: 負の領域に入る系列は表現できません（基線はゼロ固定）",
+    "waterfall: h={h} is too short (values and labels take {used}in)":
+        "waterfall: h={h} では低すぎます（数値とラベルで {used}in 使う）",
+    "rating_matrix: rows is empty": "rating_matrix: rows が空です",
+    "rating_matrix: {levels} dots do not fit in a {w:.2f}in column":
+        "rating_matrix: 1 列 {w:.2f}in にドット {levels} 個は入りません",
+    "rating_matrix: row '{label}' has {nvals} values but there are {ncols} columns":
+        "rating_matrix: 行 '{label}' の値が {nvals} 個、列は {ncols} 個",
+    "rating_matrix: value {v!r} must be an integer from 0 to {levels}":
+        "rating_matrix: 値 {v!r} は 0〜{levels} の整数にしてください",
+    "exec_summary: {n} supporting points. Bundle them into at most 5":
+        "exec_summary: 論点が {n} 個。5 個までに束ねてください",
+    "exec_summary: h={h} cannot fit 3 blocks":
+        "exec_summary: h={h} では 3 ブロックが入りません",
+    "storyline: titles is empty": "storyline: titles が空です",
+    "ghost: slides is empty": "ghost: slides が空です",
+    "ghost: {w:.2f}×{h:.2f}in per card is too small":
+        "ghost: 1 枚 {w:.2f}×{h:.2f}in は小さすぎます",
+    "ghost: unknown status '{status}' ({allowed})":
+        "ghost: 未知の状態 '{status}'（{allowed}）",
+})
 
 # ゴーストデッキのデータ状態。清書前に「未取得」が残っていないかを見るための区分
 GHOST_STATUS = {
@@ -87,15 +146,16 @@ class PageMixin:
         日本語は語で数えられないので、全角 40 字を 1 行の目安として数える。
         """
         if not text or not text.strip():
-            raise ValueError("governing_message: text が空です")
+            raise ValueError(t("governing_message: text is empty"))
         c = color or self.P.primary
         # 行数の見積もり。全角 1・半角 0.5 で数え、1 行の収容字数で割る
         width = sum(1.0 if ord(ch) > 0x2E80 else 0.5 for ch in text)
         per_line = max(1.0, (w - 0.3) * 72 / size)
         lines = max(1, int(width / per_line + 0.999))
         if lines > 2:
-            print(f"  warn: アクションタイトルが {lines} 行になります。"
-                  f"2 行までに削ってください（「{text[:20]}…」）")
+            print(t("  warn: the action title will wrap to {lines} lines. "
+                    "Trim it to 2 lines or fewer (\"{head}…\")",
+                    lines=lines, head=text[:20]))
         h = max(0.42, lines * size * self._LINE * 1.05 / 72 + 0.14)
         self.shape(x, y, bar, h, kind="RECTANGLE", fill=c, stroke=None)
         self.label(x + bar + 0.14, y, w - bar - 0.14, h, text,
@@ -112,7 +172,7 @@ class PageMixin:
         登壇用デッキでは口頭で言えばよいので、通常は不要。
         """
         if not text or not text.strip():
-            raise ValueError("lead_in: text が空です")
+            raise ValueError(t("lead_in: text is empty"))
         top = y
         if rule:
             self.shape(x, y, w, 0.012, kind="RECTANGLE",
@@ -142,7 +202,7 @@ class PageMixin:
         左端のアクセントバーに合わせ、角は丸めない（スキル共通の規約）。
         """
         if not text or not text.strip():
-            raise ValueError("so_what: text が空です")
+            raise ValueError(t("so_what: text is empty"))
         c = accent or self.P.primary
         self.shape(x, y, w, h, kind="RECTANGLE",
                    fill=lighten(c, 0.93), stroke=lighten(c, 0.6))
@@ -170,7 +230,8 @@ class PageMixin:
         `notes` は本文中の「※1」に対応する注記のリストで、出典より上に出る。
         """
         if not source or not str(source).strip():
-            raise ValueError("source_note: source が空です（出典の無い数値は載せない）")
+            raise ValueError(
+                t("source_note: source is empty (never show numbers without a source)"))
         top = y
         if rule:
             self.shape(x, y, w, 0.01, kind="RECTANGLE",
@@ -193,7 +254,8 @@ class PageMixin:
         番号は本文や付録から参照するために振る。呼び出し側で通し番号を管理すること。
         """
         if h <= 0.6 or w <= 1.0:
-            raise ValueError(f"exhibit_frame: 枠が小さすぎます（w={w}, h={h}）")
+            raise ValueError(t("exhibit_frame: the frame is too small (w={w}, h={h})",
+                               w=w, h=h))
         self.shape(x, y, w, h, kind="RECTANGLE", fill=None, stroke=self.P.border)
         head_h = 0.3
         self.shape(x, y, w, head_h, kind="RECTANGLE",
@@ -223,14 +285,17 @@ class PageMixin:
         """
         depth, leaves = _depth(tree), _leaves(tree)
         if depth > 4:
-            raise ValueError(f"mece_tree: 深さ {depth} は読めません。3 階層までに分割してください")
+            raise ValueError(t("mece_tree: depth {depth} is unreadable. "
+                               "Split into at most 3 levels", depth=depth))
         col_w = (w - gap * (depth - 1)) / depth
         if col_w < 1.1:
-            raise ValueError(f"mece_tree: 1 列 {col_w:.2f}in は狭すぎます。w を広げるか階層を減らしてください")
+            raise ValueError(t("mece_tree: a column of {w:.2f}in is too narrow. "
+                               "Widen w or reduce the depth", w=col_w))
         row_h = h / leaves
         nh = node_h or min(row_h - 0.12, 0.78)
         if nh < 0.3:
-            raise ValueError(f"mece_tree: 葉が {leaves} 個で 1 行 {row_h:.2f}in は狭すぎます")
+            raise ValueError(t("mece_tree: {leaves} leaves at {h:.2f}in per row is too tight",
+                               leaves=leaves, h=row_h))
 
         def draw(node, level: int, top: float) -> tuple[float, float]:
             """(中心 y, 占有した高さ) を返す。"""
@@ -280,9 +345,10 @@ class PageMixin:
         `ValueError`（データの取り違えをここで止める）。
         """
         if good not in ("up", "down"):
-            raise ValueError(f"waterfall: good は 'up' か 'down'（指定: {good!r}）")
+            raise ValueError(t("waterfall: good must be 'up' or 'down' (got {good!r})",
+                               good=good))
         if len(items) < 3:
-            raise ValueError("waterfall: 3 項目未満では橋渡しになりません")
+            raise ValueError(t("waterfall: fewer than 3 items does not make a bridge"))
         rows = []
         for it in items:
             if len(it) == 3:
@@ -290,10 +356,11 @@ class PageMixin:
             else:
                 (label, value), kind = it, "delta"
             if kind not in ("total", "delta"):
-                raise ValueError(f"waterfall: 未知の種別 '{kind}'（total か delta）")
+                raise ValueError(t("waterfall: unknown kind '{kind}' (use total or delta)",
+                                   kind=kind))
             rows.append((label, float(value), kind))
         if rows[0][2] != "total":
-            raise ValueError("waterfall: 先頭は total（起点の合計）である必要があります")
+            raise ValueError(t("waterfall: the first item must be a total (the starting sum)"))
 
         # 積算とバーの上下端を決める
         cum, bars = 0.0, []
@@ -301,8 +368,9 @@ class PageMixin:
             if kind == "total":
                 if bars and abs(value - cum) > 1e-6:
                     raise ValueError(
-                        f"waterfall: 合計 '{label}' が積算と一致しません "
-                        f"(指定 {value:g} / 積算 {cum:g})")
+                        t("waterfall: total '{label}' does not match the running sum "
+                          "(given {value:g} / accumulated {cum:g})",
+                          label=label, value=value, cum=cum))
                 lo, hi = 0.0, value
                 cum = value
             else:
@@ -312,14 +380,16 @@ class PageMixin:
 
         top = max_value if max_value is not None else max(hi for *_, hi in bars)
         if top <= 0:
-            raise ValueError("waterfall: 上限が 0 以下です")
+            raise ValueError(t("waterfall: the axis maximum is 0 or less"))
         if min(lo for *_, lo, _ in bars) < 0:
-            raise ValueError("waterfall: 負の領域に入る系列は表現できません（基線はゼロ固定）")
+            raise ValueError(t("waterfall: series that go negative cannot be drawn "
+                               "(the baseline is fixed at zero)"))
 
         val_h, cat_h = 0.24, 0.30
         plot_h = h - val_h - cat_h
         if plot_h < 0.5:
-            raise ValueError(f"waterfall: h={h} では低すぎます（数値とラベルで {val_h + cat_h}in 使う）")
+            raise ValueError(t("waterfall: h={h} is too short (values and labels take {used}in)",
+                               h=h, used=val_h + cat_h))
         cell = w / len(bars)
         bw = cell * bar_ratio
         base_y = y + val_h + plot_h
@@ -367,11 +437,12 @@ class PageMixin:
         **白黒印刷でも塗り／抜きが判別できる**ので、配布資料ではむしろ扱いやすい。
         """
         if not rows:
-            raise ValueError("rating_matrix: rows が空です")
+            raise ValueError(t("rating_matrix: rows is empty"))
         lw = label_w if label_w is not None else min(2.6, w * 0.34)
         col_w = (w - lw) / len(columns)
         if col_w < levels * (dot + 0.05):
-            raise ValueError(f"rating_matrix: 1 列 {col_w:.2f}in にドット {levels} 個は入りません")
+            raise ValueError(t("rating_matrix: {levels} dots do not fit in a {w:.2f}in column",
+                               levels=levels, w=col_w))
         head_h = 0.36
         self.label(x, y, lw, head_h, "", size=size)
         for j, col in enumerate(columns):
@@ -383,7 +454,8 @@ class PageMixin:
         for i, (label, values) in enumerate(rows):
             if len(values) != len(columns):
                 raise ValueError(
-                    f"rating_matrix: 行 '{label}' の値が {len(values)} 個、列は {len(columns)} 個")
+                    t("rating_matrix: row '{label}' has {nvals} values but there are "
+                      "{ncols} columns", label=label, nvals=len(values), ncols=len(columns)))
             ry = top + i * row_h
             if i % 2 == 1:
                 self.shape(x, ry, w, row_h, kind="RECTANGLE",
@@ -392,7 +464,9 @@ class PageMixin:
                        valign="MIDDLE", color=self.P.text)
             for j, v in enumerate(values):
                 if not isinstance(v, int) or not 0 <= v <= levels:
-                    raise ValueError(f"rating_matrix: 値 {v!r} は 0〜{levels} の整数にしてください")
+                    raise ValueError(
+                        t("rating_matrix: value {v!r} must be an integer from 0 to {levels}",
+                          v=v, levels=levels))
                 span = levels * dot + (levels - 1) * 0.05
                 sx = x + lw + j * col_w + (col_w - span) / 2
                 for k in range(levels):
@@ -416,13 +490,14 @@ class PageMixin:
         """
         blocks = [(labels[0], situation), (labels[1], complication), (labels[2], resolution)]
         if points and len(points) > 5:
-            raise ValueError(f"exec_summary: 論点が {len(points)} 個。5 個までに束ねてください")
+            raise ValueError(t("exec_summary: {n} supporting points. "
+                               "Bundle them into at most 5", n=len(points)))
         pts_h = 0.0
         if points:
             pts_h = 0.34 + len(points) * 0.3
         block_h = (h - pts_h - 0.16 * 2) / 3
         if block_h < 0.5:
-            raise ValueError(f"exec_summary: h={h} では 3 ブロックが入りません")
+            raise ValueError(t("exec_summary: h={h} cannot fit 3 blocks", h=h))
         badge_w = 0.72
         for i, (name, text) in enumerate(blocks):
             by = y + i * (block_h + 0.16)
@@ -461,7 +536,7 @@ class PageMixin:
         構成を直す（ゴーストデッキ → この図 → 生成、の順）。
         """
         if not titles:
-            raise ValueError("storyline: titles が空です")
+            raise ValueError(t("storyline: titles is empty"))
         rows = [(t if isinstance(t, (tuple, list)) else (i + 1, t))
                 for i, t in enumerate(titles)]
         rail_x = x + 0.22
@@ -494,16 +569,18 @@ class PageMixin:
         当てを確かめる**ための図で、成果物ではなく設計の道具。
         """
         if not slides:
-            raise ValueError("ghost: slides が空です")
+            raise ValueError(t("ghost: slides is empty"))
         rows = (len(slides) + cols - 1) // cols
         cw = (w - gap * (cols - 1)) / cols
         ch = (h - gap * (rows - 1)) / rows
         if cw < 1.2 or ch < 0.9:
-            raise ValueError(f"ghost: 1 枚 {cw:.2f}×{ch:.2f}in は小さすぎます")
+            raise ValueError(t("ghost: {w:.2f}×{h:.2f}in per card is too small",
+                               w=cw, h=ch))
         for i, item in enumerate(slides):
             num, title, exhibit, status = (list(item) + ["confirmed"])[:4]
             if status not in GHOST_STATUS:
-                raise ValueError(f"ghost: 未知の状態 '{status}'（{sorted(GHOST_STATUS)}）")
+                raise ValueError(t("ghost: unknown status '{status}' ({allowed})",
+                                   status=status, allowed=sorted(GHOST_STATUS)))
             name, tone = GHOST_STATUS[status]
             c = getattr(self.P, tone)
             gx = x + (i % cols) * (cw + gap)
