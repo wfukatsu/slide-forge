@@ -35,6 +35,12 @@ register({
     "Unknown blocks {unknown}. Available: {available}":
         "未知のブロック {unknown}。利用可能: {available}",
     "nested_circles needs at least 2 rings": "nested_circles はリングが 2 個以上必要です",
+    "{leaves} leaves leave only {cell:.2f}in per column. Widen w or split "
+    "the tree":
+        "葉が {leaves} 個で 1 列 {cell:.2f}in しか取れません。"
+        "w を広げるか木を分割してください",
+    "Row '{name}': the span ({start}-{end}) must be within 0-{ncols}":
+        "行「{name}」の期間 ({start}〜{end}) は 0〜{ncols} で指定します",
     "w={w} leaves no room for the labels": "w={w} ではラベル領域が確保できません",
 })
 
@@ -184,8 +190,9 @@ class PatternMixin:
             name, start, end = row[0], row[1], row[2]
             caption = row[3] if len(row) > 3 else None
             if not (0 <= start <= end <= ncols):
-                raise ValueError(
-                    f"行「{name}」の期間 ({start}〜{end}) は 0〜{ncols} で指定します")
+                raise ValueError(t(
+                    "Row '{name}': the span ({start}-{end}) must be within "
+                    "0-{ncols}", name=name, start=start, end=end, ncols=ncols))
             ry = body_y + i * row_h
             cyy = ry + row_h / 2
             self.label(x + 0.06, ry, lw - 0.16, row_h, str(name), size=size,
@@ -238,9 +245,9 @@ class PatternMixin:
         nh = node_h or min(0.62, (h - gap_y * (depth - 1)) / depth)
         cell = w / leaves
         if cell < 0.85:
-            raise ValueError(
-                f"葉が {leaves} 個で 1 列 {cell:.2f}in しか取れません。"
-                f"w を広げるか木を分割してください")
+            raise ValueError(t(
+                "{leaves} leaves leave only {cell:.2f}in per column. Widen w "
+                "or split the tree", leaves=leaves, cell=cell))
         level_h = (h - nh) / max(depth - 1, 1)
 
         def place(node, left, top, is_root):

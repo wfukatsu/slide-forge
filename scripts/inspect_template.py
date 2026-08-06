@@ -323,16 +323,22 @@ def build_template(pres: dict, name: str, source_url: str) -> dict:
             "aspectRatio": f"{round(w / h, 3)}:1" if h else None,
         },
         "existingSlideIds": [s["objectId"] for s in pres.get("slides", [])],
-        "__existingSlideIds_note": "複製直後に削除するテンプレート同梱スライド。テンプレート側を編集したら再解析すること",
+        "__existingSlideIds_note": "Bundled slides deleted right after the copy. "
+                                   "Re-analyze whenever the template itself is edited",
         "colors": colors,
-        "__colors_note": "masters[0] の colorScheme。マスターが複数ある場合は masters[].colors も確認すること",
+        "__colors_note": "colorScheme of masters[0]. With multiple masters, "
+                         "check masters[].colors too",
         "masters": master_list,
         "pageNumber": page_number,
-        "__pageNumber_note": "Slides API は SLIDE_NUMBER プレースホルダを生成できないため、build_deck.py がこのスタイルでテキストボックスを描画する",
+        "__pageNumber_note": "The Slides API cannot create SLIDE_NUMBER placeholders, "
+                             "so build_deck.py draws text boxes in this style",
         "masterDecorations": master_info.get("decorations", []),
-        "__masterDecorations_note": "マスターが全ページに敷く要素（ロゴ・著作権表記等）。複製方式では自動継承されるので自前描画しないこと",
+        "__masterDecorations_note": "Elements the master lays on every page (logo, "
+                                    "copyright, etc.). Inherited automatically by the "
+                                    "copy — never draw them yourself",
         "roles": roles,
-        "__roles_note": "表示名とプレースホルダ構成からの推測。サムネイルを見て必ず人間が確認・修正すること",
+        "__roles_note": "Guessed from display names and placeholder sets. A human "
+                        "must always verify and fix against the layout thumbnails",
         "roleCandidates": role_candidates,
         "layouts": layouts,
     }

@@ -441,8 +441,9 @@ def write_assets(idx: Index, dests: list[str], sources: dict,
         "generatedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "sources": {**kept_sources, **sources},
         "terms": {v: SOURCES[v]["terms"] for v in SOURCES},
-        "note": ("各ベンダーの資産。アーキテクチャ図・研修資料・ドキュメントでの利用のみ。"
-                 "色の変更・回転・反転・縦横比の変更は禁止。"),
+        "note": ("Vendor assets. Use only in architecture diagrams, training "
+                 "material, and documentation. Recoloring, rotating, flipping, "
+                 "and changing the aspect ratio are prohibited."),
         "icons": dict(sorted(icons.items())),
     }
     with open(os.path.join(primary, "cloud-icons.json"), "w", encoding="utf-8") as f:

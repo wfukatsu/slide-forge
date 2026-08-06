@@ -58,6 +58,7 @@ from _i18n import t, register  # noqa: E402
 from colors import Palette  # noqa: E402
 
 register({
+    "image {name}": "画像 {name}",
     "Unknown style '{style}'. Available: {styles}":
         "未知のスタイル '{style}'。利用可能: {styles}",
     "GEMINI_API_KEY is not set.\n"
@@ -675,7 +676,8 @@ class ImageMixin:
         self.rects[oid] = (*rect, "IMAGE")
         # 画像は不透明。先に置かれた文字を覆い隠すので solids として記録する
         self.solids.append({"rect": rect, "seq": self._seq,
-                            "name": f"画像 {os.path.basename(str(source))[:16]}"})
+                            "name": t("image {name}",
+                                      name=os.path.basename(str(source))[:16])})
         if caption:
             cy = (y + h) if caption_at == "box" else (rect[1] + rect[3])
             self.label(x, cy + 0.05, w, 0.26, caption,
