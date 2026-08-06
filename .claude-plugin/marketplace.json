@@ -5,15 +5,15 @@
     "url": "https://github.com/wfukatsu"
   },
   "metadata": {
-    "description": "Google Slides deck generation: template-driven, from-scratch, Scalar product and proposal workflows, plus draw.io diagrams, an optional visual-QA skill, PPTX export, and line-item spreadsheets (Excel / Google Spreadsheet) for estimates and BOMs, on a shared Python engine; CLI messages default to English (GSLIDES_LANG=ja for Japanese)",
-    "version": "1.4.0"
+    "description": "Google Slides deck generation: template-driven, from-scratch, Scalar product and proposal workflows, plus template creation (template-forge), draw.io diagrams, an optional visual-QA skill, PPTX export, and line-item spreadsheets (Excel / Google Spreadsheet) for estimates and BOMs, on a shared Python engine; CLI messages default to English (GSLIDES_LANG=ja for Japanese)",
+    "version": "1.5.0"
   },
   "plugins": [
     {
       "name": "slide-forge",
       "strict": false,
-      "description": "Generate Google Slides decks with Python + the Slides API. Eight skills on one shared engine: google-slides-template (generate from a registered master template with interactive intake and spec validation), google-slides (from-scratch decks via a blank template spec path or a code-first deckkit path with offline layout validation), scalar-product-slides (Scalar Inc. company/product deck workflow), scalar-proposal-slides (customer-challenge-driven Scalar solution proposals with challenge-to-product mapping, 3-environment architecture diagrams, and a BOM with quantities and monthly costs), drawio-diagrams (dense cloud architecture / data-flow diagrams authored as draw.io files and exported to PNG headlessly), slide-qa (thumbnail-based visual QA of a generated deck — optional at generation time, default on, with cleanup of the local QA files when done), pptx-export (export a generated deck to PowerPoint .pptx as a delivery format — chosen at intake or run standalone on any deck URL, with automatic fallback past the 10MB export limit and archival in the deck's Drive folder), and spreadsheets (line-item Excel / Google Spreadsheet deliverables — estimates, BOMs, cost breakdowns — from one JSON spec with typed columns, real formulas for amounts and subtotal/tax/total, offline validation, and in-place updates that preserve the Spreadsheet URL; the companion to a proposal deck's cost slide). Includes charts, business-framework figures, pictogram and cloud-vendor icon libraries, AI image generation, and parallel per-page spec authoring for large decks. The /forge command runs the whole pipeline (skill routing → intake → outline approval → validation → generation → optional visual QA → cleanup → report) as one continuous flow. Script CLI messages are English by default; set GSLIDES_LANG=ja for Japanese (generated deck/spreadsheet content is unaffected).",
-      "version": "1.4.0",
+      "description": "Generate Google Slides decks with Python + the Slides API. Nine skills on one shared engine: google-slides-template (generate from a registered master template with interactive intake and spec validation), google-slides (from-scratch decks via a blank template spec path or a code-first deckkit path with offline layout validation), scalar-product-slides (Scalar Inc. company/product deck workflow), scalar-proposal-slides (customer-challenge-driven Scalar solution proposals with challenge-to-product mapping, 3-environment architecture diagrams, and a BOM with quantities and monthly costs), drawio-diagrams (dense cloud architecture / data-flow diagrams authored as draw.io files and exported to PNG headlessly), slide-qa (thumbnail-based visual QA of a generated deck — optional at generation time, default on, with cleanup of the local QA files when done), pptx-export (export a generated deck to PowerPoint .pptx as a delivery format — chosen at intake or run standalone on any deck URL, with automatic fallback past the 10MB export limit and archival in the deck's Drive folder), and spreadsheets (line-item Excel / Google Spreadsheet deliverables — estimates, BOMs, cost breakdowns — from one JSON spec with typed columns, real formulas for amounts and subtotal/tax/total, offline validation, and in-place updates that preserve the Spreadsheet URL; the companion to a proposal deck's cost slide), and template-forge (create and register a brand-new template/master from a design spec — brand colors, fonts, logo, footer — by restyling a base master's layouts via the API, with deterministic role assignment and bundled design presets). Includes charts, business-framework figures, pictogram and cloud-vendor icon libraries, AI image generation, and parallel per-page spec authoring for large decks. The /forge command runs the whole pipeline (skill routing → intake → outline approval → validation → generation → optional visual QA → cleanup → report) as one continuous flow. Script CLI messages are English by default; set GSLIDES_LANG=ja for Japanese (generated deck/spreadsheet content is unaffected).",
+      "version": "1.5.0",
       "author": {
         "name": "Wataru Fukatsu",
         "url": "https://github.com/wfukatsu"
@@ -41,6 +41,7 @@
         "excel",
         "google-sheets",
         "estimate",
+        "template-creation",
         "python"
       ],
       "source": "./",
@@ -52,7 +53,8 @@
         "./skills/drawio-diagrams",
         "./skills/slide-qa",
         "./skills/pptx-export",
-        "./skills/spreadsheets"
+        "./skills/spreadsheets",
+        "./skills/template-forge"
       ],
       "license": "MIT",
       "commands": [

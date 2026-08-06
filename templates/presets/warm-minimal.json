@@ -1,0 +1,20 @@
+{
+  "__preset_note": "template-forge プリセット。name / displayName / brand.logo / brand.footer.text はインテイクで補完する",
+  "base": "blank",
+  "brand": {
+    "colors": {
+      "primary": "#C2410C",
+      "primaryDark": "#7C2D12",
+      "accent": "#C2410C",
+      "background": "#FAF7F2",
+      "backgroundAlt": "#F3EDE3",
+      "textTitle": "#33302B",
+      "textBody": "#44403C",
+      "textMuted": "#78716C",
+      "textOnDark": "#FAF7F2"
+    },
+    "fonts": { "heading": "Zen Maru Gothic", "body": "Noto Sans JP" },
+    "footer": { "fontSize": 7 }
+  },
+  "style": { "coverStyle": "minimal", "sectionStyle": "rule", "pageNumbers": true }
+}

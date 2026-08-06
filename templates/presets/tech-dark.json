@@ -1,0 +1,20 @@
+{
+  "__preset_note": "template-forge プリセット。name / displayName / brand.logo / brand.footer.text はインテイクで補完する",
+  "base": "blank",
+  "brand": {
+    "colors": {
+      "primary": "#0F172A",
+      "primaryDark": "#020617",
+      "accent": "#22D3EE",
+      "background": "#FFFFFF",
+      "backgroundAlt": "#F1F5F9",
+      "textTitle": "#0F172A",
+      "textBody": "#1E293B",
+      "textMuted": "#64748B",
+      "textOnDark": "#F8FAFC"
+    },
+    "fonts": { "heading": "Montserrat", "body": "Noto Sans JP" },
+    "footer": { "fontSize": 7 }
+  },
+  "style": { "coverStyle": "band-left", "sectionStyle": "dark", "pageNumbers": true }
+}
