@@ -375,13 +375,13 @@ audit warning exit with an error (recommended as a CI-style pre-generation
 gate). See `references/validation.md` for how this gate relates to thumbnail
 QA.
 
-### If the deck exceeds 12 slides, do not write the spec alone
+### If the deck exceeds 12 slides, split the spec into page fragments
 
-**Once the outline and action titles are fixed, fan the pages out to
-sub-agents.** The procedure that keeps the spec JSON out of the main agent's
-context is **`references/parallel-generation.md`** (2-3 slides per agent,
-self-verification, model choice by page difficulty, assembly via
-`assemble_spec.py`).
+Once the outline and action titles are fixed, follow
+**`references/parallel-generation.md`**. Use sub-agents when the host and
+session permit them; otherwise use its Codex sequential fallback. Both paths
+write 2-3-slide fragments, self-validate them, and assemble them with
+`assemble_spec.py`.
 
 ```bash
 mkdir -p out/<deck>/pages          # each agent writes exactly one 0120-*.json

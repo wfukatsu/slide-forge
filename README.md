@@ -77,6 +77,22 @@ Alternatively, clone the repo and symlink `skills/*` into `~/.claude/skills/`
 (the layout used during development); pick one of the two, not both, or the
 skills will be listed twice.
 
+## Use with Codex
+
+Codex uses the same skills and Python engine. In a repository clone, the
+`.agents/skills/` entries expose all ten generation/support skills plus the
+end-to-end `forge` skill. Start Codex from the repository root and invoke
+`forge` by name; the Claude-specific `/slide-forge:forge` command and plugin
+marketplace manifest are not required.
+
+Project-wide Codex instructions live in `AGENTS.md`. Host-tool mappings,
+sequential fallback for environments where agent delegation is unavailable,
+and setup details are documented in
+[`references/codex-compatibility.md`](references/codex-compatibility.md).
+
+The `.agents/skills/*` symlinks point back to `skills/*`, so Codex and Claude
+Code read the same skill definitions rather than maintaining two copies.
+
 ## Requirements
 
 - **Python 3.10+** (macOS / Linux)

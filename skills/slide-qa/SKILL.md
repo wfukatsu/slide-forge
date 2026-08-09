@@ -59,10 +59,10 @@ description: >-
 ```
 
 - Judge with `--size LARGE`. SMALL is only for the squint test.
-- **If the deck exceeds 15 slides, split the QA.** Thumbnails are the heaviest
-  load on the main agent's context: divide with `--pages 9-16`, give each
-  sub-agent 6–8 slides, and have them **return only findings as text**
-  (prompt template in `references/parallel-generation.md` §6).
+- **If the deck exceeds 15 slides, split the QA into 6–8-slide ranges.** When
+  the host and session permit sub-agents, delegate those ranges and have them
+  **return only findings as text**. Otherwise inspect the same ranges
+  sequentially using the Codex fallback in `references/parallel-generation.md`.
 - When several decks are QA'd in one session, keep them apart with
   `--out out/<deck>/qa` — `cleanup_qa.py` sweeps both conventions.
 
