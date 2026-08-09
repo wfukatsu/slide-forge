@@ -547,7 +547,7 @@ class ChartMixin:
                 # データで決まるので避けようがなく、下地を敷いて隠す
                 tw = self._em(txt) * 9 / 72.0 + 0.10
                 self.shape(xs[-1] - tw / 2, ly, tw, 0.2, kind="RECTANGLE",
-                           fill=self.P.white, stroke=None)
+                           fill=self.P.page, stroke=None)
                 self.label(xs[-1] - 0.5, ly, 1.0, 0.2, txt, size=9, bold=True,
                            align="CENTER", valign="BOTTOM", color=self.P.text)
         return y + h

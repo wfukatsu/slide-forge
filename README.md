@@ -1,6 +1,6 @@
 # slide-forge
 
-Google Slides deck generation for Claude Code: nine skills on one shared
+Google Slides deck generation for Claude Code: ten skills on one shared
 Python engine, from corporate-template decks to from-scratch architecture
 diagrams — plus creating the templates themselves from a design spec — with
 validation before generation, optional thumbnail-based visual QA after it
@@ -23,6 +23,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
 | `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
 | `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
+| `image-slots` | Fill the empty picture frames of an **existing** deck with AI-generated images (`scripts/fill_image_slots.py`): finds the frames the same three ways template registration does (PICTURE placeholders, empty image elements left in a layout, frames the deck reuses), draws each picture for that frame's shape, and places it filling the frame. Standalone on any deck URL — including decks slide-forge did not generate — and needs no registered template. For decks still driven by a spec, put `aiImage` in the spec instead and regenerate. |
 | `slide-qa` | Thumbnail-based visual QA of a generated deck: fetch every page as PNG, inspect against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files (`scripts/cleanup_qa.py`). Invoked by the generation skills when the user opts in at intake (the default), or standalone on any deck URL. |
 | `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (出力形式) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
 | `spreadsheets` | Line-item spreadsheets — estimates, BOMs, cost breakdowns — as Excel and/or Google Spreadsheet from one JSON spec (`scripts/build_sheet.py`): typed columns, real formulas for amounts and subtotal/tax/total, `--dry-run` validation, and in-place updates that keep the Spreadsheet URL stable. Companion to a proposal deck's cost slide (same Drive folder), or standalone. Worked example: `examples/estimate-sample.json`. |
@@ -61,7 +62,7 @@ cache/ out/   transient render cache and QA output (gitignored)
 ## Install as a Claude Code plugin
 
 The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all nine skills):
+one plugin bundling all ten skills):
 
 ```
 /plugin marketplace add wfukatsu/slide-forge

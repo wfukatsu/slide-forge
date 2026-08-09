@@ -51,7 +51,7 @@ from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone.
 | List the fillable frames (no API image calls, no changes) | `.venv/bin/python scripts/fill_image_slots.py <URL> --dry-run` |
 | Fill every empty frame | `.venv/bin/python scripts/fill_image_slots.py <URL>` |
 | One slide, explicit subject | `… <URL> --slide 3 --prompt "夜間のデータセンター"` |
-| Pick a frame when a slide has several | `… --slot 1` (0-based, largest frame first) |
+| Pick a frame when a slide has several | `… --slot 1` (0-based, in the order the survey lists them) |
 | Change the illustration style | `--style isometric` (`flat_vector` / `line_art` / `blueprint` / `paper` / `photo`) |
 | Snapshot before writing | `.venv/bin/python scripts/snapshot_version.py <URL>` |
 | What a slot is, and how images are composed for it | `references/images.md` |
@@ -67,7 +67,15 @@ Same three sources as template registration (`references/template-schema.md`):
 3. otherwise the **layout's** `imageSlots`, largest frame first
 
 Frames on the slide itself win over the layout's, because a slide that carries
-its own placeholder is more specific than the layout it was made from.
+its own placeholder is more specific than the layout it was made from. The
+survey lists layout frames largest-first; frames found on the slide come in the
+order the slide stores them, so read the `--dry-run` output rather than assuming
+an order when picking `--slot`.
+
+**A picture is layered over the frame, not poured into it.** An empty PICTURE
+placeholder is not consumed — the image is created at the frame's coordinates
+and the placeholder stays underneath. It renders as nothing, but it is still
+there in the editor. The spec path (`build_deck.py`) behaves the same way.
 
 Pass `--template templates/<id>.json` when the deck was generated from a
 registered template — its verified roles and palette are then used. Without it

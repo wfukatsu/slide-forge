@@ -213,7 +213,7 @@ class PatternMixin:
                     # 枠になって折り返す
                     need = self._em(caption) * cs / 72.0 + 0.24
                     room = (track_x + track_w) - (mx + ms / 2 + 0.06)
-                    bg = self.P.surfaceAlt if (zebra and i % 2) else self.P.white
+                    bg = self.P.surfaceAlt if (zebra and i % 2) else self.P.page
                     if room >= need:
                         gx, align = mx + ms / 2 + 0.06, "START"
                     else:
