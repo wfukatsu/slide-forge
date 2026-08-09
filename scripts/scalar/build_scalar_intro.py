@@ -133,7 +133,9 @@ def draw_db_arch(d: Canvas) -> None:
                                 ("server", "バッチ"), ("bot", "AI エージェント")],
                size=0.5, label_size=8.5)
 
-    band_y = 2.45
+    # 帯とゾーンの間には「見出し」と「下向きの矢印」の両方が入る。帯を少し上げて
+    # 見出しの分の高さを作り、矢印は見出しより下から引く（重ねると字を貫く）
+    band_y = 2.40
     d.shape(0.9, band_y, 8.2, 0.72, kind="ROUND_RECTANGLE",
             fill=lighten(d.P.primary, 0.88), stroke=d.P.primary)
     d.image(1.15, band_y + 0.16, 1.5, 0.42, LOGO_DB, fit="contain", alt="ScalarDB")
@@ -142,7 +144,8 @@ def draw_db_arch(d: Canvas) -> None:
             size=10, align="START", valign="MIDDLE", color=d.P.text)
 
     zone_y = 3.55
-    d.label(0.5, zone_y - 0.28, 9.0, 0.24, "バックエンドのデータベース", size=9.5,
+    caption_y = band_y + 0.74          # 帯のすぐ下
+    d.label(0.5, caption_y, 9.0, 0.19, "バックエンドのデータベース", size=9.0,
             align="START", color=d.P.muted)
     for i, (vendor, item) in enumerate([
         ("aws", ("aws:dynamodb", "DynamoDB")),
@@ -165,7 +168,7 @@ def draw_db_arch(d: Canvas) -> None:
                 _anchored=True)
     for i in range(4):
         zx = 0.9 + i * 2.15 + 0.975
-        d.arrow(zx, band_y + 0.78, zx, zone_y - 0.04, color=d.P.muted, weight=1.0,
+        d.arrow(zx, caption_y + 0.22, zx, zone_y - 0.04, color=d.P.muted, weight=1.0,
                 _anchored=True)
 
 

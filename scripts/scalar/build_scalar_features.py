@@ -312,8 +312,10 @@ def fig_dl_bft(d, accent):
     d.cloud_zone(3.25, FY + 0.68, 2.25, 1.3, title="管理ドメイン B",
                  title_size=8, color=accent)
     _pill(d, 3.45, FY + 1.1, 1.85, 0.4, "Auditor", accent, size=9, bold=True)
-    _va(d, 2.6, FY + 0.42, 1.9, FY + 0.66)
-    _va(d, 3.2, FY + 0.42, 3.9, FY + 0.66)
+    # 絵の左右の端から出す。絵の真下は「クライアント」のキャプションなので、
+    # そこから引くと線が字を横切る
+    _va(d, 2.72, FY + 0.15, 1.9, FY + 0.66)
+    _va(d, 3.06, FY + 0.15, 3.9, FY + 0.66)
     d.line(2.63, FY + 1.3, 3.42, FY + 1.3, color=d.P.danger, weight=1.5,
            start_arrow="FILL_ARROW", end_arrow="FILL_ARROW", _anchored=True)
     _caption(d, "両者の応答をクライアントが突き合わせ、不一致＝改ざんを検知",
