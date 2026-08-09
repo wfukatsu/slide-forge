@@ -56,7 +56,8 @@ def _export_via_link(drive, creds, pres_id: str, path: str) -> None:
     """10MB 超のデッキ向けフォールバック。exportLinks の URL から直接取得する。"""
     from google.auth.transport.requests import AuthorizedSession
 
-    meta = drive.files().get(fileId=pres_id, fields="exportLinks").execute()
+    meta = drive.files().get(fileId=pres_id, fields="exportLinks",
+                             supportsAllDrives=True).execute()
     link = meta.get("exportLinks", {}).get(PPTX_MIME)
     if not link:
         raise SystemExit(t("exportLinks has no PPTX URL (possibly missing permissions)"))
@@ -98,7 +99,8 @@ def main() -> int:
     creds = _auth.get_credentials()
     _, drive = _auth.services(creds)
 
-    meta = drive.files().get(fileId=pres_id, fields="name").execute()
+    meta = drive.files().get(fileId=pres_id, fields="name",
+                             supportsAllDrives=True).execute()
     path = args.out or os.path.join("out", "pptx", f"{safe_name(meta['name'])}.pptx")
 
     export_pptx(drive, creds, pres_id, path)

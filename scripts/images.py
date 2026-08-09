@@ -523,7 +523,7 @@ class AssetStore:
         media = MediaFileUpload(path, mimetype=mime, resumable=False)
         meta = {"name": f"gslides-tmp-{os.path.basename(path)}"}
         fid = self.drive.files().create(
-            body=meta, media_body=media, fields="id"
+            body=meta, media_body=media, fields="id", supportsAllDrives=True,
         ).execute()["id"]
         self.temp_ids.append(fid)
         return fid
@@ -551,7 +551,8 @@ class AssetStore:
         """一時アップロードを削除し、既存ファイルに付けた公開共有を外す。"""
         for fid in self.temp_ids:
             try:
-                self.drive.files().delete(fileId=fid).execute()
+                self.drive.files().delete(fileId=fid,
+                                          supportsAllDrives=True).execute()
             except Exception as e:
                 print(t("  warn: could not delete the temporary image {file_id}: "
                         "{error}", file_id=fid, error=e), file=sys.stderr)
