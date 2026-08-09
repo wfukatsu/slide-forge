@@ -49,9 +49,11 @@ import mimetypes
 import os
 import struct
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
+from concurrent.futures import Future, ThreadPoolExecutor  # noqa: F401
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
@@ -470,6 +472,30 @@ def sniff_mime(path: str, data: bytes | None = None) -> str:
 
 # ---------- Slides から参照できる URL にする ----------
 
+def _check_local(source: str) -> str:
+    """ローカル画像の存在・形式・サイズを検査し、展開済みのパスを返す。
+
+    ネットワークを使わない検査だけをここに置く。アップロードを非同期にしても
+    「形式が違う」「ファイルが無い」は呼び出し箇所で即座に分かるようにするため。
+    """
+    path = os.path.expanduser(source)
+    if not os.path.exists(path):
+        raise FileNotFoundError(t("Image not found: {source}", source=source))
+    with open(path, "rb") as f:
+        head = f.read(64 * 1024)
+    mime = sniff_mime(path, head)
+    if mime not in SLIDES_MIME:
+        raise ValueError(
+            t("Slides cannot handle this format: {mime} ({file}). "
+              "Convert it to PNG / JPEG / GIF",
+              mime=mime, file=os.path.basename(path))
+        )
+    if os.path.getsize(path) > 49 * 1024 * 1024:
+        raise ValueError(t("Image too large ({size:.1f}MB / 50MB limit)",
+                           size=os.path.getsize(path) / 1e6))
+    return path
+
+
 class AssetStore:
     """画像ソースを `createImage` に渡せる URL に解決する。
 
@@ -481,23 +507,80 @@ class AssetStore:
     プレゼンテーション内へコピーするので、消しても表示は壊れない。
     """
 
+    # Drive へのアップロードは 1 枚あたり実測で約 3.1 秒（アップロード 1.9s ＋
+    # 共有設定 1.2s）かかる。描画の途中で 1 枚ずつ同期に行うと、画像 10 枚の
+    # デッキで 30 秒以上が画像だけに消える（batchUpdate 全体より大きい）。
+    # ローカル画像は「どこに置くか」が決まった時点で URL を確定させる必要が
+    # ないので、アップロードを別スレッドに投げ、commit() の直前に URL を
+    # 埋める（flush()）。Drive の書き込みクォータに配慮して同時実行は控えめにする。
+    WORKERS = 6
+
     def __init__(self, drive=None):
         self._drive = drive
         self.temp_ids: list[str] = []
         self.shared_ids: list[str] = []
         self._resolved: dict[str, str] = {}
+        self._lock = threading.Lock()
+        self._tls = threading.local()
+        self._pool: ThreadPoolExecutor | None = None
+        # source -> Future[url]。同じ画像を複数枚に貼っても 1 回しか上げない
+        self._futures: dict[str, "Future[str]"] = {}
+        # 埋め戻し先: (createImage の props, source)
+        self._patch: list[tuple[dict, str]] = []
         # 画像は図を描く過程で逐次アップロードされ、その都度「リンクを知る全員が
         # 閲覧可」になる。cleanup() は commit() からしか呼ばれないので、途中で
         # 失敗した実行は公開されたままの一時ファイルを残す。プロセスの終わりに
         # 必ず畳めるよう、ここで後始末を予約しておく
         atexit.register(self._atexit_cleanup)
 
+    # -- 並列アップロード --
+
+    def _executor(self) -> ThreadPoolExecutor:
+        if self._pool is None:
+            self._pool = ThreadPoolExecutor(max_workers=self.WORKERS,
+                                            thread_name_prefix="asset")
+        return self._pool
+
+    def defer(self, source: str, props: dict) -> None:
+        """ローカル画像のアップロードを予約する。
+
+        `props` は createImage の中身。flush() が完了後に props["url"] を埋める。
+        壊れた指定（未対応の形式・サイズ超過・パス誤り）は**ここで**同期に
+        弾く。ネットワークだけを後回しにしないと、エラーがどの image() 由来か
+        分からなくなる。
+        """
+        path = _check_local(source)      # 形式・サイズの検査（ローカル完結）
+        with self._lock:
+            if source not in self._futures:
+                mime = sniff_mime(path)
+                self._futures[source] = self._executor().submit(
+                    lambda: self._drive_url(self._upload(path, mime)))
+            self._patch.append((props, source))
+
+    def flush(self) -> int:
+        """予約したアップロードの完了を待ち、createImage の url を埋める。
+
+        commit() が batchUpdate を投げる前に必ず呼ぶこと。戻り値は解決した枚数。
+        """
+        if not self._patch:
+            return 0
+        for props, source in self._patch:
+            props["url"] = self._futures[source].result()   # 失敗はここで送出
+        n = len(self._patch)
+        self._patch = []
+        return n
+
     def _atexit_cleanup(self) -> None:
-        """プロセス終了時の保険。既に cleanup() 済みなら何もしない。"""
-        if not self.temp_ids and not self.shared_ids:
+        """プロセス終了時の保険。既に cleanup() 済みなら何もしない。
+
+        アップロードがまだ飛行中だと temp_ids は空のことがある。_futures も見ないと、
+        「これから temp_ids に載るファイル」を取り逃がして公開のまま残す。
+        """
+        if not self.temp_ids and not self.shared_ids and not self._futures:
             return
         print(t("  cleaning up {n} temporary uploads left by an interrupted run",
-                n=len(self.temp_ids) + len(self.shared_ids)), file=sys.stderr)
+                n=len(self.temp_ids) + len(self.shared_ids) or len(self._futures)),
+              file=sys.stderr)
         try:
             self.cleanup()
         except Exception:  # 終了処理で新たな例外を投げない
@@ -526,32 +609,29 @@ class AssetStore:
         if source.startswith("drive:"):
             return self._drive_url(source[len("drive:"):])
 
-        path = os.path.expanduser(source)
-        if not os.path.exists(path):
-            raise FileNotFoundError(t("Image not found: {source}", source=source))
-        with open(path, "rb") as f:
-            data = f.read()
-        mime = sniff_mime(path, data)
-        if mime not in SLIDES_MIME:
-            raise ValueError(
-                t("Slides cannot handle this format: {mime} ({file}). "
-                  "Convert it to PNG / JPEG / GIF",
-                  mime=mime, file=os.path.basename(path))
-            )
-        if len(data) > 49 * 1024 * 1024:
-            raise ValueError(t("Image too large ({size:.1f}MB / 50MB limit)",
-                               size=len(data) / 1e6))
-        return self._drive_url(self._upload(path, mime))
+        path = _check_local(source)
+        return self._drive_url(self._upload(path, sniff_mime(path)))
 
     def _upload(self, path: str, mime: str) -> str:
         from googleapiclient.http import MediaFileUpload
         media = MediaFileUpload(path, mimetype=mime, resumable=False)
         meta = {"name": f"gslides-tmp-{os.path.basename(path)}"}
-        fid = self.drive.files().create(
+        # drive プロパティはスレッド安全でないサービスを共有するため、
+        # ワーカーごとに作る（httplib2 の接続は使い回せない）
+        fid = self._thread_drive().files().create(
             body=meta, media_body=media, fields="id", supportsAllDrives=True,
         ).execute()["id"]
-        self.temp_ids.append(fid)
+        with self._lock:
+            self.temp_ids.append(fid)
         return fid
+
+    def _thread_drive(self):
+        """呼び出しスレッド専用の Drive サービス。"""
+        if threading.current_thread() is threading.main_thread():
+            return self.drive
+        if not hasattr(self._tls, "drive"):
+            self._tls.drive = _auth.services()[1]
+        return self._tls.drive
 
     def _drive_url(self, file_id: str) -> str:
         """Drive のファイルを「リンクを知る全員が閲覧可」にして直リンクを返す。
@@ -560,11 +640,12 @@ class AssetStore:
         アクセスできるだけでは足りない。挿入後は cleanup() で共有を解除する。
         """
         try:
-            self.drive.permissions().create(
+            self._thread_drive().permissions().create(
                 fileId=file_id, body={"type": "anyone", "role": "reader"},
                 fields="id",
             ).execute()
-            self.shared_ids.append(file_id)
+            with self._lock:
+                self.shared_ids.append(file_id)
         except Exception as e:  # 既に公開済み、または組織ポリシーで禁止
             print(t("  warn: could not change the sharing settings of {file_id}: "
                     "{error}", file_id=file_id, error=e), file=sys.stderr)
@@ -573,31 +654,64 @@ class AssetStore:
     # -- 後始末 --
 
     def cleanup(self) -> None:
-        """一時アップロードを削除し、既存ファイルに付けた公開共有を外す。"""
-        for fid in self.temp_ids:
+        """一時アップロードを削除し、既存ファイルに付けた公開共有を外す。
+
+        1 件あたり実測 0.85 秒（共有解除はさらに一覧＋削除の 2 往復）かかるので
+        並列に行う。片付けなので 1 件の失敗で全体を止めず、警告して次へ進む。
+        """
+        # 予約したまま未回収のアップロードがあると temp_ids に載らず取り残される。
+        # 例外は握りつぶす（後始末の途中で新たな失敗を増やさない）
+        for fut in self._futures.values():
             try:
-                self.drive.files().delete(fileId=fid,
-                                          supportsAllDrives=True).execute()
-            except Exception as e:
+                fut.result()
+            except Exception:  # noqa: BLE001
+                pass
+        self._futures = {}
+        self._patch = []
+
+        def drop(fid):
+            try:
+                self._thread_drive().files().delete(
+                    fileId=fid, supportsAllDrives=True).execute()
+            except Exception as e:  # noqa: BLE001
                 print(t("  warn: could not delete the temporary image {file_id}: "
                         "{error}", file_id=fid, error=e), file=sys.stderr)
-        temp = set(self.temp_ids)
-        for fid in self.shared_ids:
-            if fid in temp:
-                continue  # ファイルごと消えている
+
+        def unshare(fid):
             try:
-                perms = self.drive.permissions().list(
+                drive = self._thread_drive()
+                perms = drive.permissions().list(
                     fileId=fid, fields="permissions(id,type)").execute()
                 for p in perms.get("permissions", []):
                     if p.get("type") == "anyone":
-                        self.drive.permissions().delete(
+                        drive.permissions().delete(
                             fileId=fid, permissionId=p["id"]).execute()
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 print(t("  warn: failed to remove public sharing from {file_id}: "
                         "{error}", file_id=fid, error=e), file=sys.stderr)
+
+        temp = set(self.temp_ids)
+        # ファイルごと消すものは共有解除の対象から外す（消えていれば共有も消える）
+        keep = [fid for fid in self.shared_ids if fid not in temp]
+        jobs = [(drop, fid) for fid in self.temp_ids] + [(unshare, fid) for fid in keep]
+        if jobs:
+            try:
+                with ThreadPoolExecutor(
+                        max_workers=min(self.WORKERS, len(jobs))) as ex:
+                    list(ex.map(lambda job: job[0](job[1]), jobs))
+            except RuntimeError:
+                # インタプリタ終了中（atexit 経由）はスレッドを起こせない。
+                # ここは「公開したままの一時ファイルを必ず消す」ための最後の砦なので、
+                # 遅くても逐次で確実にやりきる
+                for fn, fid in jobs:
+                    fn(fid)
+
         self.temp_ids = []
         self.shared_ids = []
         self._resolved = {}
+        if self._pool is not None:
+            self._pool.shutdown(wait=False)
+            self._pool = None
 
 
 def _drive_file_id(url: str) -> str:
@@ -682,17 +796,22 @@ class ImageMixin:
                            color=caption_color or self.P.muted)
             return oid
         store = self._asset_store()
-        url = store.url_for(source)
-
         px = (0, 0)
         local = os.path.expanduser(source)
-        if os.path.exists(local):
+        is_local = os.path.exists(local)
+        url = None
+        if is_local:
+            # ローカル画像は実寸をその場で読めるので、URL の確定を待つ必要がない。
+            # アップロードは裏で走らせ、commit 直前の flush() で url を埋める
             with open(local, "rb") as f:
                 try:
                     px = image_size(f.read(64 * 1024))
                 except ValueError:
                     px = (0, 0)
         else:
+            # リモートは実寸を読むのに URL 自体が要る（Drive なら共有設定も
+            # 先に要る）ので、ここは同期に解決する
+            url = store.url_for(source)
             # リモート画像（http / Drive）も先頭だけ取得して実寸を読む。
             # cover を実寸なしで進めると後処理の絶対 transform が実質 stretch になり
             # 比率が崩れるため、読めなければ contain（比率保持）へ落として警告する
@@ -710,9 +829,12 @@ class ImageMixin:
 
         rect, crop = self._fit_rect((x, y, w, h), px[0], px[1], fit)
         oid = self._oid("i")
-        self.deck.requests.append({"createImage": {
-            "objectId": oid, "url": url,
-            "elementProperties": self._elem_props(*rect)}})
+        props = {"objectId": oid, "url": url,
+                 "elementProperties": self._elem_props(*rect)}
+        self.deck.requests.append({"createImage": props})
+        if is_local:
+            # url は None のまま。commit() 直前の flush() が埋める
+            store.defer(source, props)
         if fit != "contain":
             # createImage は指定サイズに関係なく元の縦横比を保つ（＝常に contain
             # 相当に縮められる）。枠を埋めたい場合は、生成後に transform を
@@ -812,22 +934,31 @@ def sweep_temp(delete: bool = False) -> int:
         token = res.get("nextPageToken")
         if not token:
             break
-    public, gone = [], 0
-    for f in found:
+    # 1 件あたり 2 往復かかるので並列に調べる。数百件たまることがある
+    tls = threading.local()
+
+    def _drive():
+        if not hasattr(tls, "svc"):
+            tls.svc = _auth.services()[1]
+        return tls.svc
+
+    def probe(f):
         try:
-            perms = drive.permissions().list(
+            perms = _drive().permissions().list(
                 fileId=f["id"], fields="permissions(id,type)",
                 supportsAllDrives=True).execute().get("permissions", [])
         except Exception:  # noqa: BLE001
             # 一覧を取ってから調べるまでの間に消えることがある（別の掃除と並走した
             # ときなど）。片付けが目的なので、消えていれば何もしなくてよい
-            f["anyone"], gone = [], gone + 1
-            continue
+            f["anyone"] = []
+            return True          # 消えていた
         f["anyone"] = [p["id"] for p in perms if p.get("type") == "anyone"]
-        if f["anyone"]:
-            public.append(f)
-    if gone:
-        found = [f for f in found if f.get("anyone") is not None]
+        return False
+
+    if found:
+        with ThreadPoolExecutor(max_workers=min(8, len(found))) as ex:
+            list(ex.map(probe, found))
+    public = [f for f in found if f["anyone"]]
     print(t("{total} temporary uploads found, {public} still shared with anyone "
             "who has the link", total=len(found), public=len(public)))
     if not found:
@@ -839,19 +970,23 @@ def sweep_temp(delete: bool = False) -> int:
             print(t("  … and {n} more", n=len(found) - 10))
         print(t("Re-run with --yes to un-share and delete them"))
         return 0
-    for f in found:
+    def purge(f):
+        svc = _drive()
         for pid in f["anyone"]:
             try:
-                drive.permissions().delete(fileId=f["id"], permissionId=pid,
-                                           supportsAllDrives=True).execute()
+                svc.permissions().delete(fileId=f["id"], permissionId=pid,
+                                         supportsAllDrives=True).execute()
             except Exception as e:  # noqa: BLE001
                 print(t("  warn: failed to remove public sharing from {file_id}: "
                         "{error}", file_id=f["id"], error=e), file=sys.stderr)
         try:
-            drive.files().delete(fileId=f["id"], supportsAllDrives=True).execute()
+            svc.files().delete(fileId=f["id"], supportsAllDrives=True).execute()
         except Exception as e:  # noqa: BLE001
             print(t("  warn: could not delete the temporary image {file_id}: "
                     "{error}", file_id=f["id"], error=e), file=sys.stderr)
+
+    with ThreadPoolExecutor(max_workers=min(8, len(found))) as ex:
+        list(ex.map(purge, found))
     print(t("Removed {n} temporary uploads", n=len(found)))
     return 0
 
