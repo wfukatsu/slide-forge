@@ -103,7 +103,8 @@ def main() -> int:
     pres_id = _auth.presentation_id(args.source)
     _, drive = _auth.services()
 
-    meta = drive.files().get(fileId=pres_id, fields="name").execute()
+    meta = drive.files().get(fileId=pres_id, fields="name",
+                             supportsAllDrives=True).execute()
     revs = list_revisions(drive, pres_id)
     if not revs:
         raise SystemExit(t("Could not list revisions (possibly missing permissions)"))

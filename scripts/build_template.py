@@ -271,10 +271,12 @@ def create_base(slides, drive, spec: dict, base: str, title: str,
             body={"title": title}).execute(), "presentations.create")
         pid = pres["presentationId"]
         if fid:
-            meta = drive.files().get(fileId=pid, fields="parents").execute()
+            meta = drive.files().get(fileId=pid, fields="parents",
+                                     supportsAllDrives=True).execute()
             _retry(lambda: drive.files().update(
                 fileId=pid, addParents=fid,
                 removeParents=",".join(meta.get("parents", [])), fields="id",
+                supportsAllDrives=True,
             ).execute(), "files.update")
         return pid, None
 
@@ -291,7 +293,8 @@ def create_base(slides, drive, spec: dict, base: str, title: str,
     if fid:
         body["parents"] = [fid]
     copied = _retry(lambda: drive.files().copy(
-        fileId=src, body=body, fields="id").execute(), "files.copy")
+        fileId=src, body=body, fields="id",
+        supportsAllDrives=True).execute(), "files.copy")
     pid = copied["id"]
 
     # 同梱スライドは全て削除する(実在リストを見る — build_deck と同じ流儀)
@@ -693,7 +696,8 @@ def main() -> int:
 
     if old_pid and old_pid != pid:
         try:
-            drive.files().delete(fileId=old_pid).execute()
+            drive.files().delete(fileId=old_pid,
+                                 supportsAllDrives=True).execute()
             print(t("Deleted the superseded master {pid} from Drive", pid=old_pid))
         except Exception as e:
             print(t("  warn: could not delete the old master {pid}: {err}",

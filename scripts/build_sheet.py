@@ -254,10 +254,14 @@ def upload_gsheet(drive, xlsx_path: str, name: str, folder: str | None) -> str:
          "and trashed = false")
     if fid:
         q += f" and '{fid}' in parents"
-    hits = drive.files().list(q=q, fields="files(id)", pageSize=5).execute().get("files", [])
+    hits = drive.files().list(
+        q=q, fields="files(id)", pageSize=5,
+        supportsAllDrives=True, includeItemsFromAllDrives=True,
+    ).execute().get("files", [])
     if hits:
         f = drive.files().update(
-            fileId=hits[0]["id"], media_body=media, fields="id,webViewLink"
+            fileId=hits[0]["id"], media_body=media, fields="id,webViewLink",
+            supportsAllDrives=True,
         ).execute()
         print(t("  updated the Google Spreadsheet (existing file with the same name)"))
     else:
@@ -265,7 +269,8 @@ def upload_gsheet(drive, xlsx_path: str, name: str, folder: str | None) -> str:
         if fid:
             body["parents"] = [fid]
         f = drive.files().create(
-            body=body, media_body=media, fields="id,webViewLink"
+            body=body, media_body=media, fields="id,webViewLink",
+            supportsAllDrives=True,
         ).execute()
     return f["webViewLink"]
 

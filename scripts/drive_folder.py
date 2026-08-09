@@ -79,6 +79,7 @@ def cmd_create(drive, name: str, parent: str | None) -> int:
         q += f" and '{parent_id}' in parents"
     hits = drive.files().list(
         q=q, fields="files(id,name)", pageSize=5,
+        supportsAllDrives=True, includeItemsFromAllDrives=True,
     ).execute().get("files", [])
     if hits:
         fid = hits[0]["id"]
@@ -87,7 +88,8 @@ def cmd_create(drive, name: str, parent: str | None) -> int:
         body: dict = {"name": name, "mimeType": FOLDER_MIME}
         if parent_id:
             body["parents"] = [parent_id]
-        fid = drive.files().create(body=body, fields="id").execute()["id"]
+        fid = drive.files().create(body=body, fields="id",
+                                   supportsAllDrives=True).execute()["id"]
         print(t("Created folder: {name}", name=name))
     print(f"  ID:  {fid}")
     print(f"  URL: {folder_url(fid)}")
@@ -111,16 +113,18 @@ def cmd_upload(drive, folder: str, paths: list[str]) -> int:
             q=(f"name = '{_escape(name)}' and '{fid}' in parents "
                "and trashed = false"),
             fields="files(id)", pageSize=5,
+            supportsAllDrives=True, includeItemsFromAllDrives=True,
         ).execute().get("files", [])
         if hits:
             drive.files().update(
-                fileId=hits[0]["id"], media_body=media, fields="id"
+                fileId=hits[0]["id"], media_body=media, fields="id",
+                supportsAllDrives=True,
             ).execute()
             print(t("  updated: {name}", name=name))
         else:
             drive.files().create(
                 body={"name": name, "parents": [fid]},
-                media_body=media, fields="id",
+                media_body=media, fields="id", supportsAllDrives=True,
             ).execute()
             print(t("  added: {name}", name=name))
     print(t("Folder: {url}", url=folder_url(fid)))
@@ -131,10 +135,12 @@ def cmd_move(drive, folder: str, sources: list[str]) -> int:
     fid = _auth.folder_id(folder)
     for src in sources:
         sid = file_id(src)
-        meta = drive.files().get(fileId=sid, fields="name,parents").execute()
+        meta = drive.files().get(fileId=sid, fields="name,parents",
+                                 supportsAllDrives=True).execute()
         prev = ",".join(meta.get("parents", []))
         drive.files().update(
-            fileId=sid, addParents=fid, removeParents=prev, fields="id,parents"
+            fileId=sid, addParents=fid, removeParents=prev,
+            fields="id,parents", supportsAllDrives=True,
         ).execute()
         print(t("  moved: {name}", name=meta["name"]))
     print(t("Folder: {url}", url=folder_url(fid)))

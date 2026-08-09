@@ -330,7 +330,8 @@ class TemplateDeck:
         if fid:
             body["parents"] = [fid]
         copied = _retry(
-            lambda: drive.files().copy(fileId=src, body=body, fields="id").execute(),
+            lambda: drive.files().copy(fileId=src, body=body, fields="id",
+                                       supportsAllDrives=True).execute(),
             what=t("template copy"))
 
         deck = cls(slides, drive, copied["id"], template)
