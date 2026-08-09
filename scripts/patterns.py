@@ -204,10 +204,25 @@ class PatternMixin:
                 self.shape(track_x + start * cu - ms / 2, cyy - ms / 2, ms, ms,
                            kind="DIAMOND", fill=darken(c, 0.15), stroke=None)
                 if caption:
-                    self.label(track_x + start * cu + ms / 2 + 0.06, cyy - 0.13,
-                               max(0.8, track_w - start * cu - ms), 0.26, caption,
-                               size=size - 1, bold=True, align="START",
-                               valign="MIDDLE", color=self.P.text)
+                    # 右端のマイルストーンは、右に書くと枠からも最終列の線からも
+                    # はみ出す。入らなければ左へ回す。どちらに置いても列の線と
+                    # 重なりうるので、行の地の色で下地を敷いて線を隠す
+                    cs = size - 1
+                    mx = track_x + start * cu
+                    # 枠の左右インセット(0.10×2)を足さないと、字の実寸ちょうどの
+                    # 枠になって折り返す
+                    need = self._em(caption) * cs / 72.0 + 0.24
+                    room = (track_x + track_w) - (mx + ms / 2 + 0.06)
+                    bg = self.P.surfaceAlt if (zebra and i % 2) else self.P.white
+                    if room >= need:
+                        gx, align = mx + ms / 2 + 0.06, "START"
+                    else:
+                        gx, align = mx - ms / 2 - 0.06 - need, "END"
+                    self.shape(gx, cyy - 0.13, need, 0.26, kind="RECTANGLE",
+                               fill=bg, stroke=None)
+                    self.label(gx, cyy - 0.13, need, 0.26, caption, size=cs,
+                               bold=True, align=align, valign="MIDDLE",
+                               color=self.P.text)
                 continue
             bx, bw = track_x + start * cu, (end - start) * cu
             self.shape(bx, cyy - bar_h / 2, bw, bar_h, kind="ROUND_RECTANGLE",
