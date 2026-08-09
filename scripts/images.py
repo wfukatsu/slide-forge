@@ -42,6 +42,7 @@ Slides が受け付ける形式は PNG / JPEG / GIF のみ、50MB 未満、25 �
 from __future__ import annotations
 
 import argparse
+import atexit
 import hashlib
 import json
 import mimetypes
@@ -59,6 +60,14 @@ from colors import Palette  # noqa: E402
 
 register({
     "image {name}": "画像 {name}",
+    "{total} temporary uploads found, {public} still shared with anyone who has the link":
+        "一時アップロードが {total} 件、うち {public} 件がリンクを知る全員に公開されたままです",
+    "  … and {n} more": "  … ほか {n} 件",
+    "Re-run with --yes to un-share and delete them":
+        "--yes を付けて再実行すると、共有を外して削除します",
+    "Removed {n} temporary uploads": "一時アップロード {n} 件を削除しました",
+    "  cleaning up {n} temporary uploads left by an interrupted run":
+        "  中断した実行が残した一時アップロード {n} 件を片付けます",
     "  note: generating at {aspect} for a {target} frame; "
     "composed so the crop does not cut the subject":
         "  note: {target} の枠に対して {aspect} で生成します"
@@ -477,6 +486,22 @@ class AssetStore:
         self.temp_ids: list[str] = []
         self.shared_ids: list[str] = []
         self._resolved: dict[str, str] = {}
+        # 画像は図を描く過程で逐次アップロードされ、その都度「リンクを知る全員が
+        # 閲覧可」になる。cleanup() は commit() からしか呼ばれないので、途中で
+        # 失敗した実行は公開されたままの一時ファイルを残す。プロセスの終わりに
+        # 必ず畳めるよう、ここで後始末を予約しておく
+        atexit.register(self._atexit_cleanup)
+
+    def _atexit_cleanup(self) -> None:
+        """プロセス終了時の保険。既に cleanup() 済みなら何もしない。"""
+        if not self.temp_ids and not self.shared_ids:
+            return
+        print(t("  cleaning up {n} temporary uploads left by an interrupted run",
+                n=len(self.temp_ids) + len(self.shared_ids)), file=sys.stderr)
+        try:
+            self.cleanup()
+        except Exception:  # 終了処理で新たな例外を投げない
+            pass
 
     @property
     def drive(self):
@@ -645,6 +670,17 @@ class ImageMixin:
         if fit not in ("contain", "cover", "stretch"):
             raise ValueError(t("fit must be one of contain / cover / stretch: {fit}",
                                fit=fit))
+        if getattr(self.deck, "dry", False):
+            # --dry-run: 実物は取りに行かない。ここでアップロードすると、
+            # 検査のたびに Drive へ公開状態の一時ファイルが増える
+            # （icons / cloud_icons / charts と同じ流儀）
+            oid = self.shape(x, y, w, h, kind="RECTANGLE",
+                             fill=self.P.border, stroke=None)
+            if caption:
+                self.label(x, y + h + 0.05, w, 0.26, caption, size=caption_size,
+                           align="CENTER", valign="TOP",
+                           color=caption_color or self.P.muted)
+            return oid
         store = self._asset_store()
         url = store.url_for(source)
 
@@ -758,6 +794,60 @@ class ImageMixin:
         return self.image(x, y, w, h, path, **kw)
 
 
+def sweep_temp(delete: bool = False) -> int:
+    """中断した実行が Drive に残した一時アップロードを片付ける。
+
+    名前が `gslides-tmp-` で始まり自分が所有するファイルだけを対象にする。
+    公開共有が付いたまま残るのが問題なので、まず共有を外し、それから消す。
+    """
+    drive = _auth.services()[1]
+    found, token = [], None
+    while True:
+        res = drive.files().list(
+            q="name contains 'gslides-tmp-' and trashed = false",
+            fields="nextPageToken, files(id,name,createdTime,ownedByMe)",
+            pageSize=200, pageToken=token,
+            supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
+        found += [f for f in res.get("files", []) if f.get("ownedByMe")]
+        token = res.get("nextPageToken")
+        if not token:
+            break
+    public = []
+    for f in found:
+        perms = drive.permissions().list(
+            fileId=f["id"], fields="permissions(id,type)",
+            supportsAllDrives=True).execute().get("permissions", [])
+        f["anyone"] = [p["id"] for p in perms if p.get("type") == "anyone"]
+        if f["anyone"]:
+            public.append(f)
+    print(t("{total} temporary uploads found, {public} still shared with anyone "
+            "who has the link", total=len(found), public=len(public)))
+    if not found:
+        return 0
+    if not delete:
+        for f in found[:10]:
+            print(f"  {f['createdTime'][:10]}  {f['name'][:52]}")
+        if len(found) > 10:
+            print(t("  … and {n} more", n=len(found) - 10))
+        print(t("Re-run with --yes to un-share and delete them"))
+        return 0
+    for f in found:
+        for pid in f["anyone"]:
+            try:
+                drive.permissions().delete(fileId=f["id"], permissionId=pid,
+                                           supportsAllDrives=True).execute()
+            except Exception as e:  # noqa: BLE001
+                print(t("  warn: failed to remove public sharing from {file_id}: "
+                        "{error}", file_id=f["id"], error=e), file=sys.stderr)
+        try:
+            drive.files().delete(fileId=f["id"], supportsAllDrives=True).execute()
+        except Exception as e:  # noqa: BLE001
+            print(t("  warn: could not delete the temporary image {file_id}: "
+                    "{error}", file_id=f["id"], error=e), file=sys.stderr)
+    print(t("Removed {n} temporary uploads", n=len(found)))
+    return 0
+
+
 # ---------- CLI ----------
 
 def main() -> int:
@@ -777,7 +867,15 @@ def main() -> int:
                    help=t("Ignore the cache and regenerate"))
     p.add_argument("--show-prompt", action="store_true",
                    help=t("Print the assembled prompt and exit (does not call the API)"))
+    p.add_argument("--sweep-temp", action="store_true",
+                   help=t("Find temporary uploads left in Drive by interrupted "
+                          "runs, un-share and delete them"))
+    p.add_argument("--yes", action="store_true",
+                   help=t("with --sweep-temp, delete without asking"))
     args = p.parse_args()
+
+    if args.sweep_temp:
+        return sweep_temp(delete=args.yes)
 
     palette = None
     if args.template:
