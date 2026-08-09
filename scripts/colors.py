@@ -65,6 +65,9 @@ class Palette:
         self.surfaceAlt = c.get("light2", "#F9FAFB")
         self.border = lighten(self.primary, 0.65)
         self.white = "#FFFFFF"
+        # スライドの地の色。文字の下に敷く板をこの色にすると、明るい
+        # テンプレートでも暗いテンプレートでも背景に馴染む
+        self.page = c.get("light1", "#FFFFFF")
 
     def series(self, n: int) -> list[str]:
         """系列色を n 個返す。テーマ由来の色を順に使い、足りなければ明度で伸ばす。

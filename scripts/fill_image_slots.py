@@ -46,6 +46,10 @@ register({
     "{n} slots would be filled (nothing was changed)":
         "{n} 個の枠に入ります（まだ何も変更していません）",
     "{n} slots to fill": "{n} 個の枠に入れます",
+    "  note: one --prompt for {n} frames of the same shape draws the same "
+    "picture in each; use --slide to vary them":
+        "  note: {n} 個の枠に同じ --prompt を使うので、同じ形の枠には同じ絵が"
+        "入ります（変えるなら --slide でスライドごとに指定してください）",
     "Nothing to fill": "入れる枠がありません",
     "  slide {n}: generating…": "  スライド {n}: 生成中…",
     "Done! {n} images placed: {url}": "完了! 画像 {n} 枚: {url}",
@@ -197,6 +201,12 @@ def main() -> int:
         return 0
 
     print(t("{n} slots to fill", n=len(jobs)))
+    if args.prompt and len(jobs) > 1:
+        # 生成のキャッシュキーは (モデル, スタイル, 比率, プロンプト全文) なので、
+        # 同じ形の枠には同じ絵が入る。気づかずに全ページ同じ絵になるのを防ぐ
+        print(t("  note: one --prompt for {n} frames of the same shape draws "
+                "the same picture in each; use --slide to vary them",
+                n=len(jobs)))
     deck = TemplateDeck(slides_svc, drive_svc, pres_id, template)
     for slide_id, n, slot, prompt in jobs:
         print(t("  slide {n}: generating…", n=n))
