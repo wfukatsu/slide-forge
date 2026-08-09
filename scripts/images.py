@@ -59,6 +59,10 @@ from colors import Palette  # noqa: E402
 
 register({
     "image {name}": "画像 {name}",
+    "  note: generating at {aspect} for a {target} frame; "
+    "composed so the crop does not cut the subject":
+        "  note: {target} の枠に対して {aspect} で生成します"
+        "（切り取りで主題が欠けない構図を指示済み）",
     "Unknown style '{style}'. Available: {styles}":
         "未知のスタイル '{style}'。利用可能: {styles}",
     "GEMINI_API_KEY is not set.\n"
@@ -143,6 +147,34 @@ API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models"
 # imageConfig.aspectRatio が受け付ける値
 ASPECTS = ("1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9")
 
+# 生成できる比は ASPECTS の 10 種類しかないので、テンプレートの画像枠の比とは
+# たいてい一致しない。差は cover の切り取りで吸収するが、切られる側に主題が
+# 寄っていると絵が台無しになる。この割合を超えてずれるときは、切り取りを
+# 見越した構図をモデルに指示する
+FRAME_TOLERANCE = 0.02
+
+
+def frame_note(target: float, aspect: str) -> str | None:
+    """枠の比と生成比のずれを、切り取られても崩れない構図の指示にする。
+
+    target は置き先の枠の縦横比（幅 / 高さ）。ずれが小さければ None を返す。
+    """
+    aw, ah = (int(v) for v in aspect.split(":"))
+    made = aw / ah
+    if abs(made - target) <= target * FRAME_TOLERANCE:
+        return None
+    if made > target:
+        edges, cut = "left and right edges", 1 - target / made
+    else:
+        edges, cut = "top and bottom edges", 1 - made / target
+    return (
+        f"This illustration will be placed in a frame of ratio {target:.2f}:1 and "
+        f"cropped from the centre to fill it, so roughly {round(cut * 100)}% of the "
+        f"{edges} will be cut away. Compose for that frame: keep the subject and "
+        "every detail that matters well inside the centre, and leave the outer "
+        "edges free of anything that must survive."
+    )
+
 # Slides の createImage が受け付ける形式
 SLIDES_MIME = {"image/png", "image/jpeg", "image/gif"}
 
@@ -201,14 +233,19 @@ def palette_hint(colors: dict | None) -> str:
 
 
 def build_prompt(subject: str, *, style: str = DEFAULT_STYLE,
-                 palette: dict | None = None, extra: str | None = None) -> str:
-    """被写体の説明から、実際に投げるプロンプト全文を組み立てる。"""
+                 palette: dict | None = None, extra: str | None = None,
+                 frame: str | None = None) -> str:
+    """被写体の説明から、実際に投げるプロンプト全文を組み立てる。
+
+    frame は frame_note() が作る構図の指示。GUARDRAILS の「中央寄せ・余白」より
+    細かい条件なので、後ろに置いて上書きさせる。
+    """
     if style not in STYLES:
         raise ValueError(
             t("Unknown style '{style}'. Available: {styles}",
               style=style, styles=sorted(STYLES))
         )
-    parts = [STYLES[style], subject.strip(), palette_hint(palette), GUARDRAILS]
+    parts = [STYLES[style], subject.strip(), palette_hint(palette), GUARDRAILS, frame]
     if extra:
         parts.insert(2, extra.strip())
     return "\n".join(p for p in parts if p)
@@ -320,17 +357,19 @@ def _call_model(prompt: str, *, model: str, aspect: str, key: str,
 def generate(subject: str, *, style: str = DEFAULT_STYLE, palette: dict | None = None,
              aspect: str = "16:9", extra: str | None = None,
              model: str | None = None, cache_dir: str | None = None,
-             force: bool = False) -> str:
+             force: bool = False, frame: str | None = None) -> str:
     """画像を生成してローカルパスを返す。同じ入力ならキャッシュを使う。
 
     キャッシュのキーは (model, style, aspect, プロンプト全文) のハッシュ。
-    デッキを作り直しても同じ絵が出るので、再現性がある。
+    デッキを作り直しても同じ絵が出るので、再現性がある。frame は
+    プロンプト全文に入るので、枠が変われば作り直しになる。
     """
     if aspect not in ASPECTS:
         raise ValueError(t("aspect must be one of {aspects} (got: {aspect})",
                            aspects=ASPECTS, aspect=aspect))
     model = model or os.environ.get("GSLIDES_IMAGE_MODEL", DEFAULT_MODEL)
-    prompt = build_prompt(subject, style=style, palette=palette, extra=extra)
+    prompt = build_prompt(subject, style=style, palette=palette, extra=extra,
+                          frame=frame)
 
     cache_dir = cache_dir or os.environ.get("GSLIDES_IMAGE_CACHE", DEFAULT_CACHE)
     os.makedirs(cache_dir, exist_ok=True)
@@ -689,16 +728,31 @@ class ImageMixin:
                  extra=None, model=None, force=False, **kw) -> str:
         """AI で画像を生成して配置する。引数の残りは image() と同じ。
 
-        aspect を省略すると枠の縦横比に最も近い比率を選ぶ。生成物はキャッシュされる
-        ので、同じ subject でデッキを作り直しても絵は変わらない。
+        aspect を省略すると枠の縦横比に最も近い比率を選ぶ。生成できる比は 10 種類
+        しかないので枠とぴったりにはならず、残りの差は cover の切り取りで埋める。
+        切られる分を見越した構図をモデルに指示するので、枠に当てはめても主題は
+        欠けない。生成物はキャッシュされるので、同じ subject でデッキを作り直しても
+        絵は変わらない。
+
+        aspect を明示した場合は、それが枠と合っているかは呼び手の責任とみなし、
+        構図の指示は付けない。
         """
+        frame = None
         if aspect is None:
             target = w / h
             aspect = min(ASPECTS, key=lambda a: abs(
                 int(a.split(":")[0]) / int(a.split(":")[1]) - target))
+            frame = frame_note(target, aspect)
+            if frame:
+                print(t("  note: generating at {aspect} for a {target} frame; "
+                        "composed so the crop does not cut the subject",
+                        aspect=aspect, target=f"{target:.2f}:1"), file=sys.stderr)
         path = generate(subject, style=style, palette=self._template_colors,
-                        aspect=aspect, extra=extra, model=model, force=force)
-        kw.setdefault("fit", "contain")
+                        aspect=aspect, extra=extra, model=model, force=force,
+                        frame=frame)
+        # 枠を埋める。生成比は枠と完全には一致しないため contain だと余白が出て、
+        # テンプレートの地が覗いてしまう
+        kw.setdefault("fit", "cover")
         kw.setdefault("alt", subject)
         return self.image(x, y, w, h, path, **kw)
 

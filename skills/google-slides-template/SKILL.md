@@ -217,7 +217,14 @@ them as `imageSlot[N]`.
 `x` / `y` / `w` / `h` and `build_deck.py` fills them in (`fit` defaults to
 `cover`); with several slots, pick one with `"slot": 1`. Placing an image
 somewhere else on such a layout is reported by `--dry-run` and fails under
-`--strict`. Details in `references/images.md`.
+`--strict`.
+
+An `aiImage` is **generated for the slot it will occupy**: the closest of the
+ten aspect ratios the model can produce, and — when that still differs from the
+frame by more than 2% — a prompt instruction describing the crop that will
+happen, so the subject is composed to survive it. The frame ratio is part of the
+cache key, so moving a picture to a differently-shaped slot redraws it for that
+shape. Details in `references/images.md`.
 
 ### Verifying roles (mandatory, human judgment)
 
@@ -420,7 +427,7 @@ already drawn", not a drawing instruction.
 | Page skeletons and analysis figures | `pages` (`governing_message` / `lead_in` / `so_what` / `source_note` / `exhibit_frame` / `waterfall` / `rating_matrix` …) | How to compose a page; only density varies by purpose. No key, theme colors |
 | Domain-vocabulary icons | `icons` (`asset_icon` / `asset_icon_flow` …) | 62 brand assets. Brand-compliant. **Requires network** |
 | Cloud architecture diagrams | `cloud_icons` (`cloud_icon` / `cloud_zone` …) | 1,757 official AWS/GCP/Azure icons. **Never recolor or rotate**. Requires network |
-| Mood, scenery, covers | `images` (`ai_image` / `image`) | AI-generated or local images. **Check `imageSlots` first — if the layout reserves a frame, omit x/y/w/h and let it land there** |
+| Mood, scenery, covers | `images` (`ai_image` / `image`) | AI-generated or local images. **Check `imageSlots` first — if the layout reserves a frame, omit x/y/w/h and let it land there**; `aiImage` is then generated for that frame's shape and fills it |
 | Code samples | `code_block` (java / graphql / json / bash) | Monospace + VS Code Dark+ style highlighting. **Square corners** |
 
 All nine are methods on the same `Canvas`, so they can be mixed on one slide.
