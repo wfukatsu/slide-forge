@@ -282,6 +282,38 @@ def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0):
             time.sleep(wait)
 
 
+# batchUpdate は 1 回にまとめるほど速い。分割すると 1 リクエストあたりの実測コストが
+# 跳ね上がるため（実測: 8000 リクエストを 500 ずつ 16 回 = 18.2s、1 回 = 6.3s）、
+# 上限いっぱいまで積む。並列化は逆効果（同一プレゼンへの同時書き込みが競合し、
+# 4 並列 x 2000 で 20.1s / 逐次 2000 で 12.2s）なので**やってはいけない**。
+#
+# 上限は Google API のリクエストボディ 10MB。図のリクエストは実測 288 bytes 程度
+# なので、安全率を見て 5MB / 10000 件で切る（実測 30305 件 / 7.5MB は 20s で通る）。
+MAX_REQUESTS_PER_BATCH = 10000
+MAX_BATCH_BYTES = 5_000_000
+
+
+def _batches(requests: list[dict], max_requests: int = MAX_REQUESTS_PER_BATCH,
+             max_bytes: int = MAX_BATCH_BYTES):
+    """リクエスト列を、件数とバイト数の両方が上限に収まる塊に切って返す。
+
+    順序は保つ。batchUpdate は塊ごとに逐次実行されるので、塊の境界が
+    スライドや図形をまたいでも結果は変わらない。
+    """
+    batch: list[dict] = []
+    size = 0
+    for req in requests:
+        n = len(json.dumps(req, ensure_ascii=False).encode())
+        # 1 件で上限を超える場合でも、その 1 件だけの塊として必ず送る
+        if batch and (len(batch) >= max_requests or size + n > max_bytes):
+            yield batch
+            batch, size = [], 0
+        batch.append(req)
+        size += n
+    if batch:
+        yield batch
+
+
 def load_template(path: str) -> dict:
     with open(path) as f:
         return json.load(f)
@@ -716,17 +748,22 @@ class TemplateDeck:
 
     # ---------- 実行 ----------
 
-    def commit(self, chunk_size: int = 500) -> str:
+    def commit(self, chunk_size: int = MAX_REQUESTS_PER_BATCH) -> str:
         """溜めたリクエストを batchUpdate で実行し、プレゼンテーション URL を返す。"""
         try:
-            for i in range(0, len(self.requests), chunk_size):
-                chunk = self.requests[i : i + chunk_size]
+            # ローカル画像のアップロードは描画中に裏で走っている。
+            # createImage の url を埋めてからでないと batchUpdate に出せない
+            if self.assets is not None:
+                n_img = self.assets.flush()
+                if n_img:
+                    print(f"  images uploaded: {n_img}")
+            for n, chunk in enumerate(_batches(self.requests, chunk_size), 1):
                 _retry(
                     lambda: self.slides.presentations().batchUpdate(
                         presentationId=self.presentation_id, body={"requests": chunk}
                     ).execute(),
                     what=f"batchUpdate ({len(chunk)} requests)")
-                print(f"  batch {i // chunk_size + 1}: {len(chunk)} requests")
+                print(f"  batch {n}: {len(chunk)} requests")
             self.requests = []
             if self._notes or self.image_fixups:
                 self._post_pass()
