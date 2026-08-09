@@ -1,0 +1,79 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="d1" name="Page-1">
+    <mxGraphModel dx="800" dy="600" grid="0" page="1" pageWidth="1400" pageHeight="600">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ================= 開発環境（ローカル） ================= -->
+        <mxCell id="envL" value="開発環境（ローカル・開発者 PC）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#6B7280;strokeWidth=2;fontSize=15;fontStyle=1;fontColor=#374151;verticalAlign=top;align=left;spacingLeft=14;spacingTop=6;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="540" height="500" as="geometry" />
+        </mxCell>
+        <mxCell id="agentL" value="コーディングエージェント（AI）&#10;生成 → テスト実行 → 自己修正" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;fontSize=12;fontColor=#374151;" vertex="1" parent="envL">
+          <mxGeometry x="145" y="34" width="250" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="composeL" value="Docker Compose（全開発者で同一構成）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9FAFB;strokeColor=#6C8EBF;dashed=1;fontSize=12;fontColor=#6B7280;verticalAlign=top;align=left;spacingLeft=20;spacingTop=6;" vertex="1" parent="envL">
+          <mxGeometry x="25" y="118" width="490" height="330" as="geometry" />
+        </mxCell>
+        <mxCell id="appL" value="業務アプリ（開発中）＋ 自動テスト" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=13;" vertex="1" parent="envL">
+          <mxGeometry x="120" y="165" width="300" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="sdbL" value="ScalarDB Core&#10;（Community・無料）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF9EA;strokeColor=#63C045;fontSize=13;" vertex="1" parent="envL">
+          <mxGeometry x="120" y="252" width="300" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="pgL" value="PostgreSQL&#10;コンテナ" style="shape=cylinder3;size=15;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=12;boundedLbl=1;" vertex="1" parent="envL">
+          <mxGeometry x="210" y="350" width="120" height="82" as="geometry" />
+        </mxCell>
+        <mxCell id="eL0" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#9673A6;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="envL" source="agentL" target="appL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eL1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="envL" source="appL" target="sdbL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eL2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#6B7280;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="envL" source="sdbL" target="pgL">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= テスト環境 aidd-infra-test ================= -->
+        <mxCell id="envT" value="テスト環境 aidd-infra-test（AWS・常設）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#ED7100;strokeWidth=2;fontSize=15;fontStyle=1;fontColor=#374151;verticalAlign=top;align=left;spacingLeft=14;spacingTop=6;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="1">
+          <mxGeometry x="780" y="80" width="640" height="500" as="geometry" />
+        </mxCell>
+        <mxCell id="nlbT" value="NLB" style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#8C4FFF;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.elastic_load_balancing;" vertex="1" parent="envT">
+          <mxGeometry x="288" y="36" width="64" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="eksT" value="Amazon EKS" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7F0;strokeColor=#ED7100;fontSize=13;fontColor=#374151;verticalAlign=top;align=left;spacingLeft=10;spacingTop=4;container=1;collapsible=0;recursiveResize=0;" vertex="1" parent="envT">
+          <mxGeometry x="70" y="160" width="500" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="appT" value="業務アプリ&#10;（コンテナ）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=13;" vertex="1" parent="eksT">
+          <mxGeometry x="25" y="48" width="210" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="sdbT" value="ScalarDB Cluster&#10;Standard × 1 Pod" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EFF9EA;strokeColor=#63C045;fontSize=13;" vertex="1" parent="eksT">
+          <mxGeometry x="265" y="48" width="210" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="rdsT" value="RDS for PostgreSQL（Single-AZ）" style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#C925D1;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;" vertex="1" parent="envT">
+          <mxGeometry x="95" y="350" width="64" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="ecrT" value="ECR" style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ecr;" vertex="1" parent="envT">
+          <mxGeometry x="250" y="354" width="56" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="cwT" value="CloudWatch" style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#E7157B;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudwatch;" vertex="1" parent="envT">
+          <mxGeometry x="370" y="354" width="56" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="s3T" value="S3（ログ）" style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#7AA116;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;" vertex="1" parent="envT">
+          <mxGeometry x="490" y="354" width="56" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="eT1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#232F3E;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="envT" source="nlbT" target="eksT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eT2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#232F3E;strokeWidth=2;exitX=0.15;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="envT" source="eksT" target="rdsT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ================= 環境間の流れ ================= -->
+        <mxCell id="eLT" value="git push → CI が&#10;結合テストを自動実行" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#0985FD;strokeWidth=2;dashed=1;fontSize=12;fontColor=#0985FD;labelBackgroundColor=#FFFFFF;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="envL" target="envT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
