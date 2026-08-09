@@ -812,14 +812,22 @@ def sweep_temp(delete: bool = False) -> int:
         token = res.get("nextPageToken")
         if not token:
             break
-    public = []
+    public, gone = [], 0
     for f in found:
-        perms = drive.permissions().list(
-            fileId=f["id"], fields="permissions(id,type)",
-            supportsAllDrives=True).execute().get("permissions", [])
+        try:
+            perms = drive.permissions().list(
+                fileId=f["id"], fields="permissions(id,type)",
+                supportsAllDrives=True).execute().get("permissions", [])
+        except Exception:  # noqa: BLE001
+            # 一覧を取ってから調べるまでの間に消えることがある（別の掃除と並走した
+            # ときなど）。片付けが目的なので、消えていれば何もしなくてよい
+            f["anyone"], gone = [], gone + 1
+            continue
         f["anyone"] = [p["id"] for p in perms if p.get("type") == "anyone"]
         if f["anyone"]:
             public.append(f)
+    if gone:
+        found = [f for f in found if f.get("anyone") is not None]
     print(t("{total} temporary uploads found, {public} still shared with anyone "
             "who has the link", total=len(found), public=len(public)))
     if not found:
