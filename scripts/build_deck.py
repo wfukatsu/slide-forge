@@ -145,6 +145,8 @@ register({
         "強調の範囲がずれることがあります",
     "  warn: unknown body role '{role}' (known: {known})":
         "  warn: 未知の本文ロール '{role}'（使えるもの: {known}）",
+    "  warn: cannot use '{target}' as a link (use https://… or #12)":
+        "  warn: '{target}' はリンク先にできません（https://… か #12 の形で）",
     "{where}: body line {n} must be a string or "
     "{{\"text\": …, \"role\": …}}": "{where}: 本文 {n} 行目は文字列か "
                                     "{{\"text\": …, \"role\": …}} で書きます",
@@ -181,32 +183,56 @@ DEFAULT_BODY_ROLES = {
     "heading": {"bold": True, "spaceAbove": 6},
     "strong": {"bold": True},
     "note": {"color": "theme:DARK2"},
+    # リンクは色と下線でそれと分かるようにする（API はリンクを付けても
+    # 見た目を変えないため、こちらで付けないとクリックできると気づけない）
+    "link": {"color": "theme:ACCENT5", "underline": True},
 }
 # 役割に書けるキー。文字スタイルと段落スタイルに振り分ける
 _TEXT_STYLE_KEYS = ("bold", "italic", "underline", "color", "fontSize")
 _PARA_STYLE_KEYS = ("spaceAbove", "spaceBelow")
 
-_INLINE_STRONG = re.compile(r"\*\*(.+?)\*\*", re.S)
+# `**強調**` と `[表示テキスト](リンク先)` の 2 つだけ。Markdown 全体には
+# 対応しない（`#` や `-` まで効くと誤解されると、かえって崩れるため）
+_INLINE = re.compile(r"\*\*(?P<b>.+?)\*\*"
+                     r"|\[(?P<t>[^\]]+)\]\((?P<u>[^)]+)\)", re.S)
 
 
-def parse_inline_strong(text: str) -> tuple[str, list[tuple[int, int]]]:
-    """`**強調**` を剥がし、剥がしたあとの文字列と強調範囲を返す。
+def parse_inline(text: str) -> tuple[str, list[tuple]]:
+    """記法を剥がし、剥がしたあとの文字列と (開始, 終了, 種類, リンク先) を返す。
 
-    範囲は剥がしたあとの文字列の先頭からの位置。Markdown 全体には対応しない
-    （`#` や `-` まで効くと誤解されると、かえって崩れるため強調だけに絞る）。
+    種類は "strong" か "link"。範囲は剥がしたあとの文字列の先頭からの位置。
     """
-    out, spans, pos = [], [], 0
-    cursor = 0
-    for m in _INLINE_STRONG.finditer(text):
+    out, spans, pos, cursor = [], [], 0, 0
+    for m in _INLINE.finditer(text):
         out.append(text[pos:m.start()])
         cursor += m.start() - pos
-        inner = m.group(1)
-        spans.append((cursor, cursor + len(inner)))
+        if m.group("b") is not None:
+            inner, kind, target = m.group("b"), "strong", None
+        else:
+            inner, kind, target = m.group("t"), "link", m.group("u").strip()
+        spans.append((cursor, cursor + len(inner), kind, target))
         out.append(inner)
         cursor += len(inner)
         pos = m.end()
     out.append(text[pos:])
     return "".join(out), spans
+
+
+def link_target(value: str) -> dict | None:
+    """リンク先を Slides API の link に変換する。
+
+    "https://…" は URL、"#12" は同じデッキの 12 枚目（1 始まり）。
+    """
+    if not value:
+        return None
+    if value.startswith("#"):
+        try:
+            return {"slideIndex": max(0, int(value[1:]) - 1)}
+        except ValueError:
+            return None
+    if value.startswith(("http://", "https://", "mailto:")):
+        return {"url": value}
+    return None
 
 
 def normalize_body_lines(value) -> list[tuple[str, str | None]]:
@@ -536,7 +562,7 @@ class TemplateDeck:
         roles = self.body_roles()
         parts, spans, cursor = [], [], 0
         for text, role in normalize_body_lines(value):
-            plain, strong = parse_inline_strong(text)
+            plain, inline = parse_inline(text)
             if any(ord(ch) > 0xFFFF for ch in plain):
                 print(t("  warn: body text contains characters outside the BMP "
                         "(emoji etc.); emphasis ranges may shift"),
@@ -550,9 +576,18 @@ class TemplateDeck:
             if style:
                 spans.append({"start": start, "end": end, "style": style,
                               "paragraph": True})
-            for s, e in strong:
-                spans.append({"start": start + s, "end": start + e,
-                              "style": roles["strong"], "paragraph": False})
+            for s, e, kind, target in inline:
+                span = {"start": start + s, "end": start + e,
+                        "style": roles.get(kind, {}), "paragraph": False}
+                if kind == "link":
+                    link = link_target(target)
+                    if link is None:
+                        print(t("  warn: cannot use '{target}' as a link "
+                                "(use https://… or #12)", target=target),
+                              file=sys.stderr)
+                        continue
+                    span["link"] = link
+                spans.append(span)
             parts.append(plain)
             cursor = end + 1        # 改行ぶん
         return "\n".join(parts), spans
@@ -578,6 +613,9 @@ class TemplateDeck:
                 else:
                     style[key] = val
                     fields.append(key)
+            if span.get("link"):
+                style["link"] = span["link"]
+                fields.append("link")
             rng = {"type": "FIXED_RANGE",
                    "startIndex": span["start"], "endIndex": span["end"]}
             if fields:
@@ -1162,7 +1200,7 @@ def audit_body_fit(template: dict, spec: dict) -> list[str]:
                 continue
             used = 0.0
             for text, role in normalize_body_lines(value):
-                plain, _ = parse_inline_strong(text)
+                plain, _ = parse_inline(text)
                 width = sum(1.0 if ord(ch) > 0x2E80 else 0.5 for ch in plain)
                 n = max(1, int(width / per_line + 0.999))
                 style = role_styles.get(role) or {}

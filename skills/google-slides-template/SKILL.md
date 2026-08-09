@@ -301,8 +301,10 @@ sub-heading from the items hanging under it. Give the structure to the reader.
   heading
 - At most **three** headings on one slide. Needing more means the slide should
   be split, or the content belongs in a table
-- One keyword inside a sentence → `**…**` (this is the only inline markup; the
-  rest of Markdown is not supported)
+- One keyword inside a sentence → `**…**`
+- A pointer to another slide or deck → `[付録 A-2](#12)` for a slide in this deck
+  (1-based), `[付録デッキ](https://…)` for another deck. These two are the only
+  inline markup; the rest of Markdown is not supported
 - Do not emphasize more than a quarter of the body. Emphasis that is everywhere
   is emphasis nowhere
 
