@@ -180,6 +180,7 @@ feature map.
 
 ```bash
 cd /Users/wfukatsu/work/slide-forge
+.venv/bin/python scripts/scalar/build_scalar_features.py --dry-run   # audits only, no API
 .venv/bin/python scripts/scalar/build_scalar_features.py [--folder <URL>]
 ```
 
