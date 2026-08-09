@@ -95,6 +95,8 @@ register({
         "「{text}」を「{cover}」が覆っている",
     "Text labels collide ({area:.3f}in²): \"{a}\" and \"{b}\"":
         "文字どうしがぶつかっています（{area:.3f}in²）:「{a}」と「{b}」",
+    "A line runs across text ({length:.2f}in inside): \"{text}\"":
+        "線が文字の上を走っています（{length:.2f}in 分）:「{text}」",
     "{v:.2f}in past the left edge": "左に {v:.2f}in",
     "{v:.2f}in past the top edge": "上に {v:.2f}in",
     "{v:.2f}in past the right edge": "右に {v:.2f}in",
@@ -484,9 +486,11 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 "fields": "lineFill,weight,dashStyle,startArrow,endArrow",
             }},
         ]
+        self._seq += 1
         self.connectors.append({
             "oid": oid, "p1": (x1, y1), "p2": (x2, y2),
             "free": free or _anchored, "anchored": _anchored,
+            "seq": self._seq,
         })
         return oid
 
@@ -598,8 +602,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                            "dashStyle,startArrow,endArrow"),
             }},
         ]
+        self._seq += 1
         self.connectors.append({"oid": oid, "p1": p1, "p2": p2,
-                                "free": True, "anchored": True})
+                                "free": True, "anchored": True,
+                                "seq": self._seq})
         return oid
 
     # ---- コネクタの自己点検 ----
@@ -657,6 +663,9 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     # 重なり・文字溢れの判定しきい値
     OVERLAP_MIN = 0.010     # これ以上の面積(in^2)が重なっていたら報告する
     OVERLAP_RATIO = 0.06    # 小さい方の面積に対する重なり比率の下限
+    # 線が文字の中を通る長さ(in)。矢印の先端が字の縁を掠るのは正常なので、
+    # これを超えて「中を走っている」ものだけを拾う
+    LINE_CROSS_MIN = 0.06
     TEXT_SLACK = 0.04       # 文字の必要高さに対して許す余裕(in)
     LINE_EM = 1.45          # Noto Sans JP の行高（フォントサイズに対する倍率）
 
@@ -669,6 +678,34 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         ox = min(a[0] + a[2], b[0] + b[2]) - max(a[0], b[0])
         oy = min(a[1] + a[3], b[1] + b[3]) - max(a[1], b[1])
         return (ox * oy) if (ox > 0 and oy > 0) else 0.0
+
+    @staticmethod
+    def _segment_in_rect(p1, p2, rect) -> float:
+        """線分のうち矩形の内側にある長さ(in)を返す。接するだけなら 0。
+
+        Liang-Barsky でパラメータ t の範囲へ切り詰め、残った区間の長さを測る。
+        """
+        x, y, w, h = rect
+        dx, dy = p2[0] - p1[0], p2[1] - p1[1]
+        t0, t1 = 0.0, 1.0
+        for p, q in ((-dx, p1[0] - x), (dx, x + w - p1[0]),
+                     (-dy, p1[1] - y), (dy, y + h - p1[1])):
+            if p == 0:
+                if q < 0:
+                    return 0.0     # 辺に平行で、外側を走っている
+                continue
+            r = q / p
+            if p < 0:
+                if r > t1:
+                    return 0.0
+                t0 = max(t0, r)
+            else:
+                if r < t0:
+                    return 0.0
+                t1 = min(t1, r)
+        if t1 <= t0:
+            return 0.0
+        return (t1 - t0) * math.hypot(dx, dy)
 
     @staticmethod
     def _contains(outer, inner, slack=0.02):
@@ -703,9 +740,18 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         塗りのある図形は矩形全体が不透明。塗りの無いラベルは、文字が実際に載る
         範囲だけを見る。枠は広くても中央寄せの短い文字なら隣とぶつからないため。
         """
-        x, y, w, h = m["rect"]
         if m["fill"]:
-            return (x, y, w, h)
+            return tuple(m["rect"])
+        return self._glyph_rect(m)
+
+    def _glyph_rect(self, m):
+        """文字そのものが載る矩形。塗りの有無は見ない。
+
+        塗りのある図形でも、線が中を横切って**文字に重なる**かどうかは枠ではなく
+        字の位置で決まる。_ink_rect は塗り図形を不透明な板として扱う（隠れの判定に
+        要る）ので、字の範囲だけが要る検査はこちらを使う。
+        """
+        x, y, w, h = m["rect"]
         lines, per = self._text_lines(m)
         longest = max((self._em(l) for l in m["text"].split("\n")), default=0)
         tw = min(w, min(longest, per) * m["size"] / 72.0 + 0.10)
@@ -728,6 +774,9 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         1. **隠れ** … ある文字より後に描かれた不透明な図形が、その文字に
            かぶさっている。バナーやゾーンが直前のブロックに潜り込む典型がこれ。
         2. **衝突** … 塗りの無いラベルどうしが、実際の文字の範囲でぶつかっている。
+        3. **線が字を貫く** … コネクタや矢印が、文字の上を走っている。線には
+           描画順が無く（塗り図形として記録されない）1 と 2 のどちらにも
+           掛からないため、独立して見る必要がある。
 
         枠ではなく「文字が実際に載る範囲」で判定するため、余白の広いラベルが
         隣に少しかかっているだけでは報告しない。
@@ -773,6 +822,28 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 tb = b["text"].replace("\n", " ")[:20]
                 record(t("Text labels collide ({area:.3f}in²): \"{a}\" and \"{b}\"",
                          area=area, a=ta, b=tb), ("hit", *sorted((ta, tb))))
+
+        # 3. 線・矢印が文字の上を走る
+        #
+        # 線を引いてからその上に塗り図形を置く描き方は珍しくない（hub() は中心から
+        # 各ノードの中心へ線を伸ばし、後からノードの箱を被せる）。この場合、線は
+        # 塗りに隠れて見えないので defect ではない。線より後に描かれた不透明な
+        # 図形がその文字を覆っているなら、報告しない。
+        for a in items:
+            ga = self._glyph_rect(a)
+            if ga[2] <= 0 or ga[3] <= 0:
+                continue
+            ta = a["text"].replace("\n", " ")[:20]
+            for conn in self.connectors:
+                inside = self._segment_in_rect(conn["p1"], conn["p2"], ga)
+                if inside < self.LINE_CROSS_MIN:
+                    continue
+                if any(sol["seq"] > conn["seq"] and self._contains(sol["rect"], ga)
+                       for sol in self.solids):
+                    continue
+                record(t("A line runs across text ({length:.2f}in inside): "
+                         "\"{text}\"", length=inside, text=ta),
+                       ("cross", ta, conn["oid"]))
         return out
 
     BOUNDS_SLACK = 0.02     # この量までのはみ出しは許す（丸め誤差）
