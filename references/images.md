@@ -176,6 +176,14 @@ python scripts/inspect_template.py <URL>        # レポートに imageSlot[N] �
 枠があるのに別の場所へ置くと `--dry-run` が警告する（`--strict` ならエラー）。
 枠が無いレイアウトでは、これまでどおり座標を自分で決める。
 
+**もう出来ているデッキ**の空き枠を埋めるなら `scripts/fill_image_slots.py`
+（`image-slots` スキル）。仕様の無いデッキや、URL を変えられないデッキが対象。
+
+```bash
+python scripts/fill_image_slots.py <URL> --dry-run   # どの枠が埋まるかを見る
+python scripts/fill_image_slots.py <URL>
+```
+
 ### AI で生成する
 
 ```python
