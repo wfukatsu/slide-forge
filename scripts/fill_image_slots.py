@@ -9,10 +9,13 @@
     実行:   python scripts/fill_image_slots.py <URL>
     指定:   python scripts/fill_image_slots.py <URL> --slide 1 --prompt "夜間のビル"
 
-枠の探し方は inspect_template.py と同じ（PICTURE 系プレースホルダ / レイアウトに
-残った中身の無い image / 同梱スライドが繰り返し使っている位置）。**既に画像が
-載っている枠は触らない。** 何を描くかはスライドの文字から起こすので、文字の無い
-スライドには --prompt が要る。
+枠の探し方は inspect_template.py と同じだが、**テンプレートが宣言した枠**
+（PICTURE 系プレースホルダ / 中身の無い image）だけを既定の対象にする。
+「他のスライドが同じ位置に絵を置いている」という推測由来の枠は、デッキ全体に
+かけると本文領域まで埋めてしまうため --include-inferred を付けたときだけ使う。
+
+**既に画像が載っている枠は触らない。** 何を描くかはスライドの**見出し**から
+起こすので、見出しの無いスライドには --prompt が要る。
 
 デッキを直接書き換えるため、実行前に scripts/snapshot_version.py で複製を取ること。
 """
@@ -68,7 +71,8 @@ def _overlap(a: dict, b: dict) -> float:
     return (ix * iy) / small if small > 0 else 0.0
 
 
-def slide_slots(slide: dict, layouts_by_id: dict) -> list[dict]:
+def slide_slots(slide: dict, layouts_by_id: dict, *,
+                inferred: bool = False) -> list[dict]:
     """このスライドで絵を入れられる枠を返す。
 
     スライド自身に置かれた空の枠（PICTURE プレースホルダ・中身の無い image）を
@@ -86,7 +90,13 @@ def slide_slots(slide: dict, layouts_by_id: dict) -> list[dict]:
     if slots:
         return slots
     lid = (slide.get("slideProperties") or {}).get("layoutObjectId")
-    return list((layouts_by_id.get(lid) or {}).get("imageSlots") or [])
+    slots = list((layouts_by_id.get(lid) or {}).get("imageSlots") or [])
+    if not inferred:
+        # source="sample" は「他のスライドが同じ位置に絵を置いている」という
+        # 推測であって、テンプレートが宣言した枠ではない。デッキ全体にかけると
+        # 本文領域を絵で埋めてしまうので、明示的に求められたときだけ使う
+        slots = [s for s in slots if s.get("source") != "sample"]
+    return slots
 
 
 def existing_images(slide: dict) -> list[dict]:
@@ -95,16 +105,33 @@ def existing_images(slide: dict) -> list[dict]:
             if "image" in el and not it.is_empty_image(el)]
 
 
+TITLE_PLACEHOLDERS = ("TITLE", "CENTERED_TITLE")
+
+
+def _element_text(el: dict) -> str:
+    return " ".join(
+        (p.get("textRun") or {}).get("content", "").strip()
+        for p in ((el.get("shape") or {}).get("text") or {}).get("textElements", [])
+    ).strip()
+
+
 def slide_text(slide: dict) -> str:
-    """スライドの文字を、上にあるものから拾って 1 本につなぐ。"""
-    out = []
-    for el in sorted(slide.get("pageElements", []),
-                     key=lambda e: it.geometry(e)["y"]):
-        for p in ((el.get("shape") or {}).get("text") or {}).get("textElements", []):
-            s = (p.get("textRun") or {}).get("content", "").strip()
-            if s:
-                out.append(s)
-    return " ".join(out).strip()
+    """このスライドの見出しを返す。
+
+    本文まで混ぜると「① 検証 ② 配布 …」のような箇条書きがそのまま絵の指示に
+    なってしまう。見出しはそのスライドが何の話かを一言で表しているので、
+    絵の題材としてはこちらだけを使う。TITLE プレースホルダがあればそれ、
+    無ければ一番上にある文字。
+    """
+    els = slide.get("pageElements", [])
+    for el in els:
+        ptype = ((el.get("shape") or {}).get("placeholder") or {}).get("type")
+        if ptype in TITLE_PLACEHOLDERS and _element_text(el):
+            return _element_text(el)
+    for el in sorted(els, key=lambda e: it.geometry(e)["y"]):
+        if _element_text(el):
+            return _element_text(el)
+    return ""
 
 
 def prompt_for(slide: dict, given: str | None) -> str | None:
@@ -134,6 +161,9 @@ def main() -> int:
                    help=t("1-based slide number; repeatable (defaults to all)"))
     p.add_argument("--slot", type=int, default=None,
                    help=t("which slot to use when a slide has several (0-based)"))
+    p.add_argument("--include-inferred", action="store_true",
+                   help=t("also use frames inferred from how other slides in "
+                          "the deck place pictures (off by default)"))
     p.add_argument("--dry-run", action="store_true",
                    help=t("list the slots without generating or changing anything"))
     p.add_argument("--force", action="store_true",
@@ -166,7 +196,8 @@ def main() -> int:
     for i, slide in enumerate(slides, start=1):
         if i not in want:
             continue
-        slots = slide_slots(slide, layouts_by_id)
+        slots = slide_slots(slide, layouts_by_id,
+                            inferred=args.include_inferred)
         if not slots:
             continue
         taken = existing_images(slide)

@@ -52,6 +52,7 @@ from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone.
 | Fill every empty frame | `.venv/bin/python scripts/fill_image_slots.py <URL>` |
 | One slide, explicit subject | `… <URL> --slide 3 --prompt "夜間のデータセンター"` |
 | Pick a frame when a slide has several | `… --slot 1` (0-based, in the order the survey lists them) |
+| Also use frames only *inferred* from the deck's own usage | `--include-inferred` (off by default — see below) |
 | Change the illustration style | `--style isometric` (`flat_vector` / `line_art` / `blueprint` / `paper` / `photo`) |
 | Snapshot before writing | `.venv/bin/python scripts/snapshot_version.py <URL>` |
 | What a slot is, and how images are composed for it | `references/images.md` |
@@ -65,6 +66,14 @@ Same three sources as template registration (`references/template-schema.md`):
 2. an **empty image element** on the slide — it renders as nothing, so it is a
    slot, not a decoration
 3. otherwise the **layout's** `imageSlots`, largest frame first
+
+Sources 1 and 2 are **declarations** — the template says a picture belongs there.
+The third kind of frame `imageSlots` can hold, one *inferred* from other slides
+placing pictures in the same spot, is **excluded by default**: on a real deck
+that inference matches the body area of ordinary content slides, and filling it
+everywhere would bury the deck in pictures. Measured on a 78-slide template,
+the default finds 0 fillable frames where the inference offers 39. Opt in per
+run with `--include-inferred` when you actually want that.
 
 Frames on the slide itself win over the layout's, because a slide that carries
 its own placeholder is more specific than the layout it was made from. The
@@ -83,10 +92,12 @@ the deck is analyzed on the fly, so the skill works on **any** deck.
 
 ## What gets drawn
 
-The prompt defaults to the slide's **own text**, read top-down and capped at 120
-characters, so a section divider titled 第1章 データ基盤の刷新 asks for a picture
-about that. Override per run with `--prompt`. A slide with **no text** is skipped
-with a message rather than guessed at — pass `--prompt` for those.
+The prompt defaults to the slide's **title** — its TITLE placeholder, or the
+topmost text if it has none — so a divider titled 第1章 データ基盤の刷新 asks for a
+picture about that. Body text is deliberately excluded: a slide's bullets read as
+「① 検証 ② 配布 ③ 反映」 and make a poor drawing instruction. Override per run with
+`--prompt`. A slide with **no text at all** is skipped with a message rather than
+guessed at — pass `--prompt` for those.
 
 The picture is generated for the frame's shape: the closest aspect ratio the
 model supports, plus a prompt instruction naming the edges and percentage the
