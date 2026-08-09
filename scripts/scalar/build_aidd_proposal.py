@@ -407,25 +407,6 @@ def print_bom(arch: dict) -> None:
 
 # ============================================================ 組み立て
 
-class _DryDeck(bd._StubDeck):
-    """--dry-run 用。add_slide / commit を API 抜きで受け流す。"""
-
-    def __init__(self):
-        super().__init__()
-        self._n = 0
-
-    def add_slide(self, layout, **kw):
-        self._n += 1
-        self.last = dict(kw, layout=layout)
-        return {"slideId": f"dry_{self._n}"}
-
-    def add_page_numbers(self, start=None):
-        return 0
-
-    def commit(self, chunk_size=500):
-        return "(dry-run: 生成していません)"
-
-
 def build(deck, template, dry: bool = False) -> list[str]:
     P = PROPOSAL
     problems: list[str] = []
@@ -541,7 +522,7 @@ def main() -> int:
     template = bd.load_template(TEMPLATE)
     P = PROPOSAL
     if args.dry_run:
-        deck = _DryDeck()
+        deck = bd.DryRunDeck()
     else:
         deck = bd.TemplateDeck.create(
             template, title=f"{P['customer']}様向け {P['title']}", folder=args.folder)

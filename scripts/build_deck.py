@@ -132,6 +132,7 @@ register({
         "図の検査で {n} 件（画像は実物が要るため対象外）:",
     "figure audit (connectors / overlaps / text overflow): no problems":
         "図の検査（コネクタ・重なり・文字溢れ）: 問題なし",
+    "(dry-run: nothing was generated)": "(dry-run: 生成していません)",
     "Figure audit found {n} findings:": "図の検査で {n} 件:",
     "slides[{i}] ({title}): body{col} needs about {used:.0f}pt but the "
     "placeholder is {cap:.0f}pt. Reduce the text, lower bodyFontSize, or "
@@ -1048,6 +1049,50 @@ class _StubDeck:
         self.requests: list[dict] = []
         self.assets = None
         self.image_fixups: list[tuple] = []
+
+
+class DryRunDeck(_StubDeck):
+    """TemplateDeck の代わりに置ける --dry-run 用のデッキ。
+
+    add_slide / add_page_numbers / commit を API 抜きで受け流すので、コードで
+    デッキを組み立てるスクリプト（scripts/scalar/*.py）は deck をこれに差し替える
+    だけで、座標・文字量の検査だけを走らせられる。
+
+    template は TemplateDeck と同じく `.template` として読めるようにしておく。
+    ページ番号を自前で描くスクリプトがここを見に来るため。
+    """
+
+    def __init__(self, template: dict | None = None):
+        super().__init__()
+        self.template = template or {}
+        self._n = 0
+        self._counter = 0
+
+    def _next_id(self, prefix: str) -> str:
+        self._counter += 1
+        return f"{prefix[:40]}_dry_{self._counter:03d}"
+
+    def add_slide(self, layout_key, **kw):
+        """TemplateDeck.add_slide と同じ形の戻り値を返す。
+
+        呼び手が ref["layout"] からページ番号の位置を読むことがあるので、
+        slideId だけでは足りない。
+        """
+        self._n += 1
+        self.last = dict(kw, layout=layout_key)
+        resolved = self.template.get("roles", {}).get(layout_key, layout_key)
+        return {
+            "slideId": f"dry_{self._n}",
+            "placeholders": {},
+            "layout": (self.template.get("layouts", {}) or {}).get(resolved, {}),
+            "layoutKey": resolved,
+        }
+
+    def add_page_numbers(self, start=None):
+        return 0
+
+    def commit(self, chunk_size=500):
+        return t("(dry-run: nothing was generated)")
 
 
 def audit_figures(template: dict, spec: dict) -> list[str]:

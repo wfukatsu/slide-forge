@@ -4,6 +4,9 @@
 developers.scalar-labs.com のドキュメント調査(2026-08-01)に基づき、各機能を
 「図解 / 機能概要 / ユースケース / 特長」の共通レイアウトで並べる。
 ScalarDB 15 機能 + ScalarDL 9 機能。
+
+  実行: .venv/bin/python scripts/scalar/build_scalar_features.py [--folder <URL>]
+  検査: .venv/bin/python scripts/scalar/build_scalar_features.py --dry-run
 """
 from __future__ import annotations
 
@@ -801,10 +804,15 @@ DL_MAP = [
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--folder", default=None)
+    p.add_argument("--dry-run", action="store_true",
+                   help="API を呼ばずに座標・文字量だけ検査する")
     args = p.parse_args()
 
     template = bd.load_template(TEMPLATE)
-    deck = bd.TemplateDeck.create(template, title=TITLE, folder=args.folder)
+    if args.dry_run:
+        deck = bd.DryRunDeck()
+    else:
+        deck = bd.TemplateDeck.create(template, title=TITLE, folder=args.folder)
     problems: list[str] = []
 
     deck.add_slide("COVER", title=TITLE, subtitle=SUBTITLE,
@@ -850,6 +858,10 @@ def main() -> int:
     deck.add_page_numbers()
     for m in problems:
         print(t("  audit: {message}", message=m))
+    if args.dry_run:
+        print(f"\ndry-run: {len(problems)} problems")
+        return 1 if problems else 0
+
     url = deck.commit()
     total = 2 + 2 * 2 + len(FEATURES_DB) + len(FEATURES_DL) + 1
     print(t("Done! {n} slides. Open: {url}", n=total, url=url))

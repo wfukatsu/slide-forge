@@ -12,6 +12,9 @@
 - 期待効果の定量値は算定根拠を添えられるものだけ。無ければ定性で書き、
   「定量は PoC で実測」と明示する
 - 事例・価格は references/scalar/research-2026-08.md 準拠（鮮度 3 ヶ月ルール）
+
+  実行: .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <URL>]
+  検査: .venv/bin/python scripts/scalar/build_scalar_proposal.py --dry-run
 """
 from __future__ import annotations
 
@@ -400,12 +403,17 @@ def print_bom(arch: dict) -> None:
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--folder", default=None)
+    p.add_argument("--dry-run", action="store_true",
+                   help="API を呼ばずに座標・文字量だけ検査する")
     args = p.parse_args()
 
     P = PROPOSAL
     template = bd.load_template(TEMPLATE)
-    deck = bd.TemplateDeck.create(
-        template, title=f"{P['customer']}様向け {P['title']}", folder=args.folder)
+    if args.dry_run:
+        deck = bd.DryRunDeck()
+    else:
+        deck = bd.TemplateDeck.create(
+            template, title=f"{P['customer']}様向け {P['title']}", folder=args.folder)
     problems: list[str] = []
 
     def drawn(title, fn, *fn_args, notes=None, connectors=False):
@@ -503,6 +511,10 @@ def main() -> int:
     deck.add_page_numbers()
     for m in problems:
         print(t("  audit: {message}", message=m))
+    if args.dry_run:
+        print(f"\ndry-run: {len(problems)} problems")
+        return 1 if problems else 0
+
     url = deck.commit()
     print(t("Done! Open: {url}", url=url))
     print_bom(P["architecture"])

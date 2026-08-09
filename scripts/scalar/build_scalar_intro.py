@@ -4,6 +4,10 @@
 scalar-2026-boilerplate を keep_existing で複製し、公式の定型スライド
 （会社概要・役員構成・製品概要・導入顧客・事例・クロージング）を活かしつつ、
 Web 調査（2026-08-01 実施）に基づく生成スライドを最終位置へ挿入する。
+
+  実行: .venv/bin/python scripts/scalar/build_scalar_intro.py [--folder <URL>]
+  検査: .venv/bin/python scripts/scalar/build_scalar_intro.py --dry-run
+        （同梱スライドの間引きと文言置換は複製後の実物が要るので飛ばす）
 """
 from __future__ import annotations
 
@@ -418,25 +422,34 @@ def draw_page_number(deck, ref, number: int) -> None:
 def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--folder", default=None)
+    p.add_argument("--dry-run", action="store_true",
+                   help="API を呼ばずに座標・文字量だけ検査する")
     args = p.parse_args()
 
     template = bd.load_template(TEMPLATE)
-    deck = bd.TemplateDeck.create(template, title=TITLE, folder=args.folder,
-                                  keep_existing=True)
+    if args.dry_run:
+        deck = bd.DryRunDeck(template)
+    else:
+        deck = bd.TemplateDeck.create(template, title=TITLE, folder=args.folder,
+                                      keep_existing=True)
 
-    pres = deck.slides.presentations().get(
-        presentationId=deck.presentation_id, fields="slides.objectId").execute()
-    ids = [s["objectId"] for s in pres.get("slides", [])]
-    assert len(ids) == 12, t("Expected 12 bundled slides, got {n}", n=len(ids))
-    for pos in DROP_KEPT_POSITIONS:
-        deck.requests.append({"deleteObject": {"objectId": ids[pos]}})
+    # 残した同梱スライドの間引きと表紙の文言置換。どちらも複製後の実物が要る
+    # （ID を引くのに API を叩く）ので、--dry-run では丸ごと飛ばす。ここで作る
+    # のはリクエストだけで、以降の作図と検査には影響しない
+    if not args.dry_run:
+        pres = deck.slides.presentations().get(
+            presentationId=deck.presentation_id, fields="slides.objectId").execute()
+        ids = [s["objectId"] for s in pres.get("slides", [])]
+        assert len(ids) == 12, t("Expected 12 bundled slides, got {n}", n=len(ids))
+        for pos in DROP_KEPT_POSITIONS:
+            deck.requests.append({"deleteObject": {"objectId": ids[pos]}})
 
-    # 表紙の文言置換（<Proposal Title> の表紙は上で削除済み）
-    for old, new in [("<Presentation Title>", TITLE), ("<Sub Title>", SUBTITLE),
-                     ("YYYY月MM月", DATE), ("YYYY年MM月", DATE)]:
-        deck.requests.append({"replaceAllText": {
-            "containsText": {"text": old, "matchCase": True},
-            "replaceText": new}})
+        # 表紙の文言置換（<Proposal Title> の表紙は上で削除済み）
+        for old, new in [("<Presentation Title>", TITLE), ("<Sub Title>", SUBTITLE),
+                         ("YYYY月MM月", DATE), ("YYYY年MM月", DATE)]:
+            deck.requests.append({"replaceAllText": {
+                "containsText": {"text": old, "matchCase": True},
+                "replaceText": new}})
 
     plan = build_plan()
     problems: list[str] = []
@@ -467,6 +480,10 @@ def main() -> int:
 
     for m in problems:
         print(t("  audit: {message}", message=m))
+
+    if args.dry_run:
+        print(f"\ndry-run: {len(problems)} problems")
+        return 1 if problems else 0
 
     url = deck.commit()
     print(t("Done! {n} slides. Open: {url}", n=len(plan), url=url))
