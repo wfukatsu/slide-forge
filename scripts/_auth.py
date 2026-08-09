@@ -153,6 +153,16 @@ def presentation_id(url_or_id: str) -> str:
     return url_or_id
 
 
+def presentation_url(url_or_id: str) -> str:
+    """プレゼンテーションの URL を、開けば必ず同じところへ行く形に揃える。
+
+    presentation_id() の逆。URL でも ID でも受け取れる引数をそのまま記録すると、
+    渡され方しだいで URL だったり ID だったりが混ざる。人に見せる欄
+    （template.json の sourceUrl など）には、常に開ける形で入れる。
+    """
+    return f"https://docs.google.com/presentation/d/{presentation_id(url_or_id)}/edit"
+
+
 _FOLDER_ID_RE = re.compile(r"/folders/([a-zA-Z0-9_-]+)")
 
 

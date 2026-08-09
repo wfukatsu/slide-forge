@@ -402,7 +402,7 @@ def extract_colors(master: dict) -> dict:
     return out
 
 
-def build_template(pres: dict, name: str, source_url: str) -> dict:
+def build_template(pres: dict, name: str) -> dict:
     masters = pres.get("masters", [])
     master = masters[0] if masters else {}
     page = pres.get("pageSize", {})
@@ -469,7 +469,9 @@ def build_template(pres: dict, name: str, source_url: str) -> dict:
     return {
         "name": name,
         "displayName": pres.get("title", name),
-        "sourceUrl": source_url,
+        # --source には URL でも ID でも渡せるが、記録するのは常に開ける URL。
+        # 受け取った文字列をそのまま入れると、再解析のたびに形が変わる
+        "sourceUrl": _auth.presentation_url(pres["presentationId"]),
         "presentationId": pres["presentationId"],
         "generationMode": "copy",
         "pageSize": {
@@ -598,7 +600,7 @@ def main() -> int:
     name = args.name or (
         os.path.splitext(os.path.basename(args.emit))[0] if args.emit else "template"
     )
-    template = build_template(pres, name, args.source)
+    template = build_template(pres, name)
     print_report(template)
 
     if args.emit:
