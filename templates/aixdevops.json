@@ -1,7 +1,7 @@
 {
   "name": "aixdevops",
   "displayName": "AIxDevOps 自律型コーディングエージェントを用いた開発プロセスの最適化",
-  "sourceUrl": "https://docs.google.com/presentation/d/13QHfp9pgTYvuVJzjiNIhaWbUozHLYPJ4A67b1418RzM/edit",
+  "sourceUrl": "13QHfp9pgTYvuVJzjiNIhaWbUozHLYPJ4A67b1418RzM",
   "presentationId": "13QHfp9pgTYvuVJzjiNIhaWbUozHLYPJ4A67b1418RzM",
   "generationMode": "copy",
   "pageSize": {
@@ -28,6 +28,9 @@
     "g3f5c1f4da57_0_106",
     "g3f5c1f4da57_0_42",
     "g3f5c1f4da57_0_24",
+    "g3f985ed19cd_0_80",
+    "g3f985ed19cd_0_112",
+    "g3f985ed19cd_0_117",
     "g3f5c1f4da57_0_118",
     "g3f9599793cc_0_729",
     "g3f97253ac5d_0_1402",
@@ -54,11 +57,28 @@
     "g3f97253ac5d_0_1618",
     "g3f97253ac5d_0_81",
     "g3f97253ac5d_0_195",
+    "g3f985ed19cd_0_170",
     "g3f97253ac5d_0_239",
     "g3f97253ac5d_0_341",
     "g3f97253ac5d_0_362",
     "g3f97253ac5d_0_389",
     "g3f97253ac5d_0_394",
+    "g3f6609d1220_1_293",
+    "g3f6609d1220_1_0",
+    "g3f6609d1220_1_44",
+    "g3f6609d1220_1_59",
+    "g3f6609d1220_1_86",
+    "g3f6609d1220_1_113",
+    "g3f6609d1220_1_141",
+    "g3f6609d1220_1_178",
+    "g3f6609d1220_1_397",
+    "g3f6609d1220_1_541",
+    "g3f6609d1220_1_571",
+    "g3f985ed19cd_0_602",
+    "g3f985ed19cd_0_403",
+    "g3f985ed19cd_0_410",
+    "g3f985ed19cd_0_265",
+    "g3f985ed19cd_0_310",
     "g3f97253ac5d_0_1098",
     "g3f97253ac5d_0_1169",
     "g3f97253ac5d_0_1175",
@@ -69,7 +89,7 @@
     "g3f97253ac5d_0_1388",
     "g3f97253ac5d_0_1107"
   ],
-  "__existingSlideIds_note": "複製直後に削除するテンプレート同梱スライド。テンプレート側を編集したら再解析すること",
+  "__existingSlideIds_note": "Bundled slides deleted right after the copy. Re-analyze whenever the template itself is edited",
   "colors": {
     "dark1": "#0F172A",
     "light1": "#FFFFFF",
@@ -88,7 +108,7 @@
     "text2": "#F9FAFB",
     "background2": "#6B7280"
   },
-  "__colors_note": "masters[0] の colorScheme。マスターが複数ある場合は masters[].colors も確認すること",
+  "__colors_note": "colorScheme of masters[0]. With multiple masters, check masters[].colors too",
   "masters": [
     {
       "objectId": "g1b3a74d17bb_0_0",
@@ -202,7 +222,7 @@
     "align": "END",
     "startAt": 1
   },
-  "__pageNumber_note": "Slides API は SLIDE_NUMBER プレースホルダを生成できないため、build-deck.py がこのスタイルでテキストボックスを描画する",
+  "__pageNumber_note": "The Slides API cannot create SLIDE_NUMBER placeholders, so build_deck.py draws text boxes in this style",
   "masterDecorations": [
     {
       "type": "shape",
@@ -243,7 +263,7 @@
       "weight": 0.75
     }
   ],
-  "__masterDecorations_note": "マスターが全ページに敷く要素（ロゴ・著作権表記等）。複製方式では自動継承されるので自前描画しないこと",
+  "__masterDecorations_note": "Elements the master lays on every page (logo, copyright, etc.). Inherited automatically by the copy — never draw them yourself",
   "roles": {
     "COVER": "TITLE_SLIDE",
     "SECTION": "TITLE_AND_2_COLUMNS_1",
@@ -281,8 +301,9 @@
       "TITLE_AND_3_COLUMNS",
       "TITLE_AND_3_COLUMNS_CENTER_LINE",
       "DEFAULT_PROPOSAL",
-      "DEFAULT_PROPOSAL_2",
       "DEFAULT_PRESENTATION",
+      "DEFAULT_PROPOSAL_2",
+      "DEFAULT_PRESENTATION_2",
       "TITLE_AND_BODY_2"
     ],
     "BLANK": [
@@ -297,6 +318,7 @@
       "CLOSE_PAGE"
     ]
   },
+  "__imageSlots_note": "layouts.*.imageSlots is where the template wants a picture: a PICTURE-family placeholder, an empty image element left in the layout, or the frame the bundled slides actually use. Deck specs should place image / aiImage figures in these frames — omit x/y/w/h (or set \"slot\": N) and build_deck.py fills them in",
   "layouts": {
     "TITLE_SLIDE": {
       "layoutId": "g1b3a74d17bb_0_6",
@@ -396,14 +418,24 @@
           "h": 0.471,
           "fill": "#FFFFFF",
           "shapeType": "TEXT_BOX"
-        },
+        }
+      ],
+      "imageSlots": [
         {
-          "type": "image",
-          "objectId": "g3dd14cbaf7b_0_41",
-          "x": 6.4,
-          "y": 3.442,
-          "w": 3.15,
-          "h": 1.772
+          "x": 6.45,
+          "y": 3.3,
+          "w": 3.05,
+          "h": 2.03,
+          "source": "layout",
+          "declared": {
+            "x": 6.4,
+            "y": 3.442,
+            "w": 3.15,
+            "h": 1.772
+          },
+          "sizedBy": "sample",
+          "samples": 1,
+          "aspect": 1.502
         }
       ]
     },
@@ -440,6 +472,17 @@
           "h": 5.625,
           "fill": "theme:LIGHT2",
           "shapeType": "RECTANGLE"
+        }
+      ],
+      "imageSlots": [
+        {
+          "x": 0.17,
+          "y": 0.98,
+          "w": 9.67,
+          "h": 3.59,
+          "source": "sample",
+          "samples": 5,
+          "aspect": 2.694
         }
       ]
     },
@@ -487,6 +530,17 @@
           "h": 5.625,
           "fill": "theme:LIGHT2",
           "shapeType": "RECTANGLE"
+        }
+      ],
+      "imageSlots": [
+        {
+          "x": 1.61,
+          "y": 0.65,
+          "w": 6.78,
+          "h": 4.47,
+          "source": "sample",
+          "samples": 7,
+          "aspect": 1.517
         }
       ]
     },
@@ -857,14 +911,24 @@
           "h": 0.471,
           "fill": "#FFFFFF",
           "shapeType": "TEXT_BOX"
-        },
+        }
+      ],
+      "imageSlots": [
         {
-          "type": "image",
-          "objectId": "g3d41bc7065f_0_23",
           "x": 0.5,
-          "y": 3.442,
+          "y": 2.42,
           "w": 3.15,
-          "h": 1.772
+          "h": 2.78,
+          "source": "layout",
+          "declared": {
+            "x": 0.5,
+            "y": 3.442,
+            "w": 3.15,
+            "h": 1.772
+          },
+          "sizedBy": "sample",
+          "samples": 6,
+          "aspect": 1.133
         }
       ]
     },
@@ -1110,6 +1174,71 @@
         {
           "type": "image",
           "objectId": "g3f97253ac5d_0_1387",
+          "x": 0.323,
+          "y": 5.208,
+          "w": 0.952,
+          "h": 0.244
+        }
+      ]
+    },
+    "DEFAULT_PRESENTATION": {
+      "layoutId": "g3f985ed19cd_0_259",
+      "displayName": "Default - Presentation",
+      "masterObjectId": "g1b3a74d17bb_0_0",
+      "placeholders": [
+        "TITLE",
+        "SLIDE_NUMBER",
+        "BODY"
+      ],
+      "hasPageNumber": true,
+      "elements": {
+        "title": {
+          "x": 0.323,
+          "y": 0.303,
+          "w": 9.354,
+          "h": 0.437,
+          "align": "CENTER"
+        },
+        "slideNumber": {
+          "x": 9.077,
+          "y": 5.246,
+          "w": 0.6,
+          "h": 0.168
+        },
+        "body": {
+          "x": 0.5,
+          "y": 0.96,
+          "w": 9.0,
+          "h": 4.068,
+          "align": "START"
+        }
+      },
+      "textStyles": {
+        "title": {
+          "fontSize": 26,
+          "color": "theme:DARK1"
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 20,
+          "bold": false,
+          "color": "theme:DARK1"
+        }
+      },
+      "decorations": [
+        {
+          "type": "shape",
+          "objectId": "g3f985ed19cd_0_260",
+          "x": 0.0,
+          "y": 0.0,
+          "w": 10.0,
+          "h": 5.625,
+          "fill": "theme:LIGHT1",
+          "shapeType": "RECTANGLE"
+        },
+        {
+          "type": "image",
+          "objectId": "g3f985ed19cd_0_263",
           "x": 0.323,
           "y": 5.208,
           "w": 0.952,
@@ -1474,9 +1603,20 @@
           "w": 0.952,
           "h": 0.244
         }
+      ],
+      "imageSlots": [
+        {
+          "x": 1.39,
+          "y": 0.86,
+          "w": 7.22,
+          "h": 4.3,
+          "source": "sample",
+          "samples": 2,
+          "aspect": 1.679
+        }
       ]
     },
-    "DEFAULT_PRESENTATION": {
+    "DEFAULT_PRESENTATION_2": {
       "layoutId": "g3f9599793cc_0_273",
       "displayName": "Default - Presentation",
       "masterObjectId": "g3f9599793cc_0_234",
@@ -1538,6 +1678,17 @@
           "y": 5.208,
           "w": 0.952,
           "h": 0.244
+        }
+      ],
+      "imageSlots": [
+        {
+          "x": 0.5,
+          "y": 1.42,
+          "w": 3.15,
+          "h": 2.78,
+          "source": "sample",
+          "samples": 14,
+          "aspect": 1.133
         }
       ]
     },

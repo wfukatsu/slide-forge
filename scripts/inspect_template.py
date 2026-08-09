@@ -11,7 +11,11 @@
     python scripts/inspect_template.py <URL> --thumbnails out/thumbs
 
 生成された template.json の `roles` は表示名とプレースホルダ構成からの**推測**なので、
-サムネイルを見て必ず人間が確認・修正すること。
+サムネイルを見て必ず人間が確認・修正すること。既存ファイルへ上書きするときは、
+確認済みの `roles` を引き継ぐ（推測で上書きしたいときだけ `--reset-roles`）。
+
+`layouts.*.imageSlots` は「テンプレートが画像を置きたい場所」。デッキ仕様では
+x/y/w/h を省略するとここへ収まる（`references/images.md`）。
 """
 from __future__ import annotations
 
@@ -51,6 +55,19 @@ register({
     "  Always review and fix the roles by eye":
         "  roles を必ず目視で確認・修正してください",
     "\n--- Thumbnails ---": "\n--- サムネイル ---",
+    " ({n} samples)": "（実例 {n} 件）",
+    "      imageSlot[{n}]  x={x:.3f} y={y:.3f} w={w:.3f} h={h:.3f} "
+    "aspect={a} <- {src}{extra}":
+        "      画像枠[{n}]  x={x:.3f} y={y:.3f} w={w:.3f} h={h:.3f} "
+        "縦横比={a} <- {src}{extra}",
+    "overwrite the human-verified roles with fresh guesses":
+        "人が確認した roles を推測値で上書きする",
+    "  (could not read the previous file: {e})":
+        "  （前回のファイルを読めませんでした: {e}）",
+    "  kept from the previous file: {keys}":
+        "  前回のファイルから引き継ぎ: {keys}",
+    "  ⚠ these kept roles point at layouts that no longer exist: {stale}":
+        "  ⚠ 引き継いだ roles のうち、存在しないレイアウトを指しているもの: {stale}",
 })
 
 # レイアウト表示名からセマンティックロールを推測するためのキーワード
@@ -152,6 +169,25 @@ PLACEHOLDER_ELEMENT_KEY = {
     "SLIDE_NUMBER": "slideNumber",
 }
 
+# 「ここに画像を置く」ことを表すプレースホルダの型。
+# Slides の UI で図・画像の枠として作られるものをまとめて拾う。
+IMAGE_PLACEHOLDER_TYPES = {
+    "PICTURE", "CLIP_ART", "DIAGRAM", "MEDIA", "OBJECT", "SLIDE_IMAGE",
+}
+
+
+def is_empty_image(el: dict) -> bool:
+    """中身の無い image 要素か（＝画像を差し込むための空枠か）。
+
+    レイアウトに置かれた image のうち、`contentUrl` が空のものは実際には
+    何も描画されない。テンプレートの作者が「ここに絵を入れる」意図で
+    残した枠であり、装飾ではなく差し込み位置として扱う。
+    """
+    img = el.get("image")
+    if img is None:
+        return False
+    return not (img.get("contentUrl") or img.get("sourceUrl"))
+
 
 def analyze_page(page: dict) -> dict:
     """レイアウト/マスター1ページ分の構造を抽出する。"""
@@ -159,6 +195,7 @@ def analyze_page(page: dict) -> dict:
     elements: dict = {}
     text_styles: dict = {}
     decorations: list[dict] = []
+    image_slots: list[dict] = []
 
     for el in page.get("pageElements", []):
         shape = el.get("shape")
@@ -169,6 +206,11 @@ def analyze_page(page: dict) -> dict:
             # 2カラム/3カラムのレイアウトは BODY を index 0,1,2 と複数持つ。
             # index 0 は "BODY"、それ以降は "BODY#1" のように区別して全て記録する。
             name = ptype if idx == 0 else f"{ptype}#{idx}"
+            if ptype in IMAGE_PLACEHOLDER_TYPES:
+                image_slots.append({
+                    **geometry(el), "source": "placeholder",
+                    "placeholder": ptype, "objectId": el["objectId"],
+                })
             if name in placeholders:
                 continue
             placeholders.append(name)
@@ -183,6 +225,14 @@ def analyze_page(page: dict) -> dict:
                 st = placeholder_text_style(shape)
                 if st:
                     text_styles[key] = st
+            continue
+
+        # 中身の無い image は装飾ではなく「画像の差し込み枠」
+        if is_empty_image(el):
+            image_slots.append({
+                **geometry(el), "source": "layout",
+                "placeholder": None, "objectId": el["objectId"],
+            })
             continue
 
         # プレースホルダ以外＝レイアウトが持つ装飾要素。
@@ -220,7 +270,106 @@ def analyze_page(page: dict) -> dict:
         "elements": elements,
         "textStyles": text_styles,
         "decorations": decorations,
+        "imageSlots": image_slots,
     }
+
+
+# ---------- 画像の差し込み枠（imageSlots） ----------
+
+def _overlap_ratio(a: dict, b: dict) -> float:
+    """2つの枠の重なりを、小さいほうの面積に対する比で返す。"""
+    ix = max(0.0, min(a["x"] + a["w"], b["x"] + b["w"]) - max(a["x"], b["x"]))
+    iy = max(0.0, min(a["y"] + a["h"], b["y"] + b["h"]) - max(a["y"], b["y"]))
+    small = min(a["w"] * a["h"], b["w"] * b["h"])
+    return (ix * iy) / small if small > 0 else 0.0
+
+
+def collect_sample_image_boxes(pres: dict) -> dict[str, list[dict]]:
+    """同梱スライドに実際に置かれている画像の枠を、レイアウトごとに集める。
+
+    レイアウト側の空枠は「だいたいこの辺」しか示していないことがあり、
+    実際の使われ方（同梱スライドの絵）のほうが設計意図に近い。
+    """
+    out: dict[str, list[dict]] = {}
+    for s in pres.get("slides", []):
+        lid = (s.get("slideProperties") or {}).get("layoutObjectId")
+        if not lid:
+            continue
+        for el in s.get("pageElements", []):
+            if "image" not in el or is_empty_image(el):
+                continue
+            out.setdefault(lid, []).append(geometry(el))
+    return out
+
+
+# 実例だけを根拠に枠とみなすには、同じ場所に何回置かれていれば十分か。
+# 1 回だけの画像は「たまたま貼られたスクリーンショット」のことが多い。
+SAMPLE_SLOT_MIN = 2
+MAX_SLOTS_PER_LAYOUT = 4
+
+
+def _consensus_box(boxes: list[dict]) -> dict:
+    """同じ枠に集まった実例から、代表的な大きさを1つ選ぶ（最頻・同数なら大）。"""
+    counts: dict[tuple, int] = {}
+    for b in boxes:
+        key = tuple(round(b[k], 2) for k in ("x", "y", "w", "h"))
+        counts[key] = counts.get(key, 0) + 1
+    best = max(counts, key=lambda k: (counts[k], k[2] * k[3]))
+    return dict(zip(("x", "y", "w", "h"), best))
+
+
+def merge_image_slots(layout_slots: list[dict],
+                      samples: list[dict]) -> list[dict]:
+    """レイアウトの枠と同梱スライドの実例を突き合わせて差し込み枠を確定する。
+
+    - プレースホルダがあれば、その座標をそのまま採用する（最も確かな根拠）
+    - レイアウトに空の image があれば枠とみなし、実例があれば大きさをそちらに
+      合わせる（空枠は「だいたいこの辺」しか示していないことがある）
+    - レイアウトに枠が無くても、同じ場所に {min} 回以上置かれている実例があれば
+      事実上の枠として拾う
+    """
+    slots = [dict(s) for s in layout_slots]
+    # レイアウト側の枠に紐づかない実例を、位置ごとにまとめる
+    leftovers: list[list[dict]] = []
+    for box in samples:
+        if any(_overlap_ratio(box, s) >= 0.5 for s in slots):
+            continue
+        for group in leftovers:
+            if _overlap_ratio(box, group[0]) >= 0.5:
+                group.append(box)
+                break
+        else:
+            leftovers.append([box])
+    for group in leftovers:
+        if len(group) >= SAMPLE_SLOT_MIN:
+            slots.append({**_consensus_box(group), "source": "sample",
+                          "placeholder": None, "objectId": None})
+
+    merged: list[dict] = []
+    for slot in slots:
+        entry = {k: slot[k] for k in ("x", "y", "w", "h")}
+        entry["source"] = slot.get("source")
+        if slot.get("placeholder"):
+            entry["placeholder"] = slot["placeholder"]
+        near = [b for b in samples if _overlap_ratio(b, slot) >= 0.5]
+        if near and slot.get("source") == "layout":
+            # 空枠の大きさより、実際に使われている大きさを優先する
+            chosen = _consensus_box(near)
+            if any(abs(chosen[k] - entry[k]) > 0.02 for k in ("x", "y", "w", "h")):
+                entry["declared"] = {k: slot[k] for k in ("x", "y", "w", "h")}
+                entry.update(chosen)
+                entry["sizedBy"] = "sample"
+        if near:
+            entry["samples"] = len(near)
+        entry["aspect"] = round(entry["w"] / entry["h"], 3) if entry["h"] else None
+        # 代表値をとった結果、既存の枠と同じ場所に重なったものは捨てる
+        if any(_overlap_ratio(entry, m) >= 0.6 for m in merged):
+            continue
+        merged.append(entry)
+
+    # 大きい枠から順に（本文用の絵が先、小さな飾りが後）
+    merged.sort(key=lambda s: -(s["w"] * s["h"]))
+    return merged[:MAX_SLOTS_PER_LAYOUT]
 
 
 def guess_role(display_name: str, placeholders: list[str]) -> str | None:
@@ -275,6 +424,8 @@ def build_template(pres: dict, name: str, source_url: str) -> dict:
             "decorations": analyze_page(m)["decorations"],
         })
 
+    sample_boxes = collect_sample_image_boxes(pres)
+
     layouts: dict = {}
     role_candidates: dict[str, list[str]] = {}
     used_keys: set[str] = set()
@@ -283,6 +434,8 @@ def build_template(pres: dict, name: str, source_url: str) -> dict:
         display = lp.get("displayName") or l["objectId"]
         key = slugify(display, used_keys)
         info = analyze_page(l)
+        slots = merge_image_slots(info["imageSlots"],
+                                  sample_boxes.get(l["objectId"], []))
         layouts[key] = {
             "layoutId": l["objectId"],
             "displayName": display,
@@ -293,6 +446,8 @@ def build_template(pres: dict, name: str, source_url: str) -> dict:
             "textStyles": info["textStyles"],
             "decorations": info["decorations"],
         }
+        if slots:
+            layouts[key]["imageSlots"] = slots
         role = guess_role(display, info["placeholders"])
         if role:
             role_candidates.setdefault(role, []).append(key)
@@ -340,6 +495,12 @@ def build_template(pres: dict, name: str, source_url: str) -> dict:
         "__roles_note": "Guessed from display names and placeholder sets. A human "
                         "must always verify and fix against the layout thumbnails",
         "roleCandidates": role_candidates,
+        "__imageSlots_note": "layouts.*.imageSlots is where the template wants a "
+                             "picture: a PICTURE-family placeholder, an empty image "
+                             "element left in the layout, or the frame the bundled "
+                             "slides actually use. Deck specs should place image / "
+                             "aiImage figures in these frames — omit x/y/w/h (or set "
+                             "\"slot\": N) and build_deck.py fills them in",
         "layouts": layouts,
     }
 
@@ -378,6 +539,13 @@ def print_report(tpl: dict) -> None:
             desc = " ".join(f"{k}={v}" for k, v in st.items())
             print(f"      {ek:12s} x={geo['x']:.3f} y={geo['y']:.3f} "
                   f"w={geo['w']:.3f} h={geo['h']:.3f} {desc}")
+        for n, slot in enumerate(l.get("imageSlots") or []):
+            src = slot.get("placeholder") or slot.get("source")
+            extra = t(" ({n} samples)", n=slot["samples"]) if slot.get("samples") else ""
+            print(t("      imageSlot[{n}]  x={x:.3f} y={y:.3f} w={w:.3f} h={h:.3f} "
+                    "aspect={a} <- {src}{extra}",
+                    n=n, x=slot["x"], y=slot["y"], w=slot["w"], h=slot["h"],
+                    a=slot.get("aspect"), src=src, extra=extra))
     print(t("\n--- Role guesses ---"))
     for role, keys in tpl["roleCandidates"].items():
         mark = "" if len(keys) == 1 else t("  ← {n} candidates, needs review", n=len(keys))
@@ -414,6 +582,8 @@ def main() -> int:
                                     "defaults to the --emit filename"))
     p.add_argument("--thumbnails", help=t("output directory for layout thumbnails"))
     p.add_argument("--raw", help=t("path to dump the raw API response (for debugging)"))
+    p.add_argument("--reset-roles", action="store_true",
+                   help=t("overwrite the human-verified roles with fresh guesses"))
     args = p.parse_args()
 
     pres_id = _auth.presentation_id(args.source)
@@ -432,6 +602,30 @@ def main() -> int:
     print_report(template)
 
     if args.emit:
+        # 既存ファイルに上書きするときは、人が確認して直した項目を残す。
+        # roles は推測値なので、再解析のたびに人の確認結果を消してはいけない。
+        keep = {}
+        if os.path.exists(args.emit) and not args.reset_roles:
+            try:
+                with open(args.emit) as f:
+                    prev = json.load(f)
+                for k in ("roles", "__roles_note", "name", "displayName"):
+                    if k in prev:
+                        keep[k] = prev[k]
+            except (OSError, ValueError) as e:  # noqa: BLE001
+                print(t("  (could not read the previous file: {e})", e=e),
+                      file=sys.stderr)
+        if keep:
+            stale = {r: k for r, k in keep.get("roles", {}).items()
+                     if k not in template["layouts"]}
+            template.update(keep)
+            if args.name:
+                template["name"] = args.name
+            print(t("  kept from the previous file: {keys}",
+                    keys=", ".join(sorted(keep))))
+            if stale:
+                print(t("  ⚠ these kept roles point at layouts that no longer "
+                        "exist: {stale}", stale=stale), file=sys.stderr)
         os.makedirs(os.path.dirname(os.path.abspath(args.emit)), exist_ok=True)
         with open(args.emit, "w") as f:
             json.dump(template, f, ensure_ascii=False, indent=2)

@@ -39,7 +39,8 @@ description: >-
 |---------|---------|
 | List registered templates (material for interactive choices) | `.venv/bin/python scripts/list_templates.py` / `--json` |
 | Interactive intake procedure (AskUserQuestion) | `references/interactive-intake.md` |
-| Analyze and register a template | `.venv/bin/python scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>` |
+| Analyze and register a template (keeps verified `roles`) | `.venv/bin/python scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>` |
+| Where the template wants pictures | `layouts.<KEY>.imageSlots` in `template.json` — omit x/y/w/h in the spec to use them |
 | Fetch layout thumbnails | `.venv/bin/python scripts/inspect_template.py <URL> --thumbnails out/layouts` |
 | Validate a deck spec (no API calls) | `.venv/bin/python scripts/build_deck.py --template … --spec … --dry-run` |
 | Generate a deck | `.venv/bin/python scripts/build_deck.py --template … --spec … --title "…"` |
@@ -195,7 +196,27 @@ entirely.** Analyze and register only when given a new (unregistered) URL.
 
 The emitted `template.json` contains the page size, color scheme, every
 layout's `layoutId` / placeholder structure / element coordinates / default
-text styles / decorations, and the IDs of the slides bundled with the template.
+text styles / decorations / **image slots**, and the IDs of the slides bundled
+with the template.
+
+Re-emitting over an existing `template.json` **keeps the human-verified
+`roles` / `__roles_note` / `name` / `displayName`** (pass `--reset-roles` to
+overwrite them with fresh guesses). Re-analysis is therefore safe once roles
+have been settled.
+
+### Image slots — where the template wants a picture
+
+`layouts.<KEY>.imageSlots` records the frames the template reserves for
+pictures, found from three sources: a PICTURE-family placeholder, an **empty
+image element left in the layout** (renders as nothing, so it is a slot, not a
+decoration), and frames the bundled slides use repeatedly. The report prints
+them as `imageSlot[N]`.
+
+**When a layout has a slot, put the picture in it.** In the deck spec, omit
+`x` / `y` / `w` / `h` and `build_deck.py` fills them in (`fit` defaults to
+`cover`); with several slots, pick one with `"slot": 1`. Placing an image
+somewhere else on such a layout is reported by `--dry-run` and fails under
+`--strict`. Details in `references/images.md`.
 
 ### Verifying roles (mandatory, human judgment)
 
@@ -358,7 +379,7 @@ already drawn", not a drawing instruction.
 | Page skeletons and analysis figures | `pages` (`governing_message` / `lead_in` / `so_what` / `source_note` / `exhibit_frame` / `waterfall` / `rating_matrix` …) | How to compose a page; only density varies by purpose. No key, theme colors |
 | Domain-vocabulary icons | `icons` (`asset_icon` / `asset_icon_flow` …) | 62 brand assets. Brand-compliant. **Requires network** |
 | Cloud architecture diagrams | `cloud_icons` (`cloud_icon` / `cloud_zone` …) | 1,757 official AWS/GCP/Azure icons. **Never recolor or rotate**. Requires network |
-| Mood, scenery, covers | `images` (`ai_image` / `image`) | AI-generated or local images |
+| Mood, scenery, covers | `images` (`ai_image` / `image`) | AI-generated or local images. **Check `imageSlots` first — if the layout reserves a frame, omit x/y/w/h and let it land there** |
 | Code samples | `code_block` (java / graphql / json / bash) | Monospace + VS Code Dark+ style highlighting. **Square corners** |
 
 All nine are methods on the same `Canvas`, so they can be mixed on one slide.
@@ -431,6 +452,8 @@ regenerate.
 | Page numbers missing | The Slides API cannot instantiate SLIDE_NUMBER placeholders. Confirm `add_page_numbers()` is called |
 | Footer doubled | You drew a footer the template already provides. Remove your own drawing |
 | Text cut off mid-way | Placeholder height insufficient. Reduce the text, or switch to another layout that has `BODY` |
+| An image sits in an odd place on a section/cover slide | The layout has an `imageSlots` frame you did not use. Omit x/y/w/h in the spec (`--dry-run` reports this) |
+| `type 'aiImage' is missing required keys: ['x','y','w','h']` | That layout has no image slot, so the coordinates are yours to choose |
 
 **Principle on failure**: delete a deck that failed mid-generation (the
 template copy already exists in Drive), fix the spec, and **rebuild from

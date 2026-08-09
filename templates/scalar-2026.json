@@ -14,7 +14,7 @@
     "g353093c97b1_0_10",
     "g24a58f1ca40_1_60"
   ],
-  "__existingSlideIds_note": "複製直後に削除するテンプレート同梱スライド。テンプレート側を編集したら再解析すること",
+  "__existingSlideIds_note": "Bundled slides deleted right after the copy. Re-analyze whenever the template itself is edited",
   "colors": {
     "dark1": "#0F172A",
     "light1": "#FFFFFF",
@@ -33,7 +33,7 @@
     "text2": "#F9FAFB",
     "background2": "#6B7280"
   },
-  "__colors_note": "masters[0] の colorScheme。マスターが複数ある場合は masters[].colors も確認すること",
+  "__colors_note": "colorScheme of masters[0]. With multiple masters, check masters[].colors too",
   "masters": [
     {
       "objectId": "g1b3a74d17bb_0_0",
@@ -85,7 +85,7 @@
     "align": "END",
     "startAt": 1
   },
-  "__pageNumber_note": "Slides API は SLIDE_NUMBER プレースホルダを生成できないため、build-deck.py がこのスタイルでテキストボックスを描画する",
+  "__pageNumber_note": "The Slides API cannot create SLIDE_NUMBER placeholders, so build_deck.py draws text boxes in this style",
   "masterDecorations": [
     {
       "type": "shape",
@@ -106,7 +106,7 @@
       "h": 0.342
     }
   ],
-  "__masterDecorations_note": "マスターが全ページに敷く要素（ロゴ・著作権表記等）。複製方式では自動継承されるので自前描画しないこと",
+  "__masterDecorations_note": "Elements the master lays on every page (logo, copyright, etc.). Inherited automatically by the copy — never draw them yourself",
   "roles": {
     "COVER": "TITLE_SLIDE",
     "CONTENT": "DEFAULT_PROPOSAL",
@@ -140,6 +140,7 @@
       "CLOSE_PAGE"
     ]
   },
+  "__imageSlots_note": "layouts.*.imageSlots is where the template wants a picture: a PICTURE-family placeholder, an empty image element left in the layout, or the frame the bundled slides actually use. Deck specs should place image / aiImage figures in these frames — omit x/y/w/h (or set \"slot\": N) and build_deck.py fills them in",
   "layouts": {
     "TITLE_SLIDE": {
       "layoutId": "g1b3a74d17bb_0_6",
