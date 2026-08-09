@@ -23,481 +23,1771 @@
         "",
         "8 系統は同じ Canvas のメソッドなので、1 枚のスライドに混ぜて使える。"
       ],
-      "notes": "この 1 枚が目次を兼ねる。以降のセクションはこの順に並ぶ。"
+      "notes": "この 1 枚が目次を兼ねる。以降のセクションはこの順に並ぶ。",
+      "bodyFontSize": 17
     },
-
-    { "layout": "SECTION", "title": "1. 構造図", "body": "diagrams.py — cards / flow / hbars / metric" },
+    {
+      "layout": "SECTION",
+      "title": "1. 構造図",
+      "body": "diagrams.py — cards / flow / hbars / metric"
+    },
     {
       "layout": "TITLE_ONLY",
       "title": "工程とカード（flow / cards）",
       "figures": [
-        { "type": "flow", "x": 0.5, "y": 1.15, "w": 9.0, "h": 0.85,
-          "items": ["要件整理", "設計", "実装", "検証", "本番展開"] },
-        { "type": "cards", "x": 0.5, "y": 2.45, "w": 9.0, "h": 1.9,
+        {
+          "type": "flow",
+          "x": 0.5,
+          "y": 1.15,
+          "w": 9.0,
+          "h": 0.85,
           "items": [
-            ["flow", "左から右への工程。矢印は隙間にだけ引かれ、箱に食い込まない"],
-            ["cards", "見出し＋本文の横並び。上端のアクセントバーに合わせて角は直角"],
-            ["混在", "同じ Canvas なので 1 枚に複数の部品を積み上げられる"]
-          ] }
+            "要件整理",
+            "設計",
+            "実装",
+            "検証",
+            "本番展開"
+          ]
+        },
+        {
+          "type": "cards",
+          "x": 0.5,
+          "y": 2.45,
+          "w": 9.0,
+          "h": 1.9,
+          "items": [
+            [
+              "flow",
+              "左から右への工程。矢印は隙間にだけ引かれ、箱に食い込まない"
+            ],
+            [
+              "cards",
+              "見出し＋本文の横並び。上端のアクセントバーに合わせて角は直角"
+            ],
+            [
+              "混在",
+              "同じ Canvas なので 1 枚に複数の部品を積み上げられる"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "量の比較と単一の数字（hbars / metric）",
       "figures": [
-        { "type": "hbars", "x": 0.5, "y": 1.2, "w": 6.3,
+        {
+          "type": "hbars",
+          "x": 0.5,
+          "y": 1.2,
+          "w": 6.3,
           "items": [
-            ["設計・実装", 62, "62%"],
-            ["テスト", 24, "24%"],
-            ["運用移行", 14, "14%"]
-          ] },
-        { "type": "metric", "x": 7.15, "y": 1.2, "w": 2.35, "h": 1.35,
-          "value": "45", "caption": "カタログ収録の部品数" },
-        { "type": "metric", "x": 7.15, "y": 2.75, "w": 2.35, "h": 1.35,
-          "value": "8", "caption": "絵で見せる手段の系統数" }
+            [
+              "設計・実装",
+              62,
+              "62%"
+            ],
+            [
+              "テスト",
+              24,
+              "24%"
+            ],
+            [
+              "運用移行",
+              14,
+              "14%"
+            ]
+          ]
+        },
+        {
+          "type": "metric",
+          "x": 7.15,
+          "y": 1.2,
+          "w": 2.35,
+          "h": 1.35,
+          "value": "45",
+          "caption": "カタログ収録の部品数"
+        },
+        {
+          "type": "metric",
+          "x": 7.15,
+          "y": 2.75,
+          "w": 2.35,
+          "h": 1.35,
+          "value": "8",
+          "caption": "絵で見せる手段の系統数"
+        }
       ]
     },
-
-    { "layout": "SECTION", "title": "2. 表・グラフ", "body": "charts.py — table / vbars / vbars_grouped / vbars_stacked / linechart / pie" },
+    {
+      "layout": "SECTION",
+      "title": "2. 表・グラフ",
+      "body": "charts.py — table / vbars / vbars_grouped / vbars_stacked / linechart / pie"
+    },
     {
       "layout": "TITLE_ONLY",
       "title": "表: ネイティブテーブルは生成後も編集できる（table）",
       "figures": [
-        { "type": "table", "x": 0.5, "y": 1.2, "w": 9.0,
-          "headers": ["部品", "描画方式", "通信", "生成後の編集"],
-          "rows": [
-            ["table", "Slides ネイティブ表", "不要", "できる"],
-            ["vbars / linechart", "図形の組み合わせ", "不要", "図形単位で可"],
-            ["pie", "SVG を PNG に焼いて貼る", "不要", "できない"],
-            ["asset_icon / cloud_icon", "PNG を Drive 経由で貼る", "必要", "できない"]
+        {
+          "type": "table",
+          "x": 0.5,
+          "y": 1.2,
+          "w": 9.0,
+          "headers": [
+            "部品",
+            "描画方式",
+            "通信",
+            "生成後の編集"
           ],
-          "colWidths": [1.6, 2.0, 0.8, 1.2],
-          "rowH": 0.46, "headerH": 0.44 }
+          "rows": [
+            [
+              "table",
+              "Slides ネイティブ表",
+              "不要",
+              "できる"
+            ],
+            [
+              "vbars / linechart",
+              "図形の組み合わせ",
+              "不要",
+              "図形単位で可"
+            ],
+            [
+              "pie",
+              "SVG を PNG に焼いて貼る",
+              "不要",
+              "できない"
+            ],
+            [
+              "asset_icon / cloud_icon",
+              "PNG を Drive 経由で貼る",
+              "必要",
+              "できない"
+            ]
+          ],
+          "colWidths": [
+            1.6,
+            2.0,
+            0.8,
+            1.2
+          ],
+          "rowH": 0.46,
+          "headerH": 0.44
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "縦棒: 3 年で部品数は 3 倍に増えた（vbars）",
       "figures": [
-        { "type": "vbars", "x": 1.0, "y": 1.3, "w": 5.6, "h": 3.4,
-          "items": [["2024", 15], ["2025", 30], ["2026", 45]],
-          "unit": "種" },
-        { "type": "metric", "x": 7.2, "y": 2.2, "w": 2.3, "h": 1.4,
-          "value": "3.0x", "caption": "2 年間の増加率" }
+        {
+          "type": "vbars",
+          "x": 1.0,
+          "y": 1.3,
+          "w": 5.6,
+          "h": 3.4,
+          "items": [
+            [
+              "2024",
+              15
+            ],
+            [
+              "2025",
+              30
+            ],
+            [
+              "2026",
+              45
+            ]
+          ],
+          "unit": "種"
+        },
+        {
+          "type": "metric",
+          "x": 7.2,
+          "y": 2.2,
+          "w": 2.3,
+          "h": 1.4,
+          "value": "3.0x",
+          "caption": "2 年間の増加率"
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "グループ縦棒: どの工程でも作図の手数が半分以下になる（vbars_grouped）",
       "figures": [
-        { "type": "vbars_grouped", "x": 0.7, "y": 1.25, "w": 8.6, "h": 3.5,
-          "categories": ["構成図", "スケジュール", "比較表", "体制図"],
-          "series": [["手作業", [40, 26, 18, 22]], ["部品を使う", [12, 6, 5, 7]]],
-          "unit": "分" }
+        {
+          "type": "vbars_grouped",
+          "x": 0.7,
+          "y": 1.25,
+          "w": 8.6,
+          "h": 3.5,
+          "categories": [
+            "構成図",
+            "スケジュール",
+            "比較表",
+            "体制図"
+          ],
+          "series": [
+            [
+              "手作業",
+              [
+                40,
+                26,
+                18,
+                22
+              ]
+            ],
+            [
+              "部品を使う",
+              [
+                12,
+                6,
+                5,
+                7
+              ]
+            ]
+          ],
+          "unit": "分"
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "積み上げ縦棒: 総量の推移と内訳を同時に見せる（vbars_stacked）",
       "figures": [
-        { "type": "vbars_stacked", "x": 0.8, "y": 1.2, "w": 8.4, "h": 3.7,
-          "categories": ["2024", "2025", "2026"],
-          "series": [
-            ["イメージ図", [10, 16, 16]],
-            ["表・グラフ", [3, 6, 6]],
-            ["フレームワーク", [0, 4, 6]],
-            ["アイコン・その他", [2, 4, 17]]
+        {
+          "type": "vbars_stacked",
+          "x": 0.8,
+          "y": 1.2,
+          "w": 8.4,
+          "h": 3.7,
+          "categories": [
+            "2024",
+            "2025",
+            "2026"
           ],
-          "unit": "種", "values": true }
+          "series": [
+            [
+              "イメージ図",
+              [
+                10,
+                16,
+                16
+              ]
+            ],
+            [
+              "表・グラフ",
+              [
+                3,
+                6,
+                6
+              ]
+            ],
+            [
+              "フレームワーク",
+              [
+                0,
+                4,
+                6
+              ]
+            ],
+            [
+              "アイコン・その他",
+              [
+                2,
+                4,
+                17
+              ]
+            ]
+          ],
+          "unit": "種",
+          "values": true
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "折れ線: 軸は 1 本。二重軸は作れない（linechart）",
       "figures": [
-        { "type": "linechart", "x": 0.6, "y": 1.25, "w": 8.8, "h": 3.5,
-          "labels": ["1月", "2月", "3月", "4月", "5月", "6月"],
-          "series": [
-            ["p95 応答時間", [320, 300, 240, 180, 120, 80]],
-            ["p50 応答時間", [120, 115, 90, 70, 45, 30]]
+        {
+          "type": "linechart",
+          "x": 0.6,
+          "y": 1.25,
+          "w": 8.8,
+          "h": 3.5,
+          "labels": [
+            "1月",
+            "2月",
+            "3月",
+            "4月",
+            "5月",
+            "6月"
           ],
-          "unit": "ms", "endValues": true }
+          "series": [
+            [
+              "p95 応答時間",
+              [
+                320,
+                300,
+                240,
+                180,
+                120,
+                80
+              ]
+            ],
+            [
+              "p50 応答時間",
+              [
+                120,
+                115,
+                90,
+                70,
+                45,
+                30
+              ]
+            ]
+          ],
+          "unit": "ms",
+          "endValues": true
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "円: 構成比は 6 系列まで。渡した順に時計回りで描く（pie）",
       "figures": [
-        { "type": "pie", "x": 1.1, "y": 1.35, "size": 3.2,
-          "items": [["イメージ図", 16], ["表・グラフ", 6], ["フレームワーク", 6], ["アイコン系", 10], ["その他", 7]],
-          "legendW": 3.6 }
+        {
+          "type": "pie",
+          "x": 1.1,
+          "y": 1.35,
+          "size": 3.2,
+          "items": [
+            [
+              "イメージ図",
+              16
+            ],
+            [
+              "表・グラフ",
+              6
+            ],
+            [
+              "フレームワーク",
+              6
+            ],
+            [
+              "アイコン系",
+              10
+            ],
+            [
+              "その他",
+              7
+            ]
+          ],
+          "legendW": 3.6
+        }
       ]
     },
-
-    { "layout": "SECTION", "title": "3. イメージ図", "body": "illustrations.py — ピクトグラム 30 種と比喩図 12 種。キーもネットワークも不要" },
+    {
+      "layout": "SECTION",
+      "title": "3. イメージ図",
+      "body": "illustrations.py — ピクトグラム 30 種と比喩図 12 種。キーもネットワークも不要"
+    },
     {
       "layout": "TITLE_ONLY",
       "title": "ピクトグラム 30 種（icon / icon_grid）",
       "figures": [
-        { "type": "icon_grid", "x": 0.5, "y": 0.95, "w": 9.0, "cols": 8,
-          "size": 0.54, "rowGap": 0.16, "labelSize": 7.5,
+        {
+          "type": "icon_grid",
+          "x": 0.5,
+          "y": 0.95,
+          "w": 9.0,
+          "cols": 8,
+          "size": 0.54,
+          "rowGap": 0.16,
+          "labelSize": 7.5,
           "items": [
-            ["person", "person"], ["people", "people"], ["server", "server"], ["database", "database"],
-            ["cloud", "cloud"], ["document", "document"], ["documents", "documents"], ["gear", "gear"],
-            ["lock", "lock"], ["shield", "shield"], ["browser", "browser"], ["mobile", "mobile"],
-            ["bot", "bot"], ["chart", "chart"], ["clock", "clock"], ["check", "check"],
-            ["cross", "cross"], ["warning", "warning"], ["mail", "mail"], ["key", "key"],
-            ["network", "network"], ["code", "code"], ["stack", "stack"], ["folder", "folder"],
-            ["bulb", "bulb"], ["search", "search"], ["sync", "sync"], ["flag", "flag"],
-            ["coin", "coin"], ["chip", "chip"]
-          ] }
+            [
+              "person",
+              "person"
+            ],
+            [
+              "people",
+              "people"
+            ],
+            [
+              "server",
+              "server"
+            ],
+            [
+              "database",
+              "database"
+            ],
+            [
+              "cloud",
+              "cloud"
+            ],
+            [
+              "document",
+              "document"
+            ],
+            [
+              "documents",
+              "documents"
+            ],
+            [
+              "gear",
+              "gear"
+            ],
+            [
+              "lock",
+              "lock"
+            ],
+            [
+              "shield",
+              "shield"
+            ],
+            [
+              "browser",
+              "browser"
+            ],
+            [
+              "mobile",
+              "mobile"
+            ],
+            [
+              "bot",
+              "bot"
+            ],
+            [
+              "chart",
+              "chart"
+            ],
+            [
+              "clock",
+              "clock"
+            ],
+            [
+              "check",
+              "check"
+            ],
+            [
+              "cross",
+              "cross"
+            ],
+            [
+              "warning",
+              "warning"
+            ],
+            [
+              "mail",
+              "mail"
+            ],
+            [
+              "key",
+              "key"
+            ],
+            [
+              "network",
+              "network"
+            ],
+            [
+              "code",
+              "code"
+            ],
+            [
+              "stack",
+              "stack"
+            ],
+            [
+              "folder",
+              "folder"
+            ],
+            [
+              "bulb",
+              "bulb"
+            ],
+            [
+              "search",
+              "search"
+            ],
+            [
+              "sync",
+              "sync"
+            ],
+            [
+              "flag",
+              "flag"
+            ],
+            [
+              "coin",
+              "coin"
+            ],
+            [
+              "chip",
+              "chip"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "並べる・つなぐ・単体で置く（icon_row / icon_flow / icon）",
       "figures": [
-        { "type": "icon_flow", "x": 0.5, "y": 1.15, "w": 9.0, "size": 0.8,
-          "items": [["person", "利用者"], ["browser", "アプリ"], ["server", "API"], ["database", "データベース"]] },
-        { "type": "icon_row", "x": 0.5, "y": 2.85, "w": 6.2, "size": 0.8,
-          "items": [["lock", "認証"], ["shield", "認可"], ["key", "鍵管理"]] },
-        { "type": "icon", "name": "bulb", "x": 7.85, "y": 2.85, "size": 1.0,
-          "label": "単体で置く（icon）", "labelSize": 9, "labelW": 2.0 }
+        {
+          "type": "icon_flow",
+          "x": 0.5,
+          "y": 1.15,
+          "w": 9.0,
+          "size": 0.8,
+          "items": [
+            [
+              "person",
+              "利用者"
+            ],
+            [
+              "browser",
+              "アプリ"
+            ],
+            [
+              "server",
+              "API"
+            ],
+            [
+              "database",
+              "データベース"
+            ]
+          ]
+        },
+        {
+          "type": "icon_row",
+          "x": 0.5,
+          "y": 2.85,
+          "w": 6.2,
+          "size": 0.8,
+          "items": [
+            [
+              "lock",
+              "認証"
+            ],
+            [
+              "shield",
+              "認可"
+            ],
+            [
+              "key",
+              "鍵管理"
+            ]
+          ]
+        },
+        {
+          "type": "icon",
+          "name": "bulb",
+          "x": 7.85,
+          "y": 2.85,
+          "size": 1.0,
+          "label": "単体で置く（icon）",
+          "labelSize": 9,
+          "labelW": 2.0
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "階層と絞り込み（pyramid / funnel）",
       "figures": [
-        { "type": "pyramid", "x": 0.7, "y": 1.15, "w": 3.6, "h": 2.9,
-          "items": ["経営指標", "業務指標", "システム指標"] },
-        { "type": "funnel", "x": 5.3, "y": 1.15, "w": 2.7, "h": 2.9,
-          "items": [["認知", "12,000"], ["検討", "2,400"], ["導入", "310"]] }
+        {
+          "type": "pyramid",
+          "x": 0.7,
+          "y": 1.15,
+          "w": 3.6,
+          "h": 2.9,
+          "items": [
+            "経営指標",
+            "業務指標",
+            "システム指標"
+          ]
+        },
+        {
+          "type": "funnel",
+          "x": 5.3,
+          "y": 1.15,
+          "w": 2.7,
+          "h": 2.9,
+          "items": [
+            [
+              "認知",
+              "12,000"
+            ],
+            [
+              "検討",
+              "2,400"
+            ],
+            [
+              "導入",
+              "310"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "重なりと対比（venn / before_after）",
       "figures": [
-        { "type": "venn", "x": 0.4, "y": 1.05, "w": 4.2, "h": 3.3,
-          "items": ["整合性", "可用性", "分断耐性"], "center": "選べるのは2つ" },
-        { "type": "before_after", "x": 4.9, "y": 1.1, "w": 4.6, "h": 3.2,
-          "before": ["手作業のレビュー", "夜間の手動デプロイ", "属人的な障害対応"],
-          "after": ["自動レビュー", "パイプライン化", "Runbook 化"] }
+        {
+          "type": "venn",
+          "x": 0.4,
+          "y": 1.05,
+          "w": 4.2,
+          "h": 3.3,
+          "items": [
+            "整合性",
+            "可用性",
+            "分断耐性"
+          ],
+          "center": "選べるのは2つ"
+        },
+        {
+          "type": "before_after",
+          "x": 4.9,
+          "y": 1.1,
+          "w": 4.6,
+          "h": 3.2,
+          "before": [
+            "手作業のレビュー",
+            "夜間の手動デプロイ",
+            "属人的な障害対応"
+          ],
+          "after": [
+            "自動レビュー",
+            "パイプライン化",
+            "Runbook 化"
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "見えている部分と見えていない部分（iceberg）",
       "figures": [
-        { "type": "iceberg", "x": 0.5, "y": 1.0, "w": 9.0, "h": 3.6,
-          "above": ["画面の使い勝手", "レスポンス速度"],
-          "below": ["データモデル", "トランザクション境界", "障害時の整合性", "運用の手順"] }
+        {
+          "type": "iceberg",
+          "x": 0.5,
+          "y": 1.0,
+          "w": 9.0,
+          "h": 3.6,
+          "above": [
+            "画面の使い勝手",
+            "レスポンス速度"
+          ],
+          "below": [
+            "データモデル",
+            "トランザクション境界",
+            "障害時の整合性",
+            "運用の手順"
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "2 案の比較（balance）",
       "figures": [
-        { "type": "balance", "x": 0.8, "y": 0.95, "w": 8.4, "h": 3.7,
-          "left": ["モノリス", ["変更の影響が読める", "運用が単純"]],
-          "right": ["マイクロサービス", ["独立してデプロイできる", "障害を閉じ込められる"]],
-          "tilt": 1 }
+        {
+          "type": "balance",
+          "x": 0.8,
+          "y": 0.95,
+          "w": 8.4,
+          "h": 3.7,
+          "left": [
+            "モノリス",
+            [
+              "変更の影響が読める",
+              "運用が単純"
+            ]
+          ],
+          "right": [
+            "マイクロサービス",
+            [
+              "独立してデプロイできる",
+              "障害を閉じ込められる"
+            ]
+          ],
+          "tilt": 1
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "段階と積層（steps / layers）",
       "figures": [
-        { "type": "steps", "x": 0.5, "y": 1.15, "w": 4.3, "h": 2.9,
-          "items": ["可視化", "自動化", "自律化"] },
-        { "type": "layers", "x": 5.3, "y": 1.15, "w": 4.2, "h": 2.9,
+        {
+          "type": "steps",
+          "x": 0.5,
+          "y": 1.15,
+          "w": 4.3,
+          "h": 2.9,
           "items": [
-            ["デッキ仕様（JSON）", "何を描くかを書く"],
-            ["Canvas / Mixin", "座標に展開して検査する"],
-            ["Slides API", "図形として描く"]
-          ] }
+            "可視化",
+            "自動化",
+            "自律化"
+          ]
+        },
+        {
+          "type": "layers",
+          "x": 5.3,
+          "y": 1.15,
+          "w": 4.2,
+          "h": 2.9,
+          "items": [
+            [
+              "デッキ仕様（JSON）",
+              "何を描くかを書く"
+            ],
+            [
+              "Canvas / Mixin",
+              "座標に展開して検査する"
+            ],
+            [
+              "Slides API",
+              "図形として描く"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "中心と放射（hub）",
       "figures": [
-        { "type": "hub", "x": 1.4, "y": 0.95, "w": 7.2, "h": 3.7,
-          "center": "共有台帳", "items": ["注文", "在庫", "決済", "配送", "会計"] }
+        {
+          "type": "hub",
+          "x": 1.4,
+          "y": 0.95,
+          "w": 7.2,
+          "h": 3.7,
+          "center": "共有台帳",
+          "items": [
+            "注文",
+            "在庫",
+            "決済",
+            "配送",
+            "会計"
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "4 象限で位置づける（matrix）",
       "figures": [
-        { "type": "matrix", "x": 1.3, "y": 1.0, "w": 7.4, "h": 3.6,
-          "items": ["じっくり検討", "最優先", "見送り", "すぐ着手"],
-          "xAxis": ["小", "大"], "yAxis": ["高", "低"],
-          "xLabel": "効果", "yLabel": "コスト" }
+        {
+          "type": "matrix",
+          "x": 1.3,
+          "y": 1.0,
+          "w": 7.4,
+          "h": 3.6,
+          "items": [
+            "じっくり検討",
+            "最優先",
+            "見送り",
+            "すぐ着手"
+          ],
+          "xAxis": [
+            "小",
+            "大"
+          ],
+          "yAxis": [
+            "高",
+            "低"
+          ],
+          "xLabel": "効果",
+          "yLabel": "コスト"
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "道のりと時系列（journey / timeline）",
       "figures": [
-        { "type": "journey", "x": 0.5, "y": 0.95, "w": 9.0, "h": 2.3,
+        {
+          "type": "journey",
+          "x": 0.5,
+          "y": 0.95,
+          "w": 9.0,
+          "h": 2.3,
           "items": [
-            ["PoC", "適用範囲を絞って検証"],
-            ["先行導入", "1 サービスで本番運用"],
-            ["横展開", "対象を広げる"],
-            ["標準化", "社内の既定手順に"]
-          ] },
-        { "type": "timeline", "x": 0.5, "y": 3.5, "w": 9.0, "rowH": 1.0,
-          "items": [["2026 Q1", "設計"], ["2026 Q2", "実装"], ["2026 Q3", "先行導入"], ["2026 Q4", "全社展開"]] }
+            [
+              "PoC",
+              "適用範囲を絞って検証"
+            ],
+            [
+              "先行導入",
+              "1 サービスで本番運用"
+            ],
+            [
+              "横展開",
+              "対象を広げる"
+            ],
+            [
+              "標準化",
+              "社内の既定手順に"
+            ]
+          ]
+        },
+        {
+          "type": "timeline",
+          "x": 0.5,
+          "y": 3.5,
+          "w": 9.0,
+          "rowH": 1.0,
+          "items": [
+            [
+              "2026 Q1",
+              "設計"
+            ],
+            [
+              "2026 Q2",
+              "実装"
+            ],
+            [
+              "2026 Q3",
+              "先行導入"
+            ],
+            [
+              "2026 Q4",
+              "全社展開"
+            ]
+          ]
+        }
       ]
     },
-
-    { "layout": "SECTION", "title": "4. ビジネスフレームワーク", "body": "patterns.py — posmap / gantt / orgchart / lean_canvas / nested_circles / testimonial" },
+    {
+      "layout": "SECTION",
+      "title": "4. ビジネスフレームワーク",
+      "body": "patterns.py — posmap / gantt / orgchart / lean_canvas / nested_circles / testimonial"
+    },
     {
       "layout": "TITLE_ONLY",
       "title": "競合との位置関係を 2 軸で示す（posmap）",
       "figures": [
-        { "type": "posmap", "x": 0.6, "y": 1.15, "w": 6.4, "h": 4.1,
-          "points": [["A社", 0.85, 0.15], ["B社", 0.45, 0.68], ["C社", 0.3, 0.25], ["D社", 0.1, 0.88], ["自社", 0.85, 0.85]],
-          "xAxis": ["サポートがそこそこ", "サポートが充実"],
-          "yAxis": ["導入までが遅い", "導入までが速い"],
-          "highlight": "自社" }
+        {
+          "type": "posmap",
+          "x": 0.6,
+          "y": 1.15,
+          "w": 6.4,
+          "h": 4.1,
+          "points": [
+            [
+              "A社",
+              0.85,
+              0.15
+            ],
+            [
+              "B社",
+              0.45,
+              0.68
+            ],
+            [
+              "C社",
+              0.3,
+              0.25
+            ],
+            [
+              "D社",
+              0.1,
+              0.88
+            ],
+            [
+              "自社",
+              0.85,
+              0.85
+            ]
+          ],
+          "xAxis": [
+            "サポートがそこそこ",
+            "サポートが充実"
+          ],
+          "yAxis": [
+            "導入までが遅い",
+            "導入までが速い"
+          ],
+          "highlight": "自社"
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "進め方とスケジュール（gantt）",
       "figures": [
-        { "type": "gantt", "x": 0.5, "y": 1.2, "w": 9.0, "h": 3.6,
-          "columns": ["4月", "5月", "6月", "7月"],
+        {
+          "type": "gantt",
+          "x": 0.5,
+          "y": 1.2,
+          "w": 9.0,
+          "h": 3.6,
+          "columns": [
+            "4月",
+            "5月",
+            "6月",
+            "7月"
+          ],
           "rows": [
-            ["キックオフ", 0.5, 0.5, "キックオフ"],
-            ["事前準備", 0.0, 1.0, "要件整理"],
-            ["フェーズ1", 1.0, 2.5, "設計・実装"],
-            ["フェーズ2", 2.2, 3.5, "検証"],
-            ["実運用", 3.5, 4.0]
-          ] }
+            [
+              "キックオフ",
+              0.5,
+              0.5,
+              "キックオフ"
+            ],
+            [
+              "事前準備",
+              0.0,
+              1.0,
+              "要件整理"
+            ],
+            [
+              "フェーズ1",
+              1.0,
+              2.5,
+              "設計・実装"
+            ],
+            [
+              "フェーズ2",
+              2.2,
+              3.5,
+              "検証"
+            ],
+            [
+              "実運用",
+              3.5,
+              4.0
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "体制と役割（orgchart）",
       "figures": [
-        { "type": "orgchart", "x": 0.7, "y": 1.2, "w": 8.6, "h": 3.6,
-          "tree": ["プロジェクト責任者\n山田 太郎",
-                   [["営業担当\n佐藤", []],
-                    ["開発担当\n鈴木", [["設計担当\n高橋", []], ["実装担当\n田中", []]]],
-                    ["CS担当\n伊藤", []]]] }
+        {
+          "type": "orgchart",
+          "x": 0.7,
+          "y": 1.2,
+          "w": 8.6,
+          "h": 3.6,
+          "tree": [
+            "プロジェクト責任者\n山田 太郎",
+            [
+              [
+                "営業担当\n佐藤",
+                []
+              ],
+              [
+                "開発担当\n鈴木",
+                [
+                  [
+                    "設計担当\n高橋",
+                    []
+                  ],
+                  [
+                    "実装担当\n田中",
+                    []
+                  ]
+                ]
+              ],
+              [
+                "CS担当\n伊藤",
+                []
+              ]
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "ビジネスモデルの全体像（lean_canvas）",
       "figures": [
-        { "type": "lean_canvas", "x": 0.4, "y": 1.1, "w": 9.2, "h": 4.2,
+        {
+          "type": "lean_canvas",
+          "x": 0.4,
+          "y": 1.1,
+          "w": 9.2,
+          "h": 4.2,
           "blocks": {
-            "problem": ["作図に時間がかかる", "体裁が揃わない"],
-            "solution": ["部品化して呼び出す"],
-            "key_metrics": ["1枚あたりの作成時間"],
-            "uvp": ["仕様を書けば図になる"],
-            "advantage": ["生成前の自己点検"],
-            "channels": ["社内スキル配布", "事例共有"],
-            "segments": ["提案書の作成者", "登壇者"],
-            "cost": ["整備・保守の工数"],
-            "revenue": ["提案準備時間の削減"]
-          } }
+            "problem": [
+              "作図に時間がかかる",
+              "体裁が揃わない"
+            ],
+            "solution": [
+              "部品化して呼び出す"
+            ],
+            "key_metrics": [
+              "1枚あたりの作成時間"
+            ],
+            "uvp": [
+              "仕様を書けば図になる"
+            ],
+            "advantage": [
+              "生成前の自己点検"
+            ],
+            "channels": [
+              "社内スキル配布",
+              "事例共有"
+            ],
+            "segments": [
+              "提案書の作成者",
+              "登壇者"
+            ],
+            "cost": [
+              "整備・保守の工数"
+            ],
+            "revenue": [
+              "提案準備時間の削減"
+            ]
+          }
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "市場規模の入れ子（nested_circles）",
       "figures": [
-        { "type": "nested_circles", "x": 0.7, "y": 1.2, "w": 8.6, "h": 4.0,
-          "rings": [["○○市場の総規模", "1.2兆円"], ["当社ターゲット市場", "800億円"], ["20XX年の獲得目標", "12億円"]] }
+        {
+          "type": "nested_circles",
+          "x": 0.7,
+          "y": 1.2,
+          "w": 8.6,
+          "h": 4.0,
+          "rings": [
+            [
+              "○○市場の総規模",
+              "1.2兆円"
+            ],
+            [
+              "当社ターゲット市場",
+              "800億円"
+            ],
+            [
+              "20XX年の獲得目標",
+              "12億円"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "顧客・キーマンの声（testimonial）",
       "figures": [
-        { "type": "testimonial", "x": 0.6, "y": 1.3, "w": 8.8, "h": 3.4,
+        {
+          "type": "testimonial",
+          "x": 0.6,
+          "y": 1.3,
+          "w": 8.8,
+          "h": 3.4,
           "quote": "○○の効率化になり、コスト削減につながりそうですね。ぜひ試してみたいです。",
-          "name": "田中 一郎", "role": "株式会社○○○○\n情報システム部 部長",
-          "points": ["○○の確認から実施まで1ヶ月以上かかる", "担当者は兼務で忙しく、改善が進まない"] }
+          "name": "田中 一郎",
+          "role": "株式会社○○○○\n情報システム部 部長",
+          "points": [
+            "○○の確認から実施まで1ヶ月以上かかる",
+            "担当者は兼務で忙しく、改善が進まない"
+          ]
+        }
       ],
       "notes": "引用は実在の発言にだけ使うこと。この枠はダミー文言。"
     },
-
-    { "layout": "SECTION", "title": "5. ブランドアイコン", "body": "icons.py — 業務語彙の素材 62 種。asset_icon / row / flow / grid / cards" },
+    {
+      "layout": "SECTION",
+      "title": "5. ブランドアイコン",
+      "body": "icons.py — 業務語彙の素材 62 種。asset_icon / row / flow / grid / cards"
+    },
     {
       "layout": "TITLE_ONLY",
       "title": "格子で一覧する（asset_icon_grid）",
       "figures": [
-        { "type": "asset_icon_grid", "x": 0.5, "y": 0.95, "w": 9.0, "cols": 8,
-          "size": 0.62, "rowGap": 0.24, "labelSize": 7.5,
+        {
+          "type": "asset_icon_grid",
+          "x": 0.5,
+          "y": 0.95,
+          "w": 9.0,
+          "cols": 8,
+          "size": 0.62,
+          "rowGap": 0.24,
+          "labelSize": 7.5,
           "items": [
-            ["data-subject", "データ主体"], ["data-bank", "情報銀行"], ["data-consumer", "利活用企業"],
-            ["consent", "同意文書"], ["personal-info", "個人情報"], ["my-data", "マイデータ"],
-            ["privacy-policy", "プライバシー\nポリシー"], ["terms", "利用規約"],
-            ["evidence-chain", "証拠チェーン"], ["tamper-check", "改ざん検知"], ["timestamp", "タイムスタンプ"],
-            ["public-key", "公開鍵"], ["private-key", "秘密鍵"], ["shared-key", "共通鍵"],
-            ["certificate", "証明書登録"], ["security", "セキュリティー"],
-            ["job-seeker", "求職者"], ["hiring-company", "募集企業"], ["screening", "書類選考"],
-            ["interview", "面接"], ["job-offer", "内定"], ["reference-check", "リファレンス\nチェック"],
-            ["invoice", "請求書"], ["receipt", "領収書"]
-          ] }
+            [
+              "data-subject",
+              "データ主体"
+            ],
+            [
+              "data-bank",
+              "情報銀行"
+            ],
+            [
+              "data-consumer",
+              "利活用企業"
+            ],
+            [
+              "consent",
+              "同意文書"
+            ],
+            [
+              "personal-info",
+              "個人情報"
+            ],
+            [
+              "my-data",
+              "マイデータ"
+            ],
+            [
+              "privacy-policy",
+              "プライバシー\nポリシー"
+            ],
+            [
+              "terms",
+              "利用規約"
+            ],
+            [
+              "evidence-chain",
+              "証拠チェーン"
+            ],
+            [
+              "tamper-check",
+              "改ざん検知"
+            ],
+            [
+              "timestamp",
+              "タイムスタンプ"
+            ],
+            [
+              "public-key",
+              "公開鍵"
+            ],
+            [
+              "private-key",
+              "秘密鍵"
+            ],
+            [
+              "shared-key",
+              "共通鍵"
+            ],
+            [
+              "certificate",
+              "証明書登録"
+            ],
+            [
+              "security",
+              "セキュリティー"
+            ],
+            [
+              "job-seeker",
+              "求職者"
+            ],
+            [
+              "hiring-company",
+              "募集企業"
+            ],
+            [
+              "screening",
+              "書類選考"
+            ],
+            [
+              "interview",
+              "面接"
+            ],
+            [
+              "job-offer",
+              "内定"
+            ],
+            [
+              "reference-check",
+              "リファレンス\nチェック"
+            ],
+            [
+              "invoice",
+              "請求書"
+            ],
+            [
+              "receipt",
+              "領収書"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "流れを見せる（asset_icon_flow）",
       "figures": [
-        { "type": "asset_icon_flow", "x": 0.5, "y": 1.15, "w": 9.0, "size": 0.86,
-          "items": [["job-seeker", "求職者"], ["signup", "会員登録"], ["screening", "書類選考"], ["interview", "面接"], ["job-offer", "内定"]] },
-        { "type": "asset_icon_flow", "x": 0.5, "y": 3.05, "w": 9.0, "size": 0.86,
-          "items": [["personal-info", "個人情報"], ["consent", "同意"], ["data-bank", "情報銀行"], ["data-consumer", "利活用企業"], ["data-usage", "利用状況の把握"]] }
+        {
+          "type": "asset_icon_flow",
+          "x": 0.5,
+          "y": 1.15,
+          "w": 9.0,
+          "size": 0.86,
+          "items": [
+            [
+              "job-seeker",
+              "求職者"
+            ],
+            [
+              "signup",
+              "会員登録"
+            ],
+            [
+              "screening",
+              "書類選考"
+            ],
+            [
+              "interview",
+              "面接"
+            ],
+            [
+              "job-offer",
+              "内定"
+            ]
+          ]
+        },
+        {
+          "type": "asset_icon_flow",
+          "x": 0.5,
+          "y": 3.05,
+          "w": 9.0,
+          "size": 0.86,
+          "items": [
+            [
+              "personal-info",
+              "個人情報"
+            ],
+            [
+              "consent",
+              "同意"
+            ],
+            [
+              "data-bank",
+              "情報銀行"
+            ],
+            [
+              "data-consumer",
+              "利活用企業"
+            ],
+            [
+              "data-usage",
+              "利用状況の把握"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "説明を添える（asset_icon_cards）",
       "figures": [
-        { "type": "asset_icon_cards", "x": 0.5, "y": 1.15, "w": 9.0, "h": 3.4, "cols": 3,
+        {
+          "type": "asset_icon_cards",
+          "x": 0.5,
+          "y": 1.15,
+          "w": 9.0,
+          "h": 3.4,
+          "cols": 3,
           "items": [
-            ["evidence-chain", "証拠チェーン", "取引を鎖状につなぎ、後からの書き換えを検知する"],
-            ["tamper-check", "改ざん検知", "記録時のままであることを検証する"],
-            ["timestamp", "タイムスタンプ", "いつ記録されたかを第三者が確認できる形で残す"],
-            ["public-key", "公開鍵", "署名の検証に使う。公開してよい鍵"],
-            ["private-key", "秘密鍵", "署名の生成に使う。持ち主だけの鍵"],
-            ["shared-key", "共通鍵", "暗号化と復号に同じ鍵を使う方式"]
-          ] }
+            [
+              "evidence-chain",
+              "証拠チェーン",
+              "取引を鎖状につなぎ、後からの書き換えを検知する"
+            ],
+            [
+              "tamper-check",
+              "改ざん検知",
+              "記録時のままであることを検証する"
+            ],
+            [
+              "timestamp",
+              "タイムスタンプ",
+              "いつ記録されたかを第三者が確認できる形で残す"
+            ],
+            [
+              "public-key",
+              "公開鍵",
+              "署名の検証に使う。公開してよい鍵"
+            ],
+            [
+              "private-key",
+              "秘密鍵",
+              "署名の生成に使う。持ち主だけの鍵"
+            ],
+            [
+              "shared-key",
+              "共通鍵",
+              "暗号化と復号に同じ鍵を使う方式"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "色はテンプレートの配色から選ぶ（asset_icon_row / asset_icon）",
       "figures": [
-        { "type": "asset_icon_row", "x": 0.5, "y": 1.2, "w": 6.4, "size": 0.86, "labelSize": 9.5,
-          "items": [["security", "既定（主色）"], ["mail", "既定（主色）"], ["notice", "既定（主色）"]] },
-        { "type": "asset_icon_row", "x": 0.5, "y": 2.9, "w": 6.4, "size": 0.86, "labelSize": 9.5,
-          "color": ["#63C045", "#EE2155", "#FFB300"],
-          "items": [["security", "成功色"], ["mail", "警告色"], ["notice", "注意色"]] },
-        { "type": "asset_icon", "name": "data-bank", "x": 7.7, "y": 1.9, "size": 1.3,
-          "label": "単体で置く\n（asset_icon）", "labelSize": 9.5 }
+        {
+          "type": "asset_icon_row",
+          "x": 0.5,
+          "y": 1.2,
+          "w": 6.4,
+          "size": 0.86,
+          "labelSize": 9.5,
+          "items": [
+            [
+              "security",
+              "既定（主色）"
+            ],
+            [
+              "mail",
+              "既定（主色）"
+            ],
+            [
+              "notice",
+              "既定（主色）"
+            ]
+          ]
+        },
+        {
+          "type": "asset_icon_row",
+          "x": 0.5,
+          "y": 2.9,
+          "w": 6.4,
+          "size": 0.86,
+          "labelSize": 9.5,
+          "color": [
+            "#63C045",
+            "#EE2155",
+            "#FFB300"
+          ],
+          "items": [
+            [
+              "security",
+              "成功色"
+            ],
+            [
+              "mail",
+              "警告色"
+            ],
+            [
+              "notice",
+              "注意色"
+            ]
+          ]
+        },
+        {
+          "type": "asset_icon",
+          "name": "data-bank",
+          "x": 7.7,
+          "y": 1.9,
+          "size": 1.3,
+          "label": "単体で置く\n（asset_icon）",
+          "labelSize": 9.5
+        }
       ]
     },
-
-    { "layout": "SECTION", "title": "6. クラウド構成図", "body": "cloud_icons.py — AWS / GCP / Azure 公式 1,757 種。色と回転の変更は禁止" },
+    {
+      "layout": "SECTION",
+      "title": "6. クラウド構成図",
+      "body": "cloud_icons.py — AWS / GCP / Azure 公式 1,757 種。色と回転の変更は禁止"
+    },
     {
       "layout": "TITLE_ONLY",
       "title": "ゾーンで囲って中に並べる（cloud_zone + cloud_icon_row）",
       "figures": [
-        { "type": "cloud_zone", "x": 0.45, "y": 1.05, "w": 9.1, "h": 2.5, "vendor": "aws", "title": "AWS  ap-northeast-1" },
-        { "type": "cloud_zone", "x": 0.75, "y": 1.5, "w": 8.5, "h": 1.85, "title": "VPC  10.0.0.0/16", "color": "#6B7280" },
-        { "type": "cloud_icon_row", "x": 1.0, "y": 2.05, "w": 8.0, "size": 0.72, "labelSize": 8.5,
+        {
+          "type": "cloud_zone",
+          "x": 0.45,
+          "y": 1.05,
+          "w": 9.1,
+          "h": 2.5,
+          "vendor": "aws",
+          "title": "AWS  ap-northeast-1"
+        },
+        {
+          "type": "cloud_zone",
+          "x": 0.75,
+          "y": 1.5,
+          "w": 8.5,
+          "h": 1.85,
+          "title": "VPC  10.0.0.0/16",
+          "color": "#6B7280"
+        },
+        {
+          "type": "cloud_icon_row",
+          "x": 1.0,
+          "y": 2.05,
+          "w": 8.0,
+          "size": 0.72,
+          "labelSize": 8.5,
           "items": [
-            ["aws:elastic-load-balancing", "ALB"],
-            ["aws:elastic-container-service", "ECS Fargate"],
-            ["aws:rds", "RDS for PostgreSQL"],
-            ["aws:simple-storage-service", "S3"],
-            ["aws:cloudwatch", "CloudWatch"]
-          ] }
+            [
+              "aws:elastic-load-balancing",
+              "ALB"
+            ],
+            [
+              "aws:elastic-container-service",
+              "ECS Fargate"
+            ],
+            [
+              "aws:rds",
+              "RDS for PostgreSQL"
+            ],
+            [
+              "aws:simple-storage-service",
+              "S3"
+            ],
+            [
+              "aws:cloudwatch",
+              "CloudWatch"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "マルチクラウドを並べる（cloud_icon_grid）",
       "figures": [
-        { "type": "cloud_zone", "x": 0.4, "y": 1.15, "w": 2.95, "h": 3.2, "vendor": "aws" },
-        { "type": "cloud_zone", "x": 3.55, "y": 1.15, "w": 2.9, "h": 3.2, "vendor": "gcp" },
-        { "type": "cloud_zone", "x": 6.65, "y": 1.15, "w": 2.95, "h": 3.2, "vendor": "azure" },
-        { "type": "cloud_icon_grid", "x": 0.55, "y": 1.65, "w": 2.65, "cols": 2, "size": 0.62, "rowGap": 0.34, "labelSize": 8,
-          "items": [["aws:elastic-kubernetes-service", "EKS"], ["aws:aurora", "Aurora"], ["aws:simple-storage-service", "S3"], ["aws:cloudwatch", "CloudWatch"]] },
-        { "type": "cloud_icon_grid", "x": 3.7, "y": 1.65, "w": 2.6, "cols": 2, "size": 0.62, "rowGap": 0.34, "labelSize": 8,
-          "items": [["gcp:gke", "GKE"], ["gcp:cloud-spanner", "Spanner"], ["gcp:cloud-storage", "Cloud Storage"], ["gcp:cloud-monitoring", "Cloud Monitoring"]] },
-        { "type": "cloud_icon_grid", "x": 6.8, "y": 1.65, "w": 2.65, "cols": 2, "size": 0.62, "rowGap": 0.34, "labelSize": 8,
-          "items": [["azure:kubernetes-services", "AKS"], ["azure:cosmos-db", "Cosmos DB"], ["azure:storage-accounts", "Storage"], ["azure:monitor", "Monitor"]] }
+        {
+          "type": "cloud_zone",
+          "x": 0.4,
+          "y": 1.15,
+          "w": 2.95,
+          "h": 3.2,
+          "vendor": "aws"
+        },
+        {
+          "type": "cloud_zone",
+          "x": 3.55,
+          "y": 1.15,
+          "w": 2.9,
+          "h": 3.2,
+          "vendor": "gcp"
+        },
+        {
+          "type": "cloud_zone",
+          "x": 6.65,
+          "y": 1.15,
+          "w": 2.95,
+          "h": 3.2,
+          "vendor": "azure"
+        },
+        {
+          "type": "cloud_icon_grid",
+          "x": 0.55,
+          "y": 1.65,
+          "w": 2.65,
+          "cols": 2,
+          "size": 0.62,
+          "rowGap": 0.34,
+          "labelSize": 8,
+          "items": [
+            [
+              "aws:elastic-kubernetes-service",
+              "EKS"
+            ],
+            [
+              "aws:aurora",
+              "Aurora"
+            ],
+            [
+              "aws:simple-storage-service",
+              "S3"
+            ],
+            [
+              "aws:cloudwatch",
+              "CloudWatch"
+            ]
+          ]
+        },
+        {
+          "type": "cloud_icon_grid",
+          "x": 3.7,
+          "y": 1.65,
+          "w": 2.6,
+          "cols": 2,
+          "size": 0.62,
+          "rowGap": 0.34,
+          "labelSize": 8,
+          "items": [
+            [
+              "gcp:gke",
+              "GKE"
+            ],
+            [
+              "gcp:cloud-spanner",
+              "Spanner"
+            ],
+            [
+              "gcp:cloud-storage",
+              "Cloud Storage"
+            ],
+            [
+              "gcp:cloud-monitoring",
+              "Cloud Monitoring"
+            ]
+          ]
+        },
+        {
+          "type": "cloud_icon_grid",
+          "x": 6.8,
+          "y": 1.65,
+          "w": 2.65,
+          "cols": 2,
+          "size": 0.62,
+          "rowGap": 0.34,
+          "labelSize": 8,
+          "items": [
+            [
+              "azure:kubernetes-services",
+              "AKS"
+            ],
+            [
+              "azure:cosmos-db",
+              "Cosmos DB"
+            ],
+            [
+              "azure:storage-accounts",
+              "Storage"
+            ],
+            [
+              "azure:monitor",
+              "Monitor"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "データの流れを見せる（cloud_icon_flow / cloud_icon）",
       "figures": [
-        { "type": "cloud_icon_flow", "x": 0.5, "y": 1.3, "w": 7.6, "size": 0.72,
+        {
+          "type": "cloud_icon_flow",
+          "x": 0.5,
+          "y": 1.3,
+          "w": 7.6,
+          "size": 0.72,
           "items": [
-            ["aws:kinesis-data-streams", "取り込み"],
-            ["aws:lambda", "変換"],
-            ["aws:simple-storage-service", "保管"],
-            ["aws:glue", "カタログ"],
-            ["aws:athena", "分析"]
-          ] },
-        { "type": "cloud_icon_flow", "x": 0.5, "y": 3.1, "w": 7.6, "size": 0.72,
+            [
+              "aws:kinesis-data-streams",
+              "取り込み"
+            ],
+            [
+              "aws:lambda",
+              "変換"
+            ],
+            [
+              "aws:simple-storage-service",
+              "保管"
+            ],
+            [
+              "aws:glue",
+              "カタログ"
+            ],
+            [
+              "aws:athena",
+              "分析"
+            ]
+          ]
+        },
+        {
+          "type": "cloud_icon_flow",
+          "x": 0.5,
+          "y": 3.1,
+          "w": 7.6,
+          "size": 0.72,
           "items": [
-            ["gcp:pubsub", "取り込み"],
-            ["gcp:dataflow", "変換"],
-            ["gcp:cloud-storage", "保管"],
-            ["gcp:data-catalog", "カタログ"],
-            ["gcp:bigquery", "分析"]
-          ] },
-        { "type": "cloud_icon", "name": "aws:virtual-private-cloud-vpc", "x": 8.75, "y": 2.1, "size": 0.8,
-          "label": "単体で置く\n（cloud_icon）", "labelSize": 8.5, "labelW": 1.4 }
+            [
+              "gcp:pubsub",
+              "取り込み"
+            ],
+            [
+              "gcp:dataflow",
+              "変換"
+            ],
+            [
+              "gcp:cloud-storage",
+              "保管"
+            ],
+            [
+              "gcp:data-catalog",
+              "カタログ"
+            ],
+            [
+              "gcp:bigquery",
+              "分析"
+            ]
+          ]
+        },
+        {
+          "type": "cloud_icon",
+          "name": "aws:virtual-private-cloud-vpc",
+          "x": 8.75,
+          "y": 2.1,
+          "size": 0.8,
+          "label": "単体で置く\n（cloud_icon）",
+          "labelSize": 8.5,
+          "labelW": 1.4
+        }
       ]
     },
-
-    { "layout": "SECTION", "title": "7. コードサンプル", "body": "diagrams.py の code_block — 等幅 + VS Code Dark+ 風ハイライト。角は直角" },
+    {
+      "layout": "SECTION",
+      "title": "7. コードサンプル",
+      "body": "diagrams.py の code_block — 等幅 + VS Code Dark+ 風ハイライト。角は直角"
+    },
     {
       "layout": "TITLE_ONLY",
       "title": "Java: 型・メソッド・文字列・コメントを塗り分ける（code_block）",
       "figures": [
-        { "type": "code_block", "x": 0.5, "y": 1.1, "w": 6.1, "h": 2.1, "lang": "java",
-          "code": "DistributedTransaction tx = manager.begin();  // 開始\ntry {\n  tx.put(Put.newBuilder()\n      .namespace(\"order\").table(\"orders\")\n      .partitionKey(Key.ofInt(\"order_id\", 10))\n      .textValue(\"status\", \"PAID\").build());\n  tx.commit();\n} catch (TransactionException e) {\n  tx.rollback();\n}" },
-        { "type": "cards", "x": 6.85, "y": 1.1, "w": 2.65, "h": 2.1,
-          "items": [["解説", "型は青緑、メソッドは黄、文字列は橙、コメントは緑"]] }
+        {
+          "type": "code_block",
+          "x": 0.5,
+          "y": 1.1,
+          "w": 6.1,
+          "h": 2.1,
+          "lang": "java",
+          "code": "DistributedTransaction tx = manager.begin();  // 開始\ntry {\n  tx.put(Put.newBuilder()\n      .namespace(\"order\").table(\"orders\")\n      .partitionKey(Key.ofInt(\"order_id\", 10))\n      .textValue(\"status\", \"PAID\").build());\n  tx.commit();\n} catch (TransactionException e) {\n  tx.rollback();\n}"
+        },
+        {
+          "type": "cards",
+          "x": 6.85,
+          "y": 1.1,
+          "w": 2.65,
+          "h": 2.1,
+          "items": [
+            [
+              "解説",
+              "型は青緑、メソッドは黄、文字列は橙、コメントは緑"
+            ]
+          ]
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "GraphQL / JSON / bash も同じ書き方で使える（lang）",
       "figures": [
-        { "type": "code_block", "x": 0.5, "y": 1.1, "w": 4.4, "h": 1.3, "lang": "graphql",
-          "code": "mutation Put @transaction {\n  account_put(put: {key: {id: \"u1\"},\n                    values: {balance: 750}})\n}" },
-        { "type": "code_block", "x": 5.1, "y": 1.1, "w": 4.4, "h": 1.3, "lang": "json",
-          "code": "{\n  \"legacy.orders\": { \"transaction\": true },\n  \"legacy.logs\":   { \"transaction\": false }\n}" },
-        { "type": "code_block", "x": 0.5, "y": 2.75, "w": 9.0, "h": 1.15, "lang": "bash",
-          "code": "$ .venv/bin/python scripts/build-deck.py \\\n    --template templates/scalar-2026.json --spec deck.json \\\n    --title \"デザインパターン カタログ\"" }
+        {
+          "type": "code_block",
+          "x": 0.5,
+          "y": 1.1,
+          "w": 4.4,
+          "h": 1.3,
+          "lang": "graphql",
+          "code": "mutation Put @transaction {\n  account_put(put: {key: {id: \"u1\"},\n                    values: {balance: 750}})\n}"
+        },
+        {
+          "type": "code_block",
+          "x": 5.1,
+          "y": 1.1,
+          "w": 4.4,
+          "h": 1.3,
+          "lang": "json",
+          "code": "{\n  \"legacy.orders\": { \"transaction\": true },\n  \"legacy.logs\":   { \"transaction\": false }\n}"
+        },
+        {
+          "type": "code_block",
+          "x": 0.5,
+          "y": 2.75,
+          "w": 9.0,
+          "h": 1.15,
+          "lang": "bash",
+          "code": "$ .venv/bin/python scripts/build-deck.py \\\n    --template templates/scalar-2026.json --spec deck.json \\\n    --title \"デザインパターン カタログ\""
+        }
       ]
     },
-
-    { "layout": "SECTION", "title": "8. 画像", "body": "images.py — 手持ちの画像（image）と AI 生成（ai_image）" },
+    {
+      "layout": "SECTION",
+      "title": "8. 画像",
+      "body": "images.py — 手持ちの画像（image）と AI 生成（ai_image）"
+    },
     {
       "layout": "TITLE_ONLY",
       "title": "手持ちの画像を貼る（image）",
       "figures": [
-        { "type": "image", "x": 0.5, "y": 1.1, "w": 4.3, "h": 2.9,
-          "source": "examples/assets/sample.png", "fit": "contain",
+        {
+          "type": "image",
+          "x": 0.5,
+          "y": 1.1,
+          "w": 4.3,
+          "h": 2.9,
+          "source": "examples/assets/sample.png",
+          "fit": "contain",
           "caption": "fit=\"contain\" — 比率を保って枠内に収める",
-          "outline": "#D6E4F2", "captionAt": "box" },
-        { "type": "image", "x": 5.2, "y": 1.1, "w": 4.3, "h": 2.9,
-          "source": "examples/assets/sample.png", "fit": "cover",
-          "caption": "fit=\"cover\" — 枠を埋めてはみ出しを切る", "captionAt": "box" }
+          "outline": "#D6E4F2",
+          "captionAt": "box"
+        },
+        {
+          "type": "image",
+          "x": 5.2,
+          "y": 1.1,
+          "w": 4.3,
+          "h": 2.9,
+          "source": "examples/assets/sample.png",
+          "fit": "cover",
+          "caption": "fit=\"cover\" — 枠を埋めてはみ出しを切る",
+          "captionAt": "box"
+        }
       ]
     },
     {
       "layout": "TITLE_ONLY",
       "title": "AI で情景を生成する（aiImage）",
       "figures": [
-        { "type": "code_block", "x": 0.5, "y": 1.15, "w": 5.7, "h": 1.6, "lang": "json",
-          "code": "{ \"type\": \"aiImage\",\n  \"x\": 0.5, \"y\": 1.1, \"w\": 5.6, \"h\": 3.2,\n  \"prompt\": \"複数のDBをまたいでデータが流れる抽象図\",\n  \"style\": \"flat_vector\" }" },
-        { "type": "cards", "x": 0.5, "y": 3.05, "w": 5.7, "h": 1.5,
-          "items": [["使いどころ", "表紙・章扉・雰囲気づくり。正確さが要る図には使わない。構造は Canvas で描くこと。"]] },
-        { "type": "cards", "x": 6.5, "y": 1.15, "w": 3.0, "h": 3.4,
-          "items": [["この枠は未生成", "aiImage だけは課金を有効にした Google Cloud プロジェクトの GEMINI_API_KEY が要る。無料枠のキーでは生成クォータが 0 のため、このカタログでは仕様の記載にとどめている。生成物はプロンプト単位でキャッシュされ、作り直しても絵は変わらない。"]] }
+        {
+          "type": "code_block",
+          "x": 0.5,
+          "y": 1.15,
+          "w": 5.7,
+          "h": 1.6,
+          "lang": "json",
+          "code": "{ \"type\": \"aiImage\",\n  \"x\": 0.5, \"y\": 1.1, \"w\": 5.6, \"h\": 3.2,\n  \"prompt\": \"複数のDBをまたいでデータが流れる抽象図\",\n  \"style\": \"flat_vector\" }"
+        },
+        {
+          "type": "cards",
+          "x": 0.5,
+          "y": 3.05,
+          "w": 5.7,
+          "h": 1.5,
+          "items": [
+            [
+              "使いどころ",
+              "表紙・章扉・雰囲気づくり。正確さが要る図には使わない。構造は Canvas で描くこと。"
+            ]
+          ]
+        },
+        {
+          "type": "cards",
+          "x": 6.5,
+          "y": 1.15,
+          "w": 3.0,
+          "h": 3.4,
+          "items": [
+            [
+              "この枠は未生成",
+              "aiImage だけは課金を有効にした Google Cloud プロジェクトの GEMINI_API_KEY が要る。無料枠のキーでは生成クォータが 0 のため、このカタログでは仕様の記載にとどめている。生成物はプロンプト単位でキャッシュされ、作り直しても絵は変わらない。"
+            ]
+          ]
+        }
       ],
       "notes": "aiImage は課金済みキーが必要。キーを差し替えたうえで、この figures を aiImage に戻して再生成すれば実物が入る。"
     },
-
-    { "layout": "SECTION", "title": "付録", "body": "レイアウトの系統 — Proposal と Presentation" },
+    {
+      "layout": "SECTION",
+      "title": "付録",
+      "body": "レイアウトの系統 — Proposal と Presentation"
+    },
     {
       "layout": "CONTENT_PRESENTATION",
       "title": "登壇用レイアウト（CONTENT_PRESENTATION）",
@@ -513,10 +1803,35 @@
       "layout": "TITLE_ONLY_PRESENTATION",
       "title": "登壇用の図版スライド（TITLE_ONLY_PRESENTATION）",
       "figures": [
-        { "type": "icon_flow", "x": 0.5, "y": 1.5, "w": 9.0, "size": 0.9,
-          "items": [["document", "仕様を書く"], ["gear", "検査する"], ["chart", "生成する"], ["check", "目視で確かめる"]] }
+        {
+          "type": "icon_flow",
+          "x": 0.5,
+          "y": 1.5,
+          "w": 9.0,
+          "size": 0.9,
+          "items": [
+            [
+              "document",
+              "仕様を書く"
+            ],
+            [
+              "gear",
+              "検査する"
+            ],
+            [
+              "chart",
+              "生成する"
+            ],
+            [
+              "check",
+              "目視で確かめる"
+            ]
+          ]
+        }
       ]
     },
-    { "layout": "CLOSING" }
+    {
+      "layout": "CLOSING"
+    }
   ]
 }

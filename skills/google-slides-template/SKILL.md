@@ -41,6 +41,7 @@ description: >-
 | Interactive intake procedure (AskUserQuestion) | `references/interactive-intake.md` |
 | Analyze and register a template (keeps verified `roles`) | `.venv/bin/python scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>` |
 | Where the template wants pictures | `layouts.<KEY>.imageSlots` in `template.json` — omit x/y/w/h in the spec to use them |
+| Emphasis inside the body | `{"text": …, "role": "heading"}` per line, `**…**` inline — see "Emphasis inside the body" |
 | Fetch layout thumbnails | `.venv/bin/python scripts/inspect_template.py <URL> --thumbnails out/layouts` |
 | Validate a deck spec (no API calls) | `.venv/bin/python scripts/build_deck.py --template … --spec … --dry-run` |
 | Generate a deck | `.venv/bin/python scripts/build_deck.py --template … --spec … --title "…"` |
@@ -275,6 +276,41 @@ Write what can be **claimed**, not what is shown (the action-title principle).
 - Bad: "Revenue trend"
 - Good: "Revenue grew 20% YoY for three consecutive quarters"
 
+### Emphasis inside the body — do not leave a wall of uniform text
+
+A body of ten lines in one weight is hard to read: the reader cannot tell a
+sub-heading from the items hanging under it. Give the structure to the reader.
+
+```json
+"body": [
+  { "text": "見せていないから変えられるもの", "role": "heading" },
+  "    データベースの種類・テーブル構造・インデックス",
+  "    使っているフレームワークや言語",
+  "",
+  { "text": "見せてしまうと変えられなくなるもの", "role": "heading" },
+  "    URLの形（/order_tbl のようにテーブル名が出ている）",
+  "足すのは簡単で、消すのは難しい。この **非対称性** が基本的な制約です。"
+]
+```
+
+**When to use it** — these are rules, not options:
+
+- The body has a "sub-heading + hanging items" shape → mark the sub-headings
+  `role: "heading"`
+- More than five bullets in a row → group them into 2-3 sets and give each a
+  heading
+- At most **three** headings on one slide. Needing more means the slide should
+  be split, or the content belongs in a table
+- One keyword inside a sentence → `**…**` (this is the only inline markup; the
+  rest of Markdown is not supported)
+- Do not emphasize more than a quarter of the body. Emphasis that is everywhere
+  is emphasis nowhere
+
+Roles are `heading` / `strong` / `note`; the look comes from the template's
+`bodyRoles` (`references/template-schema.md`). The default `heading` is bold
+plus space above and **does not change the font size**, so line counts stay
+predictable.
+
 ### Estimating body text volume
 
 Placeholder default fonts are often large, tuned for hand-written decks. Tune
@@ -286,9 +322,12 @@ Japanese body text with `bodyFontSize` / `bodyLineSpacing` / `bodySpaceAbove` /
                 "bodySpaceAbove": 0, "bodySpaceBelow": 3 }, "slides": [ ... ] }
 ```
 
-Estimate fit with this formula. **The API returns no error when text
-overflows**, and `--dry-run`'s `audit_text_fit` only inspects `figures`, so you
-must compute body fit yourself.
+**The API returns no error when text overflows**, so `--dry-run` estimates the
+body height for you and warns when it does not fit (`--strict` makes it an
+error). The estimate is deliberately conservative — when the spec leaves
+paragraph spacing at the template default, the real height is larger than the
+estimate — so treat "no warning" as "probably fits", not as a guarantee, and
+use this formula when you want to check by hand.
 
 ```
 paragraph height = wrapped lines × fontSize × 1.2 × (lineSpacing / 100)
@@ -451,7 +490,8 @@ regenerate.
 | `Invalid requests[N].createSlide: layout not found` | `template.json` is stale; the template was probably edited. Re-analyze |
 | Page numbers missing | The Slides API cannot instantiate SLIDE_NUMBER placeholders. Confirm `add_page_numbers()` is called |
 | Footer doubled | You drew a footer the template already provides. Remove your own drawing |
-| Text cut off mid-way | Placeholder height insufficient. Reduce the text, or switch to another layout that has `BODY` |
+| Text cut off mid-way | Placeholder height insufficient. `--dry-run` reports it as "body needs about Npt". Reduce the text, lower `bodyFontSize`, or split the slide |
+| Body reads as a wall of uniform text | Mark the sub-headings with `role: "heading"` (see "Emphasis inside the body") |
 | An image sits in an odd place on a section/cover slide | The layout has an `imageSlots` frame you did not use. Omit x/y/w/h in the spec (`--dry-run` reports this) |
 | `type 'aiImage' is missing required keys: ['x','y','w','h']` | That layout has no image slot, so the coordinates are yours to choose |
 

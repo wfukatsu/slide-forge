@@ -609,7 +609,8 @@ def main() -> int:
             try:
                 with open(args.emit) as f:
                     prev = json.load(f)
-                for k in ("roles", "__roles_note", "name", "displayName"):
+                for k in ("roles", "__roles_note", "name", "displayName",
+                          "bodyRoles", "__bodyRoles_note"):
                     if k in prev:
                         keep[k] = prev[k]
             except (OSError, ValueError) as e:  # noqa: BLE001

@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import uuid
 
@@ -132,6 +133,21 @@ register({
     "figure audit (connectors / overlaps / text overflow): no problems":
         "図の検査（コネクタ・重なり・文字溢れ）: 問題なし",
     "Figure audit found {n} findings:": "図の検査で {n} 件:",
+    "slides[{i}] ({title}): body{col} needs about {used:.0f}pt but the "
+    "placeholder is {cap:.0f}pt. Reduce the text, lower bodyFontSize, or "
+    "split the slide":
+        "slides[{i}] ({title}): 本文{col}は約 {used:.0f}pt 必要ですが枠は "
+        "{cap:.0f}pt です。文を減らすか bodyFontSize を下げるか、"
+        "スライドを分けてください",
+    "  warn: body text contains characters outside the BMP (emoji etc.); "
+    "emphasis ranges may shift":
+        "  warn: 本文に BMP 外の文字（絵文字など）が含まれます。"
+        "強調の範囲がずれることがあります",
+    "  warn: unknown body role '{role}' (known: {known})":
+        "  warn: 未知の本文ロール '{role}'（使えるもの: {known}）",
+    "{where}: body line {n} must be a string or "
+    "{{\"text\": …, \"role\": …}}": "{where}: 本文 {n} 行目は文字列か "
+                                    "{{\"text\": …, \"role\": …}} で書きます",
     "slides[{i}].figures[{j}]: placed in the image slot of layout "
     "'{layout}' (x={x} y={y} w={w} h={h})":
         "slides[{i}].figures[{j}]: レイアウト '{layout}' の画像枠に配置 "
@@ -156,6 +172,56 @@ register({
 # CENTERED_TITLE は Google 既定マスター(template-forge の blank ベース)の
 # 表紙タイトル。spec 上は 'title' で受け、TITLE が無いレイアウトではこちらに流す
 FILLABLE = ("TITLE", "CENTERED_TITLE", "SUBTITLE", "BODY")
+
+# ---------- 本文の強調（役割つきの行と、行内の **強調**） ----------
+
+# テンプレートが bodyRoles を持たないときの既定。
+# サイズは変えない（変えると行数の見積もりが崩れるため。spaceAbove までに留める）
+DEFAULT_BODY_ROLES = {
+    "heading": {"bold": True, "spaceAbove": 6},
+    "strong": {"bold": True},
+    "note": {"color": "theme:DARK2"},
+}
+# 役割に書けるキー。文字スタイルと段落スタイルに振り分ける
+_TEXT_STYLE_KEYS = ("bold", "italic", "underline", "color", "fontSize")
+_PARA_STYLE_KEYS = ("spaceAbove", "spaceBelow")
+
+_INLINE_STRONG = re.compile(r"\*\*(.+?)\*\*", re.S)
+
+
+def parse_inline_strong(text: str) -> tuple[str, list[tuple[int, int]]]:
+    """`**強調**` を剥がし、剥がしたあとの文字列と強調範囲を返す。
+
+    範囲は剥がしたあとの文字列の先頭からの位置。Markdown 全体には対応しない
+    （`#` や `-` まで効くと誤解されると、かえって崩れるため強調だけに絞る）。
+    """
+    out, spans, pos = [], [], 0
+    cursor = 0
+    for m in _INLINE_STRONG.finditer(text):
+        out.append(text[pos:m.start()])
+        cursor += m.start() - pos
+        inner = m.group(1)
+        spans.append((cursor, cursor + len(inner)))
+        out.append(inner)
+        cursor += len(inner)
+        pos = m.end()
+    out.append(text[pos:])
+    return "".join(out), spans
+
+
+def normalize_body_lines(value) -> list[tuple[str, str | None]]:
+    """body の各行を (本文, 役割) に正規化する。
+
+    行は文字列でも {"text": "…", "role": "heading"} でもよい。
+    """
+    items = value if isinstance(value, list) else [value]
+    lines: list[tuple[str, str | None]] = []
+    for item in items:
+        if isinstance(item, dict):
+            lines.append((str(item.get("text", "")), item.get("role")))
+        else:
+            lines.append((str(item), None))
+    return lines
 
 # オブジェクト ID をプロセス間で衝突させないためのランダムトークン。
 # 連番だけだと、既存デッキへ別プロセスから追記したとき slide_001 等が衝突する
@@ -379,13 +445,22 @@ class TemplateDeck:
             {"slideId": slide_id, "layoutKey": resolved_key, "layout": layout}
         )
 
-        fills = [(title_slot or "TITLE", title), ("SUBTITLE", subtitle)]
         filled_bodies = list(zip(body_slots, bodies or []))
-        fills += filled_bodies
-        for name, value in fills:
+        for name, value in ((title_slot or "TITLE", title), ("SUBTITLE", subtitle)):
             if value is None:
                 continue
             text = "\n".join(value) if isinstance(value, list) else value
+            self.requests.append(
+                {"insertText": {"objectId": ph_ids[name], "text": text}}
+            )
+
+        # 本文は行ごとに役割・行内強調を持ちうるので、範囲を数えながら組み立てる
+        body_spans: dict[str, list[dict]] = {}
+        for name, value in filled_bodies:
+            if value is None:
+                continue
+            text, spans = self._compose_body(value)
+            body_spans[name] = spans
             self.requests.append(
                 {"insertText": {"objectId": ph_ids[name], "text": text}}
             )
@@ -421,6 +496,11 @@ class TemplateDeck:
                     "fields": ",".join(para_style),
                 }})
 
+        # 役割つきの行と行内強調。**ALL レンジのあとに積むこと**（先に積むと
+        # 一括指定に上書きされて効かない）
+        for name, spans in body_spans.items():
+            self._apply_body_spans(ph_ids[name], spans)
+
         if notes:
             self._notes.append((slide_id, notes))
 
@@ -430,6 +510,91 @@ class TemplateDeck:
             "layout": layout,
             "layoutKey": resolved_key,
         }
+
+    # ---------- 本文の強調 ----------
+
+    def body_roles(self) -> dict:
+        """テンプレートが定義する役割ごとの見た目（無ければ既定）。"""
+        return {**DEFAULT_BODY_ROLES, **(self.template.get("bodyRoles") or {})}
+
+    def _resolve_color(self, value: str) -> dict | None:
+        """"#RRGGBB" または "theme:DARK1" を rgbColor に解決する。"""
+        if not isinstance(value, str):
+            return None
+        if value.startswith("theme:"):
+            hexv = (self.template.get("colors") or {}).get(value[6:].lower())
+            if not hexv:
+                return None
+            value = hexv
+        return _auth.hex_to_rgb(value)
+
+    def _compose_body(self, value) -> tuple[str, list[dict]]:
+        """本文を1本の文字列に組み立て、範囲つきのスタイル指定を返す。
+
+        インデックスは Slides API と同じ UTF-16 単位で数える。
+        """
+        roles = self.body_roles()
+        parts, spans, cursor = [], [], 0
+        for text, role in normalize_body_lines(value):
+            plain, strong = parse_inline_strong(text)
+            if any(ord(ch) > 0xFFFF for ch in plain):
+                print(t("  warn: body text contains characters outside the BMP "
+                        "(emoji etc.); emphasis ranges may shift"),
+                      file=sys.stderr)
+            start = cursor
+            end = start + len(plain)
+            style = roles.get(role) if role else None
+            if role and style is None:
+                print(t("  warn: unknown body role '{role}' (known: {known})",
+                        role=role, known=sorted(roles)), file=sys.stderr)
+            if style:
+                spans.append({"start": start, "end": end, "style": style,
+                              "paragraph": True})
+            for s, e in strong:
+                spans.append({"start": start + s, "end": start + e,
+                              "style": roles["strong"], "paragraph": False})
+            parts.append(plain)
+            cursor = end + 1        # 改行ぶん
+        return "\n".join(parts), spans
+
+    def _apply_body_spans(self, object_id: str, spans: list[dict]) -> None:
+        for span in spans:
+            if span["end"] <= span["start"]:
+                continue          # 空行に役割を付けても意味が無い
+            style, fields = {}, []
+            for key in _TEXT_STYLE_KEYS:
+                if key not in span["style"]:
+                    continue
+                val = span["style"][key]
+                if key == "color":
+                    rgb = self._resolve_color(val)
+                    if rgb is None:
+                        continue
+                    style["foregroundColor"] = {"opaqueColor": {"rgbColor": rgb}}
+                    fields.append("foregroundColor")
+                elif key == "fontSize":
+                    style["fontSize"] = {"magnitude": val, "unit": "PT"}
+                    fields.append("fontSize")
+                else:
+                    style[key] = val
+                    fields.append(key)
+            rng = {"type": "FIXED_RANGE",
+                   "startIndex": span["start"], "endIndex": span["end"]}
+            if fields:
+                self.requests.append({"updateTextStyle": {
+                    "objectId": object_id, "style": style,
+                    "textRange": rng, "fields": ",".join(fields)}})
+            if not span.get("paragraph"):
+                continue
+            para, pfields = {}, []
+            for key in _PARA_STYLE_KEYS:
+                if key in span["style"]:
+                    para[key] = {"magnitude": span["style"][key], "unit": "PT"}
+                    pfields.append(key)
+            if pfields:
+                self.requests.append({"updateParagraphStyle": {
+                    "objectId": object_id, "style": para,
+                    "textRange": rng, "fields": ",".join(pfields)}})
 
     # ---------- ページ番号 ----------
 
@@ -870,6 +1035,7 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
         for msg in (canvas.audit_bounds() + canvas.audit_connectors()
                     + canvas.audit_overlaps() + canvas.audit_text_fit()):
             out.append(f"slides[{i}]: {msg}")
+    out += audit_body_fit(template, spec)
     out += audit_image_slots(template, spec)
     return out
 
@@ -954,6 +1120,68 @@ def resolve_image_slots(template: dict, spec: dict) -> list[str]:
     return notes
 
 
+def audit_body_fit(template: dict, spec: dict) -> list[str]:
+    """本文がプレースホルダの高さに収まるかを、API を呼ばずに見積もる。
+
+    役割つきの行（見出しなど）は spaceAbove を足すので、素の行数だけで数えると
+    溢れる。溢れは API がエラーにせず、サムネイルを見るまで気づけないため、
+    ここで拾う。
+
+    段落間隔をテンプレート既定のままにしている場合は実際の余白が分からないので、
+    **少なめに見積もる**（見落とすことはあっても、誤検出はしない側に倒す）。
+    """
+    out = []
+    defaults = spec.get("defaults", {})
+    layouts = template.get("layouts", {})
+    roles = template.get("roles", {})
+    role_styles = {**DEFAULT_BODY_ROLES, **(template.get("bodyRoles") or {})}
+
+    for i, s in enumerate(spec.get("slides", [])):
+        bodies = s.get("bodies")
+        if bodies is None and s.get("body") is not None:
+            bodies = [s["body"]]
+        if not bodies:
+            continue
+        layout = layouts.get(roles.get(s.get("layout"), s.get("layout")), {})
+        elements = layout.get("elements") or {}
+        base_size = ((layout.get("textStyles") or {}).get("body") or {}).get("fontSize")
+        size = s.get("bodyFontSize", defaults.get("bodyFontSize")) or base_size
+        if not size:
+            continue
+        ls = s.get("bodyLineSpacing", defaults.get("bodyLineSpacing")) or 100
+        sa = s.get("bodySpaceAbove", defaults.get("bodySpaceAbove")) or 0
+        sb = s.get("bodySpaceBelow", defaults.get("bodySpaceBelow")) or 0
+
+        for col, value in enumerate(bodies):
+            key = "body" if col == 0 else f"body#{col}"
+            geo = elements.get(key)
+            if not geo:
+                continue
+            per_line = (geo["w"] - 0.2) * 72 / size
+            if per_line <= 0:
+                continue
+            used = 0.0
+            for text, role in normalize_body_lines(value):
+                plain, _ = parse_inline_strong(text)
+                width = sum(1.0 if ord(ch) > 0x2E80 else 0.5 for ch in plain)
+                n = max(1, int(width / per_line + 0.999))
+                style = role_styles.get(role) or {}
+                fs = style.get("fontSize", size)
+                used += (n * fs * 1.2 * (ls / 100)
+                         + sa + sb
+                         + style.get("spaceAbove", 0) + style.get("spaceBelow", 0))
+            capacity = geo["h"] * 72
+            if used > capacity * 1.02:
+                out.append(t(
+                    "slides[{i}] ({title}): body{col} needs about {used:.0f}pt "
+                    "but the placeholder is {cap:.0f}pt. Reduce the text, lower "
+                    "bodyFontSize, or split the slide",
+                    i=i, title=s.get("title") or s.get("layout"),
+                    col="" if col == 0 else f"#{col}",
+                    used=used, cap=capacity))
+    return out
+
+
 def audit_image_slots(template: dict, spec: dict) -> list[str]:
     """テンプレートに枠があるのに、そこから外れた場所へ画像を置いていないか。
 
@@ -1035,6 +1263,15 @@ def validate_spec(template: dict, spec: dict) -> list[str]:
                 problems.append(t("{where}: 'bodies' must be an array",
                                   where=where))
                 continue
+            for col in bodies:
+                for n, line in enumerate(col if isinstance(col, list) else [col], 1):
+                    if isinstance(line, str):
+                        continue
+                    if isinstance(line, dict) and "text" in line:
+                        continue
+                    problems.append(t(
+                        '{where}: body line {n} must be a string or '
+                        '{{"text": …, "role": …}}', where=where, n=n))
             slots = [p for p in declared if p.split("#")[0] == "BODY"]
             if not slots:
                 problems.append(
