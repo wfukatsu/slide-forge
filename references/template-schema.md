@@ -85,6 +85,18 @@
       "decorations": [                       // このレイアウト固有の非プレースホルダ要素
         { "type": "shape", "shapeType": "RECTANGLE", "fill": "theme:ACCENT6",
           "x": 0.367, "y": 0.059, "w": 0.054, "h": 0.398 }
+      ],
+
+      // 「ここに画像を置く」とテンプレートが決めている枠。無ければキー自体が出ない。
+      // 面積の大きい順。デッキ仕様ではここに画像を置く（後述）
+      "imageSlots": [
+        { "x": 0.5, "y": 2.42, "w": 3.15, "h": 2.78,
+          "source": "layout",        // placeholder | layout | sample
+          "placeholder": "PICTURE",  // source が placeholder のときだけ
+          "declared": { "x": 0.5, "y": 3.442, "w": 3.15, "h": 1.772 },
+          "sizedBy": "sample",       // 空枠より実例の大きさを優先した印
+          "samples": 6,              // 同梱スライドで実際に使われていた回数
+          "aspect": 1.133 }
       ]
     }
   }
@@ -100,7 +112,21 @@
 | `elements.slideNumber` | ページ番号の描画位置。幅が狭いレイアウトが多いので、ビルダーは右端を保ったまま最小 0.5in に広げる |
 | `textStyles` | テンプレートが想定する文字サイズ。ここより大幅に大きい文字を入れると溢れる |
 | `decorations` | 全面サイズの矩形があれば、マスターのフッターを覆っている可能性を疑う |
+| `imageSlots` | **画像を置くならここ。** 空なら自分で座標を決めてよい |
 | `colors` の `theme:XXX` | 色が `theme:ACCENT6` のように出るのはテーマ色参照。実際の hex は `colors.accent6` を引く |
+
+### `imageSlots` はどこから拾っているか
+
+| `source` | 根拠 | 確からしさ |
+|---|---|---|
+| `placeholder` | PICTURE 系のプレースホルダ | 最も確か。座標をそのまま使う |
+| `layout` | レイアウトに置かれた**中身の無い image 要素**（描画されない空枠） | 確か。ただし大きさは目安のことがあり、実例があればそちらに合わせる |
+| `sample` | 同梱スライドが同じ場所に **2 回以上**置いている画像 | 事実上の枠。レイアウトに枠が無いときの手がかり |
+
+`declared` は空枠が宣言していた座標、`sizedBy: "sample"` は「実例の大きさを採った」印。
+テンプレートの空枠が「だいたいこの辺」しか示していないことがあるため、実際に
+使われている大きさを優先している。1 枚しか実例が無いものは（たまたま貼られた
+スクリーンショットのことが多いので）枠として採用しない。
 
 ---
 
@@ -140,6 +166,15 @@
           "items": [["person", "利用者"], ["database", "台帳"]] },
         { "type": "image", "x": 0.5, "y": 3.2, "w": 4.0, "h": 1.6,
           "source": "assets/shot.png", "fit": "cover", "caption": "管理画面" }
+      ]
+    },
+    {
+      "layout": "SECTION",
+      "title": "第1章 …",
+      // レイアウトが imageSlots を持つなら、x/y/w/h は書かない。
+      // build_deck.py が枠の座標を埋め、fit も既定で "cover" にする
+      "figures": [
+        { "type": "aiImage", "prompt": "…", "style": "isometric" }
       ]
     }
   ]
@@ -203,7 +238,12 @@
   （`audit_bounds` / `audit_connectors` / `audit_overlaps` / `audit_text_fit`）
 
 **画像（`image` / `aiImage`）は実物を取りに行く必要があるため、この検査からは
-外れる。** 座標の妥当性だけが見られる。ブランドのアイコン（`asset_icon*`）と
+外れる。** 座標の妥当性だけが見られる。ただし次の 2 つは座標だけで分かるので検査する。
+
+- レイアウトに `imageSlots` があるのに、そこから外れた場所へ置いている（警告）
+- `imageSlots` が無いレイアウトで x/y/w/h を省略している（エラー）
+
+ブランドのアイコン（`asset_icon*`）と
 クラウドアイコン（`cloud_icon*`）は**同じ大きさの矩形に置き換えて**検査するので、
 アイコン名の誤りも含めて検査が効く。
 

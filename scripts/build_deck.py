@@ -132,6 +132,25 @@ register({
     "figure audit (connectors / overlaps / text overflow): no problems":
         "図の検査（コネクタ・重なり・文字溢れ）: 問題なし",
     "Figure audit found {n} findings:": "図の検査で {n} 件:",
+    "slides[{i}].figures[{j}]: placed in the image slot of layout "
+    "'{layout}' (x={x} y={y} w={w} h={h})":
+        "slides[{i}].figures[{j}]: レイアウト '{layout}' の画像枠に配置 "
+        "(x={x} y={y} w={w} h={h})",
+    "slides[{i}].figures[{j}]: layout '{layout}' has no image slot, "
+    "so x/y/w/h are required":
+        "slides[{i}].figures[{j}]: レイアウト '{layout}' に画像枠が無いので "
+        "x/y/w/h が必要です",
+    "slides[{i}].figures[{j}]: slot {n} does not exist "
+    "(layout '{layout}' has {total})":
+        "slides[{i}].figures[{j}]: 画像枠 {n} は存在しません"
+        "（レイアウト '{layout}' の枠は {total} 個）",
+    "slides[{i}].figures[{j}]: the layout has an image slot at "
+    "(x={x} y={y} w={w} h={h}) but this image is placed elsewhere "
+    "(x={fx} y={fy} w={fw} h={fh}). Omit x/y/w/h to use the slot":
+        "slides[{i}].figures[{j}]: レイアウトには画像枠"
+        "（x={x} y={y} w={w} h={h}）がありますが、画像が別の場所"
+        "（x={fx} y={fy} w={fw} h={fh}）に置かれています。"
+        "x/y/w/h を省略すると枠に収まります",
 })
 
 # CENTERED_TITLE は Google 既定マスター(template-forge の blank ベース)の
@@ -851,6 +870,7 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
         for msg in (canvas.audit_bounds() + canvas.audit_connectors()
                     + canvas.audit_overlaps() + canvas.audit_text_fit()):
             out.append(f"slides[{i}]: {msg}")
+    out += audit_image_slots(template, spec)
     return out
 
 
@@ -872,6 +892,100 @@ def footer_band(template: dict) -> tuple[float, float, float] | None:
     x0 = min(d.get("x", 0.0) for d in decs)
     x1 = max(d.get("x", 0.0) + d.get("w", 0.0) for d in decs)
     return top, x0, x1
+
+
+IMAGE_FIGURES = ("image", "aiImage")
+_SLOT_KEYS = ("x", "y", "w", "h")
+
+
+def layout_image_slots(template: dict, layout_key: str) -> list[dict]:
+    """スライドのレイアウトが持つ画像の差し込み枠を返す。"""
+    resolved = template.get("roles", {}).get(layout_key, layout_key)
+    return (template.get("layouts", {}).get(resolved, {}) or {}).get("imageSlots") or []
+
+
+def resolve_image_slots(template: dict, spec: dict) -> list[str]:
+    """image / aiImage の座標を、レイアウトの差し込み枠から埋める。
+
+    テンプレートが「ここに絵を置く」と決めている場所があるなら、そこに置く
+    のが正しい。仕様では x/y/w/h を省略する（枠が複数あるときは "slot": N で
+    選ぶ）。spec をその場で書き換え、補った内容を説明文のリストで返す。
+
+    fit は省略時 "cover" にする。枠は縦横比まで含めてデザインなので、
+    余白付き（contain）ではなく枠を埋めるのが既定として自然。
+    """
+    notes: list[str] = []
+    for i, s in enumerate(spec.get("slides", [])):
+        figs = s.get("figures")
+        if not figs or not isinstance(figs, list):
+            continue
+        slots = layout_image_slots(template, s.get("layout", ""))
+        auto = 0
+        for j, fig in enumerate(figs):
+            if not isinstance(fig, dict) or fig.get("type") not in IMAGE_FIGURES:
+                continue
+            explicit = fig.pop("slot", None)
+            has_box = all(k in fig for k in _SLOT_KEYS)
+            if has_box and explicit is None:
+                continue
+            if not slots:
+                if explicit is not None or not has_box:
+                    notes.append(t(
+                        "slides[{i}].figures[{j}]: layout '{layout}' has no image "
+                        "slot, so x/y/w/h are required",
+                        i=i, j=j, layout=s.get("layout")))
+                continue
+            n = explicit if isinstance(explicit, int) else auto
+            if n >= len(slots):
+                notes.append(t(
+                    "slides[{i}].figures[{j}]: slot {n} does not exist "
+                    "(layout '{layout}' has {total})",
+                    i=i, j=j, n=n, layout=s.get("layout"), total=len(slots)))
+                continue
+            slot = slots[n]
+            fig.update({k: slot[k] for k in _SLOT_KEYS})
+            fig.setdefault("fit", "cover")
+            auto = n + 1
+            notes.append(t(
+                "slides[{i}].figures[{j}]: placed in the image slot of layout "
+                "'{layout}' (x={x} y={y} w={w} h={h})",
+                i=i, j=j, layout=s.get("layout"),
+                x=slot["x"], y=slot["y"], w=slot["w"], h=slot["h"]))
+    return notes
+
+
+def audit_image_slots(template: dict, spec: dict) -> list[str]:
+    """テンプレートに枠があるのに、そこから外れた場所へ画像を置いていないか。
+
+    枠があること自体に気づかないまま別の場所に置く、という取り違えを拾う。
+    """
+    out = []
+    for i, s in enumerate(spec.get("slides", [])):
+        slots = layout_image_slots(template, s.get("layout", ""))
+        if not slots:
+            continue
+        for j, fig in enumerate(s.get("figures") or []):
+            if not isinstance(fig, dict) or fig.get("type") not in IMAGE_FIGURES:
+                continue
+            if not all(k in fig for k in _SLOT_KEYS):
+                continue
+            if any(_boxes_overlap(fig, slot) >= 0.5 for slot in slots):
+                continue
+            near = slots[0]
+            out.append(t(
+                "slides[{i}].figures[{j}]: the layout has an image slot at "
+                "(x={x} y={y} w={w} h={h}) but this image is placed elsewhere "
+                "(x={fx} y={fy} w={fw} h={fh}). Omit x/y/w/h to use the slot",
+                i=i, j=j, x=near["x"], y=near["y"], w=near["w"], h=near["h"],
+                fx=fig["x"], fy=fig["y"], fw=fig["w"], fh=fig["h"]))
+    return out
+
+
+def _boxes_overlap(a: dict, b: dict) -> float:
+    ix = max(0.0, min(a["x"] + a["w"], b["x"] + b["w"]) - max(a["x"], b["x"]))
+    iy = max(0.0, min(a["y"] + a["h"], b["y"] + b["h"]) - max(a["y"], b["y"]))
+    small = min(a["w"] * a["h"], b["w"] * b["h"])
+    return (ix * iy) / small if small > 0 else 0.0
 
 
 def validate_spec(template: dict, spec: dict) -> list[str]:
@@ -991,6 +1105,12 @@ def main() -> int:
     template = load_template(args.template)
     with open(args.spec) as f:
         spec = json.load(f)
+
+    # 検証より先に、レイアウトが持つ画像枠を座標へ解決しておく
+    # （以降の検証・監査・生成はすべて解決後の座標を見る）
+    slot_notes = resolve_image_slots(template, spec)
+    for msg in slot_notes:
+        print(f"  {msg}")
 
     problems = validate_spec(template, spec)
     problems += validate_figures(spec, template.get("pageSize", {}), template)
