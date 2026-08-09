@@ -226,6 +226,9 @@ happen, so the subject is composed to survive it. The frame ratio is part of the
 cache key, so moving a picture to a differently-shaped slot redraws it for that
 shape. Details in `references/images.md`.
 
+For a deck that **already exists** (no spec behind it, or one that must keep its
+URL), the `image-slots` skill fills its empty frames in place.
+
 ### Verifying roles (mandatory, human judgment)
 
 `roles` is a **guess** derived from display names and placeholder structure; it
