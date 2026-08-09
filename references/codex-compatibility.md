@@ -24,6 +24,14 @@ the Claude Code distribution mechanism. Codex does not need that manifest and
 does not install `commands/forge.md` as a Claude-style namespaced command.
 Invoke the `forge` skill by name instead.
 
+### Supported entry points
+
+| Host | Skill discovery | End-to-end invocation | Project instructions |
+|---|---|---|---|
+| Codex | `.agents/skills/` | `forge` skill | `AGENTS.md` |
+| Claude Code plugin | `.claude-plugin/marketplace.json` | `/slide-forge:forge` | skill contents |
+| Claude Code local clone | symlinks from `~/.claude/skills/` | `/forge` when installed as a command | skill contents |
+
 ## Runtime setup
 
 Codex uses the same repository-local entry point as every other host:
@@ -79,3 +87,18 @@ cost of additional wall-clock time and main-context usage.
 - `examples/estimate-sample.json` passes `build_sheet.py --dry-run`.
 - Google OAuth and optional draw.io/Gemini prerequisites are checked only for
   workflows that use them.
+
+Run the host-independent checks from the repository root:
+
+```bash
+.venv/bin/python -m pip check
+.venv/bin/python -m compileall -q scripts
+.venv/bin/python scripts/build_deck.py \
+  --template templates/corporate.json \
+  --spec examples/charts-demo.json --dry-run --strict
+.venv/bin/python scripts/build_sheet.py examples/estimate-sample.json --dry-run
+```
+
+These checks do not create a deck or spreadsheet. Live Google API verification
+is intentionally separate because it may open an OAuth browser flow and write
+files to Drive.

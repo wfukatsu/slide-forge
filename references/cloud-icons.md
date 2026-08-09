@@ -9,12 +9,11 @@ SVG が正本で、使うときに必要な解像度へ焼く。
 **利用者が自分の環境へ取り込む**。
 
 ```bash
-cd ~/.claude/skills/google-slides-template
+# slide-forge のリポジトリルートへ移動
 .venv/bin/python scripts/fetch_cloud_icons.py
 ```
 
-1〜2 分・約 8.6MB。`google-slides` スキルにも同時に配置される（取り込みの実体は
-そちらにあり、こちらのスクリプトは入口）。取り込み済みかは `--verify` で確かめられる。
+1〜2 分・約 8.6MB。取り込み済みかは `--verify` で確かめられる。
 未取り込みのまま `cloud_icon` を使うと、この手順を案内するエラーで止まる。
 
 **取り込んだ素材はコミットしない**（`.gitignore` 済み）。
@@ -176,13 +175,13 @@ Azure #0078D4）と表示名が入っている。**枠線と見出しにだけ�
 
 ## 素材を更新する
 
-取り込みスクリプトは google-slides スキル側にあり、**両スキルへ同時に配置**する。
+取り込みスクリプトは共有エンジンの `scripts/fetch_cloud_icons.py` にある。
 
 ```bash
-cd ~/.claude/skills/google-slides
-~/.claude/venvs/gslides/bin/python scripts/fetch_cloud_icons.py           # 全ベンダー
-~/.claude/venvs/gslides/bin/python scripts/fetch_cloud_icons.py --vendor azure
-~/.claude/venvs/gslides/bin/python scripts/fetch_cloud_icons.py --dry-run # URL 確認のみ
+# slide-forge のリポジトリルートで実行
+.venv/bin/python scripts/fetch_cloud_icons.py           # 全ベンダー
+.venv/bin/python scripts/fetch_cloud_icons.py --vendor azure
+.venv/bin/python scripts/fetch_cloud_icons.py --dry-run # URL 確認のみ
 ```
 
 - 配布 URL は**ベンダーのページから解決する**（AWS は四半期ごと、Azure は

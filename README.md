@@ -1,12 +1,12 @@
 # slide-forge
 
-Google Slides deck generation for Claude Code: ten skills on one shared
-Python engine, from corporate-template decks to from-scratch architecture
-diagrams — plus creating the templates themselves from a design spec — with
-validation before generation, optional thumbnail-based visual QA after it
-(chosen at generation time, on by default), optional PowerPoint (.pptx)
-export as a delivery format, and line-item spreadsheets
-(Excel / Google Spreadsheet) for estimates and BOMs.
+Agent-driven Google Slides deck generation for Codex and Claude Code: ten
+generation/support skills plus one end-to-end workflow on a shared Python
+engine. It covers corporate-template decks, from-scratch architecture
+diagrams, template creation from a design spec, validation before generation,
+optional thumbnail-based visual QA (on by default), PowerPoint (`.pptx`)
+export, and line-item spreadsheets (Excel / Google Spreadsheet) for estimates
+and BOMs.
 
 ```
 intake → author (spec JSON or Python) → validate (offline, free) → generate → visual QA (opt-in, default on) → cleanup → PPTX export (opt-in)
@@ -17,7 +17,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 
 | Skill | What it does |
 |---|---|
-| `google-slides-template` | Generate a deck from a registered Google Slides master template: interactive intake, template analysis/registration (`template.json`), spec authoring with `--dry-run` validation, parallel per-page authoring for large decks, generation. The main workflow. |
+| `google-slides-template` | Generate a deck from a registered Google Slides master template: interactive intake, template analysis/registration (`template.json`), spec authoring with `--dry-run` validation, page-fragment authoring for large decks (parallel when permitted, sequential otherwise), generation. The main workflow. |
 | `google-slides` | From-scratch decks without a corporate master. Spec path (`templates/blank-16x9.json` + the same engine) or code-first path (`deckkit.py` + offline layout validation for connector-heavy diagrams). |
 | `template-forge` | Create and register a **new template (master)** from a design spec — brand colors, fonts, logo, footer (`scripts/build_template.py`). The Slides API cannot create masters, so a base (Google default or a registered template) is copied and its layouts restyled via batchUpdate; roles are assigned deterministically and the result lands in `templates/<id>.json`, ready for `google-slides-template`. Ships 3 design presets (`templates/presets/`). |
 | `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
@@ -28,17 +28,24 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (出力形式) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
 | `spreadsheets` | Line-item spreadsheets — estimates, BOMs, cost breakdowns — as Excel and/or Google Spreadsheet from one JSON spec (`scripts/build_sheet.py`): typed columns, real formulas for amounts and subtotal/tax/total, `--dry-run` validation, and in-place updates that keep the Spreadsheet URL stable. Companion to a proposal deck's cost slide (same Drive folder), or standalone. Worked example: `examples/estimate-sample.json`. |
 
-## Commands
+## End-to-end workflow
 
-| Command | What it does |
-|---|---|
-| `/forge` (`/slide-forge:forge`) | Runs the whole pipeline as one continuous flow: route to the right generation skill → interactive intake (including the visual-QA and output-format choices) → outline approval → spec + offline validation → generation → visual QA via `slide-qa` (when chosen) → QA-file cleanup → PPTX export via `pptx-export` (when chosen) → final report. |
+The `forge` workflow runs the whole pipeline as one continuous flow: route to
+the right generation skill → interactive intake (including visual-QA and
+output-format choices) → outline approval → spec + offline validation →
+generation → visual QA via `slide-qa` (when chosen) → QA-file cleanup → PPTX
+export via `pptx-export` (when chosen) → final report.
+
+- Codex: invoke the `forge` skill by name.
+- Claude Code: use `/forge` or `/slide-forge:forge`.
 
 ## Repository layout
 
 ```
-skills/       SKILL.md per skill (symlinked into ~/.claude/skills/)
-commands/     slash commands (/forge — the end-to-end pipeline)
+.agents/      Codex skill discovery links and the Codex-native forge skill
+AGENTS.md     Codex project rules and host-tool compatibility mappings
+skills/       shared SKILL.md definitions used by Codex and Claude Code
+commands/     Claude Code slash command (/forge)
 scripts/      shared engine — one importable package
   _auth.py        OAuth helper (Slides + Drive)
   build_deck.py   template-driven generator (TemplateDeck); --dry-run validation
@@ -53,7 +60,7 @@ scripts/      shared engine — one importable package
   scalar/         Scalar deck builders
 templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
 assets/       scalar/ (brand: pictograms, logos, product-logos), cloud-icons/ (gitignored)
-references/   engine and workflow docs (validation.md, diagrams.md, charts.md, …)
+references/   engine, workflow, and host compatibility documentation
 examples/     runnable spec catalogs and code-first example decks
 config/       credentials.json + token.json (gitignored, 0600)
 cache/ out/   transient render cache and QA output (gitignored)
@@ -93,6 +100,10 @@ and setup details are documented in
 The `.agents/skills/*` symlinks point back to `skills/*`, so Codex and Claude
 Code read the same skill definitions rather than maintaining two copies.
 
+Verify discovery from the repository root by asking Codex to list or use the
+`forge`, `google-slides`, and `slide-qa` skills. No Claude plugin installation
+is needed for Codex.
+
 ## Requirements
 
 - **Python 3.10+** (macOS / Linux)
@@ -104,20 +115,24 @@ Code read the same skill definitions rather than maintaining two copies.
 
 ## Setup
 
-All commands run from the slide-forge root (the clone directory, or
-`${CLAUDE_PLUGIN_ROOT}` for a plugin install).
+All commands run from the slide-forge root: the clone directory for Codex or a
+local Claude setup, and `${CLAUDE_PLUGIN_ROOT}` for a Claude plugin install.
 
 ### 1. Python environment
 
-The repo expects `.venv` at its root; a symlink to a shared venv is fine
-(the skills use `~/.claude/venvs/gslides` so plugin updates don't wipe it):
+The repo expects `.venv` at its root. A local environment is the simplest
+cross-host setup:
 
 ```bash
-python3 -m venv ~/.claude/venvs/gslides
-~/.claude/venvs/gslides/bin/pip install -r requirements.txt
-ln -sfn ~/.claude/venvs/gslides .venv        # absolute target recommended
-# or simply: python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
 ```
+
+For Claude plugin installations that can be replaced during upgrades, keeping
+the real environment outside the plugin root is useful. Create a shared venv
+and point `.venv` at it with an absolute symlink. The historical
+`~/.claude/venvs/gslides` location remains supported but is not required by
+Codex or by the engine.
 
 ### 2. Google Cloud OAuth client (one-time)
 
