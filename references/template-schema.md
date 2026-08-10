@@ -238,7 +238,7 @@ API はリンクを付けても色を変えないため、これが無いとク�
 | 系統 | `type` |
 |---|---|
 | ピクトグラム | `icon` `icon_row` `icon_flow` `icon_grid` |
-| 比喩図 | `pyramid` `funnel` `venn` `iceberg` `balance` `steps` `layers` `hub` `matrix` `before_after` `journey` `timeline` |
+| 比喩図 | `pyramid` `funnel` `venn` `iceberg` `balance` `steps` `layers` `hub` `matrix` `before_after` `comparison` `journey` `timeline` |
 | ブランドのアイコン | `asset_icon` `asset_icon_row` `asset_icon_flow` `asset_icon_grid` `asset_icon_cards` |
 | クラウドアイコン | `cloud_icon` `cloud_icon_row` `cloud_icon_flow` `cloud_icon_grid` `cloud_zone` |
 | 構造図 | `band` `cards` `flow` `hbars` `metric` |

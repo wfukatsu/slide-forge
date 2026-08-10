@@ -82,7 +82,8 @@ d.asset_icon_flow(0.5, 1.15, 9.0, [("job-seeker", "求職者"), ("interview", "�
 | `layers(x,y,w,h,items)` | 積層。技術スタック等 | `items=[(ラベル, 補足)]` |
 | `hub(x,y,w,h,center,spokes)` | 中心と放射 | 中心が主役のとき |
 | `matrix(x,y,w,h,quadrants)` | 4 象限で位置づける | 左上・右上・左下・右下の順。軸は `(下, 上)` `(左, 右)` |
-| `before_after(x,y,w,h,before,after)` | 左右の対比 | 中央に矢印が入る |
+| `before_after(x,y,w,h,before,after)` | 左右の対比 | 中央に矢印が入る。`comparison` の 2 列特化形 |
+| `comparison(x,y,w,h,columns)` | N 案を横に並べる | `columns=[(見出し, [項目…])]`。`arrows=True` は移り変わりのときだけ、`highlight=i` で推奨案を強調 |
 | `journey(x,y,w,h,milestones)` | 道のり。上下交互に配置 | `milestones=[(見出し, 補足)]` |
 | `timeline(x,y,w,items)` | 横方向の時系列 | `items=[(時点, 見出し)]` |
 

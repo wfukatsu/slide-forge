@@ -873,6 +873,7 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "hub":          ("hub",          ["x", "y", "w", "h", "center", "items"]),
     "matrix":       ("matrix",       ["x", "y", "w", "h", "items"]),
     "before_after": ("before_after", ["x", "y", "w", "h", "before", "after"]),
+    "comparison":   ("comparison",   ["x", "y", "w", "h", "columns"]),
     "journey":      ("journey",      ["x", "y", "w", "h", "items"]),
     "timeline":     ("timeline",     ["x", "y", "w", "items"]),
     # ブランドのアイコン素材（icons.py・Drive 経由で貼るので通信が要る。
