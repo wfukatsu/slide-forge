@@ -3,17 +3,19 @@ __pycache__/
 *.py[cod]
 .venv
 
-# OAuth credentials — never commit
-config/
+# OAuth credentials — never commit.
+# Ignore the contents, not the directory itself: `config/` would stop git
+# descending and the !config/.gitkeep negation below could never match.
+config/*
 !config/.gitkeep
 **/credentials.json
 **/token.json
 **/token.json.bak*
 
 # Transient render caches and QA output
-cache/
+cache/*
 !cache/.gitkeep
-out/
+out/*
 !out/.gitkeep
 
 # Vendor cloud icons — not redistributed; restore with scripts/fetch_cloud_icons.py

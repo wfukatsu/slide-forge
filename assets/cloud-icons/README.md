@@ -5,23 +5,19 @@ AWS / Google Cloud / Azure の公式アイコンは**各社の資産で、再配
 
 ## 取り込み
 
-```bash
-cd ~/.claude/skills/google-slides-template
-.venv/bin/python scripts/fetch-cloud-icons.py
-```
+リポジトリのルートで実行します。
 
-このスキルの `scripts/fetch-cloud-icons.py` は、実体（google-slides スキル側）を
-呼び出すだけの薄い入口です。google-slides スキルが入っていない場合は、
-そちらを取得するよう案内します。
+```bash
+.venv/bin/python scripts/fetch_cloud_icons.py
+```
 
 3 ベンダーの配布ページから最新の ZIP を取得し、SVG を正本としてここへ展開し、
 `cloud-icons.json`（名前・別名・カテゴリの索引）を作ります。1〜2 分、約 8.6MB。
-`google-slides` スキルにも同時に配置されます。
 
 ```bash
-.venv/bin/python scripts/fetch-cloud-icons.py --dry-run  # 取得せず URL の解決だけ試す
-.venv/bin/python scripts/fetch-cloud-icons.py --vendor azure  # 1 ベンダーだけ更新
-.venv/bin/python scripts/fetch-cloud-icons.py --verify   # 取り込み済みか確認
+.venv/bin/python scripts/fetch_cloud_icons.py --dry-run  # 取得せず URL の解決だけ試す
+.venv/bin/python scripts/fetch_cloud_icons.py --vendor azure  # 1 ベンダーだけ更新
+.venv/bin/python scripts/fetch_cloud_icons.py --verify   # 取り込み済みか確認
 ```
 
 取り込むと、この下は次の形になります。

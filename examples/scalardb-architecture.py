@@ -7,8 +7,8 @@
 デッキ仕様（JSON）の `figures` では**線を引けない**ため、層と層を矢印で結ぶ
 構成図は本ファイルのように `Canvas` を直に使う。
 
-    cd ~/.claude/skills/google-slides-template
-    .venv/bin/python scripts/fetch-cloud-icons.py   # 初回だけ（アイコンは未同梱）
+    # リポジトリのルートで実行する
+    .venv/bin/python scripts/fetch_cloud_icons.py   # 初回だけ（アイコンは未同梱）
     .venv/bin/python examples/scalardb-architecture.py [--folder <DriveフォルダURL>]
 
 ライセンス: クラウドアイコンは各ベンダーの資産（`references/cloud-icons.md`）。
@@ -24,7 +24,7 @@ from importlib.machinery import SourceFileLoader
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(SKILL_DIR, "scripts"))
 
-bd = SourceFileLoader("bd", os.path.join(SKILL_DIR, "scripts", "build-deck.py")).load_module()
+bd = SourceFileLoader("bd", os.path.join(SKILL_DIR, "scripts", "build_deck.py")).load_module()
 from diagrams import Canvas, lighten  # noqa: E402
 
 TEMPLATE = os.path.join(SKILL_DIR, "templates", "scalar-2026.json")
