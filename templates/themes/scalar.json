@@ -12,8 +12,8 @@
     "masterObjectId": "g1b3a74d17bb_0_0",
     "masterDisplayName": "Scalar Master Slide",
     "generationMode": "copy",
-    "__generationMode_note": "Drive API でマスターを複製してから createSlide(layoutId) でスライドを追加する。マスター定義の波装飾・ロゴ・© フッターがそのまま継承される。実装は google-slides-template スキル（~/.claude/skills/google-slides-template/scripts/build_deck.py）に移管済みで、本スキルには無い",
-    "counterpartTemplate": "~/.claude/skills/google-slides-template/templates/scalar-2026.json",
+    "__generationMode_note": "Drive API でマスターを複製してから createSlide(layoutId) でスライドを追加する。マスター定義の波装飾・ロゴ・© フッターがそのまま継承される。実装は google-slides-template スキル（scripts/build_deck.py）にある",
+    "counterpartTemplate": "templates/scalar-2026.json",
     "__counterpartTemplate_note": "同じマスターを指す google-slides-template 側の登録ファイル。複製方式で生成する場合はそちらを使う。マスターを更新したら両方を再生成すること",
     "sampleSlideIds": ["g3b4087f65e2_0_0", "g353093c97b1_0_10", "g24a58f1ca40_1_60"],
     "__sampleSlideIds_note": "マスターに同梱されたサンプルスライド3枚（表紙/中扉/裏表紙のプレースホルダ見本）。複製直後に削除すること"
