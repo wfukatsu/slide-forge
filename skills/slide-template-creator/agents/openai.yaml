@@ -1,0 +1,4 @@
+interface:
+  display_name: "Slide Template Creator"
+  short_description: "Create and register reusable single-slide templates"
+  default_prompt: "Use $slide-template-creator to create and register a reusable single-slide template."

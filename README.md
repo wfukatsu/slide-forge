@@ -1,6 +1,6 @@
 # slide-forge
 
-Agent-driven Google Slides deck generation for Codex and Claude Code: ten
+Agent-driven Google Slides deck generation for Codex and Claude Code: eleven
 generation/support skills plus one end-to-end workflow on a shared Python
 engine. It covers corporate-template decks, from-scratch architecture
 diagrams, template creation from a design spec, validation before generation,
@@ -20,6 +20,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `google-slides-template` | Generate a deck from a registered Google Slides master template: interactive intake, template analysis/registration (`template.json`), spec authoring with `--dry-run` validation, page-fragment authoring for large decks (parallel when permitted, sequential otherwise), generation. The main workflow. |
 | `google-slides` | From-scratch decks without a corporate master. Spec path (`templates/blank-16x9.json` + the same engine) or code-first path (`deckkit.py` + offline layout validation for connector-heavy diagrams). |
 | `template-forge` | Create and register a **new template (master)** from a design spec — brand colors, fonts, logo, footer (`scripts/build_template.py`). The Slides API cannot create masters, so a base (Google default or a registered template) is copied and its layouts restyled via batchUpdate; roles are assigned deterministically and the result lands in `templates/<id>.json`, ready for `google-slides-template`. Ships 3 design presets (`templates/presets/`). |
+| `slide-template-creator` | Create and register reusable **single-slide content templates** with semantic input slots, examples, offline validation, and catalog previews. These live under `slide-templates/` and are independent of Google Slides masters. |
 | `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
 | `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
 | `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
@@ -59,6 +60,7 @@ scripts/      shared engine — one importable package
   drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
   scalar/         Scalar deck builders
 templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
+slide-templates/ reusable single-slide content templates + registry
 assets/       scalar/ (brand: pictograms, logos, product-logos), cloud-icons/ (gitignored)
 references/   engine, workflow, and host compatibility documentation
 examples/     runnable spec catalogs and code-first example decks
@@ -69,7 +71,7 @@ cache/ out/   transient render cache and QA output (gitignored)
 ## Install as a Claude Code plugin
 
 The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all ten skills):
+one plugin bundling all eleven skills):
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -87,7 +89,7 @@ skills will be listed twice.
 ## Use with Codex
 
 Codex uses the same skills and Python engine. In a repository clone, the
-`.agents/skills/` entries expose all ten generation/support skills plus the
+`.agents/skills/` entries expose all eleven generation/support skills plus the
 end-to-end `forge` skill. Start Codex from the repository root and invoke
 `forge` by name; the Claude-specific `/slide-forge:forge` command and plugin
 marketplace manifest are not required.

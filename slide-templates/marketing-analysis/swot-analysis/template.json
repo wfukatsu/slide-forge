@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "swot-analysis",
+  "displayName": "SWOT分析",
+  "pack": "marketing-analysis",
+  "category": "strategic",
+  "description": "内部・外部環境を正負の4象限で整理し、優先アクションを示す",
+  "answers": ["自社の戦略上の強み・弱み・機会・脅威は何か"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "quadrants": {"type": "string[]", "required": true, "minItems": 4, "maxItems": 4, "maxLength": 80},
+    "insight": {"type": "string", "required": true, "maxLength": 120},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": ["事実と解釈を区別する", "SWOTの語句だけで因果関係を主張しない"],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "matrix", "x": 1.1, "y": 1.05, "w": 7.8, "h": 2.9, "items": {"$slot": "quadrants"}, "xAxis": ["マイナス", "プラス"], "yAxis": ["外", "内"], "xLabel": "影響"},
+      {"type": "so_what", "x": 0.5, "y": 4.05, "w": 9.0, "h": 0.78, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.9, "w": 9.0, "source": {"$slot": "source"}, "rule": false}
+    ]
+  }
+}

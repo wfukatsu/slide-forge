@@ -20,6 +20,7 @@ argument-hint: "[テーマ / テンプレート URL / 素材パス / 顧客名�
 |---|---|
 | Scalar の会社・製品・機能紹介デッキ | `scalar-product-slides` |
 | 顧客課題起点の Scalar ソリューション提案書 | `scalar-proposal-slides` |
+| 再利用可能な1枚単位のスライドテンプレートを作る | `slide-template-creator` |
 | テンプレート/マスター URL がある、登録テンプレートで作る（既定） | `google-slides-template` |
 | コーポレートマスター無しでゼロから作る | `google-slides` |
 
