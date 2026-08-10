@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "three-c-analysis",
+  "displayName": "3C分析",
+  "pack": "marketing-analysis",
+  "category": "strategic",
+  "description": "Customer・Competitor・Companyの重なりから戦略の焦点を示す",
+  "answers": ["顧客価値と競争優位が重なる戦略領域はどこか"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "labels": {"type": "string[]", "required": true, "minItems": 3, "maxItems": 3, "maxLength": 40},
+    "center": {"type": "string", "required": true, "maxLength": 36},
+    "details": {"type": "string[][]", "required": true, "minItems": 3, "maxItems": 3, "maxLength": 60},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "venn", "x": 0.7, "y": 1.1, "w": 4.4, "h": 3.3, "items": {"$slot": "labels"}, "center": {"$slot": "center"}},
+      {"type": "table", "x": 5.25, "y": 1.2, "w": 4.2, "headers": ["観点", "要点"], "rows": {"$slot": "details"}, "colWidths": [1, 2.5], "size": 9, "rowH": 0.72},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

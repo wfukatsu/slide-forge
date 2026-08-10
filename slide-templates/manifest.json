@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "templates": [
+    {"id": "swot-analysis", "displayName": "SWOT分析", "pack": "marketing-analysis", "category": "strategic", "path": "marketing-analysis/swot-analysis/template.json", "tags": ["swot", "strategy"], "status": "experimental", "version": 1},
+    {"id": "three-c-analysis", "displayName": "3C分析", "pack": "marketing-analysis", "category": "strategic", "path": "marketing-analysis/three-c-analysis/template.json", "tags": ["3c", "customer", "competitor", "company"], "status": "experimental", "version": 1},
+    {"id": "market-sizing", "displayName": "TAM / SAM / SOM", "pack": "marketing-analysis", "category": "strategic", "path": "marketing-analysis/market-sizing/template.json", "tags": ["tam", "sam", "som", "market"], "status": "experimental", "version": 1},
+    {"id": "positioning-map", "displayName": "ポジショニングマップ", "pack": "marketing-analysis", "category": "strategic", "path": "marketing-analysis/positioning-map/template.json", "tags": ["positioning", "competitor"], "status": "experimental", "version": 1},
+    {"id": "rfm-segments", "displayName": "RFMセグメント", "pack": "marketing-analysis", "category": "customer", "path": "marketing-analysis/rfm-segments/template.json", "tags": ["rfm", "segment", "crm"], "status": "experimental", "version": 1},
+    {"id": "cohort-retention", "displayName": "コホート継続率", "pack": "marketing-analysis", "category": "customer", "path": "marketing-analysis/cohort-retention/template.json", "tags": ["cohort", "retention"], "status": "experimental", "version": 1},
+    {"id": "conversion-funnel", "displayName": "コンバージョンファネル", "pack": "marketing-analysis", "category": "behavior", "path": "marketing-analysis/conversion-funnel/template.json", "tags": ["funnel", "conversion"], "status": "experimental", "version": 1},
+    {"id": "experiment-result", "displayName": "A/Bテスト結果", "pack": "marketing-analysis", "category": "effectiveness", "path": "marketing-analysis/experiment-result/template.json", "tags": ["ab-test", "experiment", "uplift"], "status": "experimental", "version": 1}
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "experiment-result",
+  "displayName": "A/Bテスト結果",
+  "pack": "marketing-analysis",
+  "category": "effectiveness",
+  "description": "対照群と施策群の結果、母数、差、判定を1枚で示す",
+  "answers": ["施策によって主要KPIはどの程度変化したか"],
+  "inferenceLevel": "causal",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "categories": {"type": "string[]", "required": true, "minItems": 1, "maxItems": 4, "maxLength": 20},
+    "series": {"type": "array", "required": true, "minItems": 2, "maxItems": 2,
+               "items": {"type": "tuple", "fields": [
+                 {"type": "string", "maxLength": 20},
+                 {"type": "number[]", "matchLength": "categories"}]}},
+    "resultRows": {"type": "string[][]", "required": true, "minItems": 3, "maxItems": 5, "maxLength": 48},
+    "insight": {"type": "string", "required": true, "maxLength": 120},
+    "source": {"type": "string", "required": true, "maxLength": 180}
+  },
+  "guardrails": ["有意差がない結果を効果ゼロと断定しない", "事前に定めた主要KPIと分析期間を明記する"],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "vbars_grouped", "x": 0.55, "y": 1.15, "w": 4.6, "h": 2.55, "categories": {"$slot": "categories"}, "series": {"$slot": "series"}, "unit": "%"},
+      {"type": "table", "x": 5.35, "y": 1.2, "w": 4.05, "headers": ["評価項目", "結果"], "rows": {"$slot": "resultRows"}, "colWidths": [1.35, 2.65], "size": 8.7, "rowH": 0.46},
+      {"type": "so_what", "x": 0.55, "y": 3.85, "w": 8.85, "h": 0.78, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.88, "w": 9.0, "source": {"$slot": "source"}, "rule": false}
+    ]
+  }
+}
