@@ -8,8 +8,8 @@
 - `icons`        … 「証拠チェーン」「改ざん検知」などの業務語彙（Scalar ブランド）
 - `illustrations`… 自前運用の DB やクライアントなど、一般的な部品
 
-    cd ~/.claude/skills/google-slides-template
-    .venv/bin/python scripts/fetch-cloud-icons.py   # 初回だけ（アイコンは未同梱）
+    # リポジトリのルートで実行する
+    .venv/bin/python scripts/fetch_cloud_icons.py   # 初回だけ（アイコンは未同梱）
     .venv/bin/python examples/scalardl-architecture.py [--folder <DriveフォルダURL>]
 """
 from __future__ import annotations
@@ -22,7 +22,7 @@ from importlib.machinery import SourceFileLoader
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(SKILL_DIR, "scripts"))
 
-bd = SourceFileLoader("bd", os.path.join(SKILL_DIR, "scripts", "build-deck.py")).load_module()
+bd = SourceFileLoader("bd", os.path.join(SKILL_DIR, "scripts", "build_deck.py")).load_module()
 from diagrams import Canvas, lighten  # noqa: E402
 
 TEMPLATE = os.path.join(SKILL_DIR, "templates", "scalar-2026.json")
