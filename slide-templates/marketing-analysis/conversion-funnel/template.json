@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "conversion-funnel",
+  "displayName": "コンバージョンファネル",
+  "pack": "marketing-analysis",
+  "category": "behavior",
+  "description": "購買プロセスの段階別件数と最大の離脱点を示す",
+  "answers": ["どの段階の離脱を優先して改善すべきか"],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "stages": {"type": "string[][]", "required": true, "minItems": 3, "maxItems": 6, "maxLength": 32},
+    "insight": {"type": "string", "required": true, "maxLength": 120},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "funnel", "x": 0.8, "y": 1.1, "w": 4.7, "h": 3.45, "items": {"$slot": "stages"}, "valueW": 1.25, "size": 10.5},
+      {"type": "so_what", "x": 6.65, "y": 1.35, "w": 2.8, "h": 2.9, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

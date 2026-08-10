@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "market-sizing",
+  "displayName": "TAM / SAM / SOM",
+  "pack": "marketing-analysis",
+  "category": "strategic",
+  "description": "市場全体から獲得可能市場までを入れ子で示す",
+  "answers": ["市場規模と現実的な獲得可能範囲はどの程度か"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "rings": {"type": "string[][]", "required": true, "minItems": 3, "maxItems": 4, "maxLength": 40},
+    "insight": {"type": "string", "required": true, "maxLength": 120},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "nested_circles", "x": 0.7, "y": 1.05, "w": 5.8, "h": 3.65, "rings": {"$slot": "rings"}},
+      {"type": "so_what", "x": 6.65, "y": 1.25, "w": 2.75, "h": 3.1, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

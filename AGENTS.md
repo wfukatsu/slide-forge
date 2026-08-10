@@ -23,6 +23,7 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Registered template/master | `google-slides-template` |
 | Deck without a corporate master | `google-slides` |
 | Create/register a template | `template-forge` |
+| Create/register a reusable single-slide content template | `slide-template-creator` |
 | Scalar product/company deck | `scalar-product-slides` |
 | Scalar customer proposal | `scalar-proposal-slides` |
 | Dense draw.io diagram | `drawio-diagrams` |

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "cohort-retention",
+  "displayName": "コホート継続率",
+  "pack": "marketing-analysis",
+  "category": "customer",
+  "description": "獲得時期別の継続率を期間ごとに比較する",
+  "answers": ["新しく獲得した顧客の継続率は改善しているか"],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "headers": {"type": "string[]", "required": true, "minItems": 4, "maxItems": 10, "maxLength": 16},
+    "rows": {"type": "string[][]", "required": true, "minItems": 3, "maxItems": 10, "maxLength": 20},
+    "insight": {"type": "string", "required": true, "maxLength": 120},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": ["観測期間の異なる右下セルを単純比較しない", "母数の小さいコホートを注記する"],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "table", "x": 0.5, "y": 1.15, "w": 6.4, "headers": {"$slot": "headers"}, "rows": {"$slot": "rows"}, "size": 8.5, "rowH": 0.42},
+      {"type": "so_what", "x": 7.05, "y": 1.3, "w": 2.4, "h": 2.9, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}
