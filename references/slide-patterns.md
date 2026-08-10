@@ -191,7 +191,8 @@ d.source_note(0.5, 4.85, 9.0, "各社 IR 資料（2025 年度）",
 
 - 値は 0〜levels の整数。ハーヴェイボール（部分塗りの円）は Slides API に
   扇形が無く描けないため、**塗りドットの数**で表す。白黒印刷でも判別できる。
-- 2 案の比較なら `before_after`（illustrations）で足りる。
+- 2 案の比較なら `before_after`（illustrations）で足りる。3 案以上、あるいは
+  優劣を付けない並列比較なら `comparison`。矢印は「移り変わり」のときだけ置く。
 
 ### exec_summary — エグゼクティブサマリー
 

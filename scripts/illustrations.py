@@ -41,6 +41,12 @@ register({
     "venn supports exactly 2 or 3 labels": "venn は 2 個か 3 個のラベルにのみ対応します",
     "quadrants takes exactly 4 items (top-left, top-right, bottom-left, bottom-right)":
         "quadrants は 4 個（左上・右上・左下・右下）",
+    "comparison needs at least 2 columns, got {n}":
+        "comparison は 2 列以上必要です（{n} 列）",
+    "w={w} leaves {pw:.2f}in per column for {n} columns; "
+    "use fewer columns or a table":
+        "w={w} では {n} 列で 1 列 {pw:.2f}in しか取れません。"
+        "列を減らすか表に切り替えてください",
 })
 
 # ピクトグラムの一覧。icon() の name に渡せる値。
@@ -724,30 +730,73 @@ class IllustrationMixin:
                        bold=True, color=self.P.text, line_spacing=100)
         return y + h
 
-    def before_after(self, x, y, w, h, before, after, *, size=11,
-                     before_title="Before", after_title="After") -> float:
-        """左右の対比。before/after は文字列のリスト。中央に矢印を置く。"""
-        arrow_w = 0.58
-        pw = (w - arrow_w) / 2
-        for i, (title, items, col) in enumerate((
-                (before_title, before, self.P.muted),
-                (after_title, after, self.P.primary))):
-            px = x + i * (pw + arrow_w)
-            self.shape(px, y, pw, 0.42, kind="ROUND_RECTANGLE", fill=col,
+    def comparison(self, x, y, w, h, columns, *, size=11, arrows=False,
+                   highlight=None, colors=None, gap=0.22) -> float:
+        """案を横に並べて比べる。columns は (見出し, [項目…]) のリスト。
+
+        2 案の「現状 → 提案」は `before_after()` が特化形として用意してある。
+        こちらは案が 3 つ以上あるとき、移り変わりではなく並列の比較のとき、
+        推し案を 1 つ決めて見せたいときに使う。
+
+        - `arrows=True` で列の間に右向き矢印を置く。**移り変わり**（現状 →
+          提案、As-Is → To-Be）にだけ使うこと。並列の比較に矢印を置くと
+          「左から右に進む」という無い意味が生まれる。
+        - `highlight` に列番号を渡すと、その列だけ primary・他は muted になる。
+          推奨案を 1 つ示すとき用。既定は全列同色（優劣を示さない並列比較）。
+        - `colors` で列ごとの色を明示できる（`highlight` より優先）。
+
+        角は `RECTANGLE`。ROUND_RECTANGLE の角丸は短辺に比例する（実測で
+        半径 ≒ 0.155 × 短辺）ため、背の低い見出し帯と背の高い本文ボックスで
+        同じ指定をしても丸みが揃わない。Slides API は角丸半径を指定できない
+        ので、`so_what` / `steps` と同じく角ばらせて揃える。
+        """
+        n = len(columns)
+        if n < 2:
+            raise ValueError(t("comparison needs at least 2 columns, got {n}", n=n))
+        gap_w = 0.58 if arrows else gap
+        pw = (w - gap_w * (n - 1)) / n
+        if pw < 0.8:
+            raise ValueError(t(
+                "w={w} leaves {pw:.2f}in per column for {n} columns; "
+                "use fewer columns or a table", w=w, pw=pw, n=n))
+        if colors is not None:
+            cols = [colors[i % len(colors)] for i in range(n)]
+        elif highlight is not None:
+            cols = [self.P.primary if i == highlight else self.P.muted
+                    for i in range(n)]
+        else:
+            cols = [self.P.primary] * n
+        for i, entry in enumerate(columns):
+            title, items = entry[0], entry[1]
+            col = cols[i]
+            px = x + i * (pw + gap_w)
+            self.shape(px, y, pw, 0.42, kind="RECTANGLE", fill=col,
                        stroke=None, text=title, size=size, bold=True,
                        color=readable_on(col))
-            self.shape(px, y + 0.46, pw, h - 0.46, kind="ROUND_RECTANGLE",
+            self.shape(px, y + 0.46, pw, h - 0.46, kind="RECTANGLE",
                        fill=lighten(col, 0.88), stroke=lighten(col, 0.6))
             # 左右の余白は詰める。広く取ると 1 行に入る文字数が減り、
             # 箇条書きが 1 文字だけ次行へこぼれる
             self.label(px + 0.10, y + 0.60, pw - 0.20, h - 0.74,
-                       "\n".join(f"・{t}" for t in items), size=size,
+                       "\n".join(f"・{s}" for s in items), size=size,
                        align="START", valign="TOP", color=self.P.text,
                        line_spacing=130)
-        self.shape(x + pw + 0.06, y + h / 2 - 0.22, arrow_w - 0.12, 0.44,
-                   kind="RIGHT_ARROW", fill=lighten(self.P.primary, 0.45),
-                   stroke=None)
+            if arrows and i < n - 1:
+                self.shape(px + pw + 0.06, y + h / 2 - 0.22, gap_w - 0.12, 0.44,
+                           kind="RIGHT_ARROW", fill=lighten(self.P.primary, 0.45),
+                           stroke=None)
         return y + h
+
+    def before_after(self, x, y, w, h, before, after, *, size=11,
+                     before_title="Before", after_title="After") -> float:
+        """左右の対比。before/after は文字列のリスト。中央に矢印を置く。
+
+        `comparison()` の 2 列・矢印つき・右を強調した特化形。3 案以上や
+        優劣を付けない並列比較は `comparison()` を直接使う。
+        """
+        return self.comparison(x, y, w, h,
+                               [(before_title, before), (after_title, after)],
+                               size=size, arrows=True, highlight=1)
 
     def journey(self, x, y, w, h, milestones, *, size=10, size_title=11) -> float:
         """道のり。マイルストーンを一本道の上下に交互に配置する。
