@@ -18,7 +18,7 @@ description: >-
 # Scalar Solution Proposal Slides
 
 Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running
-from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone
+from an installed plugin, `/path/to/slide-forge` on a local clone
 (literal `cd` paths below assume the local clone).
 
 ## Important
@@ -67,7 +67,7 @@ from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone
 | Environment diagram source (3 environments, AWS) | `examples/scalar-proposal-envs.drawio` → PNG via `scripts/drawio_export.py` |
 | Researched company/product facts + pitfalls | `references/scalar/research-2026-08.md` |
 | Section ordering rationale (problem-solving outline) | `references/deck-outlines.md` |
-| Run | `cd /Users/wfukatsu/work/slide-forge && .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <Drive URL>]` |
+| Run | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <Drive URL>]` |
 | Validate first (no API calls) | same command with `--dry-run` — runs the coordinate and text-fit audits without creating a deck |
 
 ## Phase 1: Collect the challenges and settle premises
@@ -155,7 +155,7 @@ square corners on accent-bar cards, pictograms from `illustrations`.
 ## Phase 4: Generate and QA
 
 ```bash
-cd /Users/wfukatsu/work/slide-forge
+cd /path/to/slide-forge
 .venv/bin/python scripts/scalar/build_scalar_proposal.py --dry-run   # audits only, no API
 .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <URL>]
 ```

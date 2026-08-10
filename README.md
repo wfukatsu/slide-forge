@@ -232,6 +232,53 @@ later-drawn shapes, and text overflow — before any API call. What it cannot
 judge (arrow routing, contrast, whether the figure communicates) is what the
 thumbnail QA of the `slide-qa` skill is for: see `references/validation.md`.
 
+## Examples
+
+Every spec under `examples/` is authored against **`templates/scalar-2026.json`**
+and validates cleanly against it. They are not portable to
+`templates/blank-16x9.json` — that template has no TITLE placeholder and
+declares no `CLOSING` role, so the same spec reports dozens of findings.
+`corporate` and `aixdevops` accept some of them; `scalar-2026` accepts all.
+
+```bash
+.venv/bin/python scripts/build_deck.py \
+    --template templates/scalar-2026.json --spec examples/<name>.json --dry-run --strict
+```
+
+| Example | Slides | Shows |
+|---|---|---|
+| `charts-demo.json` | 5 | Tables and graphs — the `charts.py` catalog |
+| `patterns-demo.json` | 7 | Layout patterns from `patterns.py` |
+| `illustration-gallery.json` | 13 | Concept figures from `illustrations.py` |
+| `icon-gallery.json` | 10 | The pictogram library (`icons.py`) |
+| `code-blocks-demo.json` | 2 | Syntax-highlighted code blocks |
+| `event-announcement.json` | 4 | Seminar / conference announcement parts |
+| `read-alone-guide.json` | 30 | Density patterns for print / read-alone decks |
+| `design-catalog.json` | 49 | The full design-pattern catalog †|
+| `slide-pattern-index.json` | 59 | One page per pattern — 1 slide = 1 pattern †|
+| `cloud-architecture.json` | 6 | Cloud architecture figures †|
+| `estimate-sample.json` | 2 sheets | Line-item estimate for the `spreadsheets` skill ‡|
+
+† Draws `cloud_icon*` / `cloud_zone` figures, so it needs the vendor icons
+first — they are excluded from the repository because AWS, Google Cloud and
+Azure do not permit redistribution. Without them `--dry-run` reports
+`Cloud icons have not been fetched yet`; run
+`.venv/bin/python scripts/fetch_cloud_icons.py` once (see
+[`assets/cloud-icons/README.md`](assets/cloud-icons/README.md)). Every other
+example above validates on a bare clone.
+
+‡ A spreadsheet, not a deck — run it through `build_sheet.py` instead:
+`.venv/bin/python scripts/build_sheet.py --dry-run examples/estimate-sample.json`
+
+Code-first decks are Python modules rather than specs, and generate against
+`scalar-2026` directly:
+
+| Example | Shows |
+|---|---|
+| `examples/scalardb-architecture.py` | ScalarDB architecture — cloud icons, pictograms, brand logos and connectors on one slide † |
+| `examples/scalardl-architecture.py` | ScalarDL architecture, same mix † |
+| `examples/pattern-gallery/deck.py` | The `deckkit.py` code-first path |
+
 ## License
 
 MIT. Cloud vendor icons remain the property of their vendors and are fetched

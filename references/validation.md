@@ -18,7 +18,7 @@ fetch, inspection, the fix loop, and deleting the local QA files
 (`scripts/cleanup_qa.py`). When the user skips it, the deck ships unverified
 and the report must say so. Neither gate replaces the other.
 
-All commands run from the repository root (`/Users/wfukatsu/work/slide-forge`).
+All commands run from the repository root (`/path/to/slide-forge`).
 
 ---
 

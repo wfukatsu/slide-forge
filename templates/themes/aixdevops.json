@@ -12,8 +12,8 @@
     "generationMode": "copy",
     "__generationMode_note": "Drive API でマスターを複製してから createSlide(layoutId) でスライドを追加する。実装は google-slides-template スキルの scripts/build_deck.py にある",
     "sampleSlideIds": [],
-    "counterpartTemplate": "~/.claude/skills/google-slides-template/templates/aixdevops.json",
-    "__counterpartTemplate_note": "~/.claude/skills/google-slides-template/templates/aixdevops.json を作れば複製方式に対応できる。手順は同スキルの SKILL.md Phase 1 を参照",
+    "counterpartTemplate": "templates/aixdevops.json",
+    "__counterpartTemplate_note": "同じマスターを指す google-slides-template 側の登録ファイル。複製方式で生成する場合はそちらを使う。マスターを更新したら両方を再生成すること",
     "__masterObjectId_note": "このプレゼンにはマスターが 2 つ同居している。g1b3a74d17bb_0_0 が AIxDevOps 共同ブランド（青の斜めデザイン + SCALAR|AIxDevOps ロックアップ）で本テーマが使うもの。g3f9599793cc_0_234 は別ファイルから貼り付けられた Scalar Slide Master 2026 のレイアウト群で、使わない",
     "__sampleSlideIds_note": "元プレゼンは 24 枚の登壇資料スライドを含む。build_deck.py は複製後に実在するスライドを全て削除するため個別列挙は不要。正確な一覧は counterpartTemplate の existingSlideIds を参照"
   },
