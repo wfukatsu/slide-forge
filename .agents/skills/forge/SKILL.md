@@ -10,7 +10,7 @@ description: >-
 # /forge — デッキ生成パイプライン
 
 依頼を出発点に、slide-forge の生成フローを**途中で止めずに一続きで**実行する。
-作業ディレクトリは slide-forge ルート（`/Users/wfukatsu/work/slide-forge`）。
+作業ディレクトリは slide-forge ルート（`/path/to/slide-forge`）。
 
 ## Step 1: 生成スキルを選ぶ（ルーティング）
 

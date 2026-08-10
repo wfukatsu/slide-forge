@@ -10,7 +10,7 @@ argument-hint: "[テーマ / テンプレート URL / 素材パス / 顧客名�
 
 `$ARGUMENTS` を出発点に、slide-forge の生成フローを**途中で止めずに一続きで**実行する。
 作業ディレクトリは slide-forge ルート（プラグインでは `${CLAUDE_PLUGIN_ROOT}`、
-ローカルクローンでは `/Users/wfukatsu/work/slide-forge`）。
+ローカルクローンでは `/path/to/slide-forge`）。
 
 ## Step 1: 生成スキルを選ぶ（ルーティング）
 

@@ -27,7 +27,7 @@ description: >-
   was chosen, then export again. Editing the exported file forks it from the
   source of truth.
 - **Run every command from the slide-forge root as cwd** — `${CLAUDE_PLUGIN_ROOT}`
-  when running from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a
+  when running from an installed plugin, `/path/to/slide-forge` on a
   local clone. Auth and the venv are shared at the repo root (`config/`, `.venv`).
 - **Whether to export PPTX is settled at generation time** via the 出力形式
   question in intake (`references/interactive-intake.md` §2); the default is

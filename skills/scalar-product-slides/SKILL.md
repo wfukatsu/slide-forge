@@ -20,7 +20,7 @@ description: >-
 # Scalar Product Introduction Slides
 
 Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running
-from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone
+from an installed plugin, `/path/to/slide-forge` on a local clone
 (literal `cd` paths below assume the local clone).
 
 ## Important
@@ -63,7 +63,7 @@ from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone
 | Company intro + product overview + use-case deck | `scripts/scalar/build_scalar_intro.py` |
 | Feature catalog deck (1 feature = 1 slide, with diagrams) | `scripts/scalar/build_scalar_features.py` |
 | Researched facts and pitfalls | `references/scalar/research-2026-08.md` |
-| Run | `cd /Users/wfukatsu/work/slide-forge && .venv/bin/python scripts/scalar/<script>.py [--folder <Drive URL>]` |
+| Run | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/<script>.py [--folder <Drive URL>]` |
 
 Both scripts accept a single CLI flag: `--folder <Drive folder URL>` (optional;
 when omitted the deck is created directly in My Drive).
@@ -179,7 +179,7 @@ feature map.
 ## Phase 4: Generate and QA
 
 ```bash
-cd /Users/wfukatsu/work/slide-forge
+cd /path/to/slide-forge
 .venv/bin/python scripts/scalar/build_scalar_features.py --dry-run   # audits only, no API
 .venv/bin/python scripts/scalar/build_scalar_features.py [--folder <URL>]
 ```

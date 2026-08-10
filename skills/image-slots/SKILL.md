@@ -20,7 +20,7 @@ description: >-
 # Fill Image Slots on an Existing Deck
 
 Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running
-from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone.
+from an installed plugin, `/path/to/slide-forge` on a local clone.
 
 ## Important
 
