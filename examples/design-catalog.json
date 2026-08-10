@@ -1703,7 +1703,7 @@
           "w": 9.0,
           "h": 1.15,
           "lang": "bash",
-          "code": "$ .venv/bin/python scripts/build-deck.py \\\n    --template templates/scalar-2026.json --spec deck.json \\\n    --title \"デザインパターン カタログ\""
+          "code": "$ .venv/bin/python scripts/build_deck.py \\\n    --template templates/scalar-2026.json --spec deck.json \\\n    --title \"デザインパターン カタログ\""
         }
       ]
     },

@@ -81,7 +81,7 @@
     "align": "END",
     "startAt": 1
   },
-  "__pageNumber_note": "Slides API は SLIDE_NUMBER プレースホルダを生成できないため、build-deck.py がこのスタイルでテキストボックスを描画する",
+  "__pageNumber_note": "Slides API は SLIDE_NUMBER プレースホルダを生成できないため、build_deck.py がこのスタイルでテキストボックスを描画する",
   "masterDecorations": [
     {
       "type": "shape",
