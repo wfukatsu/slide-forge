@@ -18,7 +18,7 @@ description: >-
 ## Important
 
 - **Scope of this skill**: duplicate an existing Google Slides presentation as the **design source of truth** and flow text into its layouts.
-- **Run every command from the slide-forge root as cwd.** The relative paths `scripts/…`, `templates/…`, and `.venv/bin/python` resolve from there. The root is `${CLAUDE_PLUGIN_ROOT}` when this skill runs from an installed plugin (the placeholder is substituted to the install path); on a local clone it is `/Users/wfukatsu/work/slide-forge`. Literal `cd` paths below assume the local clone — substitute the plugin root when installed.
+- **Run every command from the slide-forge root as cwd.** The relative paths `scripts/…`, `templates/…`, and `.venv/bin/python` resolve from there. The root is `${CLAUDE_PLUGIN_ROOT}` when this skill runs from an installed plugin (the placeholder is substituted to the install path); on a local clone it is `/path/to/slide-forge`. Literal `cd` paths below assume the local clone — substitute the plugin root when installed.
 - **Out of scope**:
   - Designing from scratch without a template → `google-slides` skill (composer, infographics, code-first `deckkit` decks)
   - Scalar company/product/feature decks → `scalar-product-slides` skill (a dedicated workflow layered on top of this one)
@@ -88,7 +88,7 @@ description: >-
 1. Python and dependencies. The venv is shared; the real environment lives at `~/.claude/venvs/gslides`:
 
 ```bash
-cd /Users/wfukatsu/work/slide-forge
+cd /path/to/slide-forge
 .venv/bin/python -c "import googleapiclient; print('ok')"
 ```
 
@@ -98,11 +98,11 @@ repo's `requirements.txt` first:
 
 ```bash
 [ -f ~/.claude/venvs/gslides-requirements.txt ] || \
-  cp /Users/wfukatsu/work/slide-forge/requirements.txt ~/.claude/venvs/gslides-requirements.txt
+  cp /path/to/slide-forge/requirements.txt ~/.claude/venvs/gslides-requirements.txt
 python3 -m venv ~/.claude/venvs/gslides
 ~/.claude/venvs/gslides/bin/pip install -U -r ~/.claude/venvs/gslides-requirements.txt
-rm -rf /Users/wfukatsu/work/slide-forge/.venv
-ln -s ~/.claude/venvs/gslides /Users/wfukatsu/work/slide-forge/.venv
+rm -rf /path/to/slide-forge/.venv
+ln -s ~/.claude/venvs/gslides /path/to/slide-forge/.venv
 ```
 
 > Create the symlink with an **absolute path**. In environments where the
@@ -516,7 +516,7 @@ with copy-based generation a re-run is faster anyway.
 
 ## File Layout
 
-All paths are relative to the repository root `/Users/wfukatsu/work/slide-forge`.
+All paths are relative to the repository root `/path/to/slide-forge`.
 
 | Path | Role |
 |------|------|

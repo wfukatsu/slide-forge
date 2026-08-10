@@ -25,7 +25,7 @@ description: >-
   the generation skills and runs **before** generation; this skill is Gate 2
   (`references/validation.md` has the full two-gate rationale).
 - **Run every command from the slide-forge root as cwd** — `${CLAUDE_PLUGIN_ROOT}`
-  when running from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a
+  when running from an installed plugin, `/path/to/slide-forge` on a
   local clone. Auth and the venv are shared at the repo root (`config/`, `.venv`).
 - **Whether to run QA is settled at generation time.** The generation skills ask
   during intake (default: **run** — recommend it; a clean API response cannot

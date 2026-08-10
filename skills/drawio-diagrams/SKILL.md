@@ -20,7 +20,7 @@ description: >-
   official-style cloud vendor icons with group frames are wanted. For simple
   concept/flow figures, stay with `diagrams.py` in the `google-slides` skill.
   The routing table is at the top of `references/drawio.md`.
-- **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone (literal paths assume the local clone).
+- **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/path/to/slide-forge` on a local clone (literal paths assume the local clone).
 - **Requires the drawio desktop CLI** (`brew install --cask drawio`;
   `drawio` on PATH or the app bundle). Verified headless on macOS.
 - **Visual QA of the exported PNG is mandatory.** A wrong shape name

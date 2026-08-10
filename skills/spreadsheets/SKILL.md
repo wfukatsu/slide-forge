@@ -32,7 +32,7 @@ description: >-
   and folder, the Google Spreadsheet is updated **in place** (URL preserved),
   so the user always holds one link.
 - **Run every command from the slide-forge root as cwd** — `${CLAUDE_PLUGIN_ROOT}`
-  when running from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a
+  when running from an installed plugin, `/path/to/slide-forge` on a
   local clone. Auth and the venv are shared at the repo root (`config/`, `.venv`).
 - **Never invent prices.** Unit prices, tax rates, and discount terms come
   from the user or their material. Anything unsourced stays a `○○` placeholder

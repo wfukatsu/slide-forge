@@ -23,7 +23,7 @@ description: >-
   - Dense cloud architecture / data-flow / network diagrams (nested containers, 10+ nodes) → author them with the `drawio-diagrams` skill (draw.io → PNG → insert); simple concept figures stay on `diagrams.py`
   - Authoring PPTX files from scratch → `document-skills:pptx` (exporting a deck generated here to `.pptx` → `pptx-export` skill); Slidev → `slidev` skill
   - A bare "make slides" request uses this skill only when a Google Drive / Google Slides context is explicit
-- **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a local clone. All commands below run from there (literal paths assume the local clone).
+- **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/path/to/slide-forge` on a local clone. All commands below run from there (literal paths assume the local clone).
 - **Auth** is centralized in `scripts/_auth.py`. It finds `credentials.json` / `token.json` in: `$GSLIDES_CONFIG_DIR` → `config/` at the repo root (canonical) → the old skill layout (transitional fallback). Never write per-script inline auth.
 - **Visual QA is a separate skill (`slide-qa`), chosen at generation time** (Phase 5). Default: run — recommend it when asking (Phase 1); a clean API response cannot show overflow or misattached arrows. If the user opts out, skip Phase 5, state in the report that the deck is unverified, and offer `slide-qa` as a follow-up. When QA runs, it ends by deleting the local QA files (`scripts/cleanup_qa.py`).
 - On QA failure, **delete the broken presentation and regenerate** from the fixed spec/module. Never patch a live deck with incremental API edits.
@@ -61,7 +61,7 @@ description: >-
 1. **venv** — `.venv` at the repo root is a symlink to the shared venv `~/.claude/venvs/gslides`. Verify:
 
    ```bash
-   cd /Users/wfukatsu/work/slide-forge
+   cd /path/to/slide-forge
    .venv/bin/python -c "import googleapiclient; print('ok')"
    ```
 
@@ -70,7 +70,7 @@ description: >-
    ```bash
    python3 -m venv ~/.claude/venvs/gslides
    ~/.claude/venvs/gslides/bin/pip install -U -r requirements.txt
-   ln -sfn ~/.claude/venvs/gslides /Users/wfukatsu/work/slide-forge/.venv
+   ln -sfn ~/.claude/venvs/gslides /path/to/slide-forge/.venv
    ```
 
 2. **Credentials** — confirm `config/credentials.json` exists (OAuth 2.0 Desktop client; Slides API and Drive API enabled in the GCP project). `config/token.json` is created on first run via a browser auth flow. If `credentials.json` is missing, stop and ask the user to place it — do not generate or run anything until it is confirmed.

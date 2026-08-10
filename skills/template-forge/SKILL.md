@@ -31,7 +31,7 @@ description: >-
   explicit RGB. The Slides UI color picker will still show the base's theme
   palette; that is expected (same as `templates/corporate.json`).
 - **Run every command from the slide-forge root as cwd** — `${CLAUDE_PLUGIN_ROOT}`
-  when running from an installed plugin, `/Users/wfukatsu/work/slide-forge` on a
+  when running from an installed plugin, `/path/to/slide-forge` on a
   local clone. Auth and the venv are shared at the repo root (`config/`, `.venv`).
 - **Never hand the template over without visual verification.** Role
   assignment is deterministic, but band/placeholder overlap, font rendering,

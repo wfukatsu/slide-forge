@@ -22,5 +22,8 @@ out/*
 assets/cloud-icons/*
 !assets/cloud-icons/README.md
 
+# Local scratch space for brand icon work — never published
+assets/shared-brand-icons-tmp/
+
 # macOS
 .DS_Store
