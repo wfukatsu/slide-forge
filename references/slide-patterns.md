@@ -8,11 +8,16 @@
 それに合わせて使う**分析図**（ツリー・ウォーターフォール・評価マトリクス）、
 **デッキ設計の道具**（サマリー・ストーリーライン・ゴースト）を担う。
 
+> **作れるページを画像で見るなら
+> [slide-pattern-catalog.md](slide-pattern-catalog.md)。**
+> 42 パターンを 8 分類で、1 パターン 1 枚の実物画像と解説つきで並べてある。
+> こちらの文書は組み方の**規則**、あちらは**現物のカタログ**。
+
 デッキ仕様（JSON）の `figures` からも同名の type で使える。実例は 2 つあり、目的が違う。
 
 | ファイル | 枚数 | 何のためのデッキか |
 |---|---|---|
-| `examples/slide-pattern-index.json` | 59 | **作れるページを見て選ぶ。** 1 枚 = 1 パターンの実物索引 |
+| `examples/slide-pattern-index.json` | 59 | **作れるページを見て選ぶ。** 1 枚 = 1 パターンの実物索引（画像版: [slide-pattern-catalog.md](slide-pattern-catalog.md)） |
 | `examples/read-alone-guide.json` | 30 | **配布資料の作法を学ぶ。** 部品の役割・良い例と悪い例・アンチパターン集 |
 
 新規にデッキを作るときは、まず `slide-pattern-index.json` を生成して

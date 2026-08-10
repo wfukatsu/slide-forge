@@ -232,6 +232,25 @@ later-drawn shapes, and text overflow — before any API call. What it cannot
 judge (arrow routing, contrast, whether the figure communicates) is what the
 thumbnail QA of the `slide-qa` skill is for: see `references/validation.md`.
 
+## Slide pattern catalog
+
+Which page shapes can this build? See
+[`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.md) —
+42 patterns in 8 groups, each with a rendered image, when to use it, and the
+`figures` type names to write in the spec. The layout rules behind them are in
+[`references/slide-patterns.md`](references/slide-patterns.md).
+
+| Group | Patterns | Picks |
+|---|---|---|
+| 骨格 6 種 | 6 | How the page itself is laid out |
+| 構成ページ | 4 | Deck scaffolding — summary, agenda, storyline, ghost |
+| 定量ページ | 7 | Arguing with numbers |
+| 比較・評価ページ | 5 | Putting options side by side |
+| 構造・論理ページ | 7 | Making a relationship visible |
+| 計画・体制ページ | 5 | Time and people |
+| 定性・技術ページ | 5 | Everything that isn't a number |
+| 締め・付録ページ | 3 | The decision and what follows |
+
 ## Examples
 
 Every spec under `examples/` is authored against **`templates/scalar-2026.json`**
