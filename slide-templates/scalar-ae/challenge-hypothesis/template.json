@@ -1,0 +1,116 @@
+{
+  "id": "challenge-hypothesis",
+  "displayName": "課題仮説ワンページャー",
+  "category": "customer",
+  "description": "顧客がまだ言語化していない論点を示し、対話を始めるための 1 枚",
+  "answers": [
+    "顧客がまだ気づいていない課題は何か、放置すると何が起きるか"
+  ],
+  "inferenceLevel": "diagnostic",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "steps": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 16
+          },
+          {
+            "type": "string",
+            "maxLength": 68
+          }
+        ]
+      }
+    },
+    "question": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない",
+    "3 枚のカードは 地ならし → 再構成 → 裏付け（放置コスト）の順に固定する",
+    "断定しない。仮説は仮説と分かる言い方にし、最後は必ず顧客への問いで終える",
+    "出典のない数値を載せない。公開事例は出典を明記する"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.16,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.7,
+        "w": 9.0,
+        "h": 1.72,
+        "items": {
+          "$slot": "steps"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.55,
+        "w": 9.0,
+        "h": 1.0,
+        "text": {
+          "$slot": "question"
+        },
+        "label": "本日うかがいたいこと"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "pack": "scalar-ae",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json"
+}

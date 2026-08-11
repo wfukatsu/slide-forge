@@ -25,6 +25,8 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Create/register a template | `template-forge` |
 | Create/register a reusable single-slide content template | `slide-template-creator` |
 | B2B の関与者マップ / ディスカバリー整理 | `b2b-account-maps` |
+| 顧客ごとの活動計画・商談台帳（AE の行動計画） | `scalar-account-plan` |
+| 訪問 1 回分の資料 / 社内承認資料（WPS・Deal Desk） | `scalar-ae-materials` |
 | Scalar product/company deck | `scalar-product-slides` |
 | Scalar customer proposal | `scalar-proposal-slides` |
 | Dense draw.io diagram | `drawio-diagrams` |
@@ -64,6 +66,10 @@ Detailed Codex setup and known differences are in
 - Run the documented offline `--dry-run`/layout validation before API writes.
 - Never expose the contents of `config/credentials.json`, `config/token.json`,
   or API-key files.
+- `accounts/` holds per-customer sales ledgers — named individuals and
+  judgements about them. It is ignored by Git; never commit it, never paste it
+  into a customer-facing artifact, and never share the `00_活動計画` /
+  `90_社内` Drive folders with a customer or partner.
 - Keep generated page fragments and QA thumbnails under ignored `out/` paths.
 - A successful API response is not visual QA. When QA is selected, inspect the
   thumbnails and run `scripts/cleanup_qa.py` before reporting completion.

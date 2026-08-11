@@ -1,0 +1,113 @@
+{
+  "id": "activity-timeline",
+  "displayName": "活動履歴",
+  "category": "account",
+  "description": "これまで誰に会い、何を得たかを時系列で並べる",
+  "answers": [
+    "この顧客とどこまで会えていて、何が取れたか"
+  ],
+  "inferenceLevel": "descriptive",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "milestones": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 10
+          },
+          {
+            "type": "string",
+            "maxLength": 16
+          }
+        ]
+      }
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "maxLength": 44
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "表は直近 4 件まで。それ以前は台帳（account.json）に残し、スライドには出さない",
+    "「得たこと」には顧客の発言か文書だけを書く。こちらの手応えは書かない",
+    "会えていない期間の空白も見えるように、日付を省略しない",
+    "社内資料。顧客・パートナーには渡さない（個人の影響力・賛否・社内政治を含む）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "timeline",
+        "x": 0.5,
+        "y": 1.15,
+        "w": 9.0,
+        "items": {
+          "$slot": "milestones"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 2.35,
+        "w": 9.0,
+        "headers": [
+          "日付",
+          "会った相手",
+          "得たこと / 次の一手"
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          1.1,
+          2.2,
+          5.7
+        ],
+        "size": 9,
+        "rowH": 0.44
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "pack": "scalar-ae",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json"
+}

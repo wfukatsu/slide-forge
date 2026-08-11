@@ -22,6 +22,8 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `template-forge` | Create and register a **new template (master)** from a design spec — brand colors, fonts, logo, footer (`scripts/build_template.py`). The Slides API cannot create masters, so a base (Google default or a registered template) is copied and its layouts restyled via batchUpdate; roles are assigned deterministically and the result lands in `templates/<id>.json`, ready for `google-slides-template`. Ships 3 design presets (`templates/presets/`). |
 | `slide-template-creator` | Create and register reusable **single-slide content templates** with semantic input slots, examples, offline validation, and catalog previews. These live under `slide-templates/` and are independent of Google Slides masters. |
 | `b2b-account-maps` | Build the two account maps a B2B software deal turns on: an **influence map** of the buying committee (影響力 × 賛否, champion highlighted) and a **discovery map** colouring each MEDDPICC item confirmed / partly known / still assumed, plus the committee table, approval path, pain chain, and the gaps with who to ask by when. Six page templates ship as the `b2b-sales` pack under `slide-templates/`. Internal working artifacts, not customer-facing pages. |
+| `scalar-account-plan` | Keep one **sales ledger per customer** (`accounts/<AE>/<customer>/account.json`) — facts labelled said / observed / assumed, the buying committee, MEDDPICC status, the pain chain, BANT risk, the current stage's exit criteria with the customer-side evidence for each, and the open actions — and render it as a nine-page **activity plan whose URL never changes** (`build_deck.py --into` replaces the pages of the existing deck). What the ledger cannot answer becomes the deliverable: `account_ledger.py gaps` checks the playbook's ten review questions and turns every unanswered one into an action with a person to ask, a deadline and a completion condition, carried over between runs and written as both a slide and Markdown for the CRM. Internal only. |
+| `scalar-ae-materials` | Build **one visit's materials**, routed by deal phase (0–6) × audience × purpose, so the customer-facing one-pager, the internal visit plan, the WPS win plan and the Deal Desk / 稟議 packet are never the same file. Includes a pre-generation check that no judgement about a named individual, competitor weakness or unconfirmed figure reaches anything a customer will read, and files each artifact under `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` in Drive. Eight page templates ship as the `scalar-ae` pack. Rules come from `references/scalar/sales-playbook.md`. |
 | `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
 | `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
 | `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
@@ -41,13 +43,34 @@ export via `pptx-export` (when chosen) → final report.
 - Codex: invoke the `forge` skill by name.
 - Claude Code: use `/forge` or `/slide-forge:forge`.
 
+### Account Executive workflow
+
+Two more commands cover the sales side, where the deliverable is not a deck but
+the AE's next action:
+
+- `/account <顧客名>` — create or update a customer's activity plan. Reads the
+  ledger, records what came out of the last meeting, checks the playbook's ten
+  review questions, turns the unanswered ones into dated actions, and replaces
+  the contents of the same activity-plan deck (the shared link keeps working).
+- `/visit <顧客名>` — prepare one visit. Routes phase × audience to the right
+  material type, keeps customer-facing and internal artifacts in separate
+  files and folders, generates and files them, then writes the visit back to
+  the ledger and refreshes the activity plan.
+
+Both keep the source of truth in `accounts/<AE 名>/<顧客名>/account.json`
+(git-ignored) and file the output under `<Drive ルート>/<AE 名>/<顧客名>/`.
+The Drive root is asked once and remembered in `config/sales.json`. The phases,
+gate IDs, five material types and ten checkpoints all live in
+`references/scalar/sales-playbook.md`.
+
 ## Repository layout
 
 ```
 .agents/      Codex skill discovery links and the Codex-native forge skill
 AGENTS.md     Codex project rules and host-tool compatibility mappings
 skills/       shared SKILL.md definitions used by Codex and Claude Code
-commands/     Claude Code slash command (/forge)
+commands/     Claude Code slash commands (/forge, /account, /visit)
+accounts/     per-customer sales ledgers (git-ignored; never committed)
 scripts/      shared engine — one importable package
   _auth.py        OAuth helper (Slides + Drive)
   build_deck.py   template-driven generator (TemplateDeck); --dry-run validation
@@ -56,6 +79,9 @@ scripts/      shared engine — one importable package
   icons.py cloud_icons.py images.py                 pictograms, vendor icons, AI images
   inspect_template.py assemble_spec.py layout_sample.py list_templates.py
   account_graph.py build_account_graph.py   influence / discovery graphs -> .drawio
+  scalar/account_ledger.py       per-customer sales ledger: validate, gaps, slot data
+  scalar/account_workspace.py    Drive tree <root>/<AE>/<customer>/… (idempotent)
+  scalar/build_account_plan.py   ledger -> activity-plan deck (same URL on update)
   export_template_master.py import_template_master.py   bundled masters <-> Drive
   fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
   build_sheet.py  line-item spreadsheets (xlsx + Google Spreadsheet)
