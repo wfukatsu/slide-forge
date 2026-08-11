@@ -36,6 +36,16 @@ CARD_W, CARD_H = 170, 74
 BAND_H, FOOT_H = 18, 18
 GAP_X, GAP_Y = 34, 62
 
+# entity 別レイアウト（--layout grouped）。木レイアウトは根が多いと横に伸びて
+# 読めなくなるので、法人ごとの枠に区切って格子に並べる
+G_CARD_W, G_CARD_H = 190, 76
+G_GAP_X, G_GAP_Y = 26, 30
+G_PAD, G_HEAD = 24, 34
+G_COLS = 4
+GUTTER = 210            # 左の余白。人のつながりの線はここを通す
+MARK = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫"
+LINK = "#B85450"
+
 
 def _esc(s: str) -> str:
     return escape(str(s)).replace("\n", "&#10;")
@@ -45,10 +55,11 @@ class Doc:
     def __init__(self) -> None:
         self.cells: list[str] = []
 
-    def group(self, cid: str, x: int, y: int, w: int, h: int) -> None:
+    def group(self, cid: str, x: int, y: int, w: int, h: int,
+              parent: str = "1") -> None:
         self.cells.append(
             f'<mxCell id="{cid}" value="" style="group" vertex="1" connectable="0" '
-            f'parent="1"><mxGeometry x="{x}" y="{y}" width="{w}" height="{h}" '
+            f'parent="{parent}"><mxGeometry x="{x}" y="{y}" width="{w}" height="{h}" '
             f'as="geometry" /></mxCell>')
 
     def box(self, cid: str, parent: str, value: str, style: str,
@@ -156,6 +167,93 @@ def _dag_layout(graph: dict) -> dict[str, tuple[int, int]]:
     return pos
 
 
+def build_grouped(graph: dict, title: str) -> str:
+    """`entity` ごとの枠に人を格子で並べる。線は枠をまたいで引く。
+
+    人のつながり（links）は線に番号だけを置き、文言は下の一覧に出す。
+    ラベルを線上に置くと、長い線ほどカードの上に落ちて読めなくなる。
+    """
+    d = Doc()
+    people = graph["people"]
+    order = graph.get("entityOrder") or []
+    seen = [p.get("entity", "その他") for p in people]
+    ents = [e for e in order if e in seen] + [e for e in dict.fromkeys(seen) if e not in order]
+
+    pos: dict[str, str] = {}
+    y, max_w = 70, 0
+    for n, ent in enumerate(ents):
+        members = [p for p in people if p.get("entity", "その他") == ent]
+        rows = (len(members) + G_COLS - 1) // G_COLS
+        fw = G_PAD * 2 + G_COLS * G_CARD_W + (G_COLS - 1) * G_GAP_X
+        fh = G_HEAD + G_PAD + rows * G_CARD_H + (rows - 1) * G_GAP_Y + G_PAD
+        fid = f"ent{n}"
+        d.box(fid, "1", f"{ent}（{len(members)} 名）",
+              "rounded=0;html=1;whiteSpace=wrap;fillColor=none;"
+              f"strokeColor={LINE};strokeWidth=2;verticalAlign=top;align=left;"
+              f"spacingLeft=12;spacingTop=6;fontSize=15;fontStyle=1;"
+              "container=1;collapsible=0;pointerEvents=0;",
+              GUTTER, y, fw, fh)
+        for i, p in enumerate(members):
+            cx = G_PAD + (i % G_COLS) * (G_CARD_W + G_GAP_X)
+            cy = G_HEAD + G_PAD + (i // G_COLS) * (G_CARD_H + G_GAP_Y)
+            cid = f"n_{p['id']}"
+            pos[p["id"]] = cid
+            met = p.get("met", True)
+            dash = "dashed=1;" if not met else ""
+            stroke = LINE if met else LINE_SOFT
+            fill = STANCE_FILL.get(p.get("stance", "neutral"), "#FFFFFF")
+            d.group(cid, cx, cy, G_CARD_W, G_CARD_H, parent=fid)
+            d.box(f"{cid}_r", cid, "/".join(p["roles"]),
+                  f"rounded=0;html=1;fillColor={BAND};strokeColor={stroke};{dash}"
+                  f"fontSize=10;fontStyle=1;fontColor=#B85450;",
+                  0, 0, G_CARD_W, BAND_H)
+            d.box(f"{cid}_b", cid, f"{p.get('org','')}\n{p['name']}",
+                  f"rounded=0;html=1;whiteSpace=wrap;fillColor={fill};"
+                  f"strokeColor={stroke};{dash}fontSize=11;",
+                  0, BAND_H, G_CARD_W, G_CARD_H - BAND_H - FOOT_H)
+            d.box(f"{cid}_i", cid, p["influence"].capitalize(),
+                  f"rounded=0;html=1;fillColor={BAND};strokeColor={stroke};{dash}"
+                  f"fontSize=9;fontStyle=1;fontColor=#D79B00;",
+                  0, G_CARD_H - FOOT_H, 82, FOOT_H)
+        y += fh + 46
+        max_w = max(max_w, fw)
+
+    for p in people:
+        if p.get("reportsTo") in pos:
+            d.edge(f"e_{p['id']}", f"{pos[p['reportsTo']]}_b", pos[p["id"]],
+                   style=("edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;"
+                          f"strokeColor={LINE};endArrow=none;"))
+    items = []
+    for i, e in enumerate(graph.get("links", []) or []):
+        if e["from"] not in pos or e["to"] not in pos:
+            continue
+        d.edge(f"l{i}", pos[e["from"]], pos[e["to"]],
+               style=("edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;dashed=1;"
+                      f"strokeColor={LINK};strokeWidth=2;endArrow=none;"
+                      "exitX=0;exitY=0.5;entryX=0;entryY=0.5;fontSize=13;"
+                      f"fontStyle=1;fontColor={LINK};labelBackgroundColor=#FFFFFF;"),
+               label=MARK[len(items)])
+        items.append(f"{MARK[len(items)]} {e.get('label', '')}")
+    if items:
+        d.box("rels", "1", "<b>人のつながり</b><br>" + "<br>".join(items),
+              "rounded=0;html=1;whiteSpace=wrap;fillColor=#FFFFFF;"
+              f"strokeColor={LINK};align=left;verticalAlign=top;spacingLeft=12;"
+              "spacingTop=8;fontSize=12;",
+              GUTTER, y, max_w, 34 + 22 * len(items))
+        y += 34 + 22 * len(items) + 20
+    d.box("legend", "1",
+          "凡例　上帯＝役割（F 購買者 / T 技術者 / U 利用者 / C コーチ / S サポート）"
+          "　　本文の塗り＝立場（橙＝支持 / 青＝懸念 / 白＝中立）"
+          "　　下帯＝影響度　　破線の枠＝未面談　　赤の破線＝人のつながり",
+          "rounded=0;html=1;whiteSpace=wrap;fillColor=#F9FAFB;strokeColor=#CCCCCC;"
+          "align=left;spacingLeft=12;fontSize=12;",
+          GUTTER, y, max_w, 46)
+    d.box("title", "1", title,
+          "text;html=1;align=left;fontSize=22;fontStyle=1;fontColor=#0F172A;",
+          GUTTER, 20, 900, 34)
+    return d.xml(title)
+
+
 def build(graph: dict) -> str:
     d = Doc()
     k = ag.kind(graph)
@@ -231,6 +329,10 @@ def main() -> int:
     ap.add_argument("--extract", action="store_true",
                     help="write the thinned graph instead of the whole one")
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--layout", choices=("tree", "grouped"), default="tree",
+                    help="grouped: people[].entity ごとの枠に格子で並べる"
+                         "（根が多くて木レイアウトが横に伸びるとき）")
+    ap.add_argument("--title", default="インフルーエンスマップ（全体）")
     args = ap.parse_args()
 
     graph = ag.load(args.graph)
@@ -239,7 +341,13 @@ def main() -> int:
         graph, dropped = ag.extract(graph, args.limit)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(build(graph), encoding="utf-8")
+    if args.layout == "grouped":
+        if ag.kind(graph) != "influence":
+            raise ag.AccountGraphError("--layout grouped は influence グラフ専用です")
+        xml = build_grouped(graph, args.title)
+    else:
+        xml = build(graph)
+    out.write_text(xml, encoding="utf-8")
     key = "people" if ag.kind(graph) == "influence" else "nodes"
     print(f"{len(graph[key])} nodes -> {out}")
     if dropped:
