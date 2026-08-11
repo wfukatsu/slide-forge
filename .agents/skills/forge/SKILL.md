@@ -22,6 +22,7 @@ description: >-
 | Scalar の会社・製品・機能紹介デッキ | `scalar-product-slides` |
 | 顧客課題起点の Scalar ソリューション提案書 | `scalar-proposal-slides` |
 | 再利用可能な1枚単位のスライドテンプレートを作る | `slide-template-creator` |
+| B2B 商談の関与者マップ・ディスカバリー整理 | `b2b-account-maps` |
 | テンプレート/マスター URL がある、登録テンプレートで作る（既定） | `google-slides-template` |
 | コーポレートマスター無しでゼロから作る | `google-slides` |
 

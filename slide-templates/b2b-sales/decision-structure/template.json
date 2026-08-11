@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "decision-structure",
+  "displayName": "決裁ライン",
+  "pack": "b2b-sales",
+  "category": "stakeholder",
+  "description": "稟議がどの経路をたどり、どこで止まりうるかを木で示す",
+  "answers": ["承認はどの順で上がり、どこで止まるか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "tree": {"type": "tuple", "required": true, "fields": [
+      {"type": "string", "maxLength": 30}, {"type": "array"}]},
+    "insight": {"type": "string", "required": true, "maxLength": 110},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "組織図ではなく、この案件の決裁経路を書く。関与しない部署は載せない",
+    "金額により経路が変わる場合は、想定金額での経路であることを出典行に書く",
+    "深さ 4 以上・葉 8 超は文字が潰れる。部門ごとに分けること"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "orgchart", "x": 0.5, "y": 1.08, "w": 9.0, "h": 2.6, "tree": {"$slot": "tree"}},
+      {"type": "so_what", "x": 0.5, "y": 3.8, "w": 9.0, "h": 0.9, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

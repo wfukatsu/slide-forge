@@ -24,6 +24,7 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Deck without a corporate master | `google-slides` |
 | Create/register a template | `template-forge` |
 | Create/register a reusable single-slide content template | `slide-template-creator` |
+| B2B の関与者マップ / ディスカバリー整理 | `b2b-account-maps` |
 | Scalar product/company deck | `scalar-product-slides` |
 | Scalar customer proposal | `scalar-proposal-slides` |
 | Dense draw.io diagram | `drawio-diagrams` |

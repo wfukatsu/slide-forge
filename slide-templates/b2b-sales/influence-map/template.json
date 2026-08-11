@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "id": "influence-map",
+  "displayName": "インフルーエンスマップ",
+  "pack": "b2b-sales",
+  "category": "stakeholder",
+  "description": "購買関与者を影響力と賛否の2軸に配置し、誰を動かせば決まるかを示す",
+  "answers": [
+    "この商談は誰を動かせば決まるか",
+    "反対側に影響力が偏っていないか"
+  ],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "stakeholders": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 9,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 6
+          },
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        ]
+      }
+    },
+    "xAxis": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 2,
+      "maxLength": 24
+    },
+    "yAxis": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 2,
+      "maxLength": 24
+    },
+    "champion": {
+      "type": "string",
+      "required": true,
+      "maxLength": 6
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "位置は面談で確かめた発言に基づくこと。営業の期待を賛否として置かない",
+    "未接触の関与者を「中立」に置かない。分からないことは discovery-gaps 側に出す",
+    "影響力は役職ではなく、過去の決裁で実際に効いたかで置く",
+    "バブルのラベルは 6 字まで。役職や氏名の詳細は buying-committee 側に置く",
+    "バブルは直径 0.95in。近すぎるとラベルが隠れる（--dry-run の図版監査が \"Text is hidden behind a shape drawn later\" で止める）。同じ位置に見える関与者はまとめるか buying-committee 側で分ける"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "posmap",
+        "x": 0.55,
+        "y": 1.1,
+        "w": 6.2,
+        "h": 3.55,
+        "points": {
+          "$slot": "stakeholders"
+        },
+        "xAxis": {
+          "$slot": "xAxis"
+        },
+        "yAxis": {
+          "$slot": "yAxis"
+        },
+        "highlight": {
+          "$slot": "champion"
+        },
+        "bubble": 0.95,
+        "size": 9
+      },
+      {
+        "type": "so_what",
+        "x": 6.9,
+        "y": 1.25,
+        "w": 2.55,
+        "h": 3.1,
+        "text": {
+          "$slot": "insight"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}
