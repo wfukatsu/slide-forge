@@ -54,12 +54,14 @@ scripts/      shared engine — one importable package
   charts.py illustrations.py patterns.py pages.py events.py   figure libraries
   icons.py cloud_icons.py images.py                 pictograms, vendor icons, AI images
   inspect_template.py assemble_spec.py layout_sample.py list_templates.py
+  export_template_master.py import_template_master.py   bundled masters <-> Drive
   fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
   build_sheet.py  line-item spreadsheets (xlsx + Google Spreadsheet)
   deckkit.py render_deck.py validate_layout.py      code-first path (offline checks)
   drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
   scalar/         Scalar deck builders
 templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
+  masters/        the master decks themselves as .pptx — import once with scripts/import_template_master.py
 slide-templates/ reusable single-slide content templates + registry
 assets/       scalar/ (brand: pictograms, logos, product-logos), cloud-icons/ (gitignored)
 references/   engine, workflow, and host compatibility documentation
@@ -175,7 +177,47 @@ committed**; fetch them once:
 .venv/bin/python scripts/fetch_cloud_icons.py
 ```
 
-### 5. Optional: AI image generation
+### 5. Slide masters (for the `copy`-mode templates)
+
+`scalar-2026`, `scalar-2026-boilerplate`, `corporate` and `aixdevops` are
+`generationMode: copy` templates: generating duplicates a real Google Slides
+presentation. `templates/<id>.json` only *points* at one, so on a fresh clone
+those templates cannot work until the master exists in your own Drive.
+
+The masters ship in the repo as `.pptx` under `templates/masters/`. Import them
+once, which uploads each one and rewrites its registration to point at your copy:
+
+```bash
+.venv/bin/python scripts/import_template_master.py --all
+# or one at a time
+.venv/bin/python scripts/import_template_master.py --id scalar-2026
+```
+
+Importing a `.pptx` makes Slides mint new object IDs for every layout, master
+and decoration, so the script re-runs `inspect_template.py` over the imported
+presentation and writes the result over `templates/<id>.json`. The
+human-verified **role assignment is preserved** — only the identifiers move.
+Expect `templates/*.json` to show as locally modified afterwards; that is your
+machine's copy of the registration and is not meant to be committed back.
+
+`blank-16x9` is `generationMode: create` and needs no master.
+
+To refresh a bundled master after editing it in Slides:
+
+```bash
+.venv/bin/python scripts/export_template_master.py --id <id>
+```
+
+> **Two masters cannot be exported through the API.** Drive refuses to export
+> a Docs-editors file larger than 10MB (`exportSizeLimitExceeded`), and
+> `scalar-2026-boilerplate` and `aixdevops` are past it. Download those by hand
+> from the Slides UI (File > Download > Microsoft PowerPoint) and save them as
+> `templates/masters/<id>.pptx`. Do **not** delete slides to get under the
+> limit: Slides drops any layout that no slide uses — `aixdevops` loses three
+> registered layouts that way — and the bundled slides listed in
+> `existingSlideIds` are part of what those templates offer.
+
+### 6. Optional: AI image generation
 
 For `scripts/images.py`, set `GEMINI_API_KEY` or save the key to
 `config/gemini_api_key` (gitignored, like the OAuth files). The key must
@@ -183,22 +225,24 @@ belong to a **billed** project — the image model has zero free-tier quota.
 
 ### What each skill needs
 
-| Skill | venv + OAuth | Cloud icons | draw.io CLI | Gemini key |
-|---|---|---|---|---|
-| `google-slides-template` | ✔ | when drawing cloud diagrams | — | optional |
-| `google-slides` | ✔ | when drawing cloud diagrams | — | optional |
-| `scalar-product-slides` | ✔ | when drawing cloud diagrams | — | — |
-| `scalar-proposal-slides` | ✔ | — | to edit the bundled environment diagram | — |
-| `drawio-diagrams` | ✔ (for deck insertion) | — | ✔ | — |
-| `slide-qa` | ✔ | — | — | — |
-| `pptx-export` | ✔ | — | — | — |
-| `spreadsheets` | ✔ (OAuth only for Google Spreadsheet output) | — | — | — |
-| `template-forge` | ✔ | — | — | — |
+| Skill | venv + OAuth | Slide master | Cloud icons | draw.io CLI | Gemini key |
+|---|---|---|---|---|---|
+| `google-slides-template` | ✔ | ✔ for the copy-mode templates | when drawing cloud diagrams | — | optional |
+| `google-slides` | ✔ | — (blank-16x9 needs none) | when drawing cloud diagrams | — | optional |
+| `scalar-product-slides` | ✔ | ✔ scalar-2026 | when drawing cloud diagrams | — | — |
+| `scalar-proposal-slides` | ✔ | ✔ scalar-2026 | — | to edit the bundled environment diagram | — |
+| `drawio-diagrams` | ✔ (for deck insertion) | — | — | ✔ | — |
+| `slide-qa` | ✔ | — | — | — | — |
+| `pptx-export` | ✔ | — | — | — | — |
+| `spreadsheets` | ✔ (OAuth only for Google Spreadsheet output) | — | — | — | — |
+| `template-forge` | ✔ | base master, if copying one | — | — | — |
 
 Secrets hygiene: `config/` (credentials, tokens, API keys), `out/`, `cache/`,
 and `assets/cloud-icons/` are gitignored — nothing machine-local is ever
-committed. Keep Drive sharing on your master decks restricted; their file IDs
-appear in `templates/*.json`.
+committed. Keep Drive sharing on your master decks restricted; their file IDs appear in
+`templates/*.json`. The masters bundled under `templates/masters/` are the
+decks themselves, so review what a master contains before publishing a fork —
+`scalar-2026-boilerplate` carries company and customer-facing slides.
 
 ## Quick start (template-driven)
 
