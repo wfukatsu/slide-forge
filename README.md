@@ -61,10 +61,11 @@ scripts/      shared engine — one importable package
   drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
   scalar/         Scalar deck builders
 templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
-  masters/        the master decks themselves as .pptx — import once with scripts/import_template_master.py
+  masters/        drop a master .pptx here and import it (gitignored; see its README)
 slide-templates/ reusable single-slide content templates + registry
 assets/       scalar/ (brand: pictograms, logos, product-logos), cloud-icons/ (gitignored)
 references/   engine, workflow, and host compatibility documentation
+  images/slide-patterns/  pattern catalog images (gitignored; generated in Setup)
 examples/     runnable spec catalogs and code-first example decks
 config/       credentials.json + token.json (gitignored, 0600)
 cache/ out/   transient render cache and QA output (gitignored)
@@ -121,6 +122,18 @@ is needed for Codex.
 
 All commands run from the slide-forge root: the clone directory for Codex or a
 local Claude setup, and `${CLAUDE_PLUGIN_ROOT}` for a Claude plugin install.
+
+**Some things are generated on your machine rather than committed** — the
+vendor cloud icons, the slide masters, and the pattern catalog images. They are
+large (a master is 6–8MB), machine-specific, or not ours to redistribute, so
+the repository ships the means to produce them instead of the files. A clone is
+not fully usable until you have run the steps below that you need.
+
+| Generated here | Why not committed | Step |
+|---|---|---|
+| `assets/cloud-icons/` | AWS / Google Cloud / Azure do not permit redistribution | [4](#4-cloud-vendor-icons-only-for-cloud-architecture-figures) |
+| `templates/masters/*.pptx` | 6–8MB each; the master has to live in *your* Drive to be copied | [5](#5-slide-masters-for-the-copy-mode-templates) |
+| `references/images/slide-patterns/*.png` | ~2MB, and reproducible from the spec at any time | [6](#6-slide-pattern-catalog-images) |
 
 ### 1. Python environment
 
@@ -184,8 +197,27 @@ committed**; fetch them once:
 presentation. `templates/<id>.json` only *points* at one, so on a fresh clone
 those templates cannot work until the master exists in your own Drive.
 
-The masters ship in the repo as `.pptx` under `templates/masters/`. Import them
-once, which uploads each one and rewrites its registration to point at your copy:
+The masters themselves are **not committed** — 6–8MB each, and a master is only
+useful once it lives in your own Drive. Pick whichever applies:
+
+**a. Build your own.** The `template-forge` skill creates a new master from a
+design spec — brand colours, fonts, logo, footer — and registers it, ready for
+`google-slides-template`. Nothing else is needed; this is the path if you are
+not working with an existing corporate deck.
+
+```bash
+.venv/bin/python scripts/build_template.py --help
+```
+
+**b. Register a master you already have in Drive.** Analyse it once and review
+the guessed roles by hand:
+
+```bash
+.venv/bin/python scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>
+```
+
+**c. Import a `.pptx` of a master.** Save it as `templates/masters/<id>.pptx`,
+then upload and re-register it in one step:
 
 ```bash
 .venv/bin/python scripts/import_template_master.py --all
@@ -200,24 +232,38 @@ human-verified **role assignment is preserved** — only the identifiers move.
 Expect `templates/*.json` to show as locally modified afterwards; that is your
 machine's copy of the registration and is not meant to be committed back.
 
-`blank-16x9` is `generationMode: create` and needs no master.
+If you have edit access to a master already, write it out for a teammate with
+`scripts/export_template_master.py --all`. Drive refuses to export a
+Docs-editors file over 10MB (`exportSizeLimitExceeded`), so larger masters have
+to be downloaded by hand from the Slides UI (File > Download > Microsoft
+PowerPoint). Do **not** delete slides to get under the limit: Slides drops any
+layout that no slide uses — `aixdevops` loses three registered layouts that way
+— and the bundled slides listed in `existingSlideIds` are part of what those
+templates offer. See [`templates/masters/README.md`](templates/masters/README.md).
 
-To refresh a bundled master after editing it in Slides:
+`blank-16x9` is `generationMode: create` and needs no master, so the
+`google-slides` spec path and every `--dry-run` validation work on a bare clone.
+
+### 6. Slide pattern catalog images
+
+[`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.md)
+shows all 43 page patterns as rendered images. The text is committed; the
+images (~2MB) are not, because they are reproducible from
+`examples/slide-pattern-index.json` at any time. Generate them once:
 
 ```bash
-.venv/bin/python scripts/export_template_master.py --id <id>
+.venv/bin/python scripts/build_deck.py \
+    --template templates/scalar-2026.json --spec examples/slide-pattern-index.json
+.venv/bin/python scripts/fetch_thumbnails.py <URL printed above> --out out/patterns --size MEDIUM
+.venv/bin/python scripts/build_pattern_catalog.py --thumbs out/patterns
 ```
 
-> **Two masters cannot be exported through the API.** Drive refuses to export
-> a Docs-editors file larger than 10MB (`exportSizeLimitExceeded`), and
-> `scalar-2026-boilerplate` and `aixdevops` are past it. Download those by hand
-> from the Slides UI (File > Download > Microsoft PowerPoint) and save them as
-> `templates/masters/<id>.pptx`. Do **not** delete slides to get under the
-> limit: Slides drops any layout that no slide uses — `aixdevops` loses three
-> registered layouts that way — and the bundled slides listed in
-> `existingSlideIds` are part of what those templates offer.
+This needs a working `scalar-2026` master (step 5) and, for the three
+cloud-architecture patterns, the vendor icons (step 4). Until you run it the
+catalog's images show as broken links; the pattern names, what each is for, and
+the `figures` type names are all readable without them.
 
-### 6. Optional: AI image generation
+### 7. Optional: AI image generation
 
 For `scripts/images.py`, set `GEMINI_API_KEY` or save the key to
 `config/gemini_api_key` (gitignored, like the OAuth files). The key must
@@ -240,9 +286,10 @@ belong to a **billed** project — the image model has zero free-tier quota.
 Secrets hygiene: `config/` (credentials, tokens, API keys), `out/`, `cache/`,
 and `assets/cloud-icons/` are gitignored — nothing machine-local is ever
 committed. Keep Drive sharing on your master decks restricted; their file IDs appear in
-`templates/*.json`. The masters bundled under `templates/masters/` are the
-decks themselves, so review what a master contains before publishing a fork —
-`scalar-2026-boilerplate` carries company and customer-facing slides.
+`templates/*.json`. Masters are not committed either: `templates/masters/` is gitignored, so a
+master .pptx you drop there stays local. Review what a master contains before
+sharing one — `scalar-2026-boilerplate` carries company and customer-facing
+slides.
 
 ## Quick start (template-driven)
 
