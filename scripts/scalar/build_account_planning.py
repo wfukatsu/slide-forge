@@ -82,6 +82,20 @@ LAYOUT: dict[str, list] = {
         ("hbars", {"x": 0.5, "y": 2.9, "w": 9.0, "labelW": 2.0, "rowH": 0.44, "gap": 0.14}),
         ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
     ],
+    "midterm-plan": [
+        ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
+        ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
+        ("mece_tree", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 2.3, "size": 8}),
+        ("so_what", {"x": 0.5, "y": 3.92, "w": 9.0, "h": 0.88}),
+        ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
+    ],
+    "plan-alignment": [
+        ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
+        ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
+        ("mece_tree", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 2.3, "size": 8}),
+        ("so_what", {"x": 0.5, "y": 3.92, "w": 9.0, "h": 0.88}),
+        ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
+    ],
     "swot": [
         ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
         ("matrix", {"x": 0.5, "y": 1.22, "w": 9.0, "h": 3.4, "size": 8.5}),
@@ -328,7 +342,7 @@ LAYOUT: dict[str, list] = {
 PLAN_A = ["group-orgchart", "smbc-orgchart", "nikko-orgchart", "card-orgchart",
           "jri-orgchart", "jri-mapping", "deal-portfolio",
           "company-stakeholders", "officer-coverage", "who-to-meet",
-          "financial-trends", "swot",
+          "financial-trends", "midterm-plan", "plan-alignment", "swot",
           "strategy-map-1", "strategy-map-2", "customer-initiatives",
           "customer-programs", "historical-spend", "scalar-footprint", "heatmap",
           "tam-sow", "influence-map", "key-people-career", "key-people-network",
@@ -343,13 +357,13 @@ PLAN_E = ["strategy-summary", "management-asks", "challenge-requirement", "risks
 # 商談ごとの章。中扉 + 全体像、主要な商談には Objective も付ける
 DEAL_EXTRA = {"1": ["objective-ledger"], "3": ["objective-aidd"]}
 
-REVIEW_MAIN = ["strategy-summary", "deal-portfolio", "strategy-map-2", "blueprint-map",
+REVIEW_MAIN = ["strategy-summary", "deal-portfolio", "plan-alignment", "blueprint-map",
                "prioritization-map", "execution-plan", "action-plan", "management-asks",
                "challenge-requirement"]
 REVIEW_APPENDIX = ["group-orgchart", "smbc-orgchart", "nikko-orgchart", "card-orgchart",
                    "jri-orgchart", "jri-mapping", "company-stakeholders",
                    "officer-coverage", "who-to-meet",
-                   "financial-trends", "swot", "customer-initiatives", "customer-programs",
+                   "financial-trends", "midterm-plan", "plan-alignment", "swot", "customer-initiatives", "customer-programs",
                    "scalar-footprint", "heatmap", "influence-map", "account-health", "key-people-career", "key-people-network",
                    "deal-1", "deal-3", "objective-ledger", "risks"]
 
