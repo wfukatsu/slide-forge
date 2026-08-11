@@ -139,6 +139,20 @@ than the template.
 Generate, then run `slide-qa` on the result. On the influence map, check the
 squint test: the person to move next should be the first thing seen.
 
+Both graph pages need one check the offline audit cannot make for you.
+**Enlarge a connector and confirm it touches the card.** A card is three
+stacked cells and only the middle one is full width — the tier badge is
+right-aligned, the influence and owner bands left-aligned — so a line aimed at
+the card's outer edge lands in the blank beside a band and the page reads as
+though nothing is connected. The figures attach to the body box for exactly
+this reason; verify it survived any change to the card design. Same check on
+the `.drawio`, where an edge must take the body cell id and not the group's
+([references/account-graphs.md](../../references/account-graphs.md)).
+
+Then read the page as a whole: every card reachable from the top, no arrow
+crossing a card it does not belong to, and the omission note present whenever
+`extract()` dropped anything.
+
 ### 6. Report
 
 Report the account, which maps were produced, the deck URL, and — the part that
