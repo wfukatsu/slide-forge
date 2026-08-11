@@ -8,6 +8,12 @@
     {"id": "rfm-segments", "displayName": "RFMセグメント", "pack": "marketing-analysis", "category": "customer", "path": "marketing-analysis/rfm-segments/template.json", "tags": ["rfm", "segment", "crm"], "status": "experimental", "version": 1},
     {"id": "cohort-retention", "displayName": "コホート継続率", "pack": "marketing-analysis", "category": "customer", "path": "marketing-analysis/cohort-retention/template.json", "tags": ["cohort", "retention"], "status": "experimental", "version": 1},
     {"id": "conversion-funnel", "displayName": "コンバージョンファネル", "pack": "marketing-analysis", "category": "behavior", "path": "marketing-analysis/conversion-funnel/template.json", "tags": ["funnel", "conversion"], "status": "experimental", "version": 1},
-    {"id": "experiment-result", "displayName": "A/Bテスト結果", "pack": "marketing-analysis", "category": "effectiveness", "path": "marketing-analysis/experiment-result/template.json", "tags": ["ab-test", "experiment", "uplift"], "status": "experimental", "version": 1}
+    {"id": "experiment-result", "displayName": "A/Bテスト結果", "pack": "marketing-analysis", "category": "effectiveness", "path": "marketing-analysis/experiment-result/template.json", "tags": ["ab-test", "experiment", "uplift"], "status": "experimental", "version": 1},
+    {"id": "influence-map", "displayName": "インフルーエンスマップ", "pack": "b2b-sales", "category": "stakeholder", "path": "b2b-sales/influence-map/template.json", "tags": ["influence", "stakeholder", "power-map", "b2b"], "status": "experimental", "version": 1},
+    {"id": "buying-committee", "displayName": "購買関与者一覧", "pack": "b2b-sales", "category": "stakeholder", "path": "b2b-sales/buying-committee/template.json", "tags": ["buying-committee", "stakeholder", "b2b"], "status": "experimental", "version": 1},
+    {"id": "decision-structure", "displayName": "決裁ライン", "pack": "b2b-sales", "category": "stakeholder", "path": "b2b-sales/decision-structure/template.json", "tags": ["decision-process", "approval", "b2b"], "status": "experimental", "version": 1},
+    {"id": "discovery-map", "displayName": "ディスカバリーマップ", "pack": "b2b-sales", "category": "discovery", "path": "b2b-sales/discovery-map/template.json", "tags": ["discovery", "meddpicc", "qualification", "b2b"], "status": "experimental", "version": 1},
+    {"id": "pain-chain", "displayName": "ペインチェーン", "pack": "b2b-sales", "category": "discovery", "path": "b2b-sales/pain-chain/template.json", "tags": ["pain-chain", "discovery", "impact", "b2b"], "status": "experimental", "version": 1},
+    {"id": "discovery-gaps", "displayName": "未確認事項と次の一手", "pack": "b2b-sales", "category": "discovery", "path": "b2b-sales/discovery-gaps/template.json", "tags": ["discovery", "next-step", "b2b"], "status": "experimental", "version": 1}
   ]
 }
