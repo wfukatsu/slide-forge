@@ -1,0 +1,28 @@
+{
+  "type": "influence",
+  "title": "サンプル物流様 インフルーエンスマップ",
+  "people": [
+    {"id": "fukatsu", "roles": ["S", "T"], "org": "CEO/COO", "name": "深津",
+     "influence": "champion", "stance": "neutral", "met": true, "reportsTo": null},
+    {"id": "yamada", "roles": ["T", "U"], "org": "CEO/CTO", "name": "山田",
+     "influence": "champion", "stance": "neutral", "met": true, "reportsTo": null},
+    {"id": "kaneko", "roles": ["F", "C"], "org": "CFO", "name": "金子",
+     "influence": "high", "stance": "close", "met": true, "reportsTo": "fukatsu",
+     "note": "資金・経費についての相談役"},
+    {"id": "akiyama", "roles": ["C", "U"], "org": "CRO", "name": "秋山",
+     "influence": "medium", "stance": "opposed", "met": true, "reportsTo": "fukatsu"},
+    {"id": "kuwana", "roles": ["U"], "org": "", "name": "桑名",
+     "influence": "high", "stance": "neutral", "met": true, "reportsTo": "kaneko"},
+    {"id": "hirokawa", "roles": ["U"], "org": "", "name": "広川",
+     "influence": "low", "stance": "neutral", "met": true, "reportsTo": "akiyama"},
+    {"id": "suzuki", "roles": ["T", "U"], "org": "", "name": "鈴木",
+     "influence": "low", "stance": "neutral", "met": false, "reportsTo": "yamada"},
+    {"id": "komatsu", "roles": ["T", "U"], "org": "", "name": "駒津",
+     "influence": "low", "stance": "neutral", "met": false, "reportsTo": "yamada"},
+    {"id": "okuno", "roles": ["T", "U"], "org": "", "name": "奥野",
+     "influence": "low", "stance": "neutral", "met": false, "reportsTo": "yamada"}
+  ],
+  "links": [
+    {"from": "fukatsu", "to": "yamada", "label": "社内システムの採用は二人で話し合って決めている"}
+  ]
+}
