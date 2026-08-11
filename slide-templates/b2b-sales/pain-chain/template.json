@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "pain-chain",
+  "displayName": "ペインチェーン",
+  "pack": "b2b-sales",
+  "category": "discovery",
+  "description": "現場の困りごとが部門と経営の指標にどう連鎖するかを辿る",
+  "answers": ["現場の課題は経営のどの数字に効いているか"],
+  "inferenceLevel": "causal",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "chain": {"type": "string[]", "required": true, "minItems": 3, "maxItems": 5, "maxLength": 18},
+    "evidence": {"type": "string[][]", "required": true, "minItems": 3, "maxItems": 5, "maxLength": 40},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "連鎖は因果の主張。各段に裏付けを置けないなら矢印でつながない",
+    "経営指標への影響は顧客自身の数字で語る。こちらの試算なら試算と明記する",
+    "相関を因果として提示しない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "flow", "x": 0.5, "y": 1.55, "w": 9.0, "h": 0.95, "items": {"$slot": "chain"}},
+      {"type": "table", "x": 0.5, "y": 2.72, "w": 9.0,
+       "headers": ["段", "起きていること", "裏付け"],
+       "rows": {"$slot": "evidence"}, "colWidths": [1.5, 3.6, 3.4],
+       "size": 9, "rowH": 0.44},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

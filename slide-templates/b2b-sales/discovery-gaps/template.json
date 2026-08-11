@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "discovery-gaps",
+  "displayName": "未確認事項と次の一手",
+  "pack": "b2b-sales",
+  "category": "discovery",
+  "description": "空白のまま残っている論点を、誰にいつ確認するかまで落とす",
+  "answers": ["次に誰へ何を確認すれば商談が前に進むか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "gaps": {"type": "string[][]", "required": true, "minItems": 3, "maxItems": 6, "maxLength": 40},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "「なぜ重要か」を書けない項目は聞かない。質問の量ではなく順序で決まる",
+    "確認相手と期限のない行を残さない",
+    "discovery-map の missing / wip と対応させること"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "table", "x": 0.5, "y": 1.6, "w": 9.0,
+       "headers": ["未確認事項", "なぜ重要か", "確認相手", "期限"],
+       "rows": {"$slot": "gaps"}, "colWidths": [2.4, 3.3, 1.9, 1.0],
+       "size": 9, "rowH": 0.46},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}
