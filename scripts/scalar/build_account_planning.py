@@ -144,6 +144,22 @@ LAYOUT: dict[str, list] = {
         ("so_what", {"x": 0.5, "y": 3.8, "w": 9.0, "h": 0.98, "label": "凡例", "size": 8}),
         ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
     ],
+    "key-people-career": [
+        ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
+        ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
+        ("cards", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 1.45,
+                   "titleSize": 8.5, "bodySize": 7}),
+        ("cards", {"x": 0.5, "y": 3.05, "w": 9.0, "h": 1.45,
+                   "titleSize": 8.5, "bodySize": 7}),
+        ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
+    ],
+    "key-people-network": [
+        ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
+        ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
+        ("influence_graph", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 2.2, "size": 7.5}),
+        ("so_what", {"x": 0.5, "y": 3.8, "w": 9.0, "h": 0.98, "size": 8}),
+        ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
+    ],
     "account-health": [
         ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
         ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
@@ -315,7 +331,8 @@ PLAN_A = ["group-orgchart", "bank-orgchart", "securities-orgchart", "card-orgcha
           "financial-trends", "swot",
           "strategy-map-1", "strategy-map-2", "customer-initiatives",
           "customer-programs", "historical-spend", "scalar-footprint", "heatmap",
-          "tam-sow", "influence-map", "account-health", "health-criteria",
+          "tam-sow", "influence-map", "key-people-career", "key-people-network",
+          "account-health", "health-criteria",
           "growth-vision"]
 PLAN_B = ["initiative-alignment", "blueprint-map", "prioritization-table",
           "prioritization-map"]
@@ -333,7 +350,7 @@ REVIEW_APPENDIX = ["group-orgchart", "bank-orgchart", "securities-orgchart", "ca
                    "itsub-orgchart", "itsub-mapping", "company-stakeholders",
                    "officer-coverage", "who-to-meet",
                    "financial-trends", "swot", "customer-initiatives", "customer-programs",
-                   "scalar-footprint", "heatmap", "influence-map", "account-health",
+                   "scalar-footprint", "heatmap", "influence-map", "account-health", "key-people-career", "key-people-network",
                    "deal-1", "deal-3", "objective-ledger", "risks"]
 
 

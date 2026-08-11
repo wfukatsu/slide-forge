@@ -472,6 +472,8 @@ Plan Document の 35 ページ。「レビュー」列の ○ が APS レビュ�
 | 11 | Heatmap | layers | A | Appendix | S23 / S26 |
 | 12 | TAM & SOW Analysis | nested_circles | A | — | S21 / S22 |
 | 13 | Influence Map | influence_graph | A | Appendix | S27 |
+| 13b | 主要人物の経歴 | cards | A | Appendix | S27 |
+| 13c | 人物の関係性 | influence_graph + links | A | Appendix | S27 |
 | 14 | Account Health | rating_matrix | A | Appendix | S29 |
 | 15 | Account Health 評価基準 | **表** | A | — | S31 / S32 |
 | 16 | Vision / Strategy for Growth | comparison | A | — | S33 |
@@ -543,6 +545,10 @@ AI 推進のような横断組織を持つ。横断組織を押さえていて�
 4. **手がかりは接触済みの人を起点にする。** 誰経由かが書けない「会うべき人」は
    アクションにならない
 5. 役職は公開名簿を正とし、台帳の古い肩書きは直す
+6. **会う相手が決まったら経歴を押さえる。** 肩書きの変遷は、その人が何を根拠に
+   判断するかを示す。前任・後任・兼務・出向元は意思決定の経路そのもの
+7. **個人的な関係（元上司・友人・派閥）は公開情報ではない。** 出典行で分け、
+   その記述が入った資料は社外に出さない
 
 ### 9.2.1 商談ごとの章立て
 
