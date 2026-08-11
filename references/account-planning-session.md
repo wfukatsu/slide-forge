@@ -460,6 +460,8 @@ Plan Document の 35 ページ。「レビュー」列の ○ が APS レビュ�
 | 2a | 事業会社の組織と当社の接点（法人ごとに 1 枚） | orgchart | A | Appendix | S84 |
 | 2b | システム子会社の組織と当社の接点 | orgchart | A | Appendix | S84 |
 | 3 | Financial Trends | metric + hbars | A | Appendix | S81 |
+| 3b | 中期経営計画の構造 | mece_tree | A | Appendix | S15 |
+| 3c | 中計と提案の紐付け | mece_tree | A | ○ | S43 / S46 |
 | 4 | SWOT Analysis | matrix | A | Appendix | S13 |
 | 5 | Strategy Map (Step 1) | outcome_tree | A | — | S15 |
 | 6 | Strategy Map (Step 2) | outcome_tree | A/B | ○ | S38 / S41 |
@@ -506,6 +508,16 @@ Prioritization・Action Plan で**同じ番号を参照**する。番号がな�
 
 番号・会社・担当組織・金額は `build_account_planning.py` の `DEALS` で
 一元管理し、全ページと商談ごとの章がそこから引く。
+
+### 9.1.1 中期経営計画への紐付け
+
+中計は顧客が公開した優先順位そのもの。**提案をその記述に接続できれば、稟議に
+書く言葉が顧客の言葉になる。**
+
+- 一次資料（中計のリリース PDF・IR ページ）から**原文**を取る。要約記事で代用しない
+- **柱の構造を見る。** IT が事業戦略の下か並列かで稟議のルートが変わる
+- 紐付けは柱ではなく**記述単位**で行う
+- 紐付かない提案は無理に紐付けない。紐付かないこと自体が判断材料
 
 ### 9.2 グループ会社ごとの分類
 
