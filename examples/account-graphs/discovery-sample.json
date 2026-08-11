@@ -1,0 +1,33 @@
+{
+  "type": "discovery",
+  "title": "サンプル物流様 ディスカバリーマップ",
+  "message": "Strategy に顧客も気づいていない、自社だけが方法を提供できる、あるべき姿を提案していく",
+  "nodes": [
+    {"id": "g1", "tier": "goal", "text": "新規売上 24 億円", "owner": "Board"},
+    {"id": "g2", "tier": "goal", "text": "Fortune 500 のうち 10 社の採用", "owner": "CEO"},
+    {"id": "g3", "tier": "goal", "text": "リニューアル 98%", "owner": "CRO"},
+    {"id": "s1", "tier": "strategy", "text": "テリトリー単位でのチーム営業", "owner": "COO"},
+    {"id": "s2", "tier": "strategy", "text": "教育コンテンツの拡充", "owner": "CTO"},
+    {"id": "s3", "tier": "strategy", "text": "製品機能の拡充", "owner": "CTO"},
+    {"id": "s4", "tier": "strategy", "text": "戦略アカウントの深掘り", "owner": "CRO"},
+    {"id": "s5", "tier": "strategy", "text": "構築パートナーの拡充", "owner": "CRO"},
+    {"id": "s6", "tier": "strategy", "text": "営業・SA の人員拡充", "owner": "CFO"},
+    {"id": "t1", "tier": "tactics", "text": "アカウントプランの実施", "owner": "CRO"},
+    {"id": "t2", "tier": "tactics", "text": "ユースケースの拡充", "owner": "CEO"},
+    {"id": "t3", "tier": "tactics", "text": "パートナーの主要アカウントの攻略", "owner": "CRO"},
+    {"id": "t4", "tier": "tactics", "text": "候補者のソーシング", "owner": "CFO"},
+    {"id": "t5", "tier": "tactics", "text": "チーム単位でのインセンティブ設計", "owner": "CFO"},
+    {"id": "t6", "tier": "tactics", "text": "教育コンテンツの動画化", "owner": "CEO"},
+    {"id": "t7", "tier": "tactics", "text": "分析機能、セキュリティ機能の拡充", "owner": "CTO"},
+    {"id": "t8", "tier": "tactics", "text": "マーケットプレイスへの展開", "owner": "CTO"}
+  ],
+  "edges": [
+    {"from": "g2", "to": "g1"}, {"from": "g3", "to": "g1"},
+    {"from": "s1", "to": "g1"}, {"from": "s2", "to": "g1"}, {"from": "s3", "to": "g1"},
+    {"from": "s4", "to": "g2"}, {"from": "s5", "to": "g3"},
+    {"from": "s6", "to": "s1"}, {"from": "t5", "to": "s1"},
+    {"from": "t1", "to": "s4"}, {"from": "t2", "to": "s5"}, {"from": "t3", "to": "s6"},
+    {"from": "t4", "to": "s6"}, {"from": "t6", "to": "s2"},
+    {"from": "t7", "to": "s3"}, {"from": "t8", "to": "s3"}
+  ]
+}

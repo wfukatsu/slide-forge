@@ -55,6 +55,7 @@ scripts/      shared engine — one importable package
   charts.py illustrations.py patterns.py pages.py events.py   figure libraries
   icons.py cloud_icons.py images.py                 pictograms, vendor icons, AI images
   inspect_template.py assemble_spec.py layout_sample.py list_templates.py
+  account_graph.py build_account_graph.py   influence / discovery graphs -> .drawio
   export_template_master.py import_template_master.py   bundled masters <-> Drive
   fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
   build_sheet.py  line-item spreadsheets (xlsx + Google Spreadsheet)
