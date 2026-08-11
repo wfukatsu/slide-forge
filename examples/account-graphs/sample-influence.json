@@ -1,0 +1,147 @@
+{
+  "type": "influence",
+  "title": "サンプル物流様 インフルーエンスマップ",
+  "people": [
+    {
+      "id": "yamamoto",
+      "roles": [
+        "S"
+      ],
+      "org": "代表取締役",
+      "name": "山本",
+      "influence": "champion",
+      "stance": "neutral",
+      "met": false,
+      "reportsTo": null
+    },
+    {
+      "id": "tanaka",
+      "roles": [
+        "F"
+      ],
+      "org": "CFO",
+      "name": "田中",
+      "influence": "high",
+      "stance": "neutral",
+      "met": false,
+      "reportsTo": "yamamoto"
+    },
+    {
+      "id": "sato",
+      "roles": [
+        "T",
+        "C"
+      ],
+      "org": "情シス部長",
+      "name": "佐藤",
+      "influence": "high",
+      "stance": "close",
+      "met": true,
+      "reportsTo": "yamamoto",
+      "note": "社内説明を担ってくれる推進役"
+    },
+    {
+      "id": "suzuki",
+      "roles": [
+        "F"
+      ],
+      "org": "購買部長",
+      "name": "鈴木",
+      "influence": "medium",
+      "stance": "opposed",
+      "met": false,
+      "reportsTo": "yamamoto"
+    },
+    {
+      "id": "eigyo",
+      "roles": [
+        "U"
+      ],
+      "org": "営業本部長",
+      "name": "大西",
+      "influence": "medium",
+      "stance": "neutral",
+      "met": false,
+      "reportsTo": "yamamoto"
+    },
+    {
+      "id": "takahashi",
+      "roles": [
+        "U"
+      ],
+      "org": "受注管理課長",
+      "name": "高橋",
+      "influence": "medium",
+      "stance": "close",
+      "met": true,
+      "reportsTo": "eigyo"
+    },
+    {
+      "id": "ito",
+      "roles": [
+        "T"
+      ],
+      "org": "情シス主任",
+      "name": "伊藤",
+      "influence": "low",
+      "stance": "neutral",
+      "met": true,
+      "reportsTo": "sato"
+    },
+    {
+      "id": "nakamura",
+      "roles": [
+        "T"
+      ],
+      "org": "情シス担当",
+      "name": "中村",
+      "influence": "low",
+      "stance": "neutral",
+      "met": false,
+      "reportsTo": "sato"
+    },
+    {
+      "id": "kobayashi",
+      "roles": [
+        "F"
+      ],
+      "org": "購買担当",
+      "name": "小林",
+      "influence": "low",
+      "stance": "neutral",
+      "met": false,
+      "reportsTo": "suzuki"
+    },
+    {
+      "id": "watanabe",
+      "roles": [
+        "F"
+      ],
+      "org": "法務",
+      "name": "渡辺",
+      "influence": "low",
+      "stance": "neutral",
+      "met": false,
+      "reportsTo": "suzuki"
+    },
+    {
+      "id": "bp",
+      "roles": [
+        "C"
+      ],
+      "org": "現行ベンダー",
+      "name": "営業担当",
+      "influence": "medium",
+      "stance": "opposed",
+      "met": false,
+      "reportsTo": null
+    }
+  ],
+  "links": [
+    {
+      "from": "sato",
+      "to": "suzuki",
+      "label": "移行方式と調達条件は二人で調整している"
+    }
+  ]
+}
