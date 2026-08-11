@@ -84,6 +84,8 @@ d.asset_icon_flow(0.5, 1.15, 9.0, [("job-seeker", "求職者"), ("interview", "�
 | `matrix(x,y,w,h,quadrants)` | 4 象限で位置づける | 左上・右上・左下・右下の順。軸は `(下, 上)` `(左, 右)` |
 | `before_after(x,y,w,h,before,after)` | 左右の対比 | 中央に矢印が入る。`comparison` の 2 列特化形 |
 | `comparison(x,y,w,h,columns)` | N 案を横に並べる | `columns=[(見出し, [項目…])]`。`arrows=True` は移り変わりのときだけ、`highlight=i` で推奨案を強調 |
+| `influence_graph(x,y,w,h,people)` | 関与者を組織構造で並べる | 役割=上帯 / 影響度=下帯 / 立場=塗り / 未面談=破線。`links` で対等な関係、`more` で省略数。データは `account_graph.py` が検証 |
+| `outcome_tree(x,y,w,h,nodes)` | Goal・Strategy・Tactics の支持関係 | `edges` は支える側→支えられる側。**段は tier ではなくグラフの深さ**。多親可 |
 | `journey(x,y,w,h,milestones)` | 道のり。上下交互に配置 | `milestones=[(見出し, 補足)]` |
 | `timeline(x,y,w,items)` | 横方向の時系列 | `items=[(時点, 見出し)]` |
 
