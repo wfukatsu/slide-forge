@@ -266,6 +266,21 @@ LAYOUT: dict[str, list] = {
         ("mece_tree", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 3.05, "size": 8}),
         ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
     ],
+    "officer-coverage": [
+        ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
+        ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
+        ("comparison", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 2.35, "size": 7}),
+        ("so_what", {"x": 0.5, "y": 3.92, "w": 9.0, "h": 0.88}),
+        ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
+    ],
+    "who-to-meet": [
+        ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
+        ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
+        ("table", {"x": 0.5, "y": 1.5, "w": 9.0,
+                   "colWidths": [1.55, 1.6, 2.6, 2.4, 0.85],
+                   "size": 8, "rowH": 0.56}),
+        ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
+    ],
     "company-stakeholders": [
         ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
         ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
@@ -277,7 +292,8 @@ LAYOUT: dict[str, list] = {
 
 # ページの並び。中扉の見出しと考慮点は aps.json の sections から取る
 PLAN_A = ["group-orgchart", "jri-orgchart", "jri-mapping", "deal-portfolio",
-          "company-stakeholders", "financial-trends", "swot",
+          "company-stakeholders", "officer-coverage", "who-to-meet",
+          "financial-trends", "swot",
           "strategy-map-1", "strategy-map-2", "customer-initiatives",
           "customer-programs", "historical-spend", "scalar-footprint", "heatmap",
           "tam-sow", "influence-map", "account-health", "health-criteria",
@@ -295,6 +311,7 @@ REVIEW_MAIN = ["strategy-summary", "deal-portfolio", "strategy-map-2", "blueprin
                "prioritization-map", "execution-plan", "action-plan", "management-asks",
                "challenge-requirement"]
 REVIEW_APPENDIX = ["group-orgchart", "jri-orgchart", "jri-mapping", "company-stakeholders",
+                   "officer-coverage", "who-to-meet",
                    "financial-trends", "swot", "customer-initiatives", "customer-programs",
                    "scalar-footprint", "heatmap", "influence-map", "account-health",
                    "deal-1", "deal-3", "objective-ledger", "risks"]
