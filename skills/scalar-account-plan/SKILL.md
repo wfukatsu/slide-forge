@@ -358,7 +358,28 @@ APS は活動計画より広い範囲を扱うので、台帳だけでは埋ま�
 ### 7. 関与者が 9 人を超えたら
 
 スライドに詰めない。`b2b-account-maps` の既定どおり、全体を draw.io に出して
-スライドには抽出版を載せ、落ちた人数を必ず書く。
+スライドには抽出版を載せ、**落ちた人数と全体版の在り処を必ず書く**（`more` スロット）。
+
+```bash
+.venv/bin/python scripts/build_account_graph.py <graph.json> \
+    --out out/account-plan/<顧客>/influence-map-full.drawio
+drawio -x -f png -s 2 -b 8 -o out/.../influence-map-full.png out/.../influence-map-full.drawio
+```
+
+**企業グループが相手で根が多いときは `--layout grouped` を使う。** 既定の木
+レイアウトは根の数だけ横に伸びる（49 名で 18,000px になり読めなかった）。
+`grouped` は `people[].entity` ごとの枠に格子で並べ、法人をまたぐ線だけを
+枠の外に引く。
+
+```bash
+.venv/bin/python scripts/build_account_graph.py <graph.json> --layout grouped \
+    --title "<顧客> インフルーエンスマップ（全体）" --out out/.../influence-map-full.drawio
+```
+
+- `entity` は法人名（`entityOrder` で枠の並び順を決める）。組織図と同じ単位にする
+- **人のつながり（`links`）は線に番号だけを置き、文言は図の下の一覧に出す。**
+  線上にラベルを置くと、長い線ほどカードに重なって読めなくなる
+- `.drawio` と PNG は必ずデッキの Drive フォルダに置く。PNG だけでは編集できない
 
 ### 8. 目視検査と後片付け
 
