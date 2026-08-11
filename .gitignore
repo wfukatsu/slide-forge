@@ -25,5 +25,14 @@ assets/cloud-icons/*
 # Local scratch space for brand icon work — never published
 assets/shared-brand-icons-tmp/
 
+# Generated locally during Setup, not committed — see README "Setup".
+# Slide masters (.pptx, ~7MB each): scripts/export_template_master.py, or build
+# your own with template-forge. Pattern catalog images (~2MB):
+# scripts/build_pattern_catalog.py.
+templates/masters/*
+!templates/masters/README.md
+references/images/slide-patterns/*
+!references/images/slide-patterns/.gitkeep
+
 # macOS
 .DS_Store
