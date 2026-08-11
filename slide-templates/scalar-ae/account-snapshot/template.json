@@ -1,0 +1,113 @@
+{
+  "id": "account-snapshot",
+  "displayName": "商談スナップショット",
+  "category": "account",
+  "description": "この商談が今どのステージにいて、いくらで、いつ決まるかを 1 枚で示す",
+  "answers": [
+    "この商談は今どこにいて、いくらで、いつ決まるか"
+  ],
+  "inferenceLevel": "descriptive",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "headline": {
+      "type": "array",
+      "required": true,
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 10
+          },
+          {
+            "type": "string",
+            "maxLength": 24
+          }
+        ]
+      }
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 4,
+      "maxLength": 46
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "forecast は Pipeline / Best / Commit / Closed の 4 値。根拠を書けない Commit は Best に落とす",
+    "金額は算定根拠を言えるものだけ書く。言えなければ「未確定」と書く",
+    "社内資料。顧客・パートナーには渡さない（個人の影響力・賛否・社内政治を含む）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.05,
+        "w": 9.0,
+        "h": 1.05,
+        "items": {
+          "$slot": "headline"
+        },
+        "titleSize": 10,
+        "bodySize": 9.5
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 2.3,
+        "w": 9.0,
+        "headers": [
+          "項目",
+          "内容"
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          2.2,
+          6.8
+        ],
+        "size": 9,
+        "rowH": 0.46
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "pack": "scalar-ae",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json"
+}

@@ -1,0 +1,102 @@
+{
+  "id": "bant-risk",
+  "displayName": "BANT リスク",
+  "category": "account",
+  "description": "Budget / Authority / Needs / Timeframe のどれが商談を止めるかを見分ける",
+  "answers": [
+    "この商談のどこにリスクがあり、フォーキャストは妥当か"
+  ],
+  "inferenceLevel": "diagnostic",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 16
+          },
+          {
+            "type": "string",
+            "maxLength": 80
+          }
+        ]
+      }
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": 110
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "4 項目の順序は Budget → Authority → Needs → Timeframe で固定する",
+    "各項目の書き出しは ok / risk / unknown のいずれか。判断の根拠を同じセルに書く",
+    "unknown が残る項目は action-plan に確認相手と期限つきで送る",
+    "社内資料。顧客・パートナーには渡さない（個人の影響力・賛否・社内政治を含む）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.25,
+        "w": 9.0,
+        "h": 1.8,
+        "items": {
+          "$slot": "items"
+        },
+        "bodySize": 9
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.35,
+        "w": 9.0,
+        "h": 0.95,
+        "text": {
+          "$slot": "insight"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "pack": "scalar-ae",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json"
+}
