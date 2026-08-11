@@ -5,17 +5,46 @@
   "pack": "b2b-sales",
   "category": "discovery",
   "description": "Goal・Strategy・Tactics を支持関係でつなぎ、何が何を支えるかを示す",
-  "answers": ["顧客の目標は何に支えられていて、自社はどこに効くのか"],
+  "answers": [
+    "顧客の目標は何に支えられていて、自社はどこに効くのか"
+  ],
   "inferenceLevel": "strategic",
-  "compatibleLayouts": ["BLANK"],
+  "compatibleLayouts": [
+    "BLANK"
+  ],
   "example": "example.json",
   "slots": {
-    "title": {"type": "string", "required": true, "maxLength": 70},
-    "nodes": {"type": "array", "required": true, "minItems": 2, "maxItems": 9},
-    "edges": {"type": "array", "default": [], "maxItems": 20},
-    "more": {"type": "string", "default": "", "maxLength": 60},
-    "insight": {"type": "string", "required": true, "maxLength": 110},
-    "source": {"type": "string", "required": true, "maxLength": 160}
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "nodes": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 9
+    },
+    "edges": {
+      "type": "array",
+      "default": [],
+      "maxItems": 20
+    },
+    "more": {
+      "type": "string",
+      "default": "",
+      "maxLength": 60
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": 58
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
   },
   "guardrails": [
     "nodes / edges の中身は scripts/account_graph.py が検証する。循環や下向きの辺はそちらで止まるので、必ず account_graph.load() を通したデータを渡す",
@@ -26,11 +55,50 @@
   "slide": {
     "layout": "BLANK",
     "figures": [
-      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
-      {"type": "outcome_tree", "x": 0.5, "y": 1.08, "w": 9.0, "h": 2.75,
-       "nodes": {"$slot": "nodes"}, "edges": {"$slot": "edges"}, "more": {"$slot": "more"}},
-      {"type": "so_what", "x": 0.5, "y": 3.95, "w": 9.0, "h": 0.85, "text": {"$slot": "insight"}},
-      {"type": "source_note", "x": 0.5, "y": 4.9, "w": 9.0, "source": {"$slot": "source"}}
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "outcome_tree",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "h": 2.8,
+        "nodes": {
+          "$slot": "nodes"
+        },
+        "edges": {
+          "$slot": "edges"
+        },
+        "more": {
+          "$slot": "more"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.9,
+        "w": 9.0,
+        "h": 0.95,
+        "text": {
+          "$slot": "insight"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.9,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
     ]
   }
 }

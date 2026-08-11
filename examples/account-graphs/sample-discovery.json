@@ -1,0 +1,24 @@
+{
+  "type": "discovery",
+  "title": "サンプル物流様 ディスカバリーマップ",
+  "nodes": [
+    {"id": "g1", "tier": "goal", "text": "解約率を前年並みに戻す", "owner": "Board"},
+    {"id": "g2", "tier": "goal", "text": "出荷リードタイムを 1 日以内に", "owner": "COO"},
+    {"id": "s1", "tier": "strategy", "text": "受注照合の自動化", "owner": "情シス"},
+    {"id": "s2", "tier": "strategy", "text": "月末の処理集中の平準化", "owner": "受注管理"},
+    {"id": "s3", "tier": "strategy", "text": "出荷実績の可視化", "owner": "COO"},
+    {"id": "t1", "tier": "tactics", "text": "OCR での受注取込", "owner": "情シス"},
+    {"id": "t2", "tier": "tactics", "text": "在庫 API との自動照合", "owner": "情シス"},
+    {"id": "t3", "tier": "tactics", "text": "締め日の分散", "owner": "受注管理"},
+    {"id": "t4", "tier": "tactics", "text": "例外処理の手順統一", "owner": "受注管理"},
+    {"id": "t5", "tier": "tactics", "text": "遅延ダッシュボードの整備", "owner": "情シス"},
+    {"id": "t6", "tier": "tactics", "text": "解約理由の分類見直し", "owner": "CS"}
+  ],
+  "edges": [
+    {"from": "g2", "to": "g1"},
+    {"from": "s1", "to": "g2"}, {"from": "s2", "to": "g2"}, {"from": "s3", "to": "g1"},
+    {"from": "t1", "to": "s1"}, {"from": "t2", "to": "s1"},
+    {"from": "t3", "to": "s2"}, {"from": "t4", "to": "s2"},
+    {"from": "t5", "to": "s3"}, {"from": "t6", "to": "s3"}
+  ]
+}

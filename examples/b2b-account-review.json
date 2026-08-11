@@ -28,7 +28,7 @@
         {
           "type": "source_note",
           "x": 0.5,
-          "y": 4.85,
+          "y": 4.9,
           "w": 9.0,
           "source": "本資料はサンプル。社内検討用であり顧客には提示しない"
         }
@@ -112,9 +112,133 @@
         {
           "type": "source_note",
           "x": 0.5,
-          "y": 4.85,
+          "y": 4.9,
           "w": 9.0,
           "source": "面談 6 件（2026 年 4 月 8 日〜5 月 2 日）の発言に基づく。サンプルデータ"
+        }
+      ]
+    },
+    {
+      "layout": "BLANK",
+      "figures": [
+        {
+          "type": "governing_message",
+          "x": 0.5,
+          "y": 0.42,
+          "w": 9.0,
+          "text": "決裁は社長・CFO・購買部長に集中し、支持側は情シス系に偏っている"
+        },
+        {
+          "type": "influence_graph",
+          "x": 0.5,
+          "y": 1.02,
+          "w": 9.0,
+          "h": 2.8,
+          "people": [
+            {
+              "id": "yamamoto",
+              "roles": [
+                "S"
+              ],
+              "org": "代表取締役",
+              "name": "山本",
+              "influence": "champion",
+              "stance": "neutral",
+              "met": false,
+              "reportsTo": null
+            },
+            {
+              "id": "tanaka",
+              "roles": [
+                "F"
+              ],
+              "org": "CFO",
+              "name": "田中",
+              "influence": "high",
+              "stance": "neutral",
+              "met": false,
+              "reportsTo": "yamamoto"
+            },
+            {
+              "id": "sato",
+              "roles": [
+                "T",
+                "C"
+              ],
+              "org": "情シス部長",
+              "name": "佐藤",
+              "influence": "high",
+              "stance": "close",
+              "met": true,
+              "reportsTo": "yamamoto",
+              "note": "社内説明を担ってくれる推進役"
+            },
+            {
+              "id": "suzuki",
+              "roles": [
+                "F"
+              ],
+              "org": "購買部長",
+              "name": "鈴木",
+              "influence": "medium",
+              "stance": "opposed",
+              "met": false,
+              "reportsTo": "yamamoto"
+            },
+            {
+              "id": "eigyo",
+              "roles": [
+                "U"
+              ],
+              "org": "営業本部長",
+              "name": "大西",
+              "influence": "medium",
+              "stance": "neutral",
+              "met": false,
+              "reportsTo": "yamamoto"
+            },
+            {
+              "id": "takahashi",
+              "roles": [
+                "U"
+              ],
+              "org": "受注管理課長",
+              "name": "高橋",
+              "influence": "medium",
+              "stance": "close",
+              "met": true,
+              "reportsTo": "eigyo"
+            },
+            {
+              "id": "bp",
+              "roles": [
+                "C"
+              ],
+              "org": "現行ベンダー",
+              "name": "営業担当",
+              "influence": "medium",
+              "stance": "opposed",
+              "met": false,
+              "reportsTo": null
+            }
+          ],
+          "links": [],
+          "more": "他 4 名（実務担当・影響度小）は draw.io 版を参照"
+        },
+        {
+          "type": "so_what",
+          "x": 0.5,
+          "y": 3.9,
+          "w": 9.0,
+          "h": 0.95,
+          "text": "支持は情シス系に閉じている。移行方式は佐藤・鈴木が調整中。"
+        },
+        {
+          "type": "source_note",
+          "x": 0.5,
+          "y": 4.9,
+          "w": 9.0,
+          "source": "面談 5 件と組織図（2026 年 5 月 2 日時点）。サンプルデータ"
         }
       ]
     },
@@ -142,6 +266,13 @@
           ],
           "rows": [
             [
+              "代表取締役 山本",
+              "決裁",
+              "大",
+              "中立",
+              "未接触"
+            ],
+            [
               "CFO 田中",
               "決裁",
               "大",
@@ -163,6 +294,13 @@
               "未接触"
             ],
             [
+              "営業本部長 大西",
+              "利用",
+              "中",
+              "中立",
+              "未接触"
+            ],
+            [
               "受注管理課長 高橋",
               "利用",
               "中",
@@ -170,16 +308,9 @@
               "面談 2 回"
             ],
             [
-              "情シス主任 伊藤",
-              "評価",
-              "小",
-              "中立",
-              "面談 1 回"
-            ],
-            [
               "現行BP 営業",
               "反対",
-              "小",
+              "中",
               "反対",
               "接点なし"
             ]
@@ -205,7 +336,7 @@
         {
           "type": "source_note",
           "x": 0.5,
-          "y": 4.85,
+          "y": 4.9,
           "w": 9.0,
           "source": "CRM の活動履歴（2026 年 5 月 2 日時点）。サンプルデータ"
         }
@@ -262,7 +393,7 @@
         {
           "type": "source_note",
           "x": 0.5,
-          "y": 4.85,
+          "y": 4.9,
           "w": 9.0,
           "source": "情シス部長ヒアリング（4 月 22 日）。規程・実績日数は未確認。サンプルデータ"
         }
@@ -354,9 +485,94 @@
         {
           "type": "source_note",
           "x": 0.5,
-          "y": 4.85,
+          "y": 4.9,
           "w": 9.0,
           "source": "面談 6 件と受領資料 3 点（5 月 2 日時点）。サンプルデータ"
+        }
+      ]
+    },
+    {
+      "layout": "BLANK",
+      "figures": [
+        {
+          "type": "governing_message",
+          "x": 0.5,
+          "y": 0.42,
+          "w": 9.0,
+          "text": "解約率の改善は出荷リードタイムに、それは受注照合の自動化に支えられる"
+        },
+        {
+          "type": "outcome_tree",
+          "x": 0.5,
+          "y": 1.02,
+          "w": 9.0,
+          "h": 2.8,
+          "nodes": [
+            {
+              "id": "g1",
+              "tier": "goal",
+              "text": "解約率を前年並みに戻す",
+              "owner": "Board"
+            },
+            {
+              "id": "g2",
+              "tier": "goal",
+              "text": "出荷リードタイムを 1 日以内に",
+              "owner": "COO"
+            },
+            {
+              "id": "s1",
+              "tier": "strategy",
+              "text": "受注照合の自動化",
+              "owner": "情シス"
+            },
+            {
+              "id": "s2",
+              "tier": "strategy",
+              "text": "月末の処理集中の平準化",
+              "owner": "受注管理"
+            },
+            {
+              "id": "s3",
+              "tier": "strategy",
+              "text": "出荷実績の可視化",
+              "owner": "COO"
+            }
+          ],
+          "edges": [
+            {
+              "from": "g2",
+              "to": "g1"
+            },
+            {
+              "from": "s1",
+              "to": "g2"
+            },
+            {
+              "from": "s2",
+              "to": "g2"
+            },
+            {
+              "from": "s3",
+              "to": "g1"
+            }
+          ],
+          "more": "他 6 項目（戦術層）は draw.io 版を参照"
+        },
+        {
+          "type": "so_what",
+          "x": 0.5,
+          "y": 3.9,
+          "w": 9.0,
+          "h": 0.95,
+          "text": "自社が効くのは受注照合の自動化。解約率まで一本で説明できる。"
+        },
+        {
+          "type": "source_note",
+          "x": 0.5,
+          "y": 4.9,
+          "w": 9.0,
+          "source": "顧客の中期計画と面談メモ。因果は一部が当方の仮説。サンプルデータ"
         }
       ]
     },
@@ -433,7 +649,7 @@
         {
           "type": "source_note",
           "x": 0.5,
-          "y": 4.85,
+          "y": 4.9,
           "w": 9.0,
           "source": "顧客提供資料。最終段の因果は当方の仮説を含む。サンプルデータ"
         }
@@ -505,7 +721,7 @@
         {
           "type": "source_note",
           "x": 0.5,
-          "y": 4.85,
+          "y": 4.9,
           "w": 9.0,
           "source": "5 月 2 日の社内レビューで合意。サンプルデータ"
         }

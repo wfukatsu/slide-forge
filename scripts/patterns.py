@@ -29,6 +29,15 @@ from _i18n import t, register
 
 register({
     "influence_graph needs at least 1 person": "influence_graph には最低 1 名必要です",
+    "links join people on different levels ({a} / {b}); a link line can only "
+    "run along one level. Use reportsTo for a reporting line, or note the "
+    "relationship in the kicker":
+        "links が段の違う 2 人（{a} / {b}）を結んでいます。関係線は同じ段の中でしか"
+        "引けません。上下関係なら reportsTo を、それ以外は示唆に書いてください",
+    "{a} and {b} sit side by side, leaving no room for a link line. Put the "
+    "relationship in the kicker, or keep it only in the draw.io version":
+        "{a} と {b} は隣り合っており、関係線を引く幅がありません。"
+        "関係は示唆に書くか、draw.io 版だけに残してください",
     "outcome_tree needs at least 1 node": "outcome_tree には最低 1 ノード必要です",
     "{n} people leave only {cell:.2f}in per column. Thin the graph with "
     "account_graph.extract() and put the rest in draw.io":
@@ -459,7 +468,7 @@ class PatternMixin:
                       body_fill, band_fill, foot_fill, band_color, foot_color,
                       size, dashed=False, band_right=False):
         """帯・本文・帯の 3 段カード。draw.io 版と同じ見た目をスライドで作る。"""
-        bh = min(0.17, h * 0.28)
+        bh = min(0.15, h * 0.26)
         stroke = lighten(self.P.text, 0.55 if not dashed else 0.72)
         dash = "DASH" if dashed else "SOLID"
         fw = min(w * 0.55, 0.85)
@@ -526,7 +535,7 @@ class PatternMixin:
             span = leaves(nid) * cell
             cx = left + span / 2
             cw = min(span - 0.10, 1.85)
-            centers[nid] = cx
+            centers[nid] = (cx, top, cw)
             stance = p.get("stance", "neutral")
             fill = {"close": lighten(self.P.success, 0.82),
                     "opposed": lighten(self.P.danger, 0.86)}.get(
@@ -565,10 +574,30 @@ class PatternMixin:
             left += leaves(r) * cell
         for lk in links or []:
             a, b = lk.get("from"), lk.get("to")
-            if a in centers and b in centers:
-                self.line(min(centers[a], centers[b]) + 0.9, y + ch / 2,
-                          max(centers[a], centers[b]) - 0.9, y + ch / 2,
-                          color=self.P.border, weight=1.2, dashed=True, free=True)
+            if a not in centers or b not in centers:
+                continue
+            (ax, ay, aw), (bx, by, bw) = centers[a], centers[b]
+            if abs(ay - by) > 0.01:
+                # 段をまたぐ線は他のカードの上を通ってしまう。黙って歪めるより
+                # 止めて、reportsTo で表すか同じ段の 2 人に絞らせる。
+                raise ValueError(t(
+                    "links join people on different levels ({a} / {b}); a link "
+                    "line can only run along one level. Use reportsTo for a "
+                    "reporting line, or note the relationship in the kicker",
+                    a=a, b=b))
+            # 余白はカード幅から出す。固定値だと隣り合うカードで線長が負になり、
+            # エラーにならないまま線が消える
+            (lx, lw), (rx, rw) = ((ax, aw), (bx, bw)) if ax < bx else ((bx, bw), (ax, aw))
+            x1, x2 = lx + lw / 2 + 0.04, rx - rw / 2 - 0.04
+            if x2 - x1 <= 0.06:
+                # 隣り合うカードの間には線を引く幅がない。黙って捨てると関係が
+                # 無かったことになるので、示唆に回すよう促して止める。
+                raise ValueError(t(
+                    "{a} and {b} sit side by side, leaving no room for a link "
+                    "line. Put the relationship in the kicker, or keep it only "
+                    "in the draw.io version", a=a, b=b))
+            self.line(x1, ay + ch / 2, x2, ay + ch / 2,
+                      color=self.P.border, weight=1.2, dashed=True, free=True)
         if more:
             self.label(x, y + h - note_h, w, note_h, more, size=size - 1,
                        color=self.P.muted, align="START", valign="MIDDLE")
