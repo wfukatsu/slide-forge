@@ -52,6 +52,15 @@ All live in the `b2b-sales` pack (`slide-templates/b2b-sales/`).
 .venv/bin/python scripts/list_slide_templates.py --pack b2b-sales
 ```
 
+A worked deck using all six against one fictional account is
+`examples/b2b-account-review.json` — cover, exec summary, the two maps and
+their supporting pages, in the order a review actually runs:
+
+```bash
+.venv/bin/python scripts/build_deck.py \
+    --template templates/scalar-2026.json --spec examples/b2b-account-review.json --dry-run --strict
+```
+
 Use the pair that fits the ask. A pipeline review usually wants
 `discovery-map` + `discovery-gaps`; a stalled deal usually wants
 `influence-map` + `decision-structure`.
