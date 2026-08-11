@@ -382,12 +382,34 @@ Influence Map、Account Health）と Blueprint Summary を回す。
 Plan Document（34 ページ）と APS レビュー用（9 ページ + Appendix）は同じページ
 定義を共有するので、**1 つ直せば両方に反映される**。
 
+**入力は `accounts/<AE>/<顧客>/aps.json`。** スクリプトは図の種類・座標・書式
+（`LAYOUT`）だけを持ち、文字列はすべて aps.json から読む。顧客名も実名も
+スクリプトに書かない。
+
+`aps.json` の構造:
+
+```jsonc
+{
+  "meta":     { "title": …, "subtitle": …, "planTitle": …, "reviewTitle": … },
+  "sections": { "A": {"title":…, "body":…}, "B": …, "C": …, "E": …, "APX": … },
+  "deals":    [ { "id":"1", "company":…, "name":…, "challenge":…, "solution":…,
+                  "diff":…, "people":…, "itsub":…, "deal":…,
+                  "amount":…, "period":…, "stage":… } ],
+  "pages":    { "<ページ id>": { "title":…, "lead":…, "source":…,
+                                 "figures": [ {内容だけ}, … ] } }
+}
+```
+
+`pages.<id>.figures` は `LAYOUT[<id>]` の図の並びと 1 対 1 で対応する
+（`governing_message` / `lead_in` / `source_note` は `title` / `lead` / `source`
+から取るので figures には並べない）。数が合わなければ組み立て時にエラーになる。
+
 ```bash
-# 1. 台帳から 2 本の仕様を組む
+# 1. aps.json から 2 本の仕様を組む
 .venv/bin/python scripts/scalar/build_account_planning.py \
-  --ledger "accounts/<AE>/<顧客>/account.json" \
+  --aps "accounts/<AE>/<顧客>/aps.json" \
   --out "out/account-plan/<顧客>/ap"
-#    -> plan.json（39 枚）/ review.json（21 枚）
+#    -> plan.json / review.json
 
 # 2. オフライン検証（API を叩く前に必ず通す）
 for f in plan review; do
@@ -416,9 +438,9 @@ done
 `references/account-planning-template-plan.md` §2 に定義する。
 
 > **`--dry-run` が通っても API に弾かれる制約が 1 つある。** Slides API は幅
-> 32pt（0.444in）未満の表列を拒否する。`build_account_planning.py` の `table()`
-> が組み立て時に検査している。イニシアチブ番号のような細い列を足すときは
-> 0.45in 以上を確保すること。
+> 32pt（0.444in）未満の表列を拒否する。`build_account_planning.py` の
+> `_check_columns()` が組み立て時に検査している。商談番号のような細い列を足す
+> ときは 0.45in 以上を確保すること。
 
 > 既存デッキを更新する場合は、`--into` で既存デッキを指定する前に必ず
 > `scripts/snapshot_version.py` でスナップショットを取る。テンプレート原本を

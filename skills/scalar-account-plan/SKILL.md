@@ -11,7 +11,7 @@ description: >-
   confirm next; or to set up the Drive folders for an account. Also builds the
   annual/half-year Account Planning Session (APS / アカウントプランニング
   セッション) decks — a full Plan Document plus a 9-page executive review deck —
-  from the same ledger. Produces the action plan (slides + Markdown) that turns
+  from a companion aps.json. Produces the action plan (slides + Markdown) that turns
   unanswered questions into dated commitments. Route one visit's materials to
   `scalar-ae-materials`, the customer proposal to `scalar-proposal-slides`, and
   the stakeholder/discovery maps themselves to `b2b-account-maps`.
@@ -22,13 +22,13 @@ description: >-
 顧客 1 社につき台帳 1 つ。**台帳が正本**で、デッキはその表示にすぎない。
 訪問のたびに台帳へ追記し、同じ URL のデッキを最新化する。
 
-台帳から出るデッキは 2 系統。寿命が違うので混ぜない。
+顧客ごとに作るデッキは 2 系統。寿命も入力も違うので混ぜない。
 
 | | 活動計画デッキ（§5） | APS デッキ（§6） |
 |---|---|---|
 | 目的 | 今どこにいて次に何をするか | 年次・半期の棚卸しと役員レビュー |
 | 更新 | 訪問のたび | APS のたび |
-| 範囲 | 台帳の中身だけ | 台帳 + 顧客の公開情報 |
+| 入力 | `account.json`（台帳） | `aps.json`（台帳 + 顧客の公開情報） |
 
 作業ディレクトリは slide-forge ルート。コマンドは `.venv/bin/python` で実行する。
 
@@ -59,6 +59,7 @@ description: >-
 ```
 config/sales.json                       Drive ルートと既定 AE 名（gitignore 済み）
 accounts/<AE 名>/<顧客名>/account.json   ★ 正本（gitignore 済み。コミットしない）
+accounts/<AE 名>/<顧客名>/aps.json       APS デッキの内容（同上）
 
 Drive: <ルート>/<AE 名>/<顧客名>/
   00_活動計画/  活動計画デッキ（URL 不変）・account.json のコピー・action-plan.md
@@ -195,10 +196,23 @@ Drive の階層は初回だけルートを聞いて作る（以降は `config/sa
 テンプレート化の計画は
 [references/account-planning-template-plan.md](../../references/account-planning-template-plan.md)。
 
+**入力は台帳ではなく `accounts/<AE>/<顧客>/aps.json`。** 台帳（`account.json`）は
+訪問ごとの事実を貯める場所で、APS は顧客の公開情報も混ぜて 1 年分を組み立てる
+ので、入力を分けてある。`aps.json` も `accounts/` 配下なので Git 管理外。
+
+```
+accounts/<AE>/<顧客>/
+  account.json   訪問ごとの事実（§1-4。活動計画デッキの入力）
+  aps.json       APS デッキの内容（見出し・図の中身・商談・中扉の考慮点）
+```
+
+**スクリプトには顧客名も実名も書かない。** `build_account_planning.py` が持つのは
+図の種類・座標・書式（`LAYOUT`）だけで、文字列はすべて `aps.json` から読む。
+
 ```bash
-# 1. 台帳から 2 本の仕様を組む（plan.json / review.json）
+# 1. aps.json から 2 本の仕様を組む（plan.json / review.json）
 .venv/bin/python scripts/scalar/build_account_planning.py \
-    --ledger accounts/<AE>/<顧客>/account.json --out "out/account-plan/<顧客>/ap"
+    --aps "accounts/<AE>/<顧客>/aps.json" --out "out/account-plan/<顧客>/ap"
 
 # 2. オフライン検証。両方通してから API を叩く
 for f in plan review; do
@@ -235,7 +249,7 @@ APS は活動計画より広い範囲を扱うので、台帳だけでは埋ま�
 **商談も関与者も会社ごとに分類する。** 会社が違えば意思決定者も予算も別で、
 まとめると打ち手が決まらない。
 
-- **商談番号はグループ会社順に振る**（`build_account_planning.py` の `DEALS`）。
+- **商談番号はグループ会社順に振る**（`aps.json` の `deals[]`）。
   同じ会社の商談が隣り合う
 - **商談ごとに章を切る**。中扉（会社名／商談名／金額・時期・ステージ）＋
   全体像カード 6 枚。**型を全商談で揃える**と、章をまたいで「どこが埋まって
@@ -260,7 +274,7 @@ APS は活動計画より広い範囲を扱うので、台帳だけでは埋ま�
 
 - **`--dry-run` を通っても API に弾かれる制約が 1 つある。** Slides API は幅 32pt
   （0.45in）未満の表列を拒否する。商談番号のような細い列で踏む。
-  `build_account_planning.py` の `table()` が組み立て時に検査している
+  `build_account_planning.py` の `_check_columns()` が組み立て時に検査している
 - `batchUpdate` は原子的なので、途中で失敗しても既存デッキは壊れない。
   直して作り直せばよい
 - APS で置く期日は**「本 APS での提案」と出典行に明記する**。台帳の `actions` は
@@ -290,7 +304,7 @@ APS は活動計画より広い範囲を扱うので、台帳だけでは埋ま�
     accounts/<AE>/<顧客>/account.json out/account-plan/<顧客名>/action-plan.md
 ```
 
-APS を作った回は `plan.json` / `review.json` も同じフォルダへ上げる。
+APS を作った回は `aps.json` と `plan.json` / `review.json` も同じフォルダへ上げる。
 
 報告に必ず入れるもの:
 
