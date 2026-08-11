@@ -11,8 +11,8 @@ Account Planning Session（以下 APS）用のデッキを、事前準備 → �
   定義、ワークショップの進め方、各ページの情報源と考慮点**。
 - Scalar 向けに読み替えたもの: 製品名・組織名・レビュー体制・金額単位。
   読み替え表は §12。
-- 関連ドキュメント: `skills/scalar-account-plan/SKILL.md`（顧客ごとの活動計画
-  台帳）、`references/scalar/sales-playbook.md`（ステージとゲート定義）、
+- 関連ドキュメント: `skills/scalar-account-planning-session/SKILL.md`（APS の
+  進め方）、`skills/scalar-account-plan/SKILL.md`（顧客ごとの活動計画台帳）、`references/scalar/sales-playbook.md`（ステージとゲート定義）、
   `references/account-planning-template-plan.md`（ページテンプレートの実装計画）。
 
 元資料は「テンプレートの書式に厳密に従う必要はなく、参考にするためのサンプル
