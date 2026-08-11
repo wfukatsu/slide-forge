@@ -761,8 +761,15 @@ def _page_discovery_map(ledger: dict) -> dict | None:
         return None
     items = items[:8]
     missing = [i[1] for i in items if i[3] == "missing"]
-    insight = (f"{'・'.join(missing[:3])} が空白のまま。ここが埋まるまで提案書は書かない。"
-               if missing else "空白は解消済み。提案書の作成に進める。")
+    # wip は「埋まった」ではない。証拠が付くまでは未確認として扱う（§1 原則 5）
+    unconfirmed = [i[1] for i in items if i[3] != "confirmed"]
+    if missing:
+        insight = f"{'・'.join(missing[:3])} が空白のまま。ここが埋まるまで提案書は書かない。"
+    elif unconfirmed:
+        insight = (f"{'・'.join(unconfirmed[:3])} は仮説のまま。"
+                   f"証拠が取れるまで提案書は書かない（未確認 {len(unconfirmed)} 件）。")
+    else:
+        insight = "全項目が確認済み。提案書の作成に進める。"
     return {
         "title": _fit(_discovery_title(items), 70),
         "items": items,
