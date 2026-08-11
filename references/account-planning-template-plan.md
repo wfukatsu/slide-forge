@@ -438,7 +438,7 @@ done
 | **F2** L3 `masterProfiles` | §2.4 の 4 ファイル変更。F1 の 9 件を最初のプロファイル対象にする | マスター差分をテンプレートで吸収できる |
 | **F3** P1 テンプレート 7 件 | Plan Document 側 | Appendix が埋まる |
 | **F4** P2 テンプレート 3 件 | Flight Plan など | 議論用の可視化がそろう |
-| **F5** カタログとドキュメント | パックカタログを生成し、`skills/scalar-account-plan/SKILL.md` から参照を張る | 運用に載る |
+| **F5** カタログとドキュメント | パックカタログを生成し、`skills/scalar-account-planning-session/SKILL.md` から参照を張る | 運用に載る |
 
 F1 と F2 は独立。F2 を待たずに F1 を出せる（既定ジオメトリだけで動く）。
 
