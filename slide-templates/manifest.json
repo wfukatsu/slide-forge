@@ -14,6 +14,8 @@
     {"id": "decision-structure", "displayName": "決裁ライン", "pack": "b2b-sales", "category": "stakeholder", "path": "b2b-sales/decision-structure/template.json", "tags": ["decision-process", "approval", "b2b"], "status": "experimental", "version": 1},
     {"id": "discovery-map", "displayName": "ディスカバリーマップ", "pack": "b2b-sales", "category": "discovery", "path": "b2b-sales/discovery-map/template.json", "tags": ["discovery", "meddpicc", "qualification", "b2b"], "status": "experimental", "version": 1},
     {"id": "pain-chain", "displayName": "ペインチェーン", "pack": "b2b-sales", "category": "discovery", "path": "b2b-sales/pain-chain/template.json", "tags": ["pain-chain", "discovery", "impact", "b2b"], "status": "experimental", "version": 1},
-    {"id": "discovery-gaps", "displayName": "未確認事項と次の一手", "pack": "b2b-sales", "category": "discovery", "path": "b2b-sales/discovery-gaps/template.json", "tags": ["discovery", "next-step", "b2b"], "status": "experimental", "version": 1}
+    {"id": "discovery-gaps", "displayName": "未確認事項と次の一手", "pack": "b2b-sales", "category": "discovery", "path": "b2b-sales/discovery-gaps/template.json", "tags": ["discovery", "next-step", "b2b"], "status": "experimental", "version": 1},
+    {"id": "influence-map-org", "displayName": "インフルーエンスマップ（組織構造）", "pack": "b2b-sales", "category": "stakeholder", "path": "b2b-sales/influence-map-org/template.json", "tags": ["influence", "org-chart", "stakeholder", "drawio", "b2b"], "status": "experimental", "version": 1},
+    {"id": "discovery-map-tree", "displayName": "ディスカバリーマップ（階層）", "pack": "b2b-sales", "category": "discovery", "path": "b2b-sales/discovery-map-tree/template.json", "tags": ["discovery", "goal-strategy-tactics", "hierarchy", "drawio", "b2b"], "status": "experimental", "version": 1}
   ]
 }

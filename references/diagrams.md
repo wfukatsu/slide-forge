@@ -43,6 +43,8 @@ d.ai_image(5.2, 1.1, 4.2, 2.6, "夜間に自動でビルドが回っている様
 ピクトグラムは 30 種（`person` `server` `database` `cloud` `lock` `shield` `bot` …）。
 比喩図は `pyramid` / `funnel` / `venn` / `iceberg` / `balance` / `steps` / `layers` /
 `hub` / `matrix` / `before_after` / `comparison` / `journey` / `timeline`。
+アカウントグラフ（`influence_graph` / `outcome_tree`）は
+[account-graphs.md](account-graphs.md) を参照。
 
 ブランドのアイコンは `assets/scalar/pictograms/` に 62 種（`evidence-chain` `data-bank`
 `public-key` `interview` `consent` …）。**「情報銀行」「証拠チェーン」「内定」の
