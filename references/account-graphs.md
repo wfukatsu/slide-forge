@@ -105,6 +105,18 @@ discovery は **tier ではなくグラフの深さ**で段を決める。tier �
 
 書き出した PNG は必ず Read で目視確認する。
 
+## スライドに載せる
+
+抽出版は `slide-templates/b2b-sales/` の `influence-map-org` /
+`discovery-map-tree` から描く。図版部品は `influence_graph` / `outcome_tree` で、
+draw.io 版と同じ 3 段カードをテンプレートのセマンティックパレットで塗る
+（親密 = success 系、反発 = danger 系、tier は primary / warning / muted）。
+
+```bash
+.venv/bin/python scripts/render_slide_template.py \
+  --template influence-map-org --data out/<account>-key.json --out out/<account>-slide.json
+```
+
 ## 使い分け
 
 | 状況 | 出力 |

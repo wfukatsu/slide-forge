@@ -47,6 +47,8 @@ All live in the `b2b-sales` pack (`slide-templates/b2b-sales/`).
 | `discovery-map` | 何が確認済みで、何がまだ仮説か |
 | `pain-chain` | 現場の課題は経営のどの数字に効いているか |
 | `discovery-gaps` | 次に誰へ何を確認するか |
+| `influence-map-org` | 誰が誰の下にいて、影響力と支持がどこに集まるか（組織構造） |
+| `discovery-map-tree` | 顧客の目標は何に支えられ、自社はどこに効くか（Goal/Strategy/Tactics） |
 
 ```bash
 .venv/bin/python scripts/list_slide_templates.py --pack b2b-sales
@@ -64,6 +66,25 @@ their supporting pages, in the order a review actually runs:
 Use the pair that fits the ask. A pipeline review usually wants
 `discovery-map` + `discovery-gaps`; a stalled deal usually wants
 `influence-map` + `decision-structure`.
+
+### 構造で見せる 2 枚と、関与者が多い場合
+
+`influence-map-org` と `discovery-map-tree` は**つながり**を見せる。2 軸の
+`influence-map` が「誰の影響力が大きいか」なら、こちらは「誰が誰の下にいるか」。
+MEDDPICC の `discovery-map` が「何が確認済みか」なら、こちらは「何が何を支えるか」。
+
+どちらも 1 つの JSON から作る。関与者・項目が 9 を超えたらスライドに詰めず、
+**全体を draw.io に出し、スライドには抽出版を載せる**:
+
+```bash
+.venv/bin/python scripts/build_account_graph.py <graph.json> --out out/<account>.drawio
+.venv/bin/python scripts/drawio_export.py out/<account>.drawio --out out/<account>.png --scale 2
+```
+
+抽出は `account_graph.extract()`。落ちた人・項目は標準出力に出るので、その数を
+テンプレートの `more` スロットに「他 N 名は draw.io 版参照」として必ず書く。
+データモデルと抽出規則は
+[references/account-graphs.md](../../references/account-graphs.md)。
 
 ## Workflow
 
