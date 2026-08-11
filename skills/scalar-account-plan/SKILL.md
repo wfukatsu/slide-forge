@@ -1,22 +1,16 @@
 ---
 name: scalar-account-plan
 description: >-
-  Maintain a per-customer sales activity plan for a Scalar Account Executive:
-  a ledger (account.json) of what is confirmed, who decides, what is still
-  unknown, and what to do next — rendered as a Google Slides deck whose URL
-  never changes, so the same shared link always shows the current state.
-  Use when asked to create or update an account plan, activity plan or
-  アカウントプラン / 活動計画; to record what came out of a customer meeting;
-  to review a deal's stage, forecast or BANT risk; to work out what an AE must
-  confirm next; or to set up the Drive folders for an account. Also builds the
-  annual/half-year Account Planning Session (APS / アカウントプランニング
-  セッション) decks — a full Plan Document plus a 9-page executive review deck —
-  from a companion aps.json, including who to meet next, worked out per legal
-  entity from published officer lists and org charts. Produces the action plan
-  (slides + Markdown) that turns
-  unanswered questions into dated commitments. Route one visit's materials to
-  `scalar-ae-materials`, the customer proposal to `scalar-proposal-slides`, and
-  the stakeholder/discovery maps themselves to `b2b-account-maps`.
+  Maintain a per-customer sales ledger (account.json) for a Scalar Account
+  Executive — what is confirmed, who decides, what is unknown, what to do next —
+  rendered as a Google Slides activity plan whose URL never changes. Also builds
+  the annual Account Planning Session (APS / アカウントプランニングセッション)
+  decks from a companion aps.json, including who to meet next per legal entity.
+  Use for an account plan / 活動計画 / アカウントプラン, recording a customer
+  meeting, reviewing a deal's stage, forecast or BANT risk, working out what an
+  AE must confirm next, or setting up an account's Drive folders. Route one
+  visit's materials to `scalar-ae-materials`, the customer proposal to
+  `scalar-proposal-slides`, and the maps themselves to `b2b-account-maps`.
 ---
 
 # Scalar Account Plan
@@ -186,17 +180,20 @@ Drive の階層は初回だけルートを聞いて作る（以降は `config/sa
 ### 6. Account Planning Session（APS）のデッキを作る
 
 活動計画デッキ（§5）が「今どこにいて次に何をするか」を訪問のたびに更新するのに
-対し、APS デッキは**年次・半期の棚卸し**。同じ台帳から 2 本出る。
+対し、APS デッキは**年次・半期の棚卸し**。1 つの `aps.json` から 2 本出る。
 
 | 成果物 | 中身 | 読み手 |
 |---|---|---|
 | Plan Document | 全ページ。分析・商談ごとの章・実行計画 | アカウントチーム |
 | APS レビュー資料 | 本編 9 ページ + Appendix | 役員レビュー（30 分） |
 
-**ページ定義と各ページの判断基準はこのスキルで再定義しない。** 手順は
-[references/account-planning-session.md](../../references/account-planning-session.md)、
-テンプレート化の計画は
-[references/account-planning-template-plan.md](../../references/account-planning-template-plan.md)。
+**ページ定義と各ページの判断基準はこのスキルで再定義しない。** 手順とページ一覧は
+[references/account-planning-session.md](../../references/account-planning-session.md)。
+
+> [references/account-planning-template-plan.md](../../references/account-planning-template-plan.md)
+> は**まだ実装されていない計画書**。`slide-templates/account-planning` パックは
+> 存在せず、現物は `LAYOUT` + `aps.json` の形で動いている。マスター非依存の
+> 設計契約（§2）と列幅の下限だけが現行仕様で、テンプレート一覧は将来案。
 
 **入力は台帳ではなく `accounts/<AE>/<顧客>/aps.json`。** 台帳（`account.json`）は
 訪問ごとの事実を貯める場所で、APS は顧客の公開情報も混ぜて 1 年分を組み立てる
@@ -211,6 +208,11 @@ accounts/<AE>/<顧客>/
 **スクリプトには顧客名も実名も書かない。** `build_account_planning.py` が持つのは
 図の種類・座標・書式（`LAYOUT`）だけで、文字列はすべて `aps.json` から読む。
 
+**§5 と違い、材料が足りないページは自動で落ちない。** 活動計画デッキ（§5）は
+材料の無いページを黙って外すが、APS は `aps.json` に無いページ ID を並びが
+参照していると組み立て時にエラーで止まる。ページを減らすときは `aps.json` と
+`build_account_planning.py` の並び（`PLAN_A` / `REVIEW_*`）の両方を直す。
+
 ```bash
 # 1. aps.json から 2 本の仕様を組む（plan.json / review.json）
 .venv/bin/python scripts/scalar/build_account_planning.py \
@@ -222,18 +224,25 @@ for f in plan review; do
       --spec "out/account-plan/<顧客>/ap/$f.json" --dry-run --strict || break
 done
 
-# 3a. 初回
+# 3a. 初回。plan / review を別々のデッキとして作る（2 本とも作ること）
 .venv/bin/python scripts/build_deck.py --template templates/scalar-2026.json \
     --spec "out/account-plan/<顧客>/ap/plan.json" \
     --title "<顧客> Account Planning Session FY26" --folder <00_活動計画 の ID>
-
-# 3b. 2 回目以降（§5 と同じく破壊的。スナップショットが先）
-.venv/bin/python scripts/snapshot_version.py "<デッキ URL>"
 .venv/bin/python scripts/build_deck.py --template templates/scalar-2026.json \
-    --spec "out/account-plan/<顧客>/ap/plan.json" --into "<デッキ URL>"
+    --spec "out/account-plan/<顧客>/ap/review.json" \
+    --title "<顧客> APS レビュー資料 FY26" --folder <00_活動計画 の ID>
+
+# 3b. 2 回目以降（§5 と同じく破壊的。スナップショットが先）。2 本とも差し替える
+for f in plan review; do
+  .venv/bin/python scripts/snapshot_version.py "<$f のデッキ URL>"
+  .venv/bin/python scripts/build_deck.py --template templates/scalar-2026.json \
+      --spec "out/account-plan/<顧客>/ap/$f.json" --into "<$f のデッキ URL>"
+done
 ```
 
-URL は台帳の `meta.decks.accountPlanningSession` / `meta.decks.apsReview` に記録する。
+**2 本の URL は台帳の `meta.decks.accountPlanningSession` /
+`meta.decks.apsReview` に手で書く。** `build_account_planning.py` は台帳を
+読み書きしないので、ここは自動化されていない。
 
 #### 台帳に無い欄を埋める順番
 
@@ -381,20 +390,28 @@ APS は活動計画より広い範囲を扱うので、台帳だけでは埋ま�
 スライドに詰めない。`b2b-account-maps` の既定どおり、全体を draw.io に出して
 スライドには抽出版を載せ、**落ちた人数と全体版の在り処を必ず書く**（`more` スロット）。
 
+**レイアウトを先に決める。** 既定の木レイアウトは根の数だけ横に伸びる。
+企業グループのように根が多いと帯になって読めない（49 名で 18,000 × 709px）。
+
+| グラフの形 | 使うもの |
+|---|---|
+| 1 社・1 本の指揮系統（根が 1〜2 本） | 既定（`--layout tree`） |
+| **企業グループ・根が 3 本以上** | **`--layout grouped`** |
+
 ```bash
+# 企業グループ。people[].entity ごとの枠に格子で並べ、法人をまたぐ線は枠の外を通す
+.venv/bin/python scripts/build_account_graph.py <graph.json> --layout grouped \
+    --title "<顧客> インフルーエンスマップ（全体）" \
+    --out out/account-plan/<顧客>/influence-map-full.drawio
+
+# 1 社なら既定のままでよい
 .venv/bin/python scripts/build_account_graph.py <graph.json> \
     --out out/account-plan/<顧客>/influence-map-full.drawio
-drawio -x -f png -s 2 -b 8 -o out/.../influence-map-full.png out/.../influence-map-full.drawio
-```
 
-**企業グループが相手で根が多いときは `--layout grouped` を使う。** 既定の木
-レイアウトは根の数だけ横に伸びる（49 名で 18,000px になり読めなかった）。
-`grouped` は `people[].entity` ごとの枠に格子で並べ、法人をまたぐ線だけを
-枠の外に引く。
-
-```bash
-.venv/bin/python scripts/build_account_graph.py <graph.json> --layout grouped \
-    --title "<顧客> インフルーエンスマップ（全体）" --out out/.../influence-map-full.drawio
+# PNG に書き出す（drawio CLI が要る）
+drawio -x -f png -s 2 -b 8 \
+    -o out/account-plan/<顧客>/influence-map-full.png \
+       out/account-plan/<顧客>/influence-map-full.drawio
 ```
 
 - `entity` は法人名（`entityOrder` で枠の並び順を決める）。組織図と同じ単位にする

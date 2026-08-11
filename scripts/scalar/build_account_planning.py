@@ -447,6 +447,15 @@ def build(aps: dict) -> tuple[dict, dict]:
            for k, v in aps["sections"].items()}
     cover = {"layout": "COVER", "title": meta["title"], "subtitle": meta["subtitle"]}
 
+    needed = [*PLAN_A, *PLAN_B, *PLAN_C, *PLAN_E, *REVIEW_MAIN, *REVIEW_APPENDIX,
+              *(k for v in DEAL_EXTRA.values() for k in v)]
+    missing = [k for k in dict.fromkeys(needed)
+               if k not in pages and not k.startswith("deal-")]
+    if missing:
+        raise ValueError(
+            "aps.json の pages に次のページがありません: " + ", ".join(missing)
+            + "。ページを足すか、PLAN_A / REVIEW_* の並びから外してください")
+
     P = {pid: build_page(pid, pages[pid]) for pid in pages if pid != "deal-portfolio"}
     P["deal-portfolio"] = build_page(
         "deal-portfolio", pages["deal-portfolio"],
