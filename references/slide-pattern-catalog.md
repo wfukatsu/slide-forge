@@ -7,8 +7,12 @@
 
 各パターンの **figures** 行が、デッキ仕様（JSON）の `figures` にそのまま書く `type` 名。
 
+> **画像はリポジトリに含めていません**（43 枚で約 2MB）。下のコマンドで手元に
+> 生成します。生成するまで、このページの画像はリンク切れとして表示されます。
+> 文章だけでも、どのパターンが何のためにあるか・どの `type` を書くかは読めます。
+
 ```bash
-# このカタログを作り直す（パターンを足したときも同じ手順）
+# このカタログを作る（パターンを足したときも同じ手順）
 .venv/bin/python scripts/build_deck.py \
     --template templates/scalar-2026.json --spec examples/slide-pattern-index.json
 .venv/bin/python scripts/fetch_thumbnails.py <生成された URL> --out out/patterns --size MEDIUM
