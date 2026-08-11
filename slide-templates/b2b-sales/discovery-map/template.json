@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "id": "discovery-map",
+  "displayName": "ディスカバリーマップ",
+  "pack": "b2b-sales",
+  "category": "discovery",
+  "description": "商談で押さえるべき項目を並べ、確認済み・仮説・未確認を色で見分ける",
+  "answers": [
+    "この商談で何が分かっていて、何がまだ仮説か"
+  ],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 4,
+      "maxItems": 8,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 99
+          },
+          {
+            "type": "string",
+            "maxLength": 16
+          },
+          {
+            "type": "string",
+            "maxLength": 34
+          },
+          {
+            "type": "string",
+            "maxLength": 9
+          }
+        ]
+      }
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": 110
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "状態は confirmed（顧客の発言・文書で確認）/ wip（一部のみ）/ missing（未確認）の 3 値",
+    "営業の推測は confirmed にしない。裏取りの出所を言えないものは wip 以下",
+    "赤（missing）が残ったまま提案書の作成に進まない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "ghost",
+        "x": 0.5,
+        "y": 1.08,
+        "w": 9.0,
+        "h": 2.6,
+        "cols": 4,
+        "slides": {
+          "$slot": "items"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.8,
+        "w": 9.0,
+        "h": 0.9,
+        "text": {
+          "$slot": "insight"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}
