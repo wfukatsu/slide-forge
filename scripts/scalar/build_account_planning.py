@@ -49,6 +49,24 @@ LAYOUT: dict[str, list] = {
         ("orgchart", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 3.05, "size": 8}),
         ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
     ],
+    "bank-orgchart": [
+        ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
+        ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
+        ("orgchart", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 3.05, "size": 7.5}),
+        ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
+    ],
+    "securities-orgchart": [
+        ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
+        ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
+        ("orgchart", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 3.05, "size": 7.5}),
+        ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
+    ],
+    "card-orgchart": [
+        ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
+        ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
+        ("orgchart", {"x": 0.5, "y": 1.5, "w": 9.0, "h": 3.05, "size": 7.5}),
+        ("source_note", {"x": 0.5, "y": 4.86, "w": 9.0}),
+    ],
     "itsub-orgchart": [
         ("governing_message", {"x": 0.5, "y": 0.42, "w": 9.0}),
         ("lead_in", {"x": 0.5, "y": 1.02, "w": 9.0}),
@@ -291,7 +309,8 @@ LAYOUT: dict[str, list] = {
 }
 
 # ページの並び。中扉の見出しと考慮点は aps.json の sections から取る
-PLAN_A = ["group-orgchart", "itsub-orgchart", "itsub-mapping", "deal-portfolio",
+PLAN_A = ["group-orgchart", "bank-orgchart", "securities-orgchart", "card-orgchart",
+          "itsub-orgchart", "itsub-mapping", "deal-portfolio",
           "company-stakeholders", "officer-coverage", "who-to-meet",
           "financial-trends", "swot",
           "strategy-map-1", "strategy-map-2", "customer-initiatives",
@@ -310,7 +329,8 @@ DEAL_EXTRA = {"1": ["objective-ledger"], "3": ["objective-aidd"]}
 REVIEW_MAIN = ["strategy-summary", "deal-portfolio", "strategy-map-2", "blueprint-map",
                "prioritization-map", "execution-plan", "action-plan", "management-asks",
                "challenge-requirement"]
-REVIEW_APPENDIX = ["group-orgchart", "itsub-orgchart", "itsub-mapping", "company-stakeholders",
+REVIEW_APPENDIX = ["group-orgchart", "bank-orgchart", "securities-orgchart", "card-orgchart",
+                   "itsub-orgchart", "itsub-mapping", "company-stakeholders",
                    "officer-coverage", "who-to-meet",
                    "financial-trends", "swot", "customer-initiatives", "customer-programs",
                    "scalar-footprint", "heatmap", "influence-map", "account-health",
