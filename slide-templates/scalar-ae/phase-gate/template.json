@@ -1,0 +1,101 @@
+{
+  "id": "phase-gate",
+  "displayName": "ステージ移行条件",
+  "category": "account",
+  "description": "現ステージの移行条件を並べ、顧客側の証拠が取れているかで判定する",
+  "answers": [
+    "今のステージの完了条件を示す顧客側の証拠は何か"
+  ],
+  "inferenceLevel": "diagnostic",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "stage": {
+      "type": "string",
+      "required": true,
+      "maxLength": 60
+    },
+    "gates": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "maxLength": 40
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "状態は met / partial / unmet の 3 値。「説明した」「提案書を出した」は met の根拠にならない",
+    "証拠は顧客側のもの（発言・文書・稟議記録）に限る。社内の合意は証拠ではない",
+    "移行条件は references/scalar/sales-playbook.md §2 のゲート ID に対応させる",
+    "社内資料。顧客・パートナーには渡さない（個人の影響力・賛否・社内政治を含む）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "stage"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 9.0,
+        "headers": [
+          "移行条件",
+          "状態",
+          "顧客側の証拠",
+          "担当"
+        ],
+        "rows": {
+          "$slot": "gates"
+        },
+        "colWidths": [
+          2.9,
+          0.9,
+          3.7,
+          1.5
+        ],
+        "size": 9,
+        "rowH": 0.44
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "pack": "scalar-ae",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json"
+}

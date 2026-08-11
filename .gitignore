@@ -12,6 +12,11 @@ config/*
 **/token.json
 **/token.json.bak*
 
+# Per-customer sales ledgers (scalar-account-plan). Named individuals and
+# judgements about them — never committed. The worked example lives in
+# examples/account-sample.json and uses a fictional account.
+accounts/
+
 # Transient render caches and QA output
 cache/*
 !cache/.gitkeep

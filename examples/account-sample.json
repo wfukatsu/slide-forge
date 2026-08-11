@@ -1,0 +1,405 @@
+{
+  "schemaVersion": 1,
+  "_comment": "架空アカウントのサンプル台帳。scripts/scalar/account_ledger.py と build_account_plan.py の検証に使う。実顧客のデータはリポジトリに入れない（accounts/ は .gitignore 済み）。",
+  "meta": {
+    "ae": "山田 一郎",
+    "customer": "テスト商事株式会社",
+    "opportunity": "基幹データ統合基盤",
+    "stage": 2,
+    "forecast": "Best",
+    "amount": "2,400 万円（概算）",
+    "closeDate": "2027-03-31",
+    "updatedAt": "2026-08-11",
+    "drive": {},
+    "decks": {}
+  },
+  "facts": [
+    {
+      "date": "2026-06-12",
+      "kind": "said",
+      "who": "情シス 佐藤部長",
+      "text": "受注照合の突合に月 2,800 件、1 件あたり 12 分かかっている"
+    },
+    {
+      "date": "2026-06-12",
+      "kind": "observed",
+      "who": "受注管理課",
+      "text": "作業実測表（3 月分）を受領。残業は月末 5 営業日に集中"
+    },
+    {
+      "date": "2026-07-24",
+      "kind": "said",
+      "who": "情シス 佐藤部長",
+      "text": "次年度枠に名目はあるが、金額はまだ決まっていない"
+    },
+    {
+      "date": "2026-07-24",
+      "kind": "assumed",
+      "who": "当社",
+      "text": "決裁者は CFO と推測。本人からの確認は取れていない"
+    },
+    {
+      "date": "2026-08-05",
+      "kind": "said",
+      "who": "情シス 山口氏",
+      "text": "現行ベンダーからも継続の提案を受けている"
+    }
+  ],
+  "people": [
+    {
+      "name": "田中",
+      "short": "CFO",
+      "title": "CFO",
+      "role": "決裁",
+      "influence": 0.92,
+      "stance": 0.5,
+      "met": "",
+      "evidence": "佐藤部長からの伝聞（7/24）。本人未面談のため中立に置く"
+    },
+    {
+      "name": "佐藤",
+      "short": "情シス長",
+      "title": "情報システム部長",
+      "role": "推進",
+      "influence": 0.72,
+      "stance": 0.9,
+      "met": "面談 3 回",
+      "evidence": "6/12・7/24・8/05 の面談。社内説明を自ら申し出た"
+    },
+    {
+      "name": "鈴木",
+      "short": "購買長",
+      "title": "購買部長",
+      "role": "門番",
+      "influence": 0.55,
+      "stance": 0.14,
+      "met": "",
+      "evidence": "相見積を必須とする規程があると佐藤部長から伝聞（8/05）"
+    },
+    {
+      "name": "高橋",
+      "short": "受注課長",
+      "title": "受注管理課長",
+      "role": "利用",
+      "influence": 0.22,
+      "stance": 0.86,
+      "met": "面談 2 回",
+      "evidence": "6/12・8/05 の面談。作業実測を自部門で取ってくれた"
+    },
+    {
+      "name": "山口",
+      "short": "情シス主",
+      "title": "情報システム部 主任",
+      "role": "評価",
+      "influence": 0.35,
+      "stance": 0.5,
+      "met": "面談 1 回",
+      "evidence": "8/05 の面談。非機能要件の判断者"
+    },
+    {
+      "name": "現行 BP",
+      "short": "現行BP",
+      "title": "既存ベンダー",
+      "role": "反対",
+      "influence": 0.1,
+      "stance": 0.08,
+      "met": "",
+      "evidence": "継続提案中と山口氏の発言（8/05）"
+    }
+  ],
+  "discovery": {
+    "identifiedPain": {
+      "status": "confirmed",
+      "note": "受注照合の手作業が月末に滞留",
+      "evidence": "6/12 佐藤部長の発言 + 受注管理課の作業実測表"
+    },
+    "metrics": {
+      "status": "confirmed",
+      "note": "手戻り 3,200 時間/年（部門集計）",
+      "evidence": "6/12 受領の作業実測表（3 月分を年換算）"
+    },
+    "compellingEvent": {
+      "status": "missing",
+      "note": "決算早期化の期日は未確認",
+      "evidence": ""
+    },
+    "economicBuyer": {
+      "status": "missing",
+      "note": "CFO と推定。未面談",
+      "evidence": ""
+    },
+    "decisionCriteria": {
+      "status": "wip",
+      "note": "可用性と移行期間を重視との示唆",
+      "evidence": "8/05 山口氏の発言。重み付けは未確認"
+    },
+    "decisionProcess": {
+      "status": "missing",
+      "note": "稟議ルートと所要期間が未確認",
+      "evidence": ""
+    },
+    "champion": {
+      "status": "confirmed",
+      "note": "情シス佐藤部長。社内説明に前向き",
+      "evidence": "7/24 面談で社内説明を自ら申し出"
+    },
+    "competition": {
+      "status": "wip",
+      "note": "現行ベンダーが継続提案中",
+      "evidence": "8/05 山口氏の発言。提案内容は未入手"
+    },
+    "paperProcess": {
+      "status": "missing",
+      "note": "法務レビューの所要が不明",
+      "evidence": ""
+    }
+  },
+  "painChain": {
+    "title": "受注照合の手作業が、出荷遅延を通じて解約率に効いている",
+    "lead": "現場の作業が経営指標に届くまでを、各段の裏付けとあわせて辿る。",
+    "chain": [
+      "受注照合が手作業",
+      "月末に処理が滞留",
+      "出荷が遅延",
+      "解約率が上昇"
+    ],
+    "evidence": [
+      [
+        "現場",
+        "照合 1 件 12 分・月 2,800 件",
+        "受注管理課の作業実測（3 月）"
+      ],
+      [
+        "部門",
+        "月末 5 営業日に残業が集中",
+        "勤怠データ（直近 6 か月）"
+      ],
+      [
+        "顧客",
+        "出荷リードタイムが 1.4 日延伸",
+        "出荷実績（前年同月比）"
+      ],
+      [
+        "経営",
+        "遅延経験顧客の解約率が 2.1 倍",
+        "顧客別の解約分析（n=214・仮説）"
+      ]
+    ]
+  },
+  "decisionPath": null,
+  "bant": {
+    "budget": {
+      "level": "risk",
+      "note": "次年度枠に名目はあるが金額未定。執行可能日も未確認（7/24 佐藤部長）"
+    },
+    "authority": {
+      "level": "unknown",
+      "note": "決裁者は CFO と推定。未面談。稟議ルートも未確認"
+    },
+    "needs": {
+      "level": "ok",
+      "note": "手戻り 3,200 時間/年を部門集計で確認（6/12 議事録）"
+    },
+    "timeframe": {
+      "level": "unknown",
+      "note": "導入希望は次年度上期とのみ。逆算日程は未合意"
+    }
+  },
+  "gates": {
+    "g2.goal-agreed": {
+      "status": "met",
+      "evidence": "6/12 議事録・佐藤部長の同意発言",
+      "owner": "山田"
+    },
+    "g2.requirements-agreed": {
+      "status": "partial",
+      "evidence": "機能要件のみ合意。非機能は未着手",
+      "owner": "山田 / SA"
+    },
+    "g2.three-maps": {
+      "status": "met",
+      "evidence": "8/05 作成・8/08 に佐藤部長へ内容確認",
+      "owner": "山田"
+    },
+    "g2.buying-process": {
+      "status": "unmet",
+      "evidence": "",
+      "owner": "山田"
+    },
+    "g2.wps-done": {
+      "status": "unmet",
+      "evidence": "",
+      "owner": "テリトリー責任者"
+    }
+  },
+  "partners": [],
+  "risks": [
+    {
+      "what": "決裁者に会えないまま期末を迎える",
+      "control": "8/22 に佐藤部長経由で CFO 面談を依頼する"
+    },
+    {
+      "what": "非機能要件で現行ベンダー優位に倒れる",
+      "control": "SA が 9/05 までに可用性・性能の数値を合意する"
+    },
+    {
+      "what": "予算が次年度に流れる",
+      "control": "予算化の材料（放置コスト算定）を共同で作る"
+    }
+  ],
+  "actions": [
+    {
+      "what": "決裁者との面談を設定する",
+      "why": "Authority が unknown",
+      "whom": "情シス 佐藤部長",
+      "due": "2026-08-22",
+      "doneWhen": "CFO の氏名と面談日が決まる",
+      "owner": "山田",
+      "status": "open",
+      "from": "cp7"
+    },
+    {
+      "what": "予算の名目と執行可能日を確認する",
+      "why": "Budget が risk",
+      "whom": "情シス 佐藤部長",
+      "due": "2026-08-22",
+      "doneWhen": "枠・金額・執行可能日が揃う",
+      "owner": "山田",
+      "status": "open",
+      "from": "cp7"
+    },
+    {
+      "what": "稟議ルートと所要期間を聞き取る",
+      "why": "期日から逆算できない",
+      "whom": "購買部 鈴木部長",
+      "due": "2026-08-29",
+      "doneWhen": "承認段数と所要日数が分かる",
+      "owner": "山田",
+      "status": "open",
+      "from": "cp7"
+    },
+    {
+      "what": "非機能要件を合意する",
+      "why": "g2 要件合意が partial",
+      "whom": "情シス 山口主任",
+      "due": "2026-09-05",
+      "doneWhen": "可用性・性能の数値が文書で残る",
+      "owner": "SA 中村",
+      "status": "open",
+      "from": "cp10"
+    },
+    {
+      "what": "WPS を実施する",
+      "why": "提案投資の判断が未了",
+      "whom": "テリトリー責任者",
+      "due": "2026-08-29",
+      "doneWhen": "継続 / 保留 の判定が出る",
+      "owner": "山田",
+      "status": "open",
+      "from": "cp10"
+    },
+    {
+      "what": "3 マップを作成し顧客に確認する",
+      "why": "g2.three-maps 未達だった",
+      "whom": "情シス 佐藤部長",
+      "due": "2026-08-08",
+      "doneWhen": "顧客が内容を確認する",
+      "owner": "山田",
+      "status": "done",
+      "from": "cp10"
+    }
+  ],
+  "visits": [
+    {
+      "date": "2026-04-18",
+      "status": "done",
+      "phase": 1,
+      "attendees": "情シス 佐藤部長",
+      "ours": "山田",
+      "purpose": "初回接点",
+      "heard": "基幹システムの分断に課題意識があると分かった",
+      "next": "課題ヒアリングの日程を設定",
+      "label": "初回接点"
+    },
+    {
+      "date": "2026-05-22",
+      "status": "done",
+      "phase": 1,
+      "attendees": "情シス 佐藤部長 / 受注管理課 高橋課長",
+      "ours": "山田",
+      "purpose": "課題ヒアリング",
+      "heard": "受注照合の突合が月末に集中していると聞いた",
+      "next": "作業実測の提供を依頼",
+      "label": "課題ヒアリング"
+    },
+    {
+      "date": "2026-06-12",
+      "status": "done",
+      "phase": 2,
+      "attendees": "情シス 佐藤部長 / 高橋課長",
+      "ours": "山田 / SA 中村",
+      "purpose": "業務ゴール合意",
+      "heard": "手戻り 3,200 時間/年を部門集計で提示された",
+      "next": "予算の感触を確認する",
+      "label": "業務ゴール合意"
+    },
+    {
+      "date": "2026-07-24",
+      "status": "done",
+      "phase": 2,
+      "attendees": "情シス 佐藤部長",
+      "ours": "山田",
+      "purpose": "予算の感触",
+      "heard": "次年度枠に名目あり。金額は未定との発言",
+      "next": "3 マップを作って確認してもらう",
+      "label": "予算の感触"
+    },
+    {
+      "date": "2026-08-05",
+      "status": "done",
+      "phase": 2,
+      "attendees": "情シス 佐藤部長 / 山口主任",
+      "ours": "山田 / SA 中村",
+      "purpose": "3 マップ確認",
+      "heard": "現行ベンダーが継続提案中。決裁者は明言されず",
+      "next": "決裁者との面談を依頼する",
+      "label": "3 マップ確認"
+    },
+    {
+      "date": "2026-08-22",
+      "status": "planned",
+      "phase": 2,
+      "attendees": "情シス 佐藤部長 / 山口主任",
+      "ours": "山田 / SA 中村",
+      "purpose": "「稟議は CFO まで上がる」と佐藤部長本人の口から言ってもらう",
+      "questions": [
+        "手作業の滞留は、決算のどの工程まで響いていますか",
+        "この規模の投資は、どなたの承認まで必要になりますか",
+        "承認が下りなかった場合、来期はどう回す想定ですか",
+        "決めるとしたら、何が揃えば決められますか"
+      ],
+      "ask": "経理部の決算実務担当。放置コストの数字を現場から取るため、佐藤部長に紹介を依頼する。",
+      "objections": [
+        [
+          "まだ検討段階なので",
+          "検討の材料を揃える場として位置づけ、論点整理を持参すると伝える"
+        ],
+        [
+          "予算が付くか分からない",
+          "予算化の材料（放置コストの算定）を一緒に作る提案に切り替える"
+        ],
+        [
+          "現行ベンダーで足りる",
+          "現行の制約が出る条件を挙げ、当てはまるか顧客自身に確認してもらう"
+        ]
+      ],
+      "label": "決裁構造の確認"
+    }
+  ],
+  "winPlan": {
+    "title": "現行ベンダー継続との勝負。決算期日という顧客の期限が当社に有利に働く",
+    "situation": "決算早期化のため、受注照合の手作業 3,200 時間/年を次年度中に半減させたい",
+    "complication": "現行ベンダーが継続提案中。決裁者未面談で、期日から逆算した日程が組めていない",
+    "resolution": "決算期日に間に合う移行計画を出せるのは当社だけ。期日を選定条件に載せる"
+  }
+}

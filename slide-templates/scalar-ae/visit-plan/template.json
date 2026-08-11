@@ -1,0 +1,134 @@
+{
+  "id": "visit-plan",
+  "displayName": "訪問計画",
+  "category": "internal",
+  "description": "訪問 1 回で何を得るか、どう聞くか、どう返すかを決めてから行く",
+  "answers": [
+    "この訪問で顧客から何を得るか、想定反論にどう返すか"
+  ],
+  "inferenceLevel": "strategic",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "context": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "questions": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 4,
+      "maxLength": 44
+    },
+    "ask": {
+      "type": "string",
+      "required": true,
+      "maxLength": 90
+    },
+    "objections": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 20
+          },
+          {
+            "type": "string",
+            "maxLength": 52
+          }
+        ]
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "タイトルは「顧客から得たい一言」にする。「〇〇を説明する」は目的ではない",
+    "ask には次に紹介してほしい人物・部門と、その理由を必ず書く",
+    "問いは答えが Yes/No で終わらないものにする（SPIN の I と N を含める）",
+    "社内資料。顧客・パートナーには渡さない（個人の影響力・賛否・社内政治を含む）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "context"
+        }
+      },
+      {
+        "type": "storyline",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 5.4,
+        "titles": {
+          "$slot": "questions"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 6.1,
+        "y": 1.55,
+        "w": 3.4,
+        "h": 1.7,
+        "text": {
+          "$slot": "ask"
+        },
+        "label": "次の紹介"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.28,
+        "w": 9.0,
+        "h": 1.35,
+        "items": {
+          "$slot": "objections"
+        },
+        "titleSize": 10,
+        "bodySize": 9
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "pack": "scalar-ae",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json"
+}
