@@ -874,6 +874,8 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "matrix":       ("matrix",       ["x", "y", "w", "h", "items"]),
     "before_after": ("before_after", ["x", "y", "w", "h", "before", "after"]),
     "comparison":   ("comparison",   ["x", "y", "w", "h", "columns"]),
+    "influence_graph": ("influence_graph", ["x", "y", "w", "h", "people"]),
+    "outcome_tree":    ("outcome_tree",    ["x", "y", "w", "h", "nodes"]),
     "journey":      ("journey",      ["x", "y", "w", "h", "items"]),
     "timeline":     ("timeline",     ["x", "y", "w", "items"]),
     # ブランドのアイコン素材（icons.py・Drive 経由で貼るので通信が要る。

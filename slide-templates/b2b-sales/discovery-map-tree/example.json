@@ -1,0 +1,66 @@
+{
+  "title": "新規売上 24 億円は 2 つの下位目標と 3 つの戦略で支えられている",
+  "nodes": [
+    {
+      "id": "g1",
+      "tier": "goal",
+      "text": "新規売上 24 億円",
+      "owner": "Board"
+    },
+    {
+      "id": "g2",
+      "tier": "goal",
+      "text": "Fortune 500 のうち 10 社の採用",
+      "owner": "CEO"
+    },
+    {
+      "id": "g3",
+      "tier": "goal",
+      "text": "リニューアル 98%",
+      "owner": "CRO"
+    },
+    {
+      "id": "s1",
+      "tier": "strategy",
+      "text": "テリトリー単位でのチーム営業",
+      "owner": "COO"
+    },
+    {
+      "id": "s3",
+      "tier": "strategy",
+      "text": "製品機能の拡充",
+      "owner": "CTO"
+    },
+    {
+      "id": "s6",
+      "tier": "strategy",
+      "text": "営業・SA の人員拡充",
+      "owner": "CFO"
+    }
+  ],
+  "edges": [
+    {
+      "from": "g2",
+      "to": "g1"
+    },
+    {
+      "from": "g3",
+      "to": "g1"
+    },
+    {
+      "from": "s1",
+      "to": "g1"
+    },
+    {
+      "from": "s3",
+      "to": "g1"
+    },
+    {
+      "from": "s6",
+      "to": "s1"
+    }
+  ],
+  "more": "他 11 項目（戦術層ほか）は draw.io 版を参照",
+  "insight": "自社が効くのは製品機能の拡充。ここを goal まで一本で説明できる形にする。",
+  "source": "顧客の中期計画と面談メモ。サンプルデータ"
+}

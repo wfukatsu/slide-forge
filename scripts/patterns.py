@@ -28,6 +28,16 @@ from colors import darken, lighten, readable_on
 from _i18n import t, register
 
 register({
+    "influence_graph needs at least 1 person": "influence_graph には最低 1 名必要です",
+    "outcome_tree needs at least 1 node": "outcome_tree には最低 1 ノード必要です",
+    "{n} people leave only {cell:.2f}in per column. Thin the graph with "
+    "account_graph.extract() and put the rest in draw.io":
+        "{n} 名では 1 列 {cell:.2f}in しか取れません。account_graph.extract() で"
+        "間引き、残りは draw.io に出してください",
+    "{n} nodes on one row leave only {cell:.2f}in each. Thin the graph with "
+    "account_graph.extract() and put the rest in draw.io":
+        "1 段に {n} ノードでは 1 つ {cell:.2f}in しか取れません。"
+        "account_graph.extract() で間引き、残りは draw.io に出してください",
     "w={w} h={h} leaves no room for the plot area":
         "w={w} h={h} ではプロット領域が確保できません",
     "point '{name}' has coordinates ({px}, {py}); both must be within 0-1":
@@ -441,4 +451,207 @@ class PatternMixin:
                        "\n".join(f"・{t}" for t in points), size=size,
                        align="START", valign="TOP", color=self.P.text,
                        line_spacing=122)
+        return y + h
+
+    # ---- アカウントグラフ（インフルーエンス / ディスカバリー） ----
+
+    def _account_card(self, x, y, w, h, *, band_text, body_text, foot_text,
+                      body_fill, band_fill, foot_fill, band_color, foot_color,
+                      size, dashed=False, band_right=False):
+        """帯・本文・帯の 3 段カード。draw.io 版と同じ見た目をスライドで作る。"""
+        bh = min(0.17, h * 0.28)
+        stroke = lighten(self.P.text, 0.55 if not dashed else 0.72)
+        dash = "DASH" if dashed else "SOLID"
+        fw = min(w * 0.55, 0.85)
+        self.shape(x, y, w, bh, kind="RECTANGLE", fill=band_fill, stroke=stroke,
+                   dash=dash, text=band_text, size=size - 1, bold=True,
+                   color=band_color)
+        self.shape(x, y + bh, w, h - bh * 2, kind="RECTANGLE", fill=body_fill,
+                   stroke=stroke, dash=dash, text=body_text, size=size,
+                   color=self.P.text, line_spacing=100)
+        if foot_text:
+            fx = x + w - fw if band_right else x
+            self.shape(fx, y + h - bh, fw, bh, kind="RECTANGLE", fill=foot_fill,
+                       stroke=stroke, dash=dash, text=foot_text, size=size - 1.5,
+                       bold=True, color=foot_color)
+
+    def influence_graph(self, x, y, w, h, people, *, links=None, size=9,
+                        more=None) -> float:
+        """購買関与者を組織構造で並べたインフルーエンスマップ。戻り値は下端 y。
+
+        `people` は `(id, roles, org, name, influence, stance, met, reportsTo)`
+        を持つ辞書のリスト（`scripts/account_graph.py` と同じ形）。役割は上帯、
+        影響度は下帯、立場は本文の塗り、未面談は破線で表す。
+
+        塗りはブランド色ではなくセマンティックパレットを使う: 親密は success、
+        反発は danger、中立は surfaceAlt。テンプレートの配色に自動で馴染む。
+
+        人数が多いときは `account_graph.extract()` で間引き、`more` に
+        「他 N 名は draw.io 版参照」を渡すこと。全員を 1 枚に詰めない。
+        """
+        if not people:
+            raise ValueError(t("influence_graph needs at least 1 person"))
+        by_id = {p["id"]: p for p in people}
+        kids: dict[str, list[str]] = {p["id"]: [] for p in people}
+        roots = []
+        for p in people:
+            parent = p.get("reportsTo")
+            if parent and parent in by_id:
+                kids[parent].append(p["id"])
+            else:
+                roots.append(p["id"])
+
+        def leaves(nid):
+            return sum(leaves(c) for c in kids[nid]) or 1
+
+        def depth(nid):
+            return 1 + max((depth(c) for c in kids[nid]), default=0)
+
+        total_leaves = sum(leaves(r) for r in roots)
+        levels = max(depth(r) for r in roots)
+        cell = w / total_leaves
+        if cell < 0.95:
+            raise ValueError(t(
+                "{n} people leave only {cell:.2f}in per column. Thin the graph "
+                "with account_graph.extract() and put the rest in draw.io",
+                n=total_leaves, cell=cell))
+        note_h = 0.24 if more else 0.0
+        gap_y = 0.26
+        ch = min(0.80, (h - note_h - gap_y * (levels - 1)) / levels)
+        level_h = (h - note_h - ch) / max(levels - 1, 1)
+        centers: dict[str, float] = {}
+
+        def place(nid, left, top):
+            p = by_id[nid]
+            span = leaves(nid) * cell
+            cx = left + span / 2
+            cw = min(span - 0.10, 1.85)
+            centers[nid] = cx
+            stance = p.get("stance", "neutral")
+            fill = {"close": lighten(self.P.success, 0.82),
+                    "opposed": lighten(self.P.danger, 0.86)}.get(
+                        stance, self.P.surfaceAlt)
+            body = "\n".join(s for s in (p.get("org", ""), p["name"]) if s)
+            self._account_card(
+                cx - cw / 2, top, cw, ch,
+                band_text="/".join(p.get("roles", [])), body_text=body,
+                foot_text=p.get("influence", "").capitalize(),
+                body_fill=fill, band_fill=lighten(self.P.text, 0.88),
+                foot_fill=lighten(self.P.text, 0.88),
+                band_color=darken(self.P.danger, 0.15),
+                foot_color=darken(self.P.primary, 0.2),
+                size=size, dashed=not p.get("met", True))
+            if not kids[nid]:
+                return
+            bus = top + ch + (level_h - ch) / 2
+            self.line(cx, top + ch, cx, bus, color=self.P.border, weight=1.2,
+                      free=True)
+            cl, cxs = left, []
+            for c in kids[nid]:
+                cspan = leaves(c) * cell
+                cxs.append(cl + cspan / 2)
+                place(c, cl, top + level_h)
+                cl += cspan
+            if len(cxs) > 1:
+                self.line(cxs[0], bus, cxs[-1], bus, color=self.P.border,
+                          weight=1.2, free=True)
+            for ccx in cxs:
+                self.line(ccx, bus, ccx, top + level_h, color=self.P.border,
+                          weight=1.2, free=True)
+
+        left = x
+        for r in roots:
+            place(r, left, y)
+            left += leaves(r) * cell
+        for lk in links or []:
+            a, b = lk.get("from"), lk.get("to")
+            if a in centers and b in centers:
+                self.line(min(centers[a], centers[b]) + 0.9, y + ch / 2,
+                          max(centers[a], centers[b]) - 0.9, y + ch / 2,
+                          color=self.P.border, weight=1.2, dashed=True, free=True)
+        if more:
+            self.label(x, y + h - note_h, w, note_h, more, size=size - 1,
+                       color=self.P.muted, align="START", valign="MIDDLE")
+        return y + h
+
+    def outcome_tree(self, x, y, w, h, nodes, *, edges=None, size=9,
+                     more=None) -> float:
+        """Goal / Strategy / Tactics を支持関係で結んだ図。戻り値は下端 y。
+
+        `nodes` は `(id, tier, text, owner)` の辞書、`edges` は
+        `{"from": 支える側, "to": 支えられる側}`。1 つの Tactics が複数の
+        Strategy を支える多親構造を取れる。
+
+        **段は tier ではなくグラフの深さで決まる。** 上位目標を支える下位目標も
+        tier は goal だが、段は 1 つ下に来る。tier はバッジの色だけを決める。
+        """
+        if not nodes:
+            raise ValueError(t("outcome_tree needs at least 1 node"))
+        edges = edges or []
+        supports: dict[str, list[str]] = {n["id"]: [] for n in nodes}
+        for e in edges:
+            if e["from"] in supports and e["to"] in supports:
+                supports[e["from"]].append(e["to"])
+        depth: dict[str, int] = {}
+
+        def d(nid):
+            if nid in depth:
+                return depth[nid]
+            depth[nid] = 0
+            depth[nid] = 1 + max((d(t) for t in supports[nid]), default=-1)
+            return depth[nid]
+
+        for n in nodes:
+            d(n["id"])
+        rows = sorted({depth[n["id"]] for n in nodes})
+        widest = max(sum(1 for n in nodes if depth[n["id"]] == r) for r in rows)
+        cell = w / widest
+        if cell < 1.15:
+            raise ValueError(t(
+                "{n} nodes on one row leave only {cell:.2f}in each. Thin the "
+                "graph with account_graph.extract() and put the rest in draw.io",
+                n=widest, cell=cell))
+        note_h = 0.24 if more else 0.0
+        gap_y = 0.30
+        ch = min(0.72, (h - note_h - gap_y * (len(rows) - 1)) / len(rows))
+        level_h = (h - note_h - ch) / max(len(rows) - 1, 1)
+        # 3 段が一目で分かれる必要がある。primary と info はどちらも青系の
+        # テンプレートが多く、隣り合わせると区別できないので使い分けない。
+        tier_fill = {"goal": lighten(self.P.primary, 0.68),
+                     "strategy": lighten(self.P.warning, 0.42),
+                     "tactics": lighten(self.P.text, 0.86)}
+        pos: dict[str, tuple[float, float]] = {}
+        order: dict[str, float] = {}
+        for ri, r in enumerate(rows):
+            row = [n for n in nodes if depth[n["id"]] == r]
+            row.sort(key=lambda n: (
+                sum(order.get(t, 0) for t in supports[n["id"]])
+                / max(1, len(supports[n["id"]])), n["id"]))
+            span = w / len(row)
+            for i, n in enumerate(row):
+                order[n["id"]] = i
+                cx = x + span * (i + 0.5)
+                top = y + ri * level_h
+                pos[n["id"]] = (cx, top)
+                cw = min(span - 0.14, 2.3)
+                self._account_card(
+                    cx - cw / 2, top, cw, ch,
+                    band_text=n["tier"].capitalize(), body_text=n["text"],
+                    foot_text=n.get("owner", ""),
+                    body_fill=self.P.white,
+                    band_fill=tier_fill.get(n["tier"], self.P.surfaceAlt),
+                    foot_fill=lighten(self.P.text, 0.88),
+                    band_color=self.P.text,
+                    foot_color=darken(self.P.primary, 0.2),
+                    size=size, band_right=True)
+        for e in edges:
+            if e["from"] not in pos or e["to"] not in pos:
+                continue
+            fx, fy = pos[e["from"]]
+            tx, ty = pos[e["to"]]
+            self.line(fx, fy, tx, ty + ch, color=self.P.border, weight=1.2,
+                      end_arrow="FILL_ARROW", free=True)
+        if more:
+            self.label(x, y + h - note_h, w, note_h, more, size=size - 1,
+                       color=self.P.muted, align="START", valign="MIDDLE")
         return y + h
