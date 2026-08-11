@@ -1,24 +1,30 @@
 ---
 name: scalar-account-plan
 description: >-
-  Maintain a per-customer sales activity plan for a Scalar Account Executive:
-  a ledger (account.json) of what is confirmed, who decides, what is still
-  unknown, and what to do next — rendered as a Google Slides deck whose URL
-  never changes, so the same shared link always shows the current state.
-  Use when asked to create or update an account plan, activity plan or
-  アカウントプラン / 活動計画; to record what came out of a customer meeting;
-  to review a deal's stage, forecast or BANT risk; to work out what an AE must
-  confirm next; or to set up the Drive folders for an account. Produces the
-  action plan (slides + Markdown) that turns unanswered questions into dated
-  commitments. Route one visit's materials to `scalar-ae-materials`, the
-  customer proposal to `scalar-proposal-slides`, and the stakeholder/discovery
-  maps themselves to `b2b-account-maps`.
+  Maintain a per-customer sales ledger (account.json) for a Scalar Account
+  Executive — what is confirmed, who decides, what is unknown, what to do next —
+  rendered as a Google Slides activity plan whose URL never changes. Use for an
+  account plan / 活動計画 / アカウントプラン, recording what came out of a
+  customer meeting, reviewing a deal's stage, forecast or BANT risk, working out
+  what an AE must confirm next, or setting up an account's Drive folders. The
+  annual Account Planning Session decks go to `scalar-account-planning-session`,
+  one visit's materials to `scalar-ae-materials`, the customer proposal to
+  `scalar-proposal-slides`, and the maps themselves to `b2b-account-maps`.
 ---
 
 # Scalar Account Plan
 
-顧客 1 社につき台帳 1 つ、活動計画デッキ 1 つ。**台帳が正本**で、デッキは
-その表示にすぎない。訪問のたびに台帳へ追記し、同じ URL のデッキを最新化する。
+顧客 1 社につき台帳 1 つ。**台帳が正本**で、デッキはその表示にすぎない。
+訪問のたびに台帳へ追記し、同じ URL のデッキを最新化する。
+
+台帳から出るデッキは 2 系統。寿命も入力も違うので混ぜない。**このスキルは左**。
+
+| | 活動計画デッキ（§5） | APS デッキ |
+|---|---|---|
+| 目的 | 今どこにいて次に何をするか | 年次・半期の棚卸しと役員レビュー |
+| 更新 | 訪問のたび | APS のたび |
+| 入力 | `account.json`（台帳） | `aps.json`（台帳 + 顧客の公開情報） |
+| スキル | **このスキル** | `scalar-account-planning-session` |
 
 作業ディレクトリは slide-forge ルート。コマンドは `.venv/bin/python` で実行する。
 
@@ -30,7 +36,8 @@ description: >-
 
 | 依頼 | 行き先 |
 |---|---|
-| 活動計画を作る / 追記する / 状況を答える | このスキル |
+| 活動計画を作る / 追記する / 状況を答える | このスキル（§5） |
+| Account Planning Session の資料を作る | `scalar-account-planning-session` |
 | 訪問 1 回分の資料一式を作る | `scalar-ae-materials` |
 | 関与者マップ・ディスカバリーマップそのものの作図 | `b2b-account-maps` |
 | 顧客向けの正式提案書 | `scalar-proposal-slides` |
@@ -48,6 +55,7 @@ description: >-
 ```
 config/sales.json                       Drive ルートと既定 AE 名（gitignore 済み）
 accounts/<AE 名>/<顧客名>/account.json   ★ 正本（gitignore 済み。コミットしない）
+accounts/<AE 名>/<顧客名>/aps.json       APS デッキの内容（別スキルが使う。同上）
 
 Drive: <ルート>/<AE 名>/<顧客名>/
   00_活動計画/  活動計画デッキ（URL 不変）・account.json のコピー・action-plan.md
@@ -169,12 +177,51 @@ Drive の階層は初回だけルートを聞いて作る（以降は `config/sa
 **差し替え先の URL は台帳の `meta.decks.activityPlan` から取る。**
 手で URL を貼るときは、それが生成物であって原本でないことを必ず確かめる。
 
-### 6. 関与者が 9 人を超えたら
+### 6. 年次・半期の棚卸し（APS）
+
+年次・半期のアカウント棚卸しと役員レビュー資料は
+[`scalar-account-planning-session`](../scalar-account-planning-session/SKILL.md)。
+入力は台帳ではなく `accounts/<AE>/<顧客>/aps.json` で、台帳に顧客の公開情報
+（中期経営計画・組織図・役員名簿）を足して組み立てる。
+
+**このスキルはそこまでやらない。** 台帳（§1–4）が APS の前提になるので、
+先に台帳を最新にしてから APS 側へ渡す。
+
+### 7. 関与者が 9 人を超えたら
 
 スライドに詰めない。`b2b-account-maps` の既定どおり、全体を draw.io に出して
-スライドには抽出版を載せ、落ちた人数を必ず書く。
+スライドには抽出版を載せ、**落ちた人数と全体版の在り処を必ず書く**（`more` スロット）。
 
-### 7. 目視検査と後片付け
+**レイアウトを先に決める。** 既定の木レイアウトは根の数だけ横に伸びる。
+企業グループのように根が多いと帯になって読めない（49 名で 18,000 × 709px）。
+
+| グラフの形 | 使うもの |
+|---|---|
+| 1 社・1 本の指揮系統（根が 1〜2 本） | 既定（`--layout tree`） |
+| **企業グループ・根が 3 本以上** | **`--layout grouped`** |
+
+```bash
+# 企業グループ。people[].entity ごとの枠に格子で並べ、法人をまたぐ線は枠の外を通す
+.venv/bin/python scripts/build_account_graph.py <graph.json> --layout grouped \
+    --title "<顧客> インフルーエンスマップ（全体）" \
+    --out out/account-plan/<顧客>/influence-map-full.drawio
+
+# 1 社なら既定のままでよい
+.venv/bin/python scripts/build_account_graph.py <graph.json> \
+    --out out/account-plan/<顧客>/influence-map-full.drawio
+
+# PNG に書き出す（drawio CLI が要る）
+drawio -x -f png -s 2 -b 8 \
+    -o out/account-plan/<顧客>/influence-map-full.png \
+       out/account-plan/<顧客>/influence-map-full.drawio
+```
+
+- `entity` は法人名（`entityOrder` で枠の並び順を決める）。組織図と同じ単位にする
+- **人のつながり（`links`）は線に番号だけを置き、文言は図の下の一覧に出す。**
+  線上にラベルを置くと、長い線ほどカードに重なって読めなくなる
+- `.drawio` と PNG は必ずデッキの Drive フォルダに置く。PNG だけでは編集できない
+
+### 8. 目視検査と後片付け
 
 `slide-qa` スキルでサムネイルを確認する。特に見るところ:
 
@@ -185,7 +232,7 @@ Drive の階層は初回だけルートを聞いて作る（以降は `config/sa
 
 終わったら `.venv/bin/python scripts/cleanup_qa.py`。
 
-### 8. Drive にまとめて報告する
+### 9. Drive にまとめて報告する
 
 ```bash
 .venv/bin/python scripts/scalar/account_workspace.py ensure --ledger <account.json>
@@ -195,7 +242,7 @@ Drive の階層は初回だけルートを聞いて作る（以降は `config/sa
 
 報告に必ず入れるもの:
 
-1. 活動計画デッキの URL と Drive フォルダの URL
+1. デッキの URL と Drive フォルダの URL
 2. ステージ・フォーキャストと、その根拠
 3. **次に確認すべきことの最短リスト**（誰に・いつまでに・何が取れたら完了か）
 4. 材料不足で落としたページがあれば、その名前と足りない情報
