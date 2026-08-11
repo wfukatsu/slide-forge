@@ -35,6 +35,39 @@ register({
         "  warn: {what} が HTTP {code} で失敗。{wait:.0f} 秒後に再試行 "
         "({attempt}/{attempts})",
     "template copy": "テンプレートの複製",
+    "rename": "デッキ名の変更",
+    "replace the contents of this existing deck (URL or ID) instead of "
+    "creating a new one; the deck URL stays the same":
+        "新規作成せず、既存デッキ（URL または ID）の中身を差し替える。"
+        "デッキの URL は変わらない",
+    "  replacing an existing deck: {n} slides will be removed":
+        "  既存デッキを差し替えます: {n} 枚を削除します",
+    "  pre-edit revision: {rev} ({time}) — roll back from "
+    "File > Version history":
+        "  編集前リビジョン: {rev} ({time}) — 差し戻しは"
+        "「ファイル → 版の履歴」から",
+    "  warn: could not read the revision history ({err}); snapshot the deck "
+    "before replacing it":
+        "  warn: 版の履歴を取得できませんでした（{err}）。"
+        "差し替える前に snapshot_version.py で版を確保してください",
+    "the deck {pid} was not built from template '{tpl}' (layouts not found: "
+    "{missing}); --into only replaces a deck generated from the same template":
+        "デッキ {pid} はテンプレート '{tpl}' から作られていません"
+        "（見つからないレイアウト: {missing}）。--into が差し替えられるのは"
+        "同じテンプレートで生成したデッキだけです",
+    "{pid} is template '{tpl}' itself, not a deck generated from it; "
+    "--into must never overwrite the master":
+        "{pid} はテンプレート '{tpl}' の原本です（そこから生成したデッキでは"
+        "ありません）。--into で原本を上書きすることはできません",
+    "template '{tpl}' declares no layoutId for {layouts}; --into needs a "
+    "template with real layouts":
+        "テンプレート '{tpl}' は {layouts} の layoutId を持ちません"
+        "（predefinedLayout で作る種類のテンプレートです）。"
+        "--into には実レイアウトを持つテンプレートが必要です",
+    "--keep-existing cannot be combined with --into (--into replaces every page)":
+        "--keep-existing は --into と併用できません（--into は全ページを入れ替えます）",
+    "  note: --folder is ignored with --into (the deck stays in its current folder)":
+        "  note: --into では --folder は無視されます（デッキは今のフォルダに留まります）",
     "template.json has no presentationId":
         "template.json に presentationId がありません",
     "  warn: template.json existingSlideIds contains IDs that do not exist: "
@@ -380,14 +413,129 @@ class TemplateDeck:
             deck.kept_slides = len(pres.get("slides", []))
         return deck
 
-    def _delete_existing_slides(self) -> None:
-        """複製直後に残っているテンプレート同梱スライドを削除する。"""
+    @classmethod
+    def open(
+        cls,
+        template: dict,
+        source: str,
+        *,
+        layouts=None,
+        title: str | None = None,
+        creds=None,
+    ) -> "TemplateDeck":
+        """既存デッキを開き、中身を総入れ替えできる状態にする。
+
+        `create()` がテンプレートを複製して**新しい URL** を作るのに対し、
+        こちらは既にある URL の中身だけを差し替える。顧客ごとの活動計画の
+        ように、共有リンクを配ったまま最新化し続ける資料のためにある。
+
+        **破壊的**。今あるページはすべて消える。呼ぶ前に
+        `scripts/snapshot_version.py` で版を確保すること（編集前リビジョンは
+        ここでも記録して表示する）。
+
+        `layouts` にはこれから積むスライドのレイアウトキーを渡す。デッキが
+        このテンプレートのマスターを持っているかを、API を叩き始める前に
+        確かめるために使う。
+        """
+        slides, drive = _auth.services(creds)
+        pid = _auth.presentation_id(source)
+        # テンプレートの原本を差し替えると、そのテンプレートで作った全デッキの
+        # 元が壊れる。生成物と原本は取り違えやすいので、ここで必ず止める
+        if pid == template.get("presentationId"):
+            raise ValueError(
+                t("{pid} is template '{tpl}' itself, not a deck generated from "
+                  "it; --into must never overwrite the master",
+                  pid=pid, tpl=template.get("name", "?")))
+        deck = cls(slides, drive, pid, template)
+        deck._require_layouts(layouts)
+        deck._print_pre_edit_revision()
+        removed = deck._queue_slide_deletes(deck._present_slide_ids())
+        print(t("  replacing an existing deck: {n} slides will be removed",
+                n=removed))
+        if title:
+            _retry(
+                lambda: drive.files().update(
+                    fileId=pid, body={"name": title}, fields="id",
+                    supportsAllDrives=True).execute(),
+                what=t("rename"))
+        return deck
+
+    def _present_slide_ids(self) -> list[str]:
         pres = _retry(
             lambda: self.slides.presentations().get(
                 presentationId=self.presentation_id, fields="slides.objectId"
             ).execute(),
             what="presentations.get")
-        present = [s["objectId"] for s in pres.get("slides", [])]
+        return [s["objectId"] for s in pres.get("slides", [])]
+
+    def _queue_slide_deletes(self, slide_ids: list[str]) -> int:
+        for oid in slide_ids:
+            self.requests.append({"deleteObject": {"objectId": oid}})
+        return len(slide_ids)
+
+    def _require_layouts(self, layout_keys=None) -> None:
+        """デッキがこのテンプレートのマスターを持っているかを先に確かめる。
+
+        レイアウトの objectId は Drive の複製で保たれるので、テンプレート由来の
+        デッキなら一致する。別のマスターから作られたデッキを差し替えようとした
+        ときに、commit 時の不親切な API エラーではなくここで止める。
+        """
+        keys = list(layout_keys) if layout_keys else list(self.template.get("layouts", {}))
+        needed: dict[str, str] = {}
+        without_id: list[str] = []
+        for key in keys:
+            resolved, spec = self.resolve_layout(key)
+            layout_id = spec.get("layoutId")
+            if layout_id:
+                needed[layout_id] = resolved
+            else:
+                without_id.append(resolved)
+        if without_id:
+            # generationMode: "create" のテンプレート（blank-16x9 等）は
+            # レイアウトを持たず predefinedLayout で作る。差し替え先の
+            # マスターと噛み合う保証がないので使わせない
+            raise ValueError(
+                t("template '{tpl}' declares no layoutId for {layouts}; "
+                  "--into needs a template with real layouts",
+                  tpl=self.template.get("name", "?"),
+                  layouts=", ".join(sorted(set(without_id)))))
+        pres = _retry(
+            lambda: self.slides.presentations().get(
+                presentationId=self.presentation_id, fields="layouts.objectId"
+            ).execute(),
+            what="presentations.get")
+        present = {lay["objectId"] for lay in pres.get("layouts", [])}
+        missing = sorted(name for lid, name in needed.items() if lid not in present)
+        if missing:
+            raise ValueError(
+                t("the deck {pid} was not built from template '{tpl}' "
+                  "(layouts not found: {missing}); --into only replaces a deck "
+                  "generated from the same template",
+                  pid=self.presentation_id,
+                  tpl=self.template.get("name", "?"),
+                  missing=", ".join(missing)))
+
+    def _print_pre_edit_revision(self) -> None:
+        """差し戻せるように、編集前のリビジョンを表示する。取れなければ警告だけ。"""
+        try:
+            revisions = self.drive.revisions().list(
+                fileId=self.presentation_id,
+                fields="revisions(id,modifiedTime)", pageSize=1000,
+            ).execute().get("revisions", [])
+        except Exception as exc:                       # noqa: BLE001 — 情報表示のみ
+            print(t("  warn: could not read the revision history ({err}); "
+                    "snapshot the deck before replacing it", err=exc),
+                  file=sys.stderr)
+            return
+        if revisions:
+            last = revisions[-1]
+            print(t("  pre-edit revision: {rev} ({time}) — roll back from "
+                    "File > Version history",
+                    rev=last.get("id"), time=last.get("modifiedTime")))
+
+    def _delete_existing_slides(self) -> None:
+        """複製直後に残っているテンプレート同梱スライドを削除する。"""
+        present = self._present_slide_ids()
         expected = set(self.template.get("existingSlideIds", []))
         stale = expected - set(present)
         if stale:
@@ -399,8 +547,7 @@ class TemplateDeck:
                 file=sys.stderr,
             )
         # 実在するスライドは全て削除する（テンプレート側でスライドが増えていても取りこぼさない）
-        for oid in present:
-            self.requests.append({"deleteObject": {"objectId": oid}})
+        self._queue_slide_deletes(present)
 
     # ---------- レイアウト解決 ----------
 
@@ -1452,6 +1599,10 @@ def main() -> int:
     p.add_argument("--title",
                    help=t("presentation title (defaults to spec.title)"))
     p.add_argument("--folder", help=t("destination Drive folder URL or ID"))
+    p.add_argument("--into", metavar="DECK",
+                   help=t("replace the contents of this existing deck "
+                          "(URL or ID) instead of creating a new one; the "
+                          "deck URL stays the same"))
     p.add_argument("--dry-run", action="store_true",
                    help=t("validate the spec only, without calling the API"))
     p.add_argument("--no-page-numbers", action="store_true",
@@ -1508,9 +1659,29 @@ def main() -> int:
                     "no problems"))
         return 0
 
-    deck = TemplateDeck.create(
-        template, title=title, folder=args.folder, keep_existing=args.keep_existing
-    )
+    if args.into:
+        if args.keep_existing:
+            print(t("--keep-existing cannot be combined with --into "
+                    "(--into replaces every page)"), file=sys.stderr)
+            return 1
+        if args.folder:
+            print(t("  note: --folder is ignored with --into "
+                    "(the deck stays in its current folder)"))
+        try:
+            deck = TemplateDeck.open(
+                template, args.into, title=title,
+                layouts=[s["layout"] for s in spec["slides"]],
+            )
+        except ValueError as exc:
+            # 差し替え先の取り違えはここで確実に止める。トレースバックを出さず、
+            # 何が起きたかだけを見せる
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
+    else:
+        deck = TemplateDeck.create(
+            template, title=title, folder=args.folder,
+            keep_existing=args.keep_existing,
+        )
     warnings = build_from_spec(deck, spec)
     if not args.no_page_numbers:
         n = deck.add_page_numbers()

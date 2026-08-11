@@ -1,0 +1,119 @@
+{
+  "id": "win-plan",
+  "displayName": "勝ち筋（WPS）",
+  "category": "internal",
+  "description": "WPS でステージ移行と提案投資を判断するための、勝ち筋とリスクの 1 枚",
+  "answers": [
+    "なぜこの商談に勝てるのか、最大のリスクをどう潰すか"
+  ],
+  "inferenceLevel": "strategic",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "situation": {
+      "type": "string",
+      "required": true,
+      "maxLength": 84
+    },
+    "complication": {
+      "type": "string",
+      "required": true,
+      "maxLength": 84
+    },
+    "resolution": {
+      "type": "string",
+      "required": true,
+      "maxLength": 84
+    },
+    "risks": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "maxLength": 46
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "resolution には「顧客がなぜ当社を選ぶ理由になるのか」を書く。製品名の列挙にしない",
+    "リスクは自社でコントロールできる次の行動とセットにする。行動が書けないものは Best 以下",
+    "継続 / 保留 / 撤退の判断依頼を口頭で必ず添える",
+    "社内資料。顧客・パートナーには渡さない（個人の影響力・賛否・社内政治を含む）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "exec_summary",
+        "x": 0.5,
+        "y": 1.05,
+        "w": 9.0,
+        "h": 2.0,
+        "situation": {
+          "$slot": "situation"
+        },
+        "complication": {
+          "$slot": "complication"
+        },
+        "resolution": {
+          "$slot": "resolution"
+        },
+        "labels": [
+          "顧客ゴール",
+          "障害",
+          "勝ち筋"
+        ]
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 3.15,
+        "w": 9.0,
+        "headers": [
+          "最大のリスク",
+          "コントロールする次の行動"
+        ],
+        "rows": {
+          "$slot": "risks"
+        },
+        "colWidths": [
+          3.6,
+          5.4
+        ],
+        "size": 8.5,
+        "rowH": 0.4
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "pack": "scalar-ae",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json"
+}

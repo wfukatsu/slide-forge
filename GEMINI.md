@@ -25,6 +25,7 @@
 | ゼロからのスライド生成（マスター無し） | `google-slides` |
 | 新規マスターテンプレートの作成・登録 | `template-forge` |
 | Scalar 社製品・提案スライドの作成 | `scalar-product-slides`, `scalar-proposal-slides` |
+| 顧客ごとの活動計画・訪問資料（AE の営業活動） | `scalar-account-plan`, `scalar-ae-materials` |
 | draw.io による密なアーキテクチャ図作成 | `drawio-diagrams` |
 | 画像枠の自動埋め込み (AI画像生成含む) | `image-slots` |
 | サムネイルベースの視覚的検証（Visual QA） | `slide-qa` |

@@ -71,7 +71,12 @@ def _escape(name: str) -> str:
     return name.replace("\\", "\\\\").replace("'", "\\'")
 
 
-def cmd_create(drive, name: str, parent: str | None) -> int:
+def ensure_folder(drive, name: str, parent: str | None = None) -> tuple[str, bool]:
+    """フォルダ ID を返す。無ければ作る。戻り値は (ID, 新規作成したか)。
+
+    検索は `name = '…'` の**完全一致**。`name contains` は語頭一致で別のフォルダを
+    拾うため使わない。
+    """
     parent_id = _auth.folder_id(parent) if parent else None
     q = (f"name = '{_escape(name)}' and mimeType = '{FOLDER_MIME}' "
          "and trashed = false")
@@ -82,15 +87,19 @@ def cmd_create(drive, name: str, parent: str | None) -> int:
         supportsAllDrives=True, includeItemsFromAllDrives=True,
     ).execute().get("files", [])
     if hits:
-        fid = hits[0]["id"]
-        print(t("Reusing existing folder: {name}", name=name))
-    else:
-        body: dict = {"name": name, "mimeType": FOLDER_MIME}
-        if parent_id:
-            body["parents"] = [parent_id]
-        fid = drive.files().create(body=body, fields="id",
-                                   supportsAllDrives=True).execute()["id"]
-        print(t("Created folder: {name}", name=name))
+        return hits[0]["id"], False
+    body: dict = {"name": name, "mimeType": FOLDER_MIME}
+    if parent_id:
+        body["parents"] = [parent_id]
+    fid = drive.files().create(body=body, fields="id",
+                               supportsAllDrives=True).execute()["id"]
+    return fid, True
+
+
+def cmd_create(drive, name: str, parent: str | None) -> int:
+    fid, created = ensure_folder(drive, name, parent)
+    print(t("Created folder: {name}", name=name) if created
+          else t("Reusing existing folder: {name}", name=name))
     print(f"  ID:  {fid}")
     print(f"  URL: {folder_url(fid)}")
     return 0

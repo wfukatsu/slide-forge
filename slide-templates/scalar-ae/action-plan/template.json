@@ -1,0 +1,103 @@
+{
+  "id": "action-plan",
+  "displayName": "アクションプラン",
+  "category": "account",
+  "description": "未確認の論点を、誰が・誰に・いつまでに・何が取れたら完了かまで落とす",
+  "answers": [
+    "この商談を前に進めるために、誰が何をいつまでにやるか"
+  ],
+  "inferenceLevel": "strategic",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "actions": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "maxLength": 36
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "完了条件を書けない行は載せない。「確認する」は完了条件ではない",
+    "期限のない行を残さない。相手が社内なら会議体名（WPS / Deal Desk）を書く",
+    "discovery-gaps の未確認事項と 1 対 1 で対応させる",
+    "社内資料。顧客・パートナーには渡さない（個人の影響力・賛否・社内政治を含む）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "headers": [
+          "やること",
+          "なぜ必要か",
+          "相手",
+          "期限",
+          "完了条件"
+        ],
+        "rows": {
+          "$slot": "actions"
+        },
+        "colWidths": [
+          2.5,
+          2.0,
+          1.4,
+          0.9,
+          2.2
+        ],
+        "size": 8.5,
+        "rowH": 0.42
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "schemaVersion": 1,
+  "pack": "scalar-ae",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json"
+}
