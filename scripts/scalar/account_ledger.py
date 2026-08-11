@@ -663,6 +663,9 @@ def _page_bant_risk(ledger: dict) -> dict | None:
 def _bant_title(weak: list[str]) -> str:
     if not weak:
         return "BANT は 4 項目とも確定済み。残るリスクは提供側にある"
+    # 4 項目すべてを並べると見出しが 2 行に折り返して 1 文字だけ残る
+    if len(weak) == len(BANT_KEYS):
+        return "BANT は 4 項目とも未確定。ここが商談を止める"
     names = "・".join(l.split()[0] for l in weak)
     return f"{names} が未確定のまま。ここが商談を止める"
 
@@ -718,7 +721,7 @@ def _page_activity_timeline(ledger: dict) -> dict | None:
     if len(rows) < 2:
         return None
     return {
-        "title": _fit(_timeline_title(done), 70),
+        "title": _fit(_timeline_title(done, ledger), 70),
         "milestones": milestones,
         "rows": rows,
         "source": _source(ledger),
@@ -729,7 +732,7 @@ def _md(date: str) -> str:
     return date[5:].replace("-", "/") if _DATE_RE.match(date) else date
 
 
-def _timeline_title(visits: list[dict]) -> str:
+def _timeline_title(visits: list[dict], ledger: dict) -> str:
     last = visits[-1]["date"]
     try:
         days = (_dt.date.today() - _dt.date.fromisoformat(last)).days
@@ -737,6 +740,10 @@ def _timeline_title(visits: list[dict]) -> str:
         days = 0
     if days > 30:
         return f"最終接触から {days} 日空いている。接点を作り直すところから始める"
+    # 接触量を成果と読み替えない。現ステージの条件が未達なら、そう言う（§1 原則 5）
+    unmet = sum(1 for _, _, item in _current_gates(ledger) if item.get("status") != "met")
+    if unmet:
+        return f"{len(visits)} 回接触したが、現ステージの条件は {unmet} 件が未達のまま"
     return f"{len(visits)} 回の面談で課題は取れた。残るのは決裁と期日"
 
 
