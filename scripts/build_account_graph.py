@@ -184,7 +184,9 @@ def build(graph: dict) -> str:
                   0, CARD_H - FOOT_H, 78, FOOT_H)
         for p in graph["people"]:
             if p.get("reportsTo"):
-                d.edge(f"e_{p['id']}", f"n_{p['reportsTo']}", f"n_{p['id']}",
+                # 親側は本文セルから出す。グループの下端は部分幅の影響度帯しか
+                # 無く、中央から線を出すと帯の横の空白から生えてしまう
+                d.edge(f"e_{p['id']}", f"n_{p['reportsTo']}_b", f"n_{p['id']}",
                        style=("edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;"
                               f"strokeColor={LINE};endArrow=none;exitX=0.5;exitY=1;"
                               "entryX=0.5;entryY=0;"))
@@ -213,7 +215,9 @@ def build(graph: dict) -> str:
                   f"fontSize=9;fontStyle=1;",
                   0, CARD_H - FOOT_H, 62, FOOT_H)
         for i, e in enumerate(graph.get("edges", []) or []):
-            d.edge(f"e{i}", f"n_{e['from']}", f"n_{e['to']}",
+            # 両端とも本文セルに付ける。グループの上端は右寄せの tier バッジ、
+            # 下端は左寄せのオーナー帯しか無く、中央は空白になる
+            d.edge(f"e{i}", f"n_{e['from']}_b", f"n_{e['to']}_b",
                    style=("edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;"
                           f"strokeColor={LINE};endArrow=classic;exitX=0.5;exitY=0;"
                           "entryX=0.5;entryY=1;"))

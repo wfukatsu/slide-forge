@@ -77,6 +77,11 @@ LEAN_CANVAS_KEYS = {
 }
 
 
+def _card_band_h(h: float) -> float:
+    """3 段カードの上下帯の高さ。カード本体と接続線の両方がこれを使う。"""
+    return min(0.15, h * 0.26)
+
+
 def _node(tree):
     """orgchart のノードを (ラベル, [子…]) に正規化する。JSON 由来のリストも受ける。"""
     if isinstance(tree, str):
@@ -468,7 +473,7 @@ class PatternMixin:
                       body_fill, band_fill, foot_fill, band_color, foot_color,
                       size, dashed=False, band_right=False):
         """帯・本文・帯の 3 段カード。draw.io 版と同じ見た目をスライドで作る。"""
-        bh = min(0.15, h * 0.26)
+        bh = _card_band_h(h)
         stroke = lighten(self.P.text, 0.55 if not dashed else 0.72)
         dash = "DASH" if dashed else "SOLID"
         fw = min(w * 0.55, 0.85)
@@ -552,8 +557,11 @@ class PatternMixin:
                 size=size, dashed=not p.get("met", True))
             if not kids[nid]:
                 return
+            # 下帯は部分幅。外枠の下端から線を出すと帯の横の空白から生えるので、
+            # 全幅で描かれている本文ボックスの下端に付ける
+            body_bottom = top + ch - _card_band_h(ch)
             bus = top + ch + (level_h - ch) / 2
-            self.line(cx, top + ch, cx, bus, color=self.P.border, weight=1.2,
+            self.line(cx, body_bottom, cx, bus, color=self.P.border, weight=1.2,
                       free=True)
             cl, cxs = left, []
             for c in kids[nid]:
@@ -678,7 +686,17 @@ class PatternMixin:
                 continue
             fx, fy = pos[e["from"]]
             tx, ty = pos[e["to"]]
-            self.line(fx, fy, tx, ty + ch, color=self.P.border, weight=1.2,
+            # 終点は本文ボックスの下端。外枠の下端はオーナー帯の幅しかなく、
+            # 中央に矢印を落とすと帯の横の空白に着地する
+            end = ty + ch - _card_band_h(ch)
+            # 斜めに引くと、終点へ近づく途中でオーナー帯の上を横切る。段の間で
+            # 折る直交ルーティングにして、縦に入って縦に出る形にする
+            bus = (fy + end) / 2
+            self.line(fx, fy, fx, bus, color=self.P.border, weight=1.2, free=True)
+            if abs(tx - fx) > 0.02:
+                self.line(fx, bus, tx, bus, color=self.P.border, weight=1.2,
+                          free=True)
+            self.line(tx, bus, tx, end, color=self.P.border, weight=1.2,
                       end_arrow="FILL_ARROW", free=True)
         if more:
             self.label(x, y + h - note_h, w, note_h, more, size=size - 1,
