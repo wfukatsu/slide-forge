@@ -5,17 +5,46 @@
   "pack": "b2b-sales",
   "category": "stakeholder",
   "description": "購買関与者を組織のつながりで並べ、役割・影響度・立場・面談状況を示す",
-  "answers": ["誰が誰の下にいて、どこに影響力と支持が集まっているか"],
+  "answers": [
+    "誰が誰の下にいて、どこに影響力と支持が集まっているか"
+  ],
   "inferenceLevel": "diagnostic",
-  "compatibleLayouts": ["BLANK"],
+  "compatibleLayouts": [
+    "BLANK"
+  ],
   "example": "example.json",
   "slots": {
-    "title": {"type": "string", "required": true, "maxLength": 70},
-    "people": {"type": "array", "required": true, "minItems": 2, "maxItems": 9},
-    "links": {"type": "array", "default": [], "maxItems": 4},
-    "more": {"type": "string", "default": "", "maxLength": 60},
-    "insight": {"type": "string", "required": true, "maxLength": 110},
-    "source": {"type": "string", "required": true, "maxLength": 160}
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "people": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 9
+    },
+    "links": {
+      "type": "array",
+      "default": [],
+      "maxItems": 4
+    },
+    "more": {
+      "type": "string",
+      "default": "",
+      "maxLength": 60
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": 58
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
   },
   "guardrails": [
     "people / links の中身は scripts/account_graph.py が検証する。id の重複・宙に浮いた reportsTo・循環はそちらで止まるので、必ず account_graph.load() を通したデータを渡す",
@@ -26,11 +55,50 @@
   "slide": {
     "layout": "BLANK",
     "figures": [
-      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
-      {"type": "influence_graph", "x": 0.5, "y": 1.08, "w": 9.0, "h": 2.75,
-       "people": {"$slot": "people"}, "links": {"$slot": "links"}, "more": {"$slot": "more"}},
-      {"type": "so_what", "x": 0.5, "y": 3.95, "w": 9.0, "h": 0.85, "text": {"$slot": "insight"}},
-      {"type": "source_note", "x": 0.5, "y": 4.9, "w": 9.0, "source": {"$slot": "source"}}
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "influence_graph",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "h": 2.8,
+        "people": {
+          "$slot": "people"
+        },
+        "links": {
+          "$slot": "links"
+        },
+        "more": {
+          "$slot": "more"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.9,
+        "w": 9.0,
+        "h": 0.95,
+        "text": {
+          "$slot": "insight"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.9,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
     ]
   }
 }
