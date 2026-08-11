@@ -369,7 +369,7 @@ declares no `CLOSING` role, so the same spec reports dozens of findings.
 | `design-catalog.json` | 49 | The full design-pattern catalog †|
 | `slide-pattern-index.json` | 59 | One page per pattern — 1 slide = 1 pattern †|
 | `cloud-architecture.json` | 6 | Cloud architecture figures †|
-| `b2b-account-review.json` | 11 | A worked account review built from the `b2b-sales` templates — cover, exec summary, the two maps and their supporting pages |
+| `b2b-account-review.json` | 13 | A worked account review built from all eight `b2b-sales` templates — cover, exec summary, both maps in their two-axis/MEDDPICC and structural forms, and their supporting pages |
 | `estimate-sample.json` | 2 sheets | Line-item estimate for the `spreadsheets` skill ‡|
 
 † Draws `cloud_icon*` / `cloud_zone` figures, so it needs the vendor icons
