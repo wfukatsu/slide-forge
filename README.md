@@ -98,7 +98,8 @@ templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16
 slide-templates/ reusable single-slide content templates + registry
 assets/       scalar/ (brand: pictograms, logos, product-logos), cloud-icons/ (gitignored)
 references/   engine, workflow, and host compatibility documentation
-  images/slide-patterns/  pattern catalog images (gitignored; generated in Setup)
+  images/slide-patterns/  pattern catalog images (committed; regenerate via Setup 6)
+  i18n/           English sidecar strings for the two generated catalogs
 examples/     runnable spec catalogs and code-first example decks
 config/       credentials.json + token.json (gitignored, 0600)
 cache/ out/   transient render cache and QA output (gitignored)
@@ -293,6 +294,13 @@ regenerate the catalog and commit the images with it:
 
 Regeneration needs a working `scalar-2026` master (step 5) and, for the three
 cloud-architecture patterns, the vendor icons (step 4).
+
+Both catalog generators are bilingual: one run writes the English document at
+the original path and the Japanese one at its `.ja.md` sibling. Japanese text
+comes from the source data (the pattern spec / each `template.json`); English
+text comes from the sidecars under `references/i18n/`. A new pattern or
+template with no sidecar entry falls back to Japanese with a warning, so add
+its English strings there when you add one.
 
 The slide-template catalog
 ([`references/slide-template-catalog.md`](references/slide-template-catalog.md),

@@ -1,0 +1,239 @@
+{
+ "sections": {
+  "骨格 6 種": {
+   "name": "6 Skeletons",
+   "short": "How to lay out a page",
+   "intro": "The **layout** itself for a page. Before deciding which figure to use, decide which of these 6 skeletons to build with.\nThe default is Skeleton B (figure left + kicker right). Coordinates you can use as-is are in \"Skeleton standard coordinates\" in [slide-patterns.md](slide-patterns.md)."
+  },
+  "構成ページ": {
+   "name": "Structural pages",
+   "short": "The deck's framework",
+   "intro": "Pages that build the deck's overall framework. `storyline` and `ghost` are both deliverables and design tools used to verify the argument before finalizing the deck."
+  },
+  "定量ページ（推移・構成・増減）": {
+   "name": "Quantitative pages (trend, composition, change)",
+   "short": "Making a case with numbers",
+   "intro": "Pages that make a case with numbers. **All of them require a source line** (`source_note` raises `ValueError` on an empty source). The components reject dual axes and truncated baselines."
+  },
+  "比較・評価ページ": {
+   "name": "Comparison / evaluation pages",
+   "short": "Putting options side by side for a decision",
+   "intro": "Pages that put options side by side for a decision. For 2 options use a side-by-side layout; for 3 or more use `comparison`; for roughly 3 options × roughly 4 criteria use a rating matrix; when precision matters, use a table."
+  },
+  "構造・論理ページ": {
+   "name": "Structure / logic pages",
+   "short": "Turning relationships into a diagram",
+   "intro": "Pages that turn relationships into a diagram. The claim is about **structure**, not numbers."
+  },
+  "計画・体制ページ": {
+   "name": "Planning / organization pages",
+   "short": "Showing time and people",
+   "intro": "Pages that show time and people — when, who, and what scope."
+  },
+  "定性・技術ページ": {
+   "name": "Qualitative / technical pages",
+   "short": "Making a case without numbers",
+   "intro": "Pages that make their case without numbers — quotes, case studies, architecture diagrams, code, and the like."
+  },
+  "締め・付録ページ": {
+   "name": "Closing / appendix pages",
+   "short": "Decisions and what follows",
+   "intro": "Pages that handle decisions and what comes after. The principle is to keep the main body thin and the appendix thick."
+  }
+ },
+ "patterns": {
+  "skeleton-a-full-width": {
+   "head": "Skeleton A | Full-width single figure",
+   "desc": "No kicker; the figure uses the full width. Use this for figures with many elements — such as tables or large trees — that become unreadable when shrunk."
+  },
+  "skeleton-b-figure-left-kicker-right": {
+   "head": "Skeleton B | Figure left + kicker right",
+   "desc": "Places the figure in the left 2/3 and the kicker in the right 1/3. The reader's eye flows figure → kicker, so there's no ambiguity about reading order."
+  },
+  "skeleton-c-two-figures": {
+   "head": "Skeleton C | Two figures side by side",
+   "desc": "Places two figures side by side that support the same claim. If you have two claims, split them across two slides instead."
+  },
+  "skeleton-d-two-rows": {
+   "head": "Skeleton D | Two rows, top and bottom",
+   "desc": "Puts the overall flow in the top row and its breakdown or supplementary detail in the bottom row. Suits wide figures such as processes or timelines."
+  },
+  "skeleton-e-full-width-kicker-band": {
+   "head": "Skeleton E | Full-width figure + kicker band below",
+   "desc": "For figures that need full width, such as four-quadrant charts or positioning maps. The kicker sits as a band underneath."
+  },
+  "skeleton-f-text-only": {
+   "head": "Skeleton F | Text only",
+   "desc": "For content that needs precision — definitions, premises, conditions — don't force it into a figure. Structure it with a table instead."
+  },
+  "exec-summary": {
+   "head": "Executive summary",
+   "desc": "Opening slide only. Use SCR (Situation → Complication → Resolution) so a decision can be made from this one slide alone. Keep it to at most 5 points.",
+   "sample": "Make the decision from this one slide"
+  },
+  "agenda": {
+   "head": "Agenda",
+   "desc": "Shows the chapters and page counts up front so readers can grasp the overall scope. If there are many rows, split them by area.",
+   "sample": "Show chapters and page counts up front to lower the reader's load"
+  },
+  "storyline": {
+   "head": "Storyline",
+   "desc": "Used as chapter dividers so readers can track where they are. During design, also used to verify the argument.",
+   "sample": "Show whether the argument holds up from the titles alone"
+  },
+  "ghost-deck": {
+   "head": "Ghost deck",
+   "desc": "Not a deliverable — a design tool. A checklist to catch \"not yet obtained\" items before they slip into the final deck.",
+   "sample": "Confirm the outline and data sources before finalizing"
+  },
+  "trend": {
+   "head": "Trend",
+   "desc": "The basic form for showing change over time. A single axis only (no dual axes). Attach values only at the endpoint.",
+   "sample": "Operating margin has fallen for three straight years, below the median"
+  },
+  "waterfall": {
+   "head": "Waterfall breakdown",
+   "desc": "Breaks down the difference between a starting and ending value into contributing factors. The component halts with an error if the total doesn't match the sum.",
+   "sample": "Bridge across the gap to show where the difference came from"
+  },
+  "composition-pie": {
+   "head": "Composition (pie)",
+   "desc": "Shows a share of the whole. Up to 6 series. Drawn clockwise in the order passed.",
+   "sample": "80% of the reduction potential lies in the reception and reconciliation steps"
+  },
+  "stacked-trend": {
+   "head": "Stacked trend",
+   "desc": "Shows the trend of a total and its breakdown at the same time. If comparing the breakdown components against each other is the main point, use grouped vertical bars instead.",
+   "sample": "The total volume is shrinking while staffing costs edge up slightly"
+  },
+  "grouped-comparison": {
+   "head": "Series comparison",
+   "desc": "Compares 2–3 series within the same category. If you have more than 4 series, switch to a table.",
+   "sample": "The proposed composition cuts effort by more than half in every quarter"
+  },
+  "kpi": {
+   "head": "KPI",
+   "desc": "One or two headline metrics shown large, with breakdowns as horizontal bars. Cramming in too many numbers means none of them stick.",
+   "sample": "Narrow down the numbers to take away, and add the breakdown alongside"
+  },
+  "exhibit-numbered": {
+   "head": "Numbered exhibit",
+   "desc": "Adding a frame and a number lets you point to it with \"see Exhibit 3.\" Keep it in sync with the exhibit list in the appendix.",
+   "sample": "A page referenced from the body text and the appendix"
+  },
+  "two-option-compare": {
+   "head": "Two-option comparison",
+   "desc": "Puts the current state and the proposal side by side. This is enough for 2 options — no rating matrix needed."
+  },
+  "multi-option-comparison": {
+   "head": "Multi-option comparison",
+   "desc": "Only add arrows for \"transitions.\" Adding arrows to a parallel comparison implies a left-to-right progression that doesn't actually exist.",
+   "sample": "Lay out 3+ options side by side and point to a single recommendation"
+  },
+  "rating-matrix": {
+   "head": "Multiple options × criteria",
+   "desc": "Roughly 3 options × roughly 4 criteria is the practical limit. 4-dot ratings work best. For 2 options, a side-by-side layout is enough.",
+   "sample": "Dot ratings stay legible even in black-and-white printing"
+  },
+  "positioning-map": {
+   "head": "Positioning map",
+   "desc": "Shows relative position along two axes. If you want to show \"classification\" into four quadrants, use `matrix` instead.",
+   "sample": "Show position relative to competitors on two axes"
+  },
+  "balance": {
+   "head": "Balance",
+   "desc": "Shows the trade-off between two options as weights. Not a quantitative comparison — a figure that shows which way the judgment tips."
+  },
+  "spec-table": {
+   "head": "Spec comparison table",
+   "desc": "Lines up numbers and conditions precisely. Keep content as a table when turning it into a figure would lose precision."
+  },
+  "logic-tree": {
+   "head": "Logic tree",
+   "desc": "Breaks a question down with no gaps and no overlaps. A depth greater than 4 is an error. Whether it's truly MECE is the author's responsibility."
+  },
+  "pyramid-funnel": {
+   "head": "Hierarchy and narrowing",
+   "desc": "Places a metric hierarchy (pyramid) alongside a decreasing count (funnel).",
+   "sample": "Metric hierarchy and decreasing counts"
+  },
+  "layers": {
+   "head": "Layers",
+   "desc": "Shows a system's responsibilities as layers. The order of the layers itself is the claim."
+  },
+  "process-flow": {
+   "head": "Process",
+   "desc": "Shows a process's flow and stages. Use `flow` / `steps` / `icon_flow` depending on the level of granularity."
+  },
+  "hub-radial": {
+   "head": "Hub and spokes",
+   "desc": "A structure where one foundation supports multiple lines of business. Keep the number of spokes to around 6 or fewer."
+  },
+  "quadrant-matrix": {
+   "head": "Four quadrants",
+   "desc": "Positions initiatives on two axes to establish priority. For position relative to competitors, use `posmap` instead.",
+   "sample": "Position initiatives by impact and cost"
+  },
+  "venn-iceberg": {
+   "head": "Overlap and depth",
+   "desc": "Combines the overlap of conditions (Venn diagram) with factors that aren't visible on the surface (iceberg).",
+   "sample": "Overlapping conditions and hidden factors"
+  },
+  "gantt-schedule": {
+   "head": "Schedule",
+   "desc": "Lays out a process along a timeline. Well suited to explaining a \"no downtime\" plan such as a phased migration.",
+   "sample": "Two-phase migration without stopping operations"
+  },
+  "roadmap": {
+   "head": "Roadmap",
+   "desc": "Shows a phased path forward. `journey` shows the ups and downs of an experience; `timeline` shows a sequence of points in time.",
+   "sample": "A phased path and a chronological sequence"
+  },
+  "org-chart": {
+   "head": "Org chart",
+   "desc": "Makes owners and roles explicit. Breaking down a question is `mece_tree`'s job; this one handles the organization."
+  },
+  "market-sizing": {
+   "head": "Market sizing",
+   "desc": "Shows the target scope as nested circles (TAM / SAM / SOM). Pass them from the outside in."
+  },
+  "lean-canvas": {
+   "head": "Lean canvas",
+   "desc": "Fits the overall picture of a business onto one slide. Don't use it while you still can't fill in every field."
+  },
+  "testimonial": {
+   "head": "Testimonial",
+   "desc": "Shows pain points that don't show up in the numbers, through a quote. Works well placed right after a quantitative page."
+  },
+  "case-cards": {
+   "head": "Case cards",
+   "desc": "Lays out initiatives as cards so readers can grasp the overall picture. Put individual details in the appendix.",
+   "sample": "Lay out initiatives as cards to convey the overall picture"
+  },
+  "cloud-architecture": {
+   "head": "System architecture",
+   "desc": "Shows the layout using official cloud icons. **Requires fetching vendor icons** (see above)."
+  },
+  "code-sample": {
+   "head": "Code sample",
+   "desc": "Trim it down to an amount that's readable on screen. Move long code to the appendix and keep only the key points in the body.",
+   "sample": "Show the specifics of the implementation"
+  },
+  "pictogram-grid": {
+   "head": "Pictogram grid",
+   "desc": "Organizes business vocabulary with icons. Can be placed at the opening in place of a glossary."
+  },
+  "decisions": {
+   "head": "Decisions",
+   "desc": "Puts what needs a Yes/No answer onto one slide. Defines the exit point of the meeting right here."
+  },
+  "next-steps": {
+   "head": "Next steps",
+   "desc": "Who does what by when. Don't write a line that lacks a subject and a deadline."
+  },
+  "appendix-index": {
+   "head": "Appendix",
+   "desc": "An exhibit index showing where each is referenced from in the body. Keep it in sync with the numbering in `exhibit_frame`."
+  }
+ }
+}
