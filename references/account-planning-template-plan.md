@@ -1,7 +1,9 @@
 # Account Planning ページテンプレート作成計画
 
-`references/account-planning-session.md` の 34 ページを slide-forge で再現する
-ための、ページテンプレート（`slide-templates/`）の設計・実装計画。
+`references/account-planning-session.md` のページ群（先行実装
+`scripts/scalar/build_account_planning.py` の `LAYOUT` が定義する 47 ページ）を
+slide-forge で再現するための、ページテンプレート（`slide-templates/`）の
+設計・実装計画。
 
 ## 1. 目的とスコープ
 
@@ -10,7 +12,7 @@
 マスターのデザインが変わってもテンプレート側を書き換えずに追従させる。**
 
 **スコープに含む**: `slide-templates/account-planning/` パックの新規テンプレート
-28 件（§4）、既存テンプレートの再利用判定、マスター追従の設計契約、検証手順。
+34 件（§4）、既存テンプレートの再利用判定、マスター追従の設計契約、検証手順。
 
 > 実装の先行例: ある企業グループ向けの Account Planning デッキは
 > `scripts/scalar/build_account_planning.py` が台帳から直接組んでいる。
@@ -145,7 +147,7 @@ slide-forge の分業は既にこうなっている:
 
 **代替案（L3 を実装しない場合）**: 全テンプレートを最も装飾の厚いマスターの
 安全域に合わせて作る。実装コストはゼロだが、装飾の薄いマスターで余白が過剰に
-なる。28 テンプレートすべてに効くので、F2 で実装する価値がある（§6）。
+なる。34 テンプレートすべてに効くので、F2 で実装する価値がある（§6）。
 
 ### 2.5 マスター横断の検証を CI 的に回す
 
@@ -191,7 +193,7 @@ done
 判定基準: 「同じ問いに、同じ視覚文法で答えるか」。答えが Yes なら再利用、
 スロットか視覚構造が実質的に違うときだけ新規 ID を作る。
 
-## 4. 新規テンプレート仕様（28 件）
+## 4. 新規テンプレート仕様（34 件）
 
 パック名: `account-planning`。全件 `schemaVersion: 1`、`status: experimental`、
 `compatibleLayouts: ["BLANK"]` を既定とする。
@@ -339,7 +341,7 @@ done
 - 骨格 F。列: イベント / 時期 / 対象顧客 / 自社側キーパーソン / 得たい成果
 - `rows` `string[][]`（2〜8 行、5 列）
 
-### P0b — 元資料との突き合わせで追加（9 件）
+### P0b — 元資料との突き合わせで追加（15 件）
 
 初版の 23 ページを `FY17_AP_Template_Training_Public.pptx` と 1 ページずつ
 突き合わせて見つかった不足分。先行実装では
@@ -380,7 +382,7 @@ done
 
 表が続くとページの見た目が同じになり、要点が沈む。**表は「登録簿」（担当と
 期日があり後から追跡するもの）と「判定基準」だけに残す。** 対応表は
-`references/account-planning-session.md` §9.3。
+`references/account-planning-session.md` §9.4「表を使ってよい場所」。
 
 先行実装では 20 表 → 8 表に減らし、次の図に置き換えた:
 `orgchart` / `outcome_tree` / `mece_tree` / `layers` / `gantt` / `timeline` /

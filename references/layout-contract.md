@@ -171,8 +171,10 @@ configure_layout(page_w=13.333, page_h=7.5, margin=0.6,
   幅が固定なので、タイトルを確実に 1 行に収めたい場合は
   テンプレートの `drawText` で座標指定のテキストボックスとして描く。
 - `SLIDE_NUMBER` プレースホルダは生成できない。`add_page_numbers()` が自前で描く。
-- 1 回の `batchUpdate` は 500 リクエスト程度で分割する（`commit(chunk_size=500)`）。
-  図解 55 枚で約 6,000 リクエストになる。
+- `batchUpdate` は**分割するほど遅い**ので、できる限り 1 回にまとめて送る
+  （`references/api-notes.md` §8 に実測値）。`build_deck.py` の `_batches()` が
+  10,000 リクエスト / 5MB（`MAX_REQUESTS_PER_BATCH` / `MAX_BATCH_BYTES`）を
+  上限に自動で切る。図解 55 枚で約 6,000 リクエストなので、通常は 1 バッチで済む。
 - スピーカーノートの `objectId` はスライド作成後にしか分からないため、本体の
   `batchUpdate` 後に取り直して 2 回目を投げる（`commit()` が処理する）。
 - 全面サイズの不透明な矩形はマスターのフッターを覆って消してしまう。

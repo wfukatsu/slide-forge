@@ -35,7 +35,7 @@ These maps are **internal working artifacts**. They record judgements about
 named individuals at a customer, so do not hand them to the customer and do not
 paste them into a proposal deck.
 
-## The six pages
+## The eight pages
 
 All live in the `b2b-sales` pack (`slide-templates/b2b-sales/`).
 
@@ -54,7 +54,7 @@ All live in the `b2b-sales` pack (`slide-templates/b2b-sales/`).
 .venv/bin/python scripts/list_slide_templates.py --pack b2b-sales
 ```
 
-A worked deck using all six against one fictional account is
+A worked deck using all eight against one fictional account is
 `examples/b2b-account-review.json` — cover, exec summary, the two maps and
 their supporting pages, in the order a review actually runs:
 

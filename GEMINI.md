@@ -24,8 +24,11 @@
 | 登録テンプレート/マスターを使ったスライド作成 | `google-slides-template` |
 | ゼロからのスライド生成（マスター無し） | `google-slides` |
 | 新規マスターテンプレートの作成・登録 | `template-forge` |
+| 再利用可能な 1 枚ものコンテンツテンプレートの作成・登録 | `slide-template-creator` |
 | Scalar 社製品・提案スライドの作成 | `scalar-product-slides`, `scalar-proposal-slides` |
 | 顧客ごとの活動計画・訪問資料（AE の営業活動） | `scalar-account-plan`, `scalar-ae-materials` |
+| Account Planning Session（年次の組織図・商談棚卸しデッキ） | `scalar-account-planning-session` |
+| B2B 商談の関与者マップ・ディスカバリーマップ作成 | `b2b-account-maps` |
 | draw.io による密なアーキテクチャ図作成 | `drawio-diagrams` |
 | 画像枠の自動埋め込み (AI画像生成含む) | `image-slots` |
 | サムネイルベースの視覚的検証（Visual QA） | `slide-qa` |
