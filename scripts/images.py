@@ -65,9 +65,10 @@ register({
     "{total} temporary uploads found, {public} still shared with anyone who has the link":
         "一時アップロードが {total} 件、うち {public} 件がリンクを知る全員に公開されたままです",
     "  … and {n} more": "  … ほか {n} 件",
-    "Re-run with --yes to un-share and delete them":
-        "--yes を付けて再実行すると、共有を外して削除します",
-    "Removed {n} temporary uploads": "一時アップロード {n} 件を削除しました",
+    "Re-run with --yes to un-share them and move them to the trash":
+        "--yes を付けて再実行すると、共有を外してゴミ箱へ移動します",
+    "Moved {n} temporary uploads to the trash":
+        "一時アップロード {n} 件をゴミ箱へ移動しました",
     "  cleaning up {n} temporary uploads left by an interrupted run":
         "  中断した実行が残した一時アップロード {n} 件を片付けます",
     "  note: generating at {aspect} for a {target} frame; "
@@ -920,7 +921,13 @@ def sweep_temp(delete: bool = False) -> int:
     """中断した実行が Drive に残した一時アップロードを片付ける。
 
     名前が `gslides-tmp-` で始まり自分が所有するファイルだけを対象にする。
-    公開共有が付いたまま残るのが問題なので、まず共有を外し、それから消す。
+    公開共有が付いたまま残るのが問題なので、まず共有を外し、それからゴミ箱へ
+    送る（完全削除はしない — 誤対象でも 30 日は復元できる）。
+
+    Drive の `name contains` は語頭一致で、`gslides-tmp-` 以外の語で始まる
+    無関係ファイルもヒットしうる（過去に別の前方一致クエリで実ファイルを
+    消した事故がある）。API の結果を信用せず、削除対象は必ずクライアント側で
+    厳密な前方一致を確認してから選ぶ。
     """
     drive = _auth.services()[1]
     found, token = [], None
@@ -930,7 +937,9 @@ def sweep_temp(delete: bool = False) -> int:
             fields="nextPageToken, files(id,name,createdTime,ownedByMe)",
             pageSize=200, pageToken=token,
             supportsAllDrives=True, includeItemsFromAllDrives=True).execute()
-        found += [f for f in res.get("files", []) if f.get("ownedByMe")]
+        found += [f for f in res.get("files", [])
+                  if f.get("ownedByMe")
+                  and f.get("name", "").startswith("gslides-tmp-")]
         token = res.get("nextPageToken")
         if not token:
             break
@@ -968,10 +977,13 @@ def sweep_temp(delete: bool = False) -> int:
             print(f"  {f['createdTime'][:10]}  {f['name'][:52]}")
         if len(found) > 10:
             print(t("  … and {n} more", n=len(found) - 10))
-        print(t("Re-run with --yes to un-share and delete them"))
+        print(t("Re-run with --yes to un-share them and move them to the trash"))
         return 0
     def purge(f):
         svc = _drive()
+        # list() のクエリは語頭一致なので、消してよい名前かここで最終確認する
+        if not f.get("name", "").startswith("gslides-tmp-"):
+            return
         for pid in f["anyone"]:
             try:
                 svc.permissions().delete(fileId=f["id"], permissionId=pid,
@@ -980,14 +992,15 @@ def sweep_temp(delete: bool = False) -> int:
                 print(t("  warn: failed to remove public sharing from {file_id}: "
                         "{error}", file_id=f["id"], error=e), file=sys.stderr)
         try:
-            svc.files().delete(fileId=f["id"], supportsAllDrives=True).execute()
+            svc.files().update(fileId=f["id"], body={"trashed": True},
+                               supportsAllDrives=True).execute()
         except Exception as e:  # noqa: BLE001
             print(t("  warn: could not delete the temporary image {file_id}: "
                     "{error}", file_id=f["id"], error=e), file=sys.stderr)
 
     with ThreadPoolExecutor(max_workers=min(8, len(found))) as ex:
         list(ex.map(purge, found))
-    print(t("Removed {n} temporary uploads", n=len(found)))
+    print(t("Moved {n} temporary uploads to the trash", n=len(found)))
     return 0
 
 

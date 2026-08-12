@@ -119,7 +119,8 @@ def main() -> int:
     if not paths:
         raise SystemExit(t("no fragments found"))
 
-    spec: dict = {"title": "", "slides": []}
+    # "title" をここで先に置くと setdefault が断片の title を拾えなくなる
+    spec: dict = {"slides": []}
     for path in paths:
         slides, top = load_fragment(path)
         # 仕様レベルのキーは先に書いたものを優先する（後勝ちだと

@@ -28,7 +28,12 @@ from pathlib import Path
 # Slides API は幅 32pt (0.444in) 未満の表列を拒否する。--dry-run では検出できない
 MIN_COL_IN = 0.45
 
-N = {k: c for k, c in zip("123456789", "①②③④⑤⑥⑦⑧⑨")}
+N = {str(i): chr(0x2460 + i - 1) for i in range(1, 21)}  # "1"→① … "20"→⑳
+
+
+def deal_no(deal_id: str) -> str:
+    """商談番号の丸数字。⑳ を超えたら (21) のように括弧で表す。"""
+    return N.get(deal_id, f"({deal_id})")
 
 # ページに 1 つしか出ない図は名前付きスロット、それ以外は figures[] の順で対応する
 SLOT = {"governing_message": ("title", "text"),
@@ -338,7 +343,8 @@ LAYOUT: dict[str, list] = {
     ],
 }
 
-# ページの並び。中扉の見出しと考慮点は aps.json の sections から取る
+# ページの並び。中扉の見出しと考慮点は aps.json の sections から取る。
+# 顧客に合わない ページは meta.skipPages で外す（グループ構成が違う場合など）
 PLAN_A = ["group-orgchart", "bank-orgchart", "securities-orgchart", "card-orgchart",
           "itsub-orgchart", "itsub-mapping", "deal-portfolio",
           "company-stakeholders", "officer-coverage", "who-to-meet",
@@ -354,18 +360,17 @@ PLAN_C = ["execution-plan", "engagement-timeline", "action-plan", "exec-engageme
           "event-plan", "flight-plan", "projections"]
 PLAN_E = ["strategy-summary", "management-asks", "challenge-requirement", "risks"]
 
-# 商談ごとの章。中扉 + 全体像、主要な商談には Objective も付ける
-DEAL_EXTRA = {"1": ["objective-ledger"], "3": ["objective-aidd"]}
-
 REVIEW_MAIN = ["strategy-summary", "deal-portfolio", "plan-alignment", "blueprint-map",
                "prioritization-map", "execution-plan", "action-plan", "management-asks",
                "challenge-requirement"]
+# "@deal-pages" は meta.reviewDealPages（Appendix に載せる商談ページの ID 列）に
+# 展開する。どの商談を役員レビューに載せるかは顧客ごとの判断なので aps.json が持つ
 REVIEW_APPENDIX = ["group-orgchart", "bank-orgchart", "securities-orgchart", "card-orgchart",
                    "itsub-orgchart", "itsub-mapping", "company-stakeholders",
                    "officer-coverage", "who-to-meet",
                    "financial-trends", "midterm-plan", "plan-alignment", "swot", "customer-initiatives", "customer-programs",
                    "scalar-footprint", "heatmap", "influence-map", "account-health", "key-people-career", "key-people-network",
-                   "deal-1", "deal-3", "objective-ledger", "risks"]
+                   "@deal-pages", "risks"]
 
 
 def _check_columns(fig: dict, where: str) -> None:
@@ -373,8 +378,14 @@ def _check_columns(fig: dict, where: str) -> None:
     widths = fig.get("colWidths")
     if not widths:
         return
+    headers = fig.get("headers")
+    if not headers:
+        raise ValueError(f"{where}: colWidths のある表に headers がありません")
+    if len(headers) != len(widths):
+        raise ValueError(f"{where}: headers が {len(headers)} 列、"
+                         f"colWidths が {len(widths)} 列で一致しません")
     scale = fig["w"] / sum(widths)
-    thin = [(h, w * scale) for h, w in zip(fig["headers"], widths) if w * scale < MIN_COL_IN]
+    thin = [(h, w * scale) for h, w in zip(headers, widths) if w * scale < MIN_COL_IN]
     if thin:
         raise ValueError(f"{where}: 表の列が細すぎます（API 下限 {MIN_COL_IN}in）: "
                          + ", ".join(f"{h}={w:.3f}in" for h, w in thin))
@@ -407,6 +418,11 @@ def build_page(pid: str, data: dict, extra: dict | None = None) -> dict:
     return {"layout": "BLANK", "figures": figures}
 
 
+def money_when(d: dict, sep: str = " / ") -> str:
+    """金額・時期の 1 行。どちらが空でも区切りだけが残らないようにする。"""
+    return sep.join(v for v in (d["amount"], d["period"]) if v)
+
+
 def by_company(deals: list) -> list:
     """商談を会社ごとにまとめた mece_tree の枝を返す。"""
     order, groups = [], {}
@@ -414,21 +430,30 @@ def by_company(deals: list) -> list:
         if d["company"] not in groups:
             order.append(d["company"])
             groups[d["company"]] = []
-        groups[d["company"]].append(
-            f"{N[d['id']]} {d['name']}\n{d['amount']} / {d['period']}")
+        groups[d["company"]].append(f"{deal_no(d['id'])} {d['name']}\n{money_when(d)}")
     return [[c, groups[c]] for c in order]
 
 
 def deal_page(d: dict, source: str, heads: list | None = None) -> dict:
     """商談 1 件の全体像。カード 6 枚の型は全商談で同じにする。"""
     heads = heads or DEAL_PAGE_HEADS
+    if (len(heads) != len(DEAL_PAGE_KEYS)
+            or any(len(row) != len(keys)
+                   for row, keys in zip(heads, DEAL_PAGE_KEYS))):
+        shape = " + ".join(str(len(k)) for k in DEAL_PAGE_KEYS)
+        raise ValueError(f"meta.dealPageHeads は {len(DEAL_PAGE_KEYS)} 行"
+                         f"（{shape} 列）で書いてください")
+    lacking = [k for keys in DEAL_PAGE_KEYS for k in keys if k not in d]
+    if lacking:
+        raise ValueError(f"deals（id={d['id']}）に次のキーがありません: "
+                         + ", ".join(lacking))
     return {"layout": "BLANK", "figures": [
         {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0,
-         "text": f"商談 {N[d['id']]} の全体像 — {d['company']}／{d['name']}"},
+         "text": f"商談 {deal_no(d['id'])} の全体像 — {d['company']}／{d['name']}"},
         *[{"type": "cards", "x": 0.5, "y": y, "w": 9.0, "h": 1.55,
            "titleSize": 9, "bodySize": 7.5,
-           "items": [[h, d[k]] for h, k in zip(heads, keys)]}
-          for y, heads, keys in zip((1.22, 2.92), heads, DEAL_PAGE_KEYS)],
+           "items": [[h, d[k]] for h, k in zip(row_heads, row_keys)]}
+          for y, row_heads, row_keys in zip((1.22, 2.92), heads, DEAL_PAGE_KEYS)],
         {"type": "source_note", "x": 0.5, "y": 4.86, "w": 9.0, "source": source},
     ]}
 
@@ -436,49 +461,124 @@ def deal_page(d: dict, source: str, heads: list | None = None) -> dict:
 def deal_section(d: dict) -> dict:
     """商談ごとの中扉。会社名を先に置いて、どの会社の話かを明示する。"""
     return {"layout": "SECTION",
-            "title": f"商談 {N[d['id']]}　{d['company']}／{d['name']}",
+            "title": f"商談 {deal_no(d['id'])}　{d['company']}／{d['name']}",
             "body": f"顧客イニシアチブ: {d['initiative']}　／　"
-                    f"{d['amount']} ／ {d['period']} ／ {d['stage']}"}
+                    f"{money_when(d, ' ／ ')} ／ {d['stage']}"}
+
+
+DECKS = ("plan", "review")
+
+
+def skipped_pages(meta: dict) -> dict:
+    """meta.skipPages — そのデッキに載せないページ。
+
+    リストなら両方のデッキから、{"plan": [...], "review": [...]} なら
+    指定したデッキからだけ外す。台帳にデータは残すので、外した判断は戻せる。
+    ページ ID の実在は build() で検査する（タイポを黙って無視しないため）。
+    """
+    spec = meta.get("skipPages") or {}
+    if isinstance(spec, list):
+        spec = {"plan": spec, "review": spec}
+    if not isinstance(spec, dict):
+        raise ValueError('meta.skipPages はページ ID のリストか '
+                         '{"plan": [...], "review": [...]} で書いてください')
+    bad = [k for k in spec if k not in DECKS]
+    if bad:
+        raise ValueError("meta.skipPages のデッキ名が不正です: " + ", ".join(bad)
+                         + "。使えるのは plan / review だけです")
+    return {k: set(spec.get(k) or []) for k in DECKS}
 
 
 def build(aps: dict) -> tuple[dict, dict]:
     meta, deals, pages = aps["meta"], aps["deals"], aps["pages"]
+    for d in deals:
+        if not isinstance(d.get("id"), str) or not d["id"]:
+            raise ValueError('deals[].id は文字列で書いてください（例: "1"）: '
+                             f"{d.get('id')!r}")
+    deal_ids = {d["id"] for d in deals}
+    known = set(LAYOUT) | {f"deal-{i}" for i in deal_ids}
+
+    skip = skipped_pages(meta)
+    for deck, keys in skip.items():
+        unknown = sorted(keys - known)
+        if unknown:
+            raise ValueError(
+                f"meta.skipPages の {deck} に知らないページ ID があります: "
+                + ", ".join(unknown)
+                + "。ページ ID か deal-<商談番号> のタイポを確認してください")
+    skip_both = skip["plan"] & skip["review"]
+
+    # 商談章の付録ページと、役員レビュー Appendix に載せる商談ページは
+    # 顧客ごとの判断なので aps.json（meta）が持つ
+    deal_extra = meta.get("dealExtraPages") or {}
+    bad = sorted(set(deal_extra) - deal_ids)
+    if bad:
+        raise ValueError("meta.dealExtraPages に存在しない商談 ID があります: "
+                         + ", ".join(bad))
+    bad = sorted({k for v in deal_extra.values() for k in v} - set(LAYOUT))
+    if bad:
+        raise ValueError("meta.dealExtraPages に知らないページ ID があります: "
+                         + ", ".join(bad))
+    review_deal_pages = meta.get("reviewDealPages") or []
+    bad = sorted(set(review_deal_pages) - known)
+    if bad:
+        raise ValueError("meta.reviewDealPages に知らないページ ID があります: "
+                         + ", ".join(bad))
+    review_appendix = [k for key in REVIEW_APPENDIX
+                       for k in (review_deal_pages if key == "@deal-pages"
+                                 else [key])]
+
     sec = {k: {"layout": "SECTION", "title": v["title"], "body": v["body"]}
            for k, v in aps["sections"].items()}
     cover = {"layout": "COVER", "title": meta["title"], "subtitle": meta["subtitle"]}
 
-    needed = [*PLAN_A, *PLAN_B, *PLAN_C, *PLAN_E, *REVIEW_MAIN, *REVIEW_APPENDIX,
-              *(k for v in DEAL_EXTRA.values() for k in v)]
+    needed = [*PLAN_A, *PLAN_B, *PLAN_C, *PLAN_E, *REVIEW_MAIN, *review_appendix,
+              *(k for v in deal_extra.values() for k in v)]
     missing = [k for k in dict.fromkeys(needed)
-               if k not in pages and not k.startswith("deal-")]
+               if k in LAYOUT and k not in pages and k not in skip_both]
     if missing:
         raise ValueError(
             "aps.json の pages に次のページがありません: " + ", ".join(missing)
-            + "。ページを足すか、PLAN_A / REVIEW_* の並びから外してください")
+            + "。ページを足すか、PLAN_A / REVIEW_* の並びから外すか、"
+              "meta.skipPages で両方のデッキから外してください")
 
-    P = {pid: build_page(pid, pages[pid]) for pid in pages if pid != "deal-portfolio"}
-    P["deal-portfolio"] = build_page(
-        "deal-portfolio", pages["deal-portfolio"],
-        extra={"mece_tree": {"tree": [pages["deal-portfolio"]["root"], by_company(deals)]}})
+    # 両デッキとも載せないページは組み立てない（pages から消してあってもよい）
+    P = {pid: build_page(pid, pages[pid])
+         for pid in pages if pid != "deal-portfolio" and pid not in skip_both}
+    if "deal-portfolio" in pages and "deal-portfolio" not in skip_both:
+        P["deal-portfolio"] = build_page(
+            "deal-portfolio", pages["deal-portfolio"],
+            extra={"mece_tree": {"tree": [pages["deal-portfolio"]["root"],
+                                          by_company(deals)]}})
     for d in deals:
         P[f"deal-{d['id']}"] = deal_page(d, aps["dealSource"],
                                         meta.get("dealPageHeads"))
 
-    chapters = []
-    for d in deals:
-        chapters.append(deal_section(d))
-        chapters.append(P[f"deal-{d['id']}"])
-        chapters += [P[k] for k in DEAL_EXTRA.get(d["id"], [])]
+    def deal_chapters(deck: str) -> list:
+        """商談ごとの章。章の中身が全部 skip されたら中扉ごと落とす。"""
+        out = []
+        for d in deals:
+            keys = [f"deal-{d['id']}", *deal_extra.get(d["id"], [])]
+            body = [P[k] for k in keys if k not in skip[deck]]
+            if body:
+                out += [deal_section(d), *body]
+        return out
+
+    def block(deck: str, section: dict, keys: list) -> list:
+        """中扉 + 本文。本文が全部 skip されたら中扉ごと落とす。"""
+        body = [P[k] for k in keys if k not in skip[deck]]
+        return [section, *body] if body else []
 
     plan = {"title": meta["planTitle"],
-            "slides": [cover, sec["A"], *[P[k] for k in PLAN_A],
-                       sec["B"], *[P[k] for k in PLAN_B],
-                       *chapters,
-                       sec["C"], *[P[k] for k in PLAN_C],
-                       sec["E"], *[P[k] for k in PLAN_E]]}
+            "slides": [cover, *block("plan", sec["A"], PLAN_A),
+                       *block("plan", sec["B"], PLAN_B),
+                       *deal_chapters("plan"),
+                       *block("plan", sec["C"], PLAN_C),
+                       *block("plan", sec["E"], PLAN_E)]}
     review = {"title": meta["reviewTitle"],
-              "slides": [cover, *[P[k] for k in REVIEW_MAIN],
-                         sec["APX"], *[P[k] for k in REVIEW_APPENDIX]]}
+              "slides": [cover,
+                         *[P[k] for k in REVIEW_MAIN if k not in skip["review"]],
+                         *block("review", sec["APX"], review_appendix)]}
     return plan, review
 
 
@@ -490,6 +590,9 @@ def main() -> int:
 
     aps = json.loads(Path(args.aps).read_text(encoding="utf-8"))
     plan, review = build(aps)
+    for deck, keys in skipped_pages(aps["meta"]).items():
+        if keys:
+            print(f"{deck}: 載せないページ {', '.join(sorted(keys))}（meta.skipPages）")
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
