@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-"""Drive フォルダの作成と、デッキ関連ファイルの集約。
+"""Create Drive folders and gather deck-related files into them.
 
-    python scripts/drive_folder.py create "<フォルダ名>" [--parent <URL/ID>]
-    python scripts/drive_folder.py upload <フォルダ URL/ID> <file> [file ...]
-    python scripts/drive_folder.py move <フォルダ URL/ID> <ファイル URL/ID> [...]
+    python scripts/drive_folder.py create "<folder name>" [--parent <URL/ID>]
+    python scripts/drive_folder.py upload <folder URL/ID> <file> [file ...]
+    python scripts/drive_folder.py move <folder URL/ID> <file URL/ID> [...]
 
-スライド生成時の運用: まずデッキ名でフォルダを作成し、その ID を
-build_deck.py / render_deck.py の --folder に渡してデッキ本体をフォルダ内に
-生成する。生成後、スペック（deck.json / deck.py）・図版ソース（.drawio）・
-書き出した PNG などの関連ファイルを upload で同じフォルダに収め、
-フォルダ URL をユーザーに報告する。
+Typical workflow when generating slides: first create a folder named after
+the deck, then pass its ID to build_deck.py / render_deck.py's --folder so
+the deck itself is generated inside that folder. After generation, use
+upload to collect related files — the spec (deck.json / deck.py), diagram
+sources (.drawio), exported PNGs, etc. — into the same folder, then report
+the folder URL to the user.
 
-- create は同名フォルダが既にあればそれを再利用する（重複を作らない）
-- upload はフォルダ内に同名ファイルがあれば新規作成せず内容を更新する
+- create reuses an existing folder with the same name instead of duplicating it
+- upload updates the content of an existing same-named file in the folder
+  instead of creating a new one
 """
 from __future__ import annotations
 
@@ -59,7 +61,7 @@ _FILE_ID_RE = re.compile(r"/d/([a-zA-Z0-9_-]+)")
 
 
 def file_id(url_or_id: str) -> str:
-    """Drive ファイル URL（/d/<ID> 形式）または素の ID から ID を取り出す。"""
+    """Extract the ID from a Drive file URL (`/d/<ID>` form) or a bare ID."""
     m = _FILE_ID_RE.search(url_or_id)
     if m:
         return m.group(1)
@@ -77,10 +79,11 @@ def _escape(name: str) -> str:
 
 
 def ensure_folder(drive, name: str, parent: str | None = None) -> tuple[str, bool]:
-    """フォルダ ID を返す。無ければ作る。戻り値は (ID, 新規作成したか)。
+    """Return the folder ID, creating it if it doesn't exist. Returns (ID, was_created).
 
-    検索は `name = '…'` の**完全一致**。`name contains` は語頭一致で別のフォルダを
-    拾うため使わない。
+    The lookup uses an **exact match** on `name = '…'`. `name contains` is
+    avoided because it matches on word prefixes and can pick up an unrelated
+    folder.
     """
     parent_id = _auth.folder_id(parent) if parent else None
     q = (f"name = '{_escape(name)}' and mimeType = '{FOLDER_MIME}' "
@@ -123,8 +126,9 @@ def cmd_upload(drive, folder: str, paths: list[str]) -> int:
         name = os.path.basename(path)
         mime = mimetypes.guess_type(path)[0] or "application/octet-stream"
         media = MediaFileUpload(path, mimetype=mime, resumable=False)
-        # 同名の**サブフォルダ**を更新先に拾うと、フォルダをファイルで
-        # 上書きしようとして壊れるため、フォルダは検索から除外する
+        # Excluding folders from the search: picking up a same-named
+        # **subfolder** as the update target would try to overwrite a folder
+        # with a file and break things
         hits = drive.files().list(
             q=(f"name = '{_escape(name)}' and '{fid}' in parents "
                f"and mimeType != '{FOLDER_MIME}' "
@@ -133,8 +137,8 @@ def cmd_upload(drive, folder: str, paths: list[str]) -> int:
             supportsAllDrives=True, includeItemsFromAllDrives=True,
         ).execute().get("files", [])
         if len(hits) > 1:
-            # どれを更新すべきか決められないまま update すると別ファイルを
-            # 上書きしかねない。ここで止めて整理を促す
+            # Updating without being able to decide which one to target risks
+            # overwriting the wrong file. Stop here and ask the user to clean up.
             print(t("  error: {n} files named '{name}' exist in the folder; "
                     "cannot decide which one to update. Remove the duplicates "
                     "or update the file by its ID.", n=len(hits), name=name),

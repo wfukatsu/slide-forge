@@ -1,9 +1,11 @@
-# 図解を描く（diagrams.py と Canvas ファミリー）
+*[日本語](diagrams.ja.md)*
+# Drawing Diagrams (diagrams.py and the Canvas family)
 
-`scripts/diagrams.py` の `Canvas` と、そこに混ざる各ファミリー（charts / illustrations /
-patterns / icons / cloud_icons / images / code_block）の使い方・作図規約・自己点検。
-テンプレートの `colors` から配色を組み立てるため、テーマから外れない。座標はインチ、
-複合部品の戻り値は描画領域の下端 y。
+Usage, drawing conventions, and self-checks for `Canvas` in `scripts/diagrams.py`
+and the families mixed into it (charts / illustrations / patterns / icons /
+cloud_icons / images / code_block). Colors are built from the template's
+`colors`, so diagrams never stray from the theme. Coordinates are in inches; the
+return value of a composite part is the bottom y of the drawn area.
 
 ```python
 from diagrams import Canvas, lighten
@@ -17,17 +19,18 @@ d.metric(8.0, 3.6, 1.4, 1.0, "22x", "工数削減", color=d.P.success)          
 d.box(...) / d.solid(...) / d.label(...) / d.band(...) / d.arrow(...)       # 基本部品
 ```
 
-9 つの手段（構造図・表グラフ・イメージ図・フレームワーク図・イベント案内・アイコン・
-クラウドアイコン・画像・コードブロック）はすべて同じ `Canvas` のメソッドなので、
-1 枚のスライドに混ぜて使える。
-ファミリー別の詳細は `references/charts.md` / `references/patterns.md` /
+There are 9 approaches (structural diagrams, tables/charts, illustration
+diagrams, framework diagrams, event announcements, icons, cloud icons, images,
+code blocks), and all of them are just methods on the same `Canvas`, so they can
+be mixed on a single slide.
+For details per family, see `references/charts.md` / `references/patterns.md` /
 `references/events.md` / `references/images.md` / `references/icons.md` /
-`references/cloud-icons.md` / `references/code-blocks.md`、実例は
-`examples/charts-demo.json` / `examples/patterns-demo.json` /
+`references/cloud-icons.md` / `references/code-blocks.md`; for working examples,
+see `examples/charts-demo.json` / `examples/patterns-demo.json` /
 `examples/event-announcement.json` / `examples/illustration-gallery.json` /
-`examples/icon-gallery.json` / `examples/cloud-architecture.json`。
+`examples/icon-gallery.json` / `examples/cloud-architecture.json`.
 
-## イメージ図・アイコン・画像
+## Illustration diagrams, icons, images
 
 ```python
 d.icon_flow(0.5, 1.3, 9.0, [("person", "利用者"), ("server", "API"),
@@ -40,26 +43,30 @@ d.image(0.6, 1.1, 4.2, 2.6, "assets/shot.png", fit="contain", caption="管理画
 d.ai_image(5.2, 1.1, 4.2, 2.6, "夜間に自動でビルドが回っている様子")
 ```
 
-ピクトグラムは 30 種（`person` `server` `database` `cloud` `lock` `shield` `bot` …）。
-比喩図は `pyramid` / `funnel` / `venn` / `iceberg` / `balance` / `steps` / `layers` /
-`hub` / `matrix` / `before_after` / `comparison` / `journey` / `timeline`。
-アカウントグラフ（`influence_graph` / `outcome_tree`）は
-[account-graphs.md](account-graphs.md) を参照。
+There are 30 pictograms (`person` `server` `database` `cloud` `lock` `shield`
+`bot` …). The metaphor diagrams are `pyramid` / `funnel` / `venn` / `iceberg` /
+`balance` / `steps` / `layers` / `hub` / `matrix` / `before_after` /
+`comparison` / `journey` / `timeline`.
+For account graphs (`influence_graph` / `outcome_tree`), see
+[account-graphs.md](account-graphs.md).
 
-ブランドのアイコンは `assets/scalar/pictograms/` に 62 種（`evidence-chain` `data-bank`
-`public-key` `interview` `consent` …）。**「情報銀行」「証拠チェーン」「内定」の
-ような業務語彙は `illustrations` では描けないので、こちらを使う。** 名前は slug でも
-日本語名でも引ける。素材は単色なので、既定でテンプレートの主色に染まる。
+Brand icons are in `assets/scalar/pictograms/`, 62 of them (`evidence-chain`
+`data-bank` `public-key` `interview` `consent` …). **Business vocabulary like
+"data bank," "evidence chain," or "job offer" can't be drawn with
+`illustrations`, so use this instead.** Names can be looked up by slug or by
+their Japanese name. The assets are single-color, so by default they're tinted
+to the template's primary color.
 
 ```bash
 .venv/bin/python scripts/icons.py --list          # 62 種を一覧
 .venv/bin/python scripts/icons.py --search 情報銀行 # 日本語名・英語名・タグで探す
 ```
 
-クラウドサービスのアイコン（AWS / Google Cloud / Azure の公式 1,757 種）は
-`cloud_icon` 系。**名前は推測せず必ず検索して確かめる**（ファイル名は
-`Arch_Amazon-EC2_64.svg` のような形で、勘で書くと必ず外れる）。
-**色の変更・回転・反転は各社の利用条件で禁止**なので、引数自体を持たせていない。
+Cloud service icons (1,757 official icons across AWS / Google Cloud / Azure) are
+the `cloud_icon` family. **Never guess the name — always search and confirm it**
+(filenames look like `Arch_Amazon-EC2_64.svg`, and guessing is always wrong).
+**Changing color, rotating, or flipping is prohibited by each vendor's terms of
+use**, so the API doesn't even expose those arguments.
 
 ```bash
 .venv/bin/python scripts/cloud_icons.py --search s3            # 別名でも引ける
@@ -71,16 +78,19 @@ d.cloud_zone(0.45, 1.05, 9.1, 2.5, vendor="aws", title="AWS  ap-northeast-1")
 d.cloud_icon_row(1.0, 1.9, 8.0, [("aws:rds", "RDS"), ("aws:simple-storage-service", "S3")])
 ```
 
-**迷ったら `illustrations`。** AI 生成は表現力が高い代わりに、課金済みの
-`GEMINI_API_KEY` が要る（画像モデルは無料枠のクォータが 0）。図形で描くほうは
-オフラインで動き、テンプレートの配色に必ず従い、何度作り直しても同じ絵になる。
+**When unsure, use `illustrations`.** AI generation is more expressive but
+requires a paid `GEMINI_API_KEY` (the image model has zero free-tier quota).
+Shape-based drawing works offline, always follows the template's colors, and
+produces the same result no matter how many times you regenerate it.
 
-**回転した図形に文字を入れてはいけない。** 台形などを 180 度回して使うとき、
-`text=` を渡すと文字も一緒に逆さまになる。図形は `text` 無しで描き、`label()` を
-重ねること（`shape()` は 0/90/270 度以外の回転に文字を入れると警告する）。
+**Never put text on a rotated shape.** When using a trapezoid rotated 180
+degrees, for example, passing `text=` also flips the text upside down. Draw the
+shape without `text` and overlay a `label()` instead (`shape()` warns if you
+pass text with a rotation other than 0/90/270 degrees).
 
-デッキ仕様（JSON）からは `figures` で使える。`--dry-run` は API を呼ばずに
-図を座標へ展開して検査する（`--strict` を併用すると警告 1 件でもエラー終了）。
+From a deck spec (JSON), these are used via `figures`. `--dry-run` expands the
+figures to coordinates and checks them without calling the API (combine with
+`--strict` to exit with an error on even a single warning).
 
 ```json
 { "layout": "TITLE_ONLY_PROPOSAL", "title": "…",
@@ -92,11 +102,13 @@ d.cloud_icon_row(1.0, 1.9, 8.0, [("aws:rds", "RDS"), ("aws:simple-storage-servic
   ] }
 ```
 
-## 表・グラフ・コードブロック
+## Tables, charts, and code blocks
 
-表と本格的なグラフは `charts`（同じ Canvas に生えている。`references/charts.md`）。
-表はネイティブテーブルなので生成後にユーザーが編集できる。棒・折れ線は基線ゼロ・
-系列色固定（色覚検証済みの並び）・数値の直接ラベルという規約込みで描かれる。
+Tables and full-fledged charts are in `charts` (mixed into the same Canvas —
+see `references/charts.md`). Tables are native Slides tables, so users can edit
+them after generation. Bar and line charts are drawn with a zero baseline,
+fixed series colors (a colorblind-verified order), and direct value labels as
+a matter of convention.
 
 ```python
 d.table(0.5, 1.2, 9.0, ["項目", "従来", "提案"], [["構築期間", "6ヶ月", "2ヶ月"]])
@@ -108,18 +120,21 @@ d.linechart(0.5, 1.2, 9.0, 3.2, ["1月", "2月", "3月"],
 d.pie(0.7, 1.3, 2.8, [("移行済み", 62), ("移行中", 23), ("未着手", 15)])
 ```
 
-コードサンプルは `code_block`（`references/code-blocks.md`）。等幅 + ハイライト付き、
-角は直角。高さは実効行高（`行数 × size × ls × 1.45 / 72 + 0.14in`）で見積もる。
+Code samples use `code_block` (`references/code-blocks.md`): monospace with
+highlighting, square corners. Estimate the height from the effective line
+height (`lines × size × ls × 1.45 / 72 + 0.14in`).
 
 ```python
 d.code_block(0.5, 1.0, 6.1, 2.9, code, lang="java")  # java/graphql/json/bash
 ```
 
-## 図形を結ぶ線
+## Lines connecting shapes
 
-**図形どうしを結ぶ線は座標で書かない。** `createLine` は座標をそのまま受け取るだけで
-図形との位置関係を検証しないため、端点がずれていても API はエラーにしない。
-「矢印が図形から浮いている / 枠に食い込んでいる」は生成してサムネイルを見るまで気づけない。
+**Never write a line connecting two shapes using raw coordinates.** `createLine`
+just takes coordinates as given without validating them against any shape, so
+the API won't error even if the endpoints are off. "The arrow floats away from
+the shape / digs into its border" is something you can only notice by
+generating the deck and looking at the thumbnail.
 
 ```python
 a = d.shape(1.0, 1.0, 1.6, 0.6, text="A")    # shape() 系は objectId を返す
@@ -132,20 +147,23 @@ d.edge_point(a, (tx, ty), gap=0.04)          # 辺の一点だけ欲しいとき
 d.line(..., free=True)           # 軸・目盛り・引き出し線など、接しないのが正しい線
 ```
 
-| 用途 | 使うもの |
+| Use case | What to use |
 |---|---|
-| 図形 A → B。動かしても追従してほしい | `d.connect(a, b)` |
-| 図形 A → B。辺にぴたりと合わせたい | `d.link(a, b)` |
-| 経路の折れ点・軸・引き出し線 | `d.line(..., free=True)` |
+| Shape A → B, should follow if moved | `d.connect(a, b)` |
+| Shape A → B, should align exactly to the edge | `d.link(a, b)` |
+| Waypoints, axes, leader lines | `d.line(..., free=True)` |
 
-`connect()` の接続サイトは位置関係から自動で決まる（0=上 1=左 2=下 3=右）。
-`audit_connectors()` は、どの図形からも 0.22in 以上離れた端点と、図形の内部に
-0.06in 以上食い込んだ端点を返す。ゾーンのような大きな容器とテキストボックスは
-判定から外れる（矢印が容器の中を通るのは正常なため）。**生成前に必ず呼ぶこと。**
+`connect()`'s connection sites are determined automatically from the relative
+position (0=top, 1=left, 2=bottom, 3=right). `audit_connectors()` returns
+endpoints that are more than 0.22in away from any shape, and endpoints that are
+embedded more than 0.06in inside a shape. Large containers like zones and text
+boxes are excluded from this check (an arrow passing through a container is
+normal). **Always call this before generating.**
 
-## 自己点検（audit 4 種・生成前に必ず呼ぶ）
+## Self-checks (4 audits, always call before generating)
 
-どれも座標だけで分かる不具合で、放っておくとサムネイルを見るまで気づけない。
+All of these catch defects detectable from coordinates alone, which otherwise go
+unnoticed until you look at the thumbnail.
 
 ```python
 for msg in (d.audit_bounds() + d.audit_connectors()
@@ -153,42 +171,50 @@ for msg in (d.audit_bounds() + d.audit_connectors()
     print(msg)
 ```
 
-| 検査 | 拾うもの |
+| Check | Catches |
 |---|---|
-| `audit_bounds()` | スライドの外へ出た図形・線の端点 |
-| `audit_connectors()` | 端点がどの図形にも接していない／図形に埋まっている矢印 |
-| `audit_overlaps()` | 後から描いた図形に隠れた文字、ラベルどうしの衝突、**文字の上を走る線** |
-| `audit_text_fit()` | 枠からはみ出して切れる文字と、最終行に 1 文字だけ残る折り返し |
+| `audit_bounds()` | Shapes or line endpoints that fall outside the slide |
+| `audit_connectors()` | Arrows whose endpoints don't touch any shape, or are buried inside one |
+| `audit_overlaps()` | Text hidden by a later shape, colliding labels, and **lines running across text** |
+| `audit_text_fit()` | Text that overflows and is clipped by its box, and wrapped text leaving a single character on the last line |
 
-`audit_bounds()` は複合パーツで効く。`pyramid` や `funnel` のように与えられた枠から
-自分で座標を計算する部品は、**枠が正しくても中身が外へ突き抜ける**ことがあり、
-図形単位で見ないと拾えない。
+`audit_bounds()` matters for composite parts. Components like `pyramid` or
+`funnel`, which compute their own coordinates from a given frame, can have the
+frame be correct while the contents poke outside it — something only caught by
+checking per-shape.
 
-`audit_overlaps()` は Slides の描画順（後の要素が上）を使う。バナーやゾーンを
-直前のブロックに重ねてしまう典型的な事故がこれで落ちる。入れ子（ゾーンの中に
-中身を置く）は正常なので報告しない。
+`audit_overlaps()` uses the Slides draw order (later elements are on top). This
+catches the classic mistake of a banner or zone overlapping the block placed
+right before it. Nesting (placing contents inside a zone) is normal, so it's
+not reported.
 
-**線と文字の重なりも見る。** 矢印・コネクタ・グリッド線が字の上を走っていないかを、
-線分と「字が実際に載る矩形」の交差長で判定する（`LINE_CROSS_MIN` = 0.06in を
-超えたら報告）。矢印の先が字の縁を掠るのは正常なので落ちない。
+**It also checks overlap between lines and text.** Whether arrows, connectors,
+or grid lines run across a character is judged by the crossing length between
+the line segment and "the box the character actually occupies" (reported once
+it exceeds `LINE_CROSS_MIN` = 0.06in). An arrowhead grazing the edge of a
+character is normal and isn't flagged.
 
-ここでも描画順を見ている。**線を引いてから上に塗り図形を被せる**描き方
-（`hub()` は中心から各ノードの中心へ線を伸ばし、後からノードの箱を置く）では
-線は塗りに隠れて見えないので、報告しない。線より後に描かれた不透明な図形が
-その文字を覆っているかどうかで判断する。
+Draw order matters here too. **Drawing a line first and then covering it with a
+filled shape** (as `hub()` does — it draws lines from the center to each node's
+center, then places the node boxes afterward) means the line is hidden under the
+fill and isn't reported. The judgment is based on whether an opaque shape drawn
+after the line covers that text.
 
-抑制するのは、その塗り図形が**文字の矩形を完全に覆っている**ときだけ。部分的にしか
-覆っていない場合は報告する。見落とすより、判断を人に戻すほうを選んでいる。
+Suppression only happens when the fill shape **fully covers** the text's
+bounding box. Partial coverage is still reported — the design favors catching
+too much over missing something, and lets a human make the final call.
 
-## 配色とレイアウトの規約
+## Color and layout conventions
 
-`d.P` はテンプレート由来のパレット（`primary` / `success` / `danger` / `info` / `muted` /
-`surface` / `border` / `text`。ほかに `primaryDark` / `warning` / `surfaceAlt` / `white`
-も持つ）。`readable_on()` で背景に応じた文字色を自動で選ぶ。
+`d.P` is the template-derived palette (`primary` / `success` / `danger` / `info`
+/ `muted` / `surface` / `border` / `text`, plus `primaryDark` / `warning` /
+`surfaceAlt` / `white`). `readable_on()` automatically picks a legible text
+color for a given background.
 
-**縦位置は前のブロックの戻り値で決めること。** `cards` / `flow` / `hbars` / `metric` は
-描画領域の下端 y を返すので、次のブロックはその値を起点に置く。手で `2.7` のような
-値を書くと、内容が増えたときに下のブロックへ潜り込む。
+**Decide vertical position from the previous block's return value.** `cards` /
+`flow` / `hbars` / `metric` return the bottom y of the drawn area, so place the
+next block starting from that value. Hardcoding a value like `2.7` causes the
+next block to get swallowed as content grows.
 
 ```python
 b = d.cards(0.5, 0.9, 9.0, 1.0, items)     # b は下端 y
@@ -196,25 +222,31 @@ b = d.hbars(0.5, b + 0.2, 9.0, rows)       # 前のブロックの下から置�
 d.label(0.5, b + 0.2, 9.0, 0.3, "まとめ")
 ```
 
-下端が本文領域（`scalar-2026` の `TITLE_ONLY` なら y = 5.02 まで）に収まるかは
-最後に確認する。
+Finally, confirm the bottom edge fits within the body area (for `scalar-2026`'s
+`TITLE_ONLY`, that's y = 5.02).
 
-**枠の中の文字は折り返しを見越して改行位置まで書く。** カード見出しが2行になると本文に食い込む。
-目安は「幅[in] × 72 ÷ フォントサイズ」文字（全角1・半角0.5）。`audit_text_fit()` が
-この計算で溢れを拾う。
+**Text inside a box should be written with line breaks anticipating wrapping.**
+A card heading that wraps to 2 lines will crowd into the body text. Rule of
+thumb: "width[in] × 72 ÷ font size" characters (1 for full-width, 0.5 for
+half-width). `audit_text_fit()` catches overflow using this same calculation.
 
-**箱の高さに対して固定比率で中身を割り当てない。** 「見出しに 0.7in」「数値に 52%」の
-ような配分は、箱が小さいと中身が潰れて文字が切れる。自作の部品は与えられた領域に
-収まるよう自分で縮ませる（`metric` は枠高からフォントサイズを算出している）。
+**Don't allocate a box's contents by a fixed ratio of its height.** Assignments
+like "0.7in for the heading" or "52% for the value" cause content to get
+crushed and text to be clipped when the box is small. A custom component should
+shrink its own contents to fit the given area (`metric` derives its font size
+from the box height).
 
-**直線のアクセントバーを重ねる矩形は角を丸めない。** 上端・左端にバー（細い
-`RECTANGLE`）を敷くカードは、本体も `RECTANGLE` で描く。角丸の縁と直線バーの端が
-噛み合わず、不揃いに見える（`cards()` はこの規約で直角になっている）。バーを持たない
-単独のチップ・帯は角丸のままでよい。
+**A rectangle stacked with a straight accent bar shouldn't have rounded
+corners.** For a card with a bar (a thin `RECTANGLE`) laid along its top or
+left edge, the body must also be a `RECTANGLE`. A rounded edge and a straight
+bar's end don't align cleanly and look mismatched (`cards()` is square-cornered
+for exactly this reason). A standalone chip or band without a bar can stay
+rounded.
 
-## レイアウトに収まらない内容を足す場合
+## Adding content that doesn't fit the layout
 
-プレースホルダだけで足りないときは、`build_deck.py` をライブラリとして使い、返ってきた `slideId` に対して図形を足す:
+When placeholders alone aren't enough, use `build_deck.py` as a library and add
+shapes to the returned `slideId`:
 
 ```python
 import sys; sys.path.insert(0, "scripts")
@@ -229,5 +261,6 @@ deck.add_page_numbers()
 print(deck.commit())
 ```
 
-座標は `template.json` の `layouts.<KEY>.elements` の `contentTop` 相当（`body` の y）と
-フッター位置の間に収める。色は `colors` のキーを使い、テンプレートの配色から外れないようにする。
+Keep coordinates between the equivalent of `contentTop` (the `body` y) in
+`layouts.<KEY>.elements` of `template.json` and the footer position. Use the
+`colors` keys so the colors stay within the template's palette.

@@ -13,6 +13,8 @@ description: >-
   "use this master", or when given a Google Slides template URL.
 ---
 
+*[日本語](SKILL.ja.md)*
+
 # Template-Driven Google Slides Generation
 
 ## Important
@@ -23,7 +25,7 @@ description: >-
   - Designing from scratch without a template → `google-slides` skill (composer, infographics, code-first `deckkit` decks)
   - Scalar company/product/feature decks → `scalar-product-slides` skill (a dedicated workflow layered on top of this one)
   - Customer-specific Scalar solution proposals (challenge-driven) → `scalar-proposal-slides` skill (same layering)
-  - Authoring PPTX files from scratch → `document-skills:pptx`. Exporting a deck generated here to `.pptx` (delivery format) → `pptx-export` skill, chosen via the 出力形式 intake question
+  - Authoring PPTX files from scratch → `document-skills:pptx`. Exporting a deck generated here to `.pptx` (delivery format) → `pptx-export` skill, chosen via the output-format intake question
   - Changing the template's own design → **the Slides API does not support creating or editing masters/layouts.** Do it in the Google Slides UI.
 - Python 3.10+ is required. `.venv` is a **symlink** to `~/.claude/venvs/gslides`, shared with the pre-consolidation skills. Changing dependencies affects everything that uses this venv.
 - Credentials are discovered in this order: `$GSLIDES_CONFIG_DIR` → `config/` in the repo (canonical) → `~/.claude/skills/google-slides/config/` (legacy fallback). If OAuth was already set up for the old skills, it keeps working unchanged.
@@ -54,7 +56,7 @@ description: >-
 | Fan-out generation of large decks (sub-agents) | `references/parallel-generation.md` |
 | Validation gates (offline check + thumbnail QA) | `references/validation.md` |
 | Generate an image with AI | `.venv/bin/python scripts/images.py --prompt "…" --style flat_vector --out out/x.png` |
-| Search icons | `.venv/bin/python scripts/icons.py --list` / `--search 情報銀行` |
+| Search icons | `.venv/bin/python scripts/icons.py --list` / `--search 情報銀行` (example: "information bank") |
 | Fetch cloud icons (**required once, first time**) | `.venv/bin/python scripts/fetch_cloud_icons.py` |
 | Search cloud icons | `.venv/bin/python scripts/cloud_icons.py --search s3` / `--list --vendor aws` |
 | Catalog of every component (8 families, 45 types, one deck; live spec examples) | `examples/design-catalog.json` |
@@ -312,8 +314,8 @@ sub-heading from the items hanging under it. Give the structure to the reader.
 - At most **three** headings on one slide. Needing more means the slide should
   be split, or the content belongs in a table
 - One keyword inside a sentence → `**…**`
-- A pointer to another slide or deck → `[付録 A-2](#12)` for a slide in this deck
-  (1-based), `[付録デッキ](https://…)` for another deck. These two are the only
+- A pointer to another slide or deck → `[Appendix A-2](#12)` for a slide in this deck
+  (1-based), `[Appendix deck](https://…)` for another deck. These two are the only
   inline markup; the rest of Markdown is not supported
 - Do not emphasize more than a quarter of the body. Emphasis that is everywhere
   is emphasis nowhere

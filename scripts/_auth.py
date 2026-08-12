@@ -62,7 +62,7 @@ def _find(filename: str) -> str | None:
 
 
 def get_credentials():
-    """OAuth 認証情報を返す。token が失効していれば自動リフレッシュする。"""
+    """Return OAuth credentials, automatically refreshing the token if it has expired."""
     creds_path = _find("credentials.json")
     if not creds_path:
         raise SystemExit(t(
@@ -83,14 +83,14 @@ def get_credentials():
             try:
                 creds.refresh(Request())
             except RefreshError:
-                # トークンが失効・取り消し済み（invalid_grant）。再認証に落とす
+                # Token expired or revoked (invalid_grant); fall back to re-authentication
                 print(t("Token expired; re-authenticating..."), file=sys.stderr)
                 creds = None
         if not creds or not creds.valid:
             print(t("Opening the browser for OAuth consent..."), file=sys.stderr)
             flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
             creds = flow.run_local_server(port=0)
-        # リフレッシュトークンを含むため所有者のみ読み書き可で保存する
+        # Save with owner-only read/write permissions since it contains the refresh token
         fd = os.open(token_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         with os.fdopen(fd, "w") as f:
             f.write(creds.to_json())
@@ -98,7 +98,7 @@ def get_credentials():
 
 
 def services(creds=None):
-    """(slides, drive) のサービスクライアントを返す。"""
+    """Return (slides, drive) service clients."""
     creds = creds or get_credentials()
     return (
         build("slides", "v1", credentials=creds),
@@ -106,7 +106,7 @@ def services(creds=None):
     )
 
 
-# ---------- 単位・色 ----------
+# ---------- Units & colors ----------
 
 def inches(v: float) -> int:
     return int(round(v * EMU_PER_INCH))
@@ -117,9 +117,10 @@ def to_inches(emu: float) -> float:
 
 
 def rgb_to_hex(c: dict) -> str:
-    """{"red":0.1,"green":0.2,"blue":0.3} 形式を #RRGGBB に変換する。
+    """Convert {"red":0.1,"green":0.2,"blue":0.3} format to #RRGGBB.
 
-    Slides API は値が 0 のチャンネルをキーごと省略するため .get(k, 0) が必須。
+    The Slides API omits a channel key entirely when its value is 0, so
+    .get(k, 0) is required.
     """
     return "#%02X%02X%02X" % tuple(
         round(c.get(k, 0) * 255) for k in ("red", "green", "blue")
@@ -137,13 +138,13 @@ def hex_to_rgb(hex_color: str) -> dict:
     }
 
 
-# ---------- ID 抽出 ----------
+# ---------- ID extraction ----------
 
 _PRES_ID_RE = re.compile(r"/presentations?/d/([a-zA-Z0-9_-]+)")
 
 
 def presentation_id(url_or_id: str) -> str:
-    """Google Slides の URL からプレゼンテーション ID を取り出す。ID ならそのまま返す。"""
+    """Extract the presentation ID from a Google Slides URL. If already an ID, return it as is."""
     m = _PRES_ID_RE.search(url_or_id)
     if m:
         return m.group(1)
@@ -154,11 +155,12 @@ def presentation_id(url_or_id: str) -> str:
 
 
 def presentation_url(url_or_id: str) -> str:
-    """プレゼンテーションの URL を、開けば必ず同じところへ行く形に揃える。
+    """Normalize a presentation reference to a URL that always opens the right place.
 
-    presentation_id() の逆。URL でも ID でも受け取れる引数をそのまま記録すると、
-    渡され方しだいで URL だったり ID だったりが混ざる。人に見せる欄
-    （template.json の sourceUrl など）には、常に開ける形で入れる。
+    Inverse of presentation_id(). If an argument that accepts either a URL or an
+    ID is recorded as-is, whether it ends up as a URL or an ID depends on how it
+    was passed in, and the two get mixed. Fields shown to people (e.g.
+    template.json's sourceUrl) should always store an openable URL.
     """
     return f"https://docs.google.com/presentation/d/{presentation_id(url_or_id)}/edit"
 
@@ -167,7 +169,7 @@ _FOLDER_ID_RE = re.compile(r"/folders/([a-zA-Z0-9_-]+)")
 
 
 def folder_id(url_or_id: str | None) -> str | None:
-    """Google Drive フォルダの URL から ID を取り出す。None はそのまま返す。"""
+    """Extract the ID from a Google Drive folder URL. Passes through None unchanged."""
     if not url_or_id:
         return None
     m = _FOLDER_ID_RE.search(url_or_id)

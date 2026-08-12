@@ -1,16 +1,18 @@
-# Basic コンポーザー仕様
+*[日本語](basic.ja.md)*
 
-basic カテゴリ（6タイプ）のコンポーザー関数仕様。
+# Basic Composer Specification
+
+Composer function specification for the basic category (6 types).
 
 ---
 
 ## compose_title
 
-**マスター**: COVER | **パターン**: 独自
+**Master**: COVER | **Pattern**: Custom
 
-表紙スライド。primary色背景にタイトル・サブタイトル・発表者情報を配置。
+Cover slide. Places the title, subtitle, and presenter information on a primary-colored background.
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────┐
@@ -26,7 +28,7 @@ basic カテゴリ（6タイプ）のコンポーザー関数仕様。
 └──────────────────────────────────────┘
 ```
 
-### コード
+### Code
 
 ```python
 def compose_title(sb, content, theme, slide_id):
@@ -61,11 +63,11 @@ def compose_title(sb, content, theme, slide_id):
 
 ## compose_agenda
 
-**マスター**: SECTION | **パターン**: Pattern 7 (Icon+Text Row) 応用
+**Master**: SECTION | **Pattern**: Pattern 7 (Icon+Text Row) applied
 
-目次スライド。番号付きリストでセクション構成を表示。currentIndex 指定時はハイライト。
+Table-of-contents slide. Displays the section structure as a numbered list. When currentIndex is specified, that item is highlighted.
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────┐
@@ -85,7 +87,7 @@ def compose_title(sb, content, theme, slide_id):
 └──────────────────────────────────────┘
 ```
 
-### コード
+### Code
 
 ```python
 def compose_agenda(sb, content, theme, slide_id):
@@ -130,11 +132,11 @@ def compose_agenda(sb, content, theme, slide_id):
 
 ## compose_section_divider
 
-**マスター**: SECTION | **パターン**: 独自
+**Master**: SECTION | **Pattern**: Custom
 
-セクション区切り。セクション番号（オプション）とタイトルを中央配置。
+Section divider. Centers the section number (optional) and title.
 
-### コード
+### Code
 
 ```python
 def compose_section_divider(sb, content, theme, slide_id):
@@ -167,11 +169,11 @@ def compose_section_divider(sb, content, theme, slide_id):
 
 ## compose_summary
 
-**マスター**: HIGHLIGHT | **パターン**: Pattern 8 (Stat Card) + テキスト
+**Master**: HIGHLIGHT | **Pattern**: Pattern 8 (Stat Card) + text
 
-エグゼクティブサマリー / 結論。暗色背景に白テキストでキーポイントを強調。
+Executive summary / conclusion. Emphasizes key points with white text on a dark background.
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────┐
@@ -192,7 +194,7 @@ def compose_section_divider(sb, content, theme, slide_id):
 └──────────────────────────────────────┘
 ```
 
-### コード
+### Code
 
 ```python
 def compose_summary(sb, content, theme, slide_id):
@@ -244,22 +246,22 @@ def compose_summary(sb, content, theme, slide_id):
 
 ## compose_closing
 
-**マスター**: CLOSING | **パターン**: 独自
+**Master**: CLOSING | **Pattern**: Custom
 
-締めスライド。ロゴと連絡先情報を中央配置。
+Closing slide. Centers the logo and contact information.
 
-### 配置制約
+### Placement constraints
 
-CLOSING マスターには下部に装飾バンド（画像）が配置される（`theme.json` の `layouts.CLOSING.decorative.bottomBand` 参照）。**連絡先情報やテキスト要素は装飾バンドの上端（y 座標）より上に配置すること。**
+The CLOSING master places a decorative band (image) at the bottom. **Contact information and text elements must be placed above the top edge (y coordinate) of the decorative band.**
 
-| 要素 | 推奨 Y 位置 | 注意 |
-|------|-----------|------|
-| 「ご清聴ありがとうございました」等 | 装飾バンド y - 0.4" 以上 | バンドに重ならないこと |
-| 連絡先情報 | 装飾バンド y - 0.2" 以上 | テキスト最下端がバンドに隠れないこと |
+| Element | Recommended Y position | Note |
+|------|-----------|-----|
+| "Thank you for your attention" etc. | decorative band y − 0.4" or more | Must not overlap the band |
+| Contact information | decorative band y − 0.2" or more | The bottom edge of the text must not be hidden by the band |
 
-> Scalar テーマの場合、`bottomBand.y = 3.667"` のため、連絡先テキストは y + h < 3.65" に収まるよう調整する。
+> For the Scalar theme, `bottomBand.y = 3.667"`, so contact text should be adjusted to fit within y + h < 3.65".
 
-### コード
+### Code
 
 ```python
 def compose_closing(sb, content, theme, slide_id):
@@ -293,11 +295,11 @@ def compose_closing(sb, content, theme, slide_id):
 
 ## compose_appendix
 
-**マスター**: BLANK | **パターン**: 独自
+**Master**: BLANK | **Pattern**: Custom
 
-付録表紙。シンプルに「Appendix」タイトルを中央表示。
+Appendix cover. Simply displays the "Appendix" title centered.
 
-### コード
+### Code
 
 ```python
 def compose_appendix(sb, content, theme, slide_id):

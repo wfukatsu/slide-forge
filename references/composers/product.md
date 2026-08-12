@@ -1,26 +1,28 @@
-# プロダクトカテゴリ コンポーザー仕様
+*[日本語](product.ja.md)*
 
-> product カテゴリ 7 タイプのレンダリング仕様。
-> 各コンポーザーはマスター関数で共通要素を配置した後、タイプ固有のコンテンツを追加する。
+# Composer Specification: product Category
 
-### 規約
+> Rendering specification for the 7 types in the product category.
+> Each composer places the shared elements via its master function, then adds type-specific content.
 
-- **`C`** — `templates/<theme>/theme.json` の `colors` セクションから展開した色定数クラス
-- **`L`** — `templates/<theme>/theme.json` の `layouts` セクションから展開したレイアウト定数クラス
-- **`sb`** — `SlideBuilder` インスタンス
-- **ページサイズ** — 10.0" x 5.625"（Google Slides 16:9）
-- **CONTENT マスター** — title: (0.323, 0.303, 9.354, 0.437), body: y=0.787 ~ y=5.208 (h=4.421")
+### Conventions
+
+- **`C`** — color constant class expanded from the `colors` section of `templates/<theme>/theme.json`
+- **`L`** — layout constant class expanded from the `layouts` section of `templates/<theme>/theme.json`
+- **`sb`** — `SlideBuilder` instance
+- **Page size** — 10.0" x 5.625" (Google Slides 16:9)
+- **CONTENT master** — title: (0.323, 0.303, 9.354, 0.437), body: y=0.787 ~ y=5.208 (h=4.421")
 
 ---
 
-## 1. product_overview — 製品全体像・価値提案
+## 1. product_overview — Product overview / value proposition
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Pattern 7 (Icon+Text Row) + Pattern 8 (Stat Card)
+- **Master**: CONTENT (with footer)
+- **Pattern**: Pattern 7 (Icon+Text Row) + Pattern 8 (Stat Card)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -40,18 +42,18 @@
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| ロゴ | 0.500 | 0.900 | 1.200 | 0.600 |
-| 製品名 | 1.850 | 0.900 | 7.500 | 0.350 |
-| tagline | 1.850 | 1.280 | 7.500 | 0.280 |
-| 機能行 | 0.500 | 2.000 | — | — |
-| フッター | — | 5.208 | — | — |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Logo | 0.500 | 0.900 | 1.200 | 0.600 |
+| Product name | 1.850 | 0.900 | 7.500 | 0.350 |
+| Tagline | 1.850 | 1.280 | 7.500 | 0.280 |
+| Feature row | 0.500 | 2.000 | — | — |
+| Footer | — | 5.208 | — | — |
 
-### コード
+### Code
 
 ```python
 def compose_product_overview(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -105,14 +107,14 @@ def compose_product_overview(sb, slide_id, content, theme, page_num, total_pages
 
 ---
 
-## 2. architecture — システムアーキテクチャ図
+## 2. architecture — System architecture diagram
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Pattern 10/11 (Flow / Decision Flow)
+- **Master**: CONTENT (with footer)
+- **Pattern**: Pattern 10/11 (Flow / Decision Flow)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -138,27 +140,27 @@ def compose_product_overview(sb, slide_id, content, theme, page_num, total_pages
 └──────────────────────────────────────────┘
 ```
 
-### カラーコーディング
+### Color coding
 
-| コンポーネントタイプ | 色 | 用途 |
+| Component type | Color | Usage |
 |---------------------|-----|------|
-| `scalar` | `C.primary` (Blue) | Scalar 製品コンポーネント |
-| `external` | `C.textMuted` (Gray) | 外部・既存コンポーネント |
-| `client` | `C.warning` (Orange) | ユーザー・クライアントアプリ |
-| 正常フロー (solid) | `C.success` (Green) | 正常データフロー |
-| エラーパス (solid) | `C.error` (Red) | 障害・エラーパス |
-| オプション境界 (dashed) | `C.border` | 任意の境界線 |
+| `scalar` | `C.primary` (Blue) | Scalar product components |
+| `external` | `C.textMuted` (Gray) | External / existing components |
+| `client` | `C.warning` (Orange) | User / client applications |
+| Normal flow (solid) | `C.success` (Green) | Normal data flow |
+| Error path (solid) | `C.error` (Red) | Failure / error path |
+| Optional boundary (dashed) | `C.border` | Optional boundary line |
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| body 領域 | 0.500 | 0.787 | 9.000 | 4.421 |
-| レイヤーラベル幅 | — | — | 9.000 | 0.250 |
-| コンポーネントボックス | — | — | 1.400 | 0.500 |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Body area | 0.500 | 0.787 | 9.000 | 4.421 |
+| Layer label width | — | — | 9.000 | 0.250 |
+| Component box | — | — | 1.400 | 0.500 |
 
-### コード
+### Code
 
 ```python
 def compose_architecture(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -273,14 +275,14 @@ def compose_architecture(sb, slide_id, content, theme, page_num, total_pages=Non
 
 ---
 
-## 3. feature_matrix — 機能比較マトリクス
+## 3. feature_matrix — Feature comparison matrix
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Table 拡張（チェックマーク / バツマーク付き）
+- **Master**: CONTENT (with footer)
+- **Pattern**: Table extension (with check marks / cross marks)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -299,17 +301,17 @@ def compose_architecture(sb, slide_id, content, theme, page_num, total_pages=Non
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| テーブル | 0.500 | 0.900 | 9.000 | 動的 |
-| ヘッダー行高 | — | — | — | 0.400 |
-| データ行高 | — | — | — | 0.350 |
-| 機能名列幅 | — | — | 2.500 | — |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Table | 0.500 | 0.900 | 9.000 | dynamic |
+| Header row height | — | — | — | 0.400 |
+| Data row height | — | — | — | 0.350 |
+| Feature name column width | — | — | 2.500 | — |
 
-### コード
+### Code
 
 ```python
 def compose_feature_matrix(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -403,14 +405,14 @@ def compose_feature_matrix(sb, slide_id, content, theme, page_num, total_pages=N
 
 ---
 
-## 4. feature_detail — 個別機能の詳細説明
+## 4. feature_detail — Individual feature detail
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Pattern 7 (Icon+Text Row) — 左テキスト + 右図のレイアウト
+- **Master**: CONTENT (with footer)
+- **Pattern**: Pattern 7 (Icon+Text Row) — left text + right diagram layout
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -432,19 +434,19 @@ def compose_feature_matrix(sb, slide_id, content, theme, page_num, total_pages=N
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| 左パネル | 0.500 | 0.787 | 4.200 | 4.421 |
-| 右パネル（図） | 5.000 | 1.000 | 4.500 | 3.500 |
-| 機能名 | 0.500 | 0.850 | 4.200 | 0.350 |
-| 説明テキスト | 0.500 | 1.250 | 4.200 | 0.800 |
-| メリット開始Y | — | 2.150 | 4.200 | — |
-| 技術詳細Y | — | 3.800 | 4.200 | 1.000 |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Left panel | 0.500 | 0.787 | 4.200 | 4.421 |
+| Right panel (diagram) | 5.000 | 1.000 | 4.500 | 3.500 |
+| Feature name | 0.500 | 0.850 | 4.200 | 0.350 |
+| Description text | 0.500 | 1.250 | 4.200 | 0.800 |
+| Benefit start Y | — | 2.150 | 4.200 | — |
+| Technical detail Y | — | 3.800 | 4.200 | 1.000 |
 
-### コード
+### Code
 
 ```python
 def compose_feature_detail(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -512,14 +514,14 @@ def compose_feature_detail(sb, slide_id, content, theme, page_num, total_pages=N
 
 ---
 
-## 5. tech_specs — 技術仕様・スペック一覧
+## 5. tech_specs — Technical specifications list
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Table 拡張（カテゴリごとにグルーピング）
+- **Master**: CONTENT (with footer)
+- **Pattern**: Table extension (grouped by category)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -543,18 +545,18 @@ def compose_feature_detail(sb, slide_id, content, theme, page_num, total_pages=N
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| テーブル領域 | 0.500 | 0.850 | 9.000 | 動的 |
-| カテゴリヘッダー高 | — | — | — | 0.300 |
-| データ行高 | — | — | — | 0.300 |
-| 項目名列幅 | — | — | 3.000 | — |
-| 値列幅 | — | — | 6.000 | — |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Table area | 0.500 | 0.850 | 9.000 | dynamic |
+| Category header height | — | — | — | 0.300 |
+| Data row height | — | — | — | 0.300 |
+| Item name column width | — | — | 3.000 | — |
+| Value column width | — | — | 6.000 | — |
 
-### コード
+### Code
 
 ```python
 def compose_tech_specs(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -613,14 +615,14 @@ def compose_tech_specs(sb, slide_id, content, theme, page_num, total_pages=None)
 
 ---
 
-## 6. competitive_compare — 競合比較表
+## 6. competitive_compare — Competitive comparison table
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Pattern 9 (Comparison) — 表形式の拡張版
+- **Master**: CONTENT (with footer)
+- **Pattern**: Pattern 9 (Comparison) — expanded tabular form
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -641,17 +643,17 @@ def compose_tech_specs(sb, slide_id, content, theme, page_num, total_pages=None)
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| テーブル | 0.500 | 0.900 | 9.000 | 動的 |
-| ヘッダー行高 | — | — | — | 0.400 |
-| データ行高 | — | — | — | 0.380 |
-| 軸名列幅 | — | — | 2.200 | — |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Table | 0.500 | 0.900 | 9.000 | dynamic |
+| Header row height | — | — | — | 0.400 |
+| Data row height | — | — | — | 0.380 |
+| Axis name column width | — | — | 2.200 | — |
 
-### コード
+### Code
 
 ```python
 def compose_competitive_compare(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -736,14 +738,14 @@ def compose_competitive_compare(sb, slide_id, content, theme, page_num, total_pa
 
 ---
 
-## 7. roadmap — 製品ロードマップ・タイムライン
+## 7. roadmap — Product roadmap / timeline
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Pattern 2 (H-Timeline)
+- **Master**: CONTENT (with footer)
+- **Pattern**: Pattern 2 (H-Timeline)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -765,24 +767,24 @@ def compose_competitive_compare(sb, slide_id, content, theme, page_num, total_pa
 └──────────────────────────────────────────┘
 ```
 
-### ステータスの視覚表現
+### Visual representation of status
 
-| ステータス | マーカー色 | カード背景 |
+| Status | Marker color | Card background |
 |-----------|----------|----------|
 | `completed` | `C.success` | `C.surfaceLight` |
-| `in_progress` | `C.primary` | `C.background` (白枠付き) |
-| `planned` | `C.textMuted` | `C.background` (破線枠) |
+| `in_progress` | `C.primary` | `C.background` (with white border) |
+| `planned` | `C.textMuted` | `C.background` (dashed border) |
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| タイムライン軸 | 0.700 | 2.200 | 8.600 | — |
-| カード幅 | — | — | 1.500 | 1.200 |
-| 凡例Y | — | 4.700 | — | — |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Timeline axis | 0.700 | 2.200 | 8.600 | — |
+| Card width | — | — | 1.500 | 1.200 |
+| Legend Y | — | 4.700 | — | — |
 
-### コード
+### Code
 
 ```python
 def compose_roadmap(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -881,32 +883,32 @@ def compose_roadmap(sb, slide_id, content, theme, page_num, total_pages=None):
 
 ---
 
-## 共通注意事項
+## Common notes
 
-### テキスト制約
+### Text constraints
 
-| フィールド | 日本語上限 | 英語上限 |
+| Field | Japanese limit | English limit |
 |-----------|----------|---------|
-| アクションタイトル | 50文字 | 100文字 |
-| 機能名 | 20文字 | 40文字 |
-| 箇条書き1項目 | 40文字 | 80文字 |
-| KPI値 | 簡潔（数文字） | 同左 |
-| スピーカーノート | 200文字 | 400文字 |
+| Action title | 50 characters | 100 characters |
+| Feature name | 20 characters | 40 characters |
+| Bullet item | 40 characters | 80 characters |
+| KPI value | concise (a few characters) | same |
+| Speaker notes | 200 characters | 400 characters |
 
-### カラー運用
+### Color usage
 
-- アーキテクチャ図のカラーコーディングは必ず凡例で説明すること
-- 競合比較表では自社製品列を `C.primary` でハイライト
-- ロードマップのステータスは3色（緑/青/グレー）で統一
-- 1スライド最大3色（60-30-10 ルール）。テーブル系は行ゼブラ＋ヘッダー色で3色を消費するため追加アクセントは最小限に
+- The color coding of an architecture diagram must always be explained via a legend
+- In a competitive comparison table, highlight the own-product column with `C.primary`
+- Roadmap status uses a consistent 3-color scheme (green/blue/gray)
+- Maximum 3 colors per slide (60-30-10 rule). Table-based layouts already consume 3 colors via row zebra striping + header color, so keep additional accents to a minimum
 
-### アクションタイトル例
+### Action title examples
 
-| NG（ラベル型） | OK（アクションタイトル） |
+| NG (label-style) | OK (action title) |
 |:-------------:|:--------------------:|
-| 「製品概要」 | 「ScalarDB は異種DB間のACIDトランザクションを統一するミドルウェアである」 |
-| 「アーキテクチャ」 | 「3層分離アーキテクチャが既存DBを無変更で統合する」 |
-| 「機能比較」 | 「ScalarDB は全6機能を網羅し競合に対し圧倒的優位を持つ」 |
-| 「技術仕様」 | 「P99レイテンシ5ms未満を実現する低オーバーヘッド設計」 |
-| 「競合比較」 | 「4つの評価軸すべてで競合を上回る唯一の製品」 |
-| 「ロードマップ」 | 「2026年内にマルチリージョン対応を完了し市場優位を確立する」 |
+| "Product overview" | "ScalarDB is middleware that unifies ACID transactions across heterogeneous databases" |
+| "Architecture" | "A 3-layer separated architecture integrates existing databases with no modification" |
+| "Feature comparison" | "ScalarDB covers all 6 features and holds an overwhelming advantage over competitors" |
+| "Technical specifications" | "A low-overhead design achieving under 5ms P99 latency" |
+| "Competitive comparison" | "The only product that outperforms competitors across all 4 evaluation axes" |
+| "Roadmap" | "Completing multi-region support within 2026 to establish market leadership" |

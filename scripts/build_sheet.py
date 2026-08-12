@@ -1,42 +1,44 @@
 #!/usr/bin/env python3
-"""明細表スペック（JSON）から Excel / Google Spreadsheet を生成する。
+"""Build an Excel / Google Spreadsheet from a line-item spec (JSON).
 
-    python scripts/build_sheet.py spec.json --dry-run          # 検証のみ（オフライン・無料）
-    python scripts/build_sheet.py spec.json                    # xlsx を生成（out/sheets/<title>.xlsx）
+    python scripts/build_sheet.py spec.json --dry-run          # validate only (offline, free)
+    python scripts/build_sheet.py spec.json                    # build the xlsx (out/sheets/<title>.xlsx)
     python scripts/build_sheet.py spec.json --out path.xlsx
-    python scripts/build_sheet.py spec.json --gsheet [--folder <Drive フォルダ URL/ID>]
+    python scripts/build_sheet.py spec.json --gsheet [--folder <Drive folder URL/ID>]
 
-見積もり・BOM・費用内訳のような「明細 + 集計」の表を 1 つの JSON で記述し、
-openpyxl で xlsx を組み立てる。--gsheet を付けると同じ xlsx を Drive へ
-変換アップロードして Google Spreadsheet も作る（書式・数式は変換される）。
-xlsx が常にソースであり、両出力は同一内容になる。
+Describe a "line items + summary" table -- like a quote, BOM, or cost
+breakdown -- in a single JSON file, and assemble it into an xlsx with
+openpyxl. Add --gsheet to also convert-upload the same xlsx to Drive as a
+Google Spreadsheet (formatting and formulas are converted). The xlsx is
+always the source of truth, so both outputs have identical content.
 
-スペック形式:
+Spec format:
 
     {
-      "title": "ブック名（ファイル名・Drive 上の名前になる）",
+      "title": "Workbook name (becomes the file name / the name in Drive)",
       "sheets": [{
-        "name": "シート名",
-        "heading": "表の見出し（任意。1 行目に大きく表示）",
-        "note": "注記（任意。有効期限・税区分など）",
+        "name": "Sheet name",
+        "heading": "Table heading (optional; shown large on row 1)",
+        "note": "Note (optional; e.g. expiration date, tax category)",
         "columns": [
-          {"header": "数量", "type": "int", "width": 8},
-          {"header": "単価", "type": "currency"},
-          {"header": "金額", "type": "currency", "formula": "=D{row}*F{row}"}
+          {"header": "Qty", "type": "int", "width": 8},
+          {"header": "Unit price", "type": "currency"},
+          {"header": "Amount", "type": "currency", "formula": "=D{row}*F{row}"}
         ],
-        "rows": [[...], ...],            // 列数は columns と一致。formula 列は null
-        "summary": [                      // 任意。明細の下の集計ブロック
-          {"label": "小計",        "formula": "=SUM(G{first}:G{last})"},
-          {"label": "消費税 (10%)", "formula": "=G{s1}*0.1"},
-          {"label": "合計",        "formula": "=G{s1}+G{s2}", "emphasis": true}
+        "rows": [[...], ...],            // number of columns must match columns; formula columns are null
+        "summary": [                      // optional. summary block below the line items
+          {"label": "Subtotal",        "formula": "=SUM(G{first}:G{last})"},
+          {"label": "Sales tax (10%)", "formula": "=G{s1}*0.1"},
+          {"label": "Total",        "formula": "=G{s1}+G{s2}", "emphasis": true}
         ]
       }]
     }
 
-数式内のプレースホルダ: {row} = その明細行の行番号（列 formula 用）、
-{first}/{last} = 明細の先頭・末尾の行番号、{s1}, {s2}, … = 集計 1 行目・
-2 行目…の行番号（前方の集計行だけ参照できる）。
-type: text（既定）/ int / currency / percent / date。
+Placeholders in formulas: {row} = the row number of that line item (for
+column formulas), {first}/{last} = the first/last row number of the line
+items, {s1}, {s2}, ... = the row numbers of summary row 1, row 2, ... (only
+earlier summary rows can be referenced).
+type: text (default) / int / currency / percent / date.
 """
 from __future__ import annotations
 
@@ -98,13 +100,13 @@ NUMBER_FORMATS = {
     "date": "yyyy/mm/dd",
 }
 
-HEADER_FILL = "1F3864"   # 濃紺。scalar-2026 系の表ヘッダーに合わせた保守的な色
+HEADER_FILL = "1F3864"   # dark navy; a conservative color matched to scalar-2026-family table headers
 NOTE_COLOR = "808080"
 
 _PLACEHOLDER_RE = re.compile(r"\{(row|first|last|s\d+)\}")
 
 
-# ---------- 検証 ----------
+# ---------- Validation ----------
 
 def validate(spec: dict) -> list[str]:
     errors: list[str] = []
@@ -153,12 +155,12 @@ def validate(spec: dict) -> list[str]:
     return errors
 
 
-# ---------- xlsx 生成 ----------
+# ---------- xlsx generation ----------
 
 def _col_width(col: dict, values: list) -> float:
     if col.get("width"):
         return col["width"]
-    # CJK を 2 文字幅として実測から見積もる
+    # Estimate from measured width, counting CJK characters as width 2
     def w(v) -> int:
         s = str(v) if v is not None else ""
         return sum(2 if ord(ch) > 0x2E7F else 1 for ch in s)
@@ -191,7 +193,7 @@ def build_xlsx(spec: dict, path: str) -> None:
             ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=ncols)
             r += 1
         if r > 1:
-            r += 1  # 見出しブロックと表の間の空行
+            r += 1  # blank row between the heading block and the table
 
         header_row = r
         for ci, col in enumerate(cols, 1):
@@ -241,10 +243,10 @@ def build_xlsx(spec: dict, path: str) -> None:
     wb.save(path)
 
 
-# ---------- Google Spreadsheet（変換アップロード） ----------
+# ---------- Google Spreadsheet (convert-upload) ----------
 
 def upload_gsheet(drive, xlsx_path: str, name: str, folder: str | None) -> str:
-    """xlsx を Google Spreadsheet に変換して作成する。同名があれば内容を更新する。"""
+    """Convert the xlsx into a Google Spreadsheet and create it. If one with the same name already exists, update its contents instead."""
     from googleapiclient.http import MediaFileUpload
     import drive_folder
 

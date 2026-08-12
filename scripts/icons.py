@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """Scalar icon library (`assets/scalar/pictograms/`).
 
-62 種類の 24px グリッドのピクトグラム。原典は Scalar のブランド素材で、SVG が
-正本、PNG はラスタライザが無い環境向けの控え。**単色（#C7C9C9）で描かれている
-ので、テンプレートの配色に染めて使う。**
+62 pictograms on a 24px grid. Sourced from Scalar's brand assets; SVG is
+the canonical form, PNG is a fallback for environments without a
+rasterizer. **Drawn in a single color (#C7C9C9), meant to be tinted to
+match the template's palette.**
 
-`illustrations` のピクトグラムとの使い分け:
+How this compares to the pictograms in `illustrations`:
 
-| | `illustrations.icon()` | 本モジュール `asset_icon()` |
+| | `illustrations.icon()` | this module's `asset_icon()` |
 |---|---|---|
-| 何で描くか | Slides の図形 | ブランド素材の SVG を PNG にして貼る |
-| 語彙 | 30 種の汎用（person / server / db …） | 62 種の業務語彙（情報銀行・証拠チェーン…） |
-| 通信 | 不要 | 要る（Drive 経由で挿入するため） |
-| 見た目 | 素朴 | ブランド準拠 |
+| How it's drawn | Slides shapes | Brand SVG assets converted to PNG and pasted in |
+| Vocabulary | 30 generic terms (person / server / db …) | 62 business terms (information bank, evidence chain, …) |
+| Network access | Not needed | Needed (inserted via Drive) |
+| Look | Plain | On-brand |
 
     from diagrams import Canvas
     d = Canvas(deck, slide_id, template)
@@ -22,16 +23,17 @@
                                       ("interview", "面接"),
                                       ("job-offer", "内定")])
 
-名前は slug（`evidence-chain`）でも日本語名（`証拠チェーン`）でも引ける。
-一覧と検索:
+Names can be looked up by slug (`evidence-chain`) or by Japanese name
+(`証拠チェーン`). Listing and search:
 
     python scripts/icons.py --list
     python scripts/icons.py --search 鍵
     python scripts/icons.py --render 証拠チェーン --color '#2673BB' --out /tmp/x.png
 
-ラスタライズは cairosvg → rsvg-convert → ImageMagick の順に試す
-（`requirements.txt` の cairosvg が入っていれば最初で決まる）。どれも無い場合は
-同梱の PNG をそのまま使うため、**色の指定は無視される**。
+Rasterization is tried in this order: cairosvg → rsvg-convert →
+ImageMagick (if cairosvg from `requirements.txt` is installed, it wins
+first). If none are available, the bundled PNG is used as-is, so
+**the color argument is ignored**.
 """
 from __future__ import annotations
 
@@ -113,10 +115,10 @@ _MANIFEST: dict | None = None
 _HEX_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 
-# ---------- マニフェスト ----------
+# ---------- Manifest ----------
 
 def manifest() -> dict:
-    """`assets/scalar/pictograms/icons.json` を読む（プロセス内で 1 回だけ）。"""
+    """Reads `assets/scalar/pictograms/icons.json` (only once per process)."""
     global _MANIFEST
     if _MANIFEST is None:
         if not os.path.exists(MANIFEST):
@@ -142,7 +144,8 @@ def _norm(s: str) -> str:
 
 
 def resolve(name: str) -> str:
-    """slug / 日本語名 / 英語名 / タグ から slug を返す。曖昧なら候補を挙げて落とす。"""
+    """Resolves a slug from a slug / Japanese name / English name / tag.
+    Raises with candidate suggestions listed if the match is ambiguous."""
     table = icons()
     if name in table:
         return name
@@ -170,7 +173,7 @@ def resolve(name: str) -> str:
 
 
 def search(query: str) -> list[str]:
-    """部分一致で slug のリストを返す（日本語名・英語名・タグを見る）。"""
+    """Returns a list of slugs matched by partial match (checks Japanese name, English name, and tags)."""
     key = _norm(query)
     if not key:
         return sorted(icons())
@@ -190,7 +193,7 @@ def describe(slug: str) -> str:
     return line
 
 
-# ---------- ラスタライズ ----------
+# ---------- Rasterization ----------
 
 class RasterizeError(RuntimeError):
     pass
@@ -214,7 +217,7 @@ def _try_cairosvg(svg: str, out: str, px: int) -> bool:
         cairosvg.svg2png(bytestring=svg.encode("utf-8"), write_to=out,
                          output_width=px, output_height=px)
     except Exception as e:
-        # 変換自体の失敗（未対応の SVG 機能など）も CLI フォールバックに回す
+        # Conversion failures (e.g. unsupported SVG features) also fall through to the CLI fallback
         print(t("  warn: cairosvg conversion failed ({error}); "
                 "trying rsvg-convert / magick", error=e), file=sys.stderr)
         return False
@@ -222,19 +225,21 @@ def _try_cairosvg(svg: str, out: str, px: int) -> bool:
 
 
 def _try_cli(svg: str, out: str, px: int) -> bool:
-    """rsvg-convert / ImageMagick に投げる。SVG は一時ファイルに落とす。"""
+    """Dispatches to rsvg-convert / ImageMagick. Writes the SVG to a temp file first."""
     tmp = None
     try:
         fd, tmp = tempfile.mkstemp(suffix=".svg")
         with os.fdopen(fd, "w", encoding="utf-8") as f:
             f.write(svg)
-        # 出力形式は拡張子ではなく明示で指定する。書き出し先が一時ファイル名
-        # （.part）なので、任せると入力の SVG のまま書き出してしまう
+        # Specify the output format explicitly rather than relying on the
+        # extension. Since the output path is a temp filename (.part),
+        # leaving it to guesswork would just write out the input SVG unchanged
         if shutil.which("rsvg-convert"):
             cmd = ["rsvg-convert", "-f", "png", "-w", str(px), "-h", str(px),
                    "-o", out, tmp]
         elif shutil.which("magick"):
-            # 内蔵レンダラは 24px のまま描いて拡大するので density で先に大きく描かせる
+            # The built-in renderer draws at 24px and then scales up, so use
+            # density to render large from the start
             cmd = ["magick", "-background", "none", "-density", str(px * 3),
                    tmp, "-resize", f"{px}x{px}", f"PNG:{out}"]
         else:
@@ -243,7 +248,7 @@ def _try_cli(svg: str, out: str, px: int) -> bool:
         if r.returncode != 0 or not os.path.exists(out):
             return False
         with open(out, "rb") as f:
-            return f.read(8) == b"\x89PNG\r\n\x1a\n"  # 本当に PNG になったか見る
+            return f.read(8) == b"\x89PNG\r\n\x1a\n"  # check whether it actually became a PNG
     finally:
         if tmp and os.path.exists(tmp):
             os.unlink(tmp)
@@ -251,11 +256,11 @@ def _try_cli(svg: str, out: str, px: int) -> bool:
 
 def render(name: str, *, color: str | None = None, px: int = DEFAULT_PX,
            cache_dir: str | None = None, force: bool = False) -> str:
-    """アイコンを PNG にしてパスを返す。同じ (アイコン, 色, 画素数) ならキャッシュを使う。
+    """Renders the icon to PNG and returns the path. Reuses the cache for the same (icon, color, pixel size).
 
-    `color` は #RRGGBB。省略すると素材そのままの色（薄いグレー）になる。
-    ロゴのように単色でないアイコンは `color` を無視する（マニフェストの
-    `recolorable: false`）。
+    `color` is #RRGGBB. If omitted, the source color (light gray) is used
+    as-is. Icons that aren't single-colored, like logos, ignore `color`
+    (per the manifest's `recolorable: false`).
     """
     slug = resolve(name)
     meta = icons()[slug]
@@ -264,7 +269,8 @@ def render(name: str, *, color: str | None = None, px: int = DEFAULT_PX,
             raise ValueError(t("color must be in #RRGGBB format: {color}", color=color))
         color = color.upper()
         if not meta.get("recolorable", True):
-            # ブランド色を持つアイコン（ロゴ）は染めない。勝手に色が変わる方が事故
+            # Icons with fixed brand colors (logos) aren't tinted. Changing
+            # their color unexpectedly would be a mistake
             print(t("  note: '{slug}' keeps its fixed brand colors; "
                     "ignoring color={color}", slug=slug, color=color),
                   file=sys.stderr)
@@ -301,13 +307,14 @@ def render(name: str, *, color: str | None = None, px: int = DEFAULT_PX,
     return path
 
 
-# ---------- Canvas に生やすメソッド ----------
+# ---------- Methods added to Canvas ----------
 
 class IconLibraryMixin:
-    """`Canvas` にブランドアイコンの配置を足すミックスイン。
+    """Mixin that adds brand-icon placement to `Canvas`.
 
-    座標の規約は `illustrations` のピクトグラムと同じ。size×size の正方形に描き、
-    **戻り値は（キャプションを含めた）描画領域の下端 y**。
+    Coordinate conventions match the `illustrations` pictograms. Draws into
+    a size×size square, and **returns the bottom y of the drawn area
+    (including the caption)**.
     """
 
     def _icon_png(self, name: str, color: str | None, px: int | None) -> str:
@@ -318,17 +325,19 @@ class IconLibraryMixin:
                    label_size: float = 9, label_w: float | None = None,
                    label_gap: float = 0.05, bold_label: bool = False,
                    px: int | None = None, alt: str | None = None) -> float:
-        """ブランドアイコンを size×size の正方形に貼る。戻り値は下端 y。
+        """Places a brand icon into a size×size square. Returns the bottom y.
 
-        `name` は slug でも日本語名でもよい（`"evidence-chain"` / `"証拠チェーン"`）。
-        色を省略するとテンプレートの主色に染める。
+        `name` may be a slug or a Japanese name (`"evidence-chain"` /
+        `"証拠チェーン"`). If color is omitted, it's tinted to the template's
+        primary color.
         """
         slug = resolve(name)
         meta = icons()[slug]
         c = color or self.P.primary
 
         if getattr(self.deck, "dry", False):
-            # --dry-run: 画像は取りに行けないので、同じ大きさの矩形で座標だけ確かめる
+            # --dry-run: images can't be fetched, so just verify coordinates
+            # with a same-sized rectangle
             self.shape(x, y, size, size, kind="RECTANGLE", fill=c, stroke=None)
         else:
             self.image(x, y, size, size, self._icon_png(slug, c, px),
@@ -348,7 +357,7 @@ class IconLibraryMixin:
     def asset_icon_row(self, x: float, y: float, w: float, items, *,
                        size: float = 0.82, color=None, label_size: float = 9.5,
                        gap: float | None = None, px: int | None = None) -> float:
-        """横一列に等間隔で並べる。items は名前か (名前, ラベル)。"""
+        """Lays items out in an evenly spaced row. items is a name or a (name, label) tuple."""
         n = len(items)
         cell = w / n
         bottom = y
@@ -364,7 +373,7 @@ class IconLibraryMixin:
     def asset_icon_flow(self, x: float, y: float, w: float, items, *,
                         size: float = 0.82, color=None, label_size: float = 9.5,
                         arrow_color=None, px: int | None = None) -> float:
-        """矢印でつないだ流れ図。矢印は絵と絵の隙間にだけ引く。"""
+        """Flow diagram connected with arrows. Arrows are only drawn in the gaps between icons."""
         n = len(items)
         cell = w / n
         bottom = y
@@ -385,7 +394,7 @@ class IconLibraryMixin:
     def asset_icon_grid(self, x: float, y: float, w: float, items, *, cols: int = 4,
                         size: float = 0.72, row_gap: float = 0.30, color=None,
                         label_size: float = 9, px: int | None = None) -> float:
-        """格子状に並べる。items は名前か (名前, ラベル)。"""
+        """Lays items out in a grid. items is a name or a (name, label) tuple."""
         cell = w / cols
         bottom = y
         row_top = y
@@ -405,9 +414,9 @@ class IconLibraryMixin:
                          color=None, title_size: float = 11.5,
                          body_size: float = 9.5, fill=None, stroke=None,
                          px: int | None = None) -> float:
-        """アイコン付きのカードを並べる。items は (アイコン名, 見出し, 補足)。
+        """Lays out cards with icons. items is (icon name, title, body).
 
-        `cards()` の見出しにアイコンを足したもの。1 行に cols 枚。
+        Like `cards()`'s headings but with an icon added. cols cards per row.
         """
         from colors import lighten
         n = len(items)
@@ -428,7 +437,7 @@ class IconLibraryMixin:
                        0.34, title, size=title_size, bold=True, align="START",
                        valign="MIDDLE", color=self.P.text)
             if body:
-                # 下の余白は 0.16in。これ以上詰めると 2 行の本文が枠に入らなくなる
+                # Bottom margin is 0.16in. Any tighter and a 2-line body won't fit in the frame
                 self.label(cx + 0.22, ty + icon_size + 0.12, cw - 0.44,
                            ch - icon_size - 0.50, body, size=body_size,
                            align="START", valign="TOP", color=self.P.muted,
@@ -439,7 +448,7 @@ class IconLibraryMixin:
 # ---------- CLI ----------
 
 def _contact_sheet(out: str, color: str | None, px: int) -> int:
-    """全アイコンを 1 枚の PNG に並べる（見比べ用）。cairosvg が要る。"""
+    """Lays out all icons on one PNG (for side-by-side comparison). Requires cairosvg."""
     try:
         import cairosvg  # noqa: F401
     except Exception:

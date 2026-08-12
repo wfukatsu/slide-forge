@@ -24,7 +24,7 @@ import account_graph as ag
 
 ROOT = Path(__file__).resolve().parents[1]
 
-# 参照デザインに合わせた配色。塗りは立場、破線は未面談を表す。
+# Color scheme matching the reference design. Fill represents stance, dashed represents unmet.
 STANCE_FILL = {"close": "#FDE9D9", "opposed": "#DCE6F1", "neutral": "#FFFFFF"}
 TIER_FILL = {"goal": "#F8CECC", "strategy": "#FFE6CC", "tactics": "#FFF2CC"}
 TIER_STROKE = {"goal": "#B85450", "strategy": "#D79B00", "tactics": "#D6B656"}
@@ -36,13 +36,14 @@ CARD_W, CARD_H = 170, 74
 BAND_H, FOOT_H = 18, 18
 GAP_X, GAP_Y = 34, 62
 
-# entity 別レイアウト（--layout grouped）。木レイアウトは根が多いと横に伸びて
-# 読めなくなるので、法人ごとの枠に区切って格子に並べる
+# Per-entity layout (--layout grouped). A tree layout stretches wide and
+# becomes unreadable when there are many roots, so this partitions people into
+# a per-organization frame and arranges them in a grid instead
 G_CARD_W, G_CARD_H = 190, 76
 G_GAP_X, G_GAP_Y = 26, 30
 G_PAD, G_HEAD = 24, 34
 G_COLS = 4
-GUTTER = 210            # 左の余白。人のつながりの線はここを通す
+GUTTER = 210            # left margin; relationship lines between people run through here
 MARK = "①②③④⑤⑥⑦⑧⑨⑩⑪⑫"
 LINK = "#B85450"
 
@@ -125,7 +126,7 @@ def _tree_layout(graph: dict) -> dict[str, tuple[int, int]]:
 
     for r in ag.roots(graph):
         place(r)
-        slot[0] += 0.6                      # ルート間に少し余白
+        slot[0] += 0.6                      # a little spacing between roots
     return pos
 
 
@@ -146,7 +147,7 @@ def _dag_layout(graph: dict) -> dict[str, tuple[int, int]]:
     def d(nid: str) -> int:
         if nid in depth:
             return depth[nid]
-        depth[nid] = 0                       # 循環は validate() が弾いている
+        depth[nid] = 0                       # cycles are already rejected by validate()
         depth[nid] = 1 + max((d(t) for t in supports[nid]), default=-1)
         return depth[nid]
 
@@ -157,7 +158,7 @@ def _dag_layout(graph: dict) -> dict[str, tuple[int, int]]:
     pos: dict[str, tuple[int, int]] = {}
     for row in sorted({depth[n["id"]] for n in graph["nodes"]}):
         nodes = [n for n in graph["nodes"] if depth[n["id"]] == row]
-        # 支えている相手の平均位置に寄せると線の交差が減る
+        # Sorting toward the average position of what it supports reduces line crossings
         nodes.sort(key=lambda n: (
             sum(order.get(t, 0) for t in supports[n["id"]])
             / max(1, len(supports[n["id"]])), n["id"]))
@@ -168,10 +169,11 @@ def _dag_layout(graph: dict) -> dict[str, tuple[int, int]]:
 
 
 def build_grouped(graph: dict, title: str) -> str:
-    """`entity` ごとの枠に人を格子で並べる。線は枠をまたいで引く。
+    """Arrange people in a grid within a frame per `entity`; lines cross frame boundaries.
 
-    人のつながり（links）は線に番号だけを置き、文言は下の一覧に出す。
-    ラベルを線上に置くと、長い線ほどカードの上に落ちて読めなくなる。
+    Relationships between people (links) get only a number placed on the line;
+    the wording goes in the list below instead. Putting the label directly on
+    the line becomes unreadable for longer lines, which end up crossing over cards.
     """
     d = Doc()
     people = graph["people"]
@@ -282,8 +284,10 @@ def build(graph: dict) -> str:
                   0, CARD_H - FOOT_H, 78, FOOT_H)
         for p in graph["people"]:
             if p.get("reportsTo"):
-                # 親側は本文セルから出す。グループの下端は部分幅の影響度帯しか
-                # 無く、中央から線を出すと帯の横の空白から生えてしまう
+                # Anchor the parent side to the body cell. The bottom edge of the
+                # group has only the partial-width influence band, so drawing the
+                # line from the center would make it sprout from the blank space
+                # beside the band
                 d.edge(f"e_{p['id']}", f"n_{p['reportsTo']}_b", f"n_{p['id']}",
                        style=("edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;"
                               f"strokeColor={LINE};endArrow=none;exitX=0.5;exitY=1;"
@@ -313,8 +317,9 @@ def build(graph: dict) -> str:
                   f"fontSize=9;fontStyle=1;",
                   0, CARD_H - FOOT_H, 62, FOOT_H)
         for i, e in enumerate(graph.get("edges", []) or []):
-            # 両端とも本文セルに付ける。グループの上端は右寄せの tier バッジ、
-            # 下端は左寄せのオーナー帯しか無く、中央は空白になる
+            # Anchor both ends to the body cell. The top edge of the group has
+            # only the right-aligned tier badge and the bottom edge only the
+            # left-aligned owner band, leaving the center blank
             d.edge(f"e{i}", f"n_{e['from']}_b", f"n_{e['to']}_b",
                    style=("edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;"
                           f"strokeColor={LINE};endArrow=classic;exitX=0.5;exitY=0;"

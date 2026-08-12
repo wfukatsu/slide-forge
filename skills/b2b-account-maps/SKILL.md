@@ -12,6 +12,7 @@ description: >-
   `scalar-proposal-slides` or `google-slides-template`, and new reusable page
   templates to `slide-template-creator`.
 ---
+*[日本語](SKILL.ja.md)*
 
 # B2B Account Maps
 
@@ -41,14 +42,14 @@ All live in the `b2b-sales` pack (`slide-templates/b2b-sales/`).
 
 | Template | Answers |
 |---|---|
-| `influence-map` | 誰を動かせば決まるか（影響力 × 賛否の 2 軸） |
-| `buying-committee` | 誰が関与し、どこまで会えているか |
-| `decision-structure` | 承認はどの順で上がり、どこで止まるか |
-| `discovery-map` | 何が確認済みで、何がまだ仮説か |
-| `pain-chain` | 現場の課題は経営のどの数字に効いているか |
-| `discovery-gaps` | 次に誰へ何を確認するか |
-| `influence-map-org` | 誰が誰の下にいて、影響力と支持がどこに集まるか（組織構造） |
-| `discovery-map-tree` | 顧客の目標は何に支えられ、自社はどこに効くか（Goal/Strategy/Tactics） |
+| `influence-map` | Who has to be moved for this to get decided (two axes: influence × for/against) |
+| `buying-committee` | Who is involved, and how far have we gotten access to them |
+| `decision-structure` | In what order does approval move up, and where does it stall |
+| `discovery-map` | What is confirmed, and what is still a hypothesis |
+| `pain-chain` | Which executive-level number does the frontline problem actually move |
+| `discovery-gaps` | Who to confirm what with next |
+| `influence-map-org` | Who reports to whom, and where influence and support concentrate (org structure) |
+| `discovery-map-tree` | What the customer's goal rests on, and where our offering lands (Goal/Strategy/Tactics) |
 
 ```bash
 .venv/bin/python scripts/list_slide_templates.py --pack b2b-sales
@@ -67,24 +68,27 @@ Use the pair that fits the ask. A pipeline review usually wants
 `discovery-map` + `discovery-gaps`; a stalled deal usually wants
 `influence-map` + `decision-structure`.
 
-### 構造で見せる 2 枚と、関与者が多い場合
+### The two structural pages, and cases with many stakeholders
 
-`influence-map-org` と `discovery-map-tree` は**つながり**を見せる。2 軸の
-`influence-map` が「誰の影響力が大きいか」なら、こちらは「誰が誰の下にいるか」。
-MEDDPICC の `discovery-map` が「何が確認済みか」なら、こちらは「何が何を支えるか」。
+`influence-map-org` and `discovery-map-tree` show **connections**. Where the
+two-axis `influence-map` shows "whose influence is greatest," these show "who
+reports to whom." Where MEDDPICC's `discovery-map` shows "what is confirmed,"
+these show "what supports what."
 
-どちらも 1 つの JSON から作る。関与者・項目が 9 を超えたらスライドに詰めず、
-**全体を draw.io に出し、スライドには抽出版を載せる**:
+Both are built from a single JSON. Once stakeholders/items exceed 9, do not
+cram them onto the slide — **output the full graph to draw.io, and put an
+extracted version on the slide**:
 
 ```bash
 .venv/bin/python scripts/build_account_graph.py <graph.json> --out out/<account>.drawio
 .venv/bin/python scripts/drawio_export.py out/<account>.drawio --out out/<account>.png --scale 2
 ```
 
-抽出は `account_graph.extract()`。落ちた人・項目は標準出力に出るので、その数を
-テンプレートの `more` スロットに「他 N 名は draw.io 版参照」として必ず書く。
-データモデルと抽出規則は
-[references/account-graphs.md](../../references/account-graphs.md)。
+Extraction is done by `account_graph.extract()`. People/items that were
+dropped are printed to stdout, and their count must always be written into
+the template's `more` slot as "see the draw.io version for the other N."
+The data model and extraction rules are in
+[references/account-graphs.md](../../references/account-graphs.md).
 
 ## Workflow
 
@@ -112,9 +116,9 @@ worth anything — read
 
 ### 3. Place people, and say why
 
-For the influence map, place each person on 影響力 (縦) × 賛否 (横) and be able
-to name the evidence for both coordinates. Influence is what actually moved a
-past decision, not seniority.
+For the influence map, place each person on influence (vertical) × stance
+(horizontal) and be able to name the evidence for both coordinates. Influence
+is what actually moved a past decision, not seniority.
 [influence-map.md](references/influence-map.md) covers the buying roles,
 how to read stance from what was said, and the common traps.
 

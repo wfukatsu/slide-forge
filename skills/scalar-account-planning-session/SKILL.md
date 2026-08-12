@@ -1,217 +1,261 @@
 ---
 name: scalar-account-planning-session
 description: >-
-  Build the Account Planning Session (APS / アカウントプランニングセッション)
-  decks for a customer a Scalar Account Executive already keeps a ledger for:
-  a full Plan Document for the account team and a nine-page executive review
-  deck, from one aps.json. Works out who to meet next per legal entity from
-  published officer lists and org charts, ties the proposals to the customer's
-  own mid-term management plan, and gives a chapter to each deal. Use for an
-  APS / アカウントプランニングセッション / 年次のアカウント棚卸し / 役員レビュー
-  資料, or when asked to map a customer group's organisation, officers or key
-  people. The per-visit ledger and the activity-plan deck stay in
+  Build the Account Planning Session (APS) decks for a customer a Scalar
+  Account Executive already keeps a ledger for: a full Plan Document for the
+  account team and a nine-page executive review deck, from one aps.json.
+  Works out who to meet next per legal entity from published officer lists
+  and org charts, ties the proposals to the customer's own mid-term
+  management plan, and gives a chapter to each deal. Use for an APS
+  (an annual/semi-annual account review, or executive review materials), or
+  when asked to map a customer group's organisation, officers or key people.
+  The per-visit ledger and the activity-plan deck stay in
   `scalar-account-plan`; one visit's materials go to `scalar-ae-materials`.
 ---
 
+*[日本語](SKILL.ja.md)*
+
 # Scalar Account Planning Session
 
-APS は**年次・半期のアカウント棚卸し**。訪問のたびに更新する活動計画
-（`scalar-account-plan`）とは寿命も入力も違うので混ぜない。
+APS is an **annual/semi-annual account review**, not the activity plan
+(`scalar-account-plan`) that gets updated after every visit — the two differ
+in lifespan and input, so don't mix them.
 
-| | 活動計画デッキ | APS デッキ（このスキル） |
+| | Activity plan deck | APS deck (this skill) |
 |---|---|---|
-| 目的 | 今どこにいて次に何をするか | 年次・半期の棚卸しと役員レビュー |
-| 更新 | 訪問のたび | APS のたび |
-| 入力 | `account.json`（台帳） | `aps.json`（台帳 + 顧客の公開情報） |
-| スキル | `scalar-account-plan` | このスキル |
+| Purpose | Where things stand now and what to do next | Annual/semi-annual review and executive review |
+| Update cadence | Every visit | Every APS |
+| Input | `account.json` (the ledger) | `aps.json` (the ledger + the customer's public information) |
+| Skill | `scalar-account-plan` | This skill |
 
-**前提として台帳が要る。** 台帳の作り方・検証・未確認をアクションに変える手順は
-[`scalar-account-plan`](../scalar-account-plan/SKILL.md) §1–4 にある。
-**このスキルでそれらを再定義しない。**
+**A ledger is a prerequisite.** How to build the ledger, verify it, and turn
+unknowns into actions is covered in
+[`scalar-account-plan`](../scalar-account-plan/SKILL.md) §1–4.
+**This skill does not redefine any of that.**
 
-作業ディレクトリは slide-forge ルート。コマンドは `.venv/bin/python` で実行する。
+The working directory is the slide-forge root. Commands run via
+`.venv/bin/python`.
 
-判断の出典は [references/scalar/sales-playbook.md](../../references/scalar/sales-playbook.md)。
-ページ定義と各ページの判断基準は
-[references/account-planning-session.md](../../references/account-planning-session.md)。
-**どちらもこのスキルで再定義しない。**
+The source for judgment calls is
+[references/scalar/sales-playbook.md](../../references/scalar/sales-playbook.md).
+Page definitions and the judgment criteria for each page are in
+[references/account-planning-session.md](../../references/account-planning-session.md).
+**Neither is redefined by this skill.**
 
 > [references/account-planning-template-plan.md](../../references/account-planning-template-plan.md)
-> は**まだ実装されていない計画書**。`slide-templates/account-planning` パックは
-> 存在せず、現物は `LAYOUT` + `aps.json` の形で動いている。マスター非依存の
-> 設計契約（§2）と列幅の下限だけが現行仕様で、テンプレート一覧は将来案。
+> is a **plan document that is not yet implemented**. There is no
+> `slide-templates/account-planning` pack; the real thing runs on
+> `LAYOUT` + `aps.json`. Only the master-independent design contract (§2) and
+> the column-width floor are current spec — the template list is a future
+> idea.
 
 ## Boundaries
 
-| 依頼 | 行き先 |
+| Request | Goes to |
 |---|---|
-| APS の資料を作る / 更新する | このスキル |
-| 台帳を作る・追記する・状況を答える | `scalar-account-plan` |
-| 訪問 1 回分の資料 / WPS / Deal Desk | `scalar-ae-materials` |
-| 関与者マップ・ディスカバリーマップそのものの作図 | `b2b-account-maps` |
-| 顧客向けの正式提案書 | `scalar-proposal-slides` |
-| 生成したデッキの目視検査 | `slide-qa` |
+| Create / update APS materials | This skill |
+| Create/append the ledger, answer status questions | `scalar-account-plan` |
+| Materials for a single visit / WPS / Deal Desk | `scalar-ae-materials` |
+| Drawing a stakeholder map / discovery map itself | `b2b-account-maps` |
+| The formal proposal document for the customer | `scalar-proposal-slides` |
+| Visual inspection of a generated deck | `slide-qa` |
 
-## これは内部資料である
+## This is internal material
 
-APS は名前のある個人について判断を記録する（影響力、賛否、未接触、経歴、
-個人的な関係）。**顧客にもパートナーにも渡さない。** Drive 上でも
-`00_活動計画` と `90_社内` は共有しない。
+APS records judgments about named individuals (influence, for/against,
+uncontacted, career history, personal relationships). **Never hand it to the
+customer or a partner.** On Drive, `00_活動計画` and `90_社内` are also not
+shared.
 
-## 成果物と置き場
+## Deliverables and where they live
 
-| 成果物 | 中身 | 読み手 |
+| Deliverable | Contents | Audience |
 |---|---|---|
-| Plan Document | 全ページ。分析・商談ごとの章・実行計画 | アカウントチーム |
-| APS レビュー資料 | 本編 9 ページ + Appendix | 役員レビュー（30 分） |
+| Plan Document | All pages: analysis, a chapter per deal, execution plan | The account team |
+| APS review deck | 9-page main deck + Appendix | Executive review (30 min) |
 
 ```
 accounts/<AE>/<顧客>/
-  account.json   訪問ごとの事実（scalar-account-plan が管理）
-  aps.json       APS デッキの内容（見出し・図の中身・商談・役員名簿・中扉の考慮点）
-                 ★ いずれも gitignore 済み。コミットしない
+  account.json   Per-visit facts (managed by scalar-account-plan)
+  aps.json       APS deck content (headings, figure contents, deals, officer roster, section-divider considerations)
+                 ★ Both are gitignored. Never commit these
 ```
 
-**スクリプトには顧客名も実名も書かない。** `build_account_planning.py` が持つのは
-図の種類・座標・書式（`LAYOUT`）だけで、文字列はすべて `aps.json` から読む。
+**Never write the customer's name or real names into the script.**
+`build_account_planning.py` only holds figure types, coordinates, and
+formatting (`LAYOUT`); all strings are read from `aps.json`.
 
 ## Workflow
 
-### 1. aps.json の欄を埋める
+### 1. Fill in the aps.json fields
 
-台帳だけでは埋まらない欄が出る。**順番を守る。**
+Some fields cannot be filled from the ledger alone. **Follow the order.**
 
-1. 台帳（`account.json`）から取れるものを取る
-2. 足りないものは**顧客の公開情報**から取る（IR・組織図・中期経営計画・決算短信）。
-   取ったら台帳の `facts` に `observed` として書き戻す
-3. それでも取れないものは **「未取得」と書く**。推測で埋めない
+1. Take whatever can be taken from the ledger (`account.json`)
+2. For anything missing, take it from the **customer's public information**
+   (IR materials, org charts, mid-term management plan, earnings summary).
+   Once taken, write it back into the ledger's `facts` as `observed`
+3. Anything still unobtainable gets **marked "not yet obtained."** Never fill
+   it with a guess
 
-役員名簿と組織図が 2 の中心（§4・§5）。
+The officer roster and org chart are the core of step 2 (§4, §5).
 
-### 2. 中期経営計画に紐付ける
+### 2. Tie it to the mid-term management plan
 
-中計は**顧客が自分で公開した優先順位**。提案をそこに接続できれば、稟議に書く
-言葉が顧客自身の言葉になる。
+The mid-term plan is **the priority the customer published themselves.** If
+a proposal can be connected to it, the language used in the internal
+approval process becomes the customer's own language.
 
-- **一次資料から原文を取る。** 中計のリリース PDF と IR の該当ページ。要約記事で
-  代用しない。スライドには原文の表現をそのまま置く（言い換えると接続が切れる）
-- **柱の構造を見る。** IT が事業戦略の下にあるのか、並列の柱として置かれているのかで
-  **稟議のルートが変わる**。並列なら事業側の合意を待たずに CIO ラインで立つ
-- **紐付けは柱ではなく記述単位で行う。** 投資額のような柱の見出しではなく、
-  その下にある「何をどう変えるか」を書いた具体的な一文に当てる
-- **紐付かない提案は無理に紐付けない。** 紐付かないこと自体が「顧客の優先順位に
-  乗っていない」という情報で、それは提案の作り直しか、時期の判断材料になる
+- **Take the original text from primary sources.** The mid-term plan's
+  release PDF and the relevant IR page. Do not substitute a summary article.
+  Put the original wording directly on the slide (paraphrasing breaks the
+  connection)
+- **Look at the pillar structure.** Whether IT sits under the business
+  strategy or is placed as a parallel pillar **changes the approval route.**
+  If parallel, you can move on the CIO line without waiting for business-side
+  agreement
+- **Tie at the statement level, not the pillar level.** Anchor to the
+  specific sentence describing "what changes and how," not to a pillar
+  heading like an investment figure
+- **Don't force a tie that doesn't exist.** A proposal that can't be tied is
+  itself information — it means it isn't riding on the customer's priorities
+  — and that becomes material for reworking the proposal or judging its
+  timing
 
-出力は 2 ページ（どちらも `mece_tree`）:
+Output is 2 pages (both `mece_tree`):
 
-| ページ | 何を示すか |
+| Page | What it shows |
 |---|---|
-| 中期経営計画の構造 | 柱の関係。IT がどこに置かれているか |
-| 中計と提案の紐付け | 中計の記述（原文）→ 当社の提案。商談番号で本編とつなぐ |
+| Mid-term management plan structure | Relationship between pillars; where IT sits |
+| Tying the mid-term plan to the proposal | Mid-term plan statement (original text) → our proposal, connected to the main deck by deal number |
 
-### 3. 企業グループが相手のとき
+### 3. When the counterpart is a corporate group
 
-親会社 1 社ではなくグループ（銀行・証券・カード・IT 子会社）を相手にする場合、
-**商談も関与者も会社ごとに分類する。** 会社が違えば意思決定者も予算も別で、
-まとめると打ち手が決まらない。
+When facing a group (bank, securities, card, IT subsidiary) rather than a
+single parent company, **classify both deals and stakeholders by company.**
+Different companies have different decision-makers and budgets — lumping
+them together leaves you without a clear next move.
 
-- **商談番号はグループ会社順に振る**（`aps.json` の `deals[]`）。
-  同じ会社の商談が隣り合う
-- **商談ごとに章を切る**。中扉（会社名／商談名／金額・時期・ステージ）＋
-  全体像カード 6 枚。**型を全商談で揃える**と、章をまたいで「どこが埋まって
-  いないか」を比べられる
-- **システム子会社は別立てで扱う。** 全社に関わるので、会社別の担当本部と
-  横断組織（技術統括・AI 推進など）を分けたページを置く。横断組織を押さえて
-  いても会社別の実装部隊に入れていなければ案件は動かない
+- **Number deals in group-company order** (`aps.json`'s `deals[]`) so deals
+  for the same company sit next to each other
+- **Give each deal its own chapter**: a section divider (company name / deal
+  name / amount, timing, stage) plus 6 overview cards. **Keep the same
+  template across every deal** so you can compare "what's missing where"
+  across chapters
+- **Treat the systems subsidiary separately.** It touches the whole group, so
+  give it a page that separates the per-company owning division from the
+  cross-cutting organizations (technology headquarters, AI promotion, etc).
+  Covering the cross-cutting organization is not enough if you haven't
+  reached the per-company implementation team — the deal won't move
 
-### 4. 組織図は一次情報から、法人ごとに 1 枚
+### 4. Org charts come from primary sources, one page per legal entity
 
-顧客の IR / 会社情報ページにある組織図（PDF・PNG）を読み、当社の接点を重ねる。
-**台帳の肩書きだけで組織図を描き起こさない** — 接点のない部署が図から消えて、
-**空白が見えないという一番大事な情報を失う**。
+Read the org chart (PDF/PNG) on the customer's IR / company-information page
+and overlay our touchpoints on it. **Never draw the org chart from ledger
+titles alone** — departments with no touchpoint disappear from the diagram,
+and you lose **the most important information: seeing where the blanks
+are.**
 
-**グループが相手なら、法人ごとに 1 枚ずつ描く。** グループ全体を 1 枚にまとめると
-各社の部レベルが潰れて、どの部署に入れていないかが見えない。持株会社の
-グループ体制図とは別に、事業会社と IT 子会社の組織図をそれぞれ置く。
+**When facing a group, draw one page per legal entity.** Cramming the whole
+group into one page flattens each company's department level and hides which
+departments haven't been reached. Keep the holding company's group structure
+chart separate from the operating company's and IT subsidiary's org charts.
 
-- 組織図が PDF や画像でしか出ていないことが多い。読めなければ組織変更の
-  ニュースリリースが代わりになる（新設・改称・移管が書かれている）
-- **人の出所も拾う。** 異動リリースには出向元が載ることがあり、
-  「この会社のシステム部門は誰が押さえているのか」がそこで分かる
+- Org charts often exist only as PDFs or images. If unreadable, an
+  organizational-change news release can substitute (it states new
+  departments, renames, transfers)
+- **Also pick up where people came from.** Personnel-transfer releases
+  sometimes list the seconding origin, which reveals who actually controls
+  that company's systems division
 
-### 5. 会うべき人を探す（APS のもう半分）
+### 5. Find who to meet (the other half of APS)
 
-アカウントプランは会った人の記録ではない。**次に誰に会うべきかを出す仕組み**
-でもある。台帳だけを見ていると、既に会えている人の周りしか出てこない。
+An account plan is not a record of people already met. It is also **a
+mechanism for surfacing who to meet next.** Looking only at the ledger
+surfaces nothing but the people already reached.
 
-**役員名簿は法人単位で取る。** 企業グループは持株会社・事業会社・IT 子会社が
-それぞれ別法人として役員を公開している。グループを 1 つの「顧客」として
-まとめると、実装を持つ役員がどの法人にいるのか分からなくなる。
+**Take the officer roster per legal entity.** A corporate group discloses
+officers separately for the holding company, operating company, and IT
+subsidiary as distinct legal entities. Treating the group as one "customer"
+loses track of which entity actually has the officer who owns
+implementation.
 
-情報源（いずれも公開情報）:
+Sources (all public information):
 
-| 何を | どこから |
+| What | Where from |
 |---|---|
-| 役員の氏名と役職 | 各法人の「会社概要」「役員一覧」 |
-| 役職の変更・新任 | 「役員異動のお知らせ」のニュースリリース |
-| 部署の一覧 | 組織図（§4） |
-| 担当領域 | 持株会社の CxO 一覧には担当部署が書かれていることがある |
+| Officer names and titles | Each entity's "company overview" / "officer list" |
+| Title changes / new appointments | "Notice of officer changes" news releases |
+| Department list | Org chart (§4) |
+| Areas of responsibility | The holding company's CxO list sometimes states owned departments |
 
-やること:
+To do:
 
-1. **法人ごとに役員名簿を取り、当社の接触状況を重ねる。** 接触済み / 未接触が
-   法人別に見えると、どの法人で層が薄いかが分かる
-2. **兼務を必ず拾う。** 持株会社の CxO が子会社の取締役を兼ねていることがある。
-   **それが最短の紹介経路になる**ので、組織図にも書き込む
-3. **組織図と役員名簿を突き合わせる。** 組織図は「どの部署があるか」、名簿は
-   「誰が役員か」しか教えない。**部署と役員の紐付けは公開情報では埋まらない
-   ことが多く、そこがそのまま確認事項になる**（「役員の担当組織を聞く」）
-4. **手がかりは接触済みの人を起点にする。** 誰経由で辿るかが書けない
-   「会うべき人」はアクションにならない。書けないならまず起点を作る
-5. **役職は公開名簿を正とする。** 台帳の肩書きが古ければ台帳を直す
+1. **Take the officer roster per legal entity and overlay our contact
+   status.** Seeing contacted / not-contacted broken out by entity reveals
+   which entity has thin coverage
+2. **Always pick up dual appointments.** A holding-company CxO may also serve
+   as a subsidiary director. **That becomes the shortest introduction path**,
+   so note it on the org chart too
+3. **Cross-reference the org chart against the officer roster.** The org
+   chart tells you only "which departments exist"; the roster tells you only
+   "who is an officer." **Public information often can't fill the link
+   between department and officer, and that gap becomes the confirmation
+   item itself** ("ask which department the officer owns")
+4. **Anchor leads on people already contacted.** A "person to meet" with no
+   traceable path ("via whom") is not actionable. If you can't state a
+   starting point, build one first
+5. **Treat the public roster as authoritative on titles.** If the ledger's
+   title is stale, fix the ledger
 
-出力は 2 ページ:
+Output is 2 pages:
 
-| ページ | 図 | 何を示すか |
+| Page | Figure | What it shows |
 |---|---|---|
-| 法人別の役員層と接触状況 | `comparison` | 法人ごとの役員数・接触済み・未接触の要人 |
-| 会うべき人と手がかり | 表（登録簿） | 誰に / なぜ / **誰経由で** / いつまでに |
+| Officer layer and contact status by entity | `comparison` | Officer count, contacted, and uncontacted key figures per entity |
+| People to meet and leads | Table (register) | Who / why / **via whom** / by when |
 
-### 6. 経歴と関係性
+### 6. Career history and relationships
 
-誰に会うかが決まったら、**その人が何を根拠に判断する人なのか**を押さえる。
-役職だけでは、こちらの説明がどこで刺さるか決められない。
+Once you know who to meet, pin down **what that person bases their judgment
+on.** Title alone doesn't tell you where your explanation will land.
 
-- **肩書きの変遷を追う。** 決裁者が過去にどのポジションで何を決め、何を公に
-  言ったかは、今の反応を予測する一番強い材料になる。役員異動のリリース、
-  新聞の人事欄、インタビュー記事から取れる
-- **前任・後任、兼務、出向元を拾う。** 「前任者が今どこにいるか」「持株の役員が
-  子会社の取締役を兼ねているか」は、そのまま意思決定の経路になる
-- **個人的な関係（元上司・友人・派閥）は面談や社内でしか取れない。**
-  公開情報と混ぜず、出典行で必ず分ける。**この種の記述が入った時点で、その
-  資料は社外に出せない**
+- **Trace the title history.** What positions a decision-maker held in the
+  past, what they decided, and what they said publicly is the strongest
+  material for predicting their current reaction. Sources: officer-change
+  releases, newspaper personnel columns, interview articles
+- **Pick up predecessors/successors, dual appointments, and secondment
+  origins.** "Where is the predecessor now" and "does the holding company's
+  officer also sit as the subsidiary's director" both become decision-making
+  routes
+- **Personal relationships (former boss, friend, faction) can only be
+  obtained through meetings or internally.** Never mix these with public
+  information — always separate them by source line. **The moment this kind
+  of content enters the material, it can no longer leave the company**
 
-出力は 2 ページ:
+Output is 2 pages:
 
-| ページ | 図 | 何を示すか |
+| Page | Figure | What it shows |
 |---|---|---|
-| 主要人物の経歴 | `cards` | 1 人 1 枚。肩書きの変遷と、そこから読める判断の癖 |
-| 人物の関係性 | `influence_graph` + `links` | レポートラインに、兼務・前任後任・個人的な関係を重ねる |
+| Key people's career history | `cards` | One card per person: title history and the judgment habits it reveals |
+| Relationships among people | `influence_graph` + `links` | Dual appointments, predecessor/successor, and personal relationships overlaid on the report line |
 
-`links` は**同じ階層の人どうししか結べない**（階層をまたぐと組み立て時に落ちる）。
-階層をまたぐ関係は `more` の注記に置く。
+`links` **can only connect people at the same hierarchy level** (crossing a
+level breaks the build). Put cross-level relationships in the `more` note
+instead.
 
-関与者が 9 人を超えたら全体版を draw.io に出す。手順は
-[`scalar-account-plan`](../scalar-account-plan/SKILL.md) §7。
-**企業グループなら必ず `--layout grouped`。**
+Once stakeholders exceed 9 people, output the full version to draw.io.
+Procedure is in [`scalar-account-plan`](../scalar-account-plan/SKILL.md) §7.
+**Always use `--layout grouped` for a corporate group.**
 
-### 7. 表ではなく図で出す
+### 7. Prefer figures over tables
 
-表は「登録簿」（担当と期日があり後から追跡するもの）と「判定基準」だけに残す。
-それ以外は図にする。対応表は
-[account-planning-session.md §9.4](../../references/account-planning-session.md)。
+Keep tables only for "registers" (items with an owner and a due date to
+track later) and "judgment criteria." Everything else becomes a figure. The
+mapping table is in
+[account-planning-session.md §9.4](../../references/account-planning-session.md).
 
-### 8. 2 本のデッキを生成する
+### 8. Generate the two decks
 
 ```bash
 # 1. aps.json から 2 本の仕様を組む（plan.json / review.json）
@@ -240,44 +284,48 @@ for f in plan review; do
 done
 ```
 
-**2 本の URL は台帳の `meta.decks.accountPlanningSession` /
-`meta.decks.apsReview` に手で書く。** `build_account_planning.py` は台帳を
-読み書きしないので、ここは自動化されていない。
+**Write the two URLs into the ledger's `meta.decks.accountPlanningSession` /
+`meta.decks.apsReview` by hand.** `build_account_planning.py` doesn't
+read/write the ledger, so this step isn't automated.
 
-**材料が足りないページは自動で落ちない。** 活動計画デッキは材料の無いページを
-黙って外すが、APS は `aps.json` に無いページ ID を並びが参照していると
-組み立て時にエラーで止まる。
+**A page with insufficient material does not drop out automatically.** The
+activity-plan deck silently drops pages that have no material, but if APS's
+page order references a page ID missing from `aps.json`, the build stops
+with an error.
 
-**ページを減らすときは `aps.json` の `meta.skipPages` が第一の手段。**
-スクリプトの並び（`PLAN_A` / `REVIEW_*`）を直すのは、全顧客共通で
-ページ構成を変えるときだけ。
+**`aps.json`'s `meta.skipPages` is the first way to remove pages.** Only
+edit the script's page order (`PLAN_A` / `REVIEW_*`) when changing the page
+structure across all customers.
 
-- ページ ID のリストなら**両方のデッキ**から、`{"plan": [...], "review": [...]}`
-  なら**指定したデッキだけ**から外す
-- 商談章にも効く（`deal-<商談番号>`）。章の中身が全部 skip されると
-  **中扉ごと落ちる**
-- 存在しないページ ID や不正なデッキ名は `ValueError` で止まる
-  （タイポを黙って無視しない）
-- 両方のデッキで skip したページは `pages` からデータを消してもよい
-  （残しておけば、外した判断は戻せる）
+- A list of page IDs removes them from **both decks**; `{"plan": [...],
+  "review": [...]}` removes them from **only the specified deck**
+- This also applies to deal chapters (`deal-<deal number>`). If every page
+  inside a chapter is skipped, **the section divider drops too**
+- A nonexistent page ID or an invalid deck name stops the build with a
+  `ValueError` (typos are never silently ignored)
+- For pages skipped in both decks, it's fine to delete the data from `pages`
+  too (leaving it in place keeps the option to bring it back)
 
-**顧客ごとの構成判断も `aps.json` の `meta` が持つ**（スクリプトにハードコード
-しない）:
+**Per-customer structural decisions also live in `aps.json`'s `meta`**
+(never hard-coded in the script):
 
-| キー | 何を決めるか | 例 |
+| Key | What it decides | Example |
 |---|---|---|
-| `meta.dealExtraPages` | 商談章の中扉の後ろに足す付録ページ（商談 ID → ページ ID 列） | `{"1": ["objective-ledger"]}` |
-| `meta.reviewDealPages` | 役員レビュー Appendix に載せる商談ページの ID 列 | `["deal-1", "deal-3", "objective-ledger"]` |
+| `meta.dealExtraPages` | Appendix pages appended after a deal chapter's section divider (deal ID → page ID list) | `{"1": ["objective-ledger"]}` |
+| `meta.reviewDealPages` | List of deal page IDs to include in the executive-review Appendix | `["deal-1", "deal-3", "objective-ledger"]` |
 
-ページ ID は役割の総称（`bank-orgchart` / `securities-orgchart` /
-`itsub-orgchart` / `itsub-mapping` など）で、顧客名は入らない。
+Page IDs are generic role names (`bank-orgchart` / `securities-orgchart` /
+`itsub-orgchart` / `itsub-mapping`, etc) and never contain the customer's
+name.
 
-`--into` の禁則（テンプレート原本を差し替え先にしない等）は
-[`scalar-account-plan`](../scalar-account-plan/SKILL.md) §5 と同じ。
+The `--into` prohibitions (e.g. never make the template master the
+replacement target) are the same as
+[`scalar-account-plan`](../scalar-account-plan/SKILL.md) §5.
 
-### 9. 目視検査と報告
+### 9. Visual inspection and reporting
 
-`slide-qa` でサムネイルを確認し、終わったら `scripts/cleanup_qa.py`。
+Check the thumbnails with `slide-qa`, then run `scripts/cleanup_qa.py` when
+done.
 
 ```bash
 .venv/bin/python scripts/drive_folder.py upload <00_活動計画 の ID> \
@@ -285,31 +333,40 @@ done
     out/account-plan/<顧客>/ap/plan.json out/account-plan/<顧客>/ap/review.json
 ```
 
-報告に必ず入れるもの:
+Always include in the report:
 
-1. 2 本のデッキ URL と Drive フォルダの URL
-2. **公開情報から補った項目**と、**「未取得」のまま残した項目**
-3. **次に会うべき人**（誰に・誰経由で・いつまでに）
-4. 台帳と食い違った肩書き・事実があれば、その一覧（台帳を直すかは AE の判断）
+1. Both deck URLs and the Drive folder URL
+2. **Items filled in from public information** and **items still left as
+   "not yet obtained"**
+3. **Who to meet next** (who, via whom, by when)
+4. Any titles/facts that diverged from the ledger (whether to fix the ledger
+   is the AE's call)
 
-## つまずきどころ
+## Pitfalls
 
-- **`--dry-run` を通っても API に弾かれる制約が 1 つある。** Slides API は幅 32pt
-  （0.45in）未満の表列を拒否する。商談番号のような細い列で踏む。
-  `build_account_planning.py` の `_check_columns()` が組み立て時に検査している
-- `batchUpdate` は原子的なので、途中で失敗しても既存デッキは壊れない。
-  直して作り直せばよい
-- APS で置く期日は**「本 APS での提案」と出典行に明記する**。台帳の `actions` は
-  期日未設定のままにしておき、AE が顧客と合意した時点で台帳へ入れる
+- **There is one constraint that passes `--dry-run` but still gets rejected
+  by the API.** The Slides API rejects table columns narrower than 32pt
+  (0.45in). This bites on narrow columns like deal numbers.
+  `build_account_planning.py`'s `_check_columns()` checks for this at build
+  time
+- `batchUpdate` is atomic, so a mid-way failure never breaks the existing
+  deck. Just fix it and rebuild
+- **State any due date placed in APS explicitly in the source line as "the
+  proposal made at this APS."** Leave the ledger's `actions` without a due
+  date until the AE has agreed one with the customer, then enter it into the
+  ledger
 
 ## Rules
 
-- **答えを埋めない。** 台帳に無い欄は公開情報で埋めるか「未取得」と書く。
-  埋まらない欄そのものが、APS で決めるべきことを指している。
-- **会った人の記録で終わらせない。** 公開の役員名簿から**会うべき人**を出し、
-  接触済みの人を起点にした手がかりを付ける。起点が書けないなら、まず起点を作る
-  ことがアクションになる。
-- **公開情報と社内由来を出典行で分ける。** 個人的な関係が入った資料は社外に出せない。
-- **台帳が正本。** APS で分かった事実は `account.json` にも書き戻す。
-- `accounts/` はコミットしない（顧客名・個人名・判断が入る）。
-  作業ファイルは無視される `out/` 配下に置く。
+- **Never fill in an answer.** Fields missing from the ledger get filled from
+  public information or marked "not yet obtained." A field that can't be
+  filled is itself pointing at something APS needs to decide.
+- **Never stop at a record of people already met.** Derive **who to meet**
+  from the public officer roster, with a lead anchored on someone already
+  contacted. If no anchor can be stated, building one first is the action.
+- **Separate public information from internal sources by source line.**
+  Material containing personal relationships can never leave the company.
+- **The ledger is the source of truth.** Facts learned during APS get
+  written back into `account.json` too.
+- Never commit `accounts/` (it contains customer names, personal names, and
+  judgments). Keep working files under the gitignored `out/`.

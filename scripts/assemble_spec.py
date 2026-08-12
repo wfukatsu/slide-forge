@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
-"""ページ単位の JSON 断片をつなげて 1 本のデッキ仕様にする。
+"""Concatenate per-page JSON fragments into a single deck spec.
 
-大きなデッキをサブエージェントで分担生成するときに使う。各エージェントは
-`pages/NNN-<slug>.json` に**自分の担当ページだけ**を書き、本体の仕様ファイルには
-触らない。衝突しないので並行して書ける。
+Used when generating a large deck with sub-agents dividing up the work. Each
+agent writes **only its own assigned page** to `pages/NNN-<slug>.json` and
+never touches the main spec file. Since there's no overlap, agents can write
+in parallel.
 
-    python scripts/assemble_spec.py --out deck.json --title "資料タイトル" pages/
+    python scripts/assemble_spec.py --out deck.json --title "Document Title" pages/
 
-断片の中身は次のいずれか:
+A fragment's contents can be any of:
 
-- スライド 1 枚のオブジェクト  `{"layout": "TITLE_ONLY", "title": "…", "figures": […]}`
-- スライドの配列              `[{…}, {…}]`
-- 仕様まるごと                `{"slides": [{…}]}`（`title` / `defaults` も拾う）
+- A single-slide object  `{"layout": "TITLE_ONLY", "title": "…", "figures": […]}`
+- An array of slides      `[{…}, {…}]`
+- A whole spec            `{"slides": [{…}]}` (also picks up `title` / `defaults`)
 
-**並び順はファイル名の昇順**。`010-cover.json` `020-agenda.json` のように
-10 刻みで振っておくと、後から間に挟める。
+**Order follows ascending filename**. Numbering files in steps of 10, like
+`010-cover.json` `020-agenda.json`, leaves room to insert one later.
 """
 from __future__ import annotations
 
@@ -58,7 +59,7 @@ register({
 
 
 def load_fragment(path: str) -> tuple[list, dict]:
-    """断片を (スライドのリスト, 仕様レベルのキー) に正規化する。"""
+    """Normalize a fragment into (list of slides, spec-level keys)."""
     with open(path, encoding="utf-8") as f:
         try:
             data = json.load(f)
@@ -89,7 +90,7 @@ def load_fragment(path: str) -> tuple[list, dict]:
 
 
 def expand(inputs: list[str]) -> list[str]:
-    """ディレクトリなら中の *.json を、グロブならその展開を、昇順で返す。"""
+    """For a directory, return its *.json files; for a glob, its expansion; sorted ascending."""
     out: list[str] = []
     for item in inputs:
         if os.path.isdir(item):
@@ -119,12 +120,13 @@ def main() -> int:
     if not paths:
         raise SystemExit(t("no fragments found"))
 
-    # "title" をここで先に置くと setdefault が断片の title を拾えなくなる
+    # Putting "title" here up front would stop setdefault from picking up a
+    # fragment's title
     spec: dict = {"slides": []}
     for path in paths:
         slides, top = load_fragment(path)
-        # 仕様レベルのキーは先に書いたものを優先する（後勝ちだと
-        # 末尾の断片が意図せずデッキ全体の既定を塗り替えてしまう）
+        # Spec-level keys prefer whichever was written first (if last-write-wins,
+        # a later fragment could unintentionally overwrite the deck-wide default)
         for k, v in top.items():
             spec.setdefault(k, v)
         spec["slides"].extend(slides)

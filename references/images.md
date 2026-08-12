@@ -1,17 +1,20 @@
-# イメージ図と画像
+*[日本語](images.ja.md)*
+# Illustrative Figures and Images
 
-箇条書きで説明しきれないものを絵にする手段は 5 つある。**まず用途で選ぶこと。**
+There are 5 ways to draw something that bullet points can't fully explain. **Choose based on
+purpose first.**
 
-| 見せたいもの | 使うもの | 特徴 |
+| What you want to show | What to use | Characteristics |
 |---|---|---|
-| 構造・手順・数値の関係 | `diagrams.Canvas`（`flow` / `cards` / `hbars` / `connect`） | 正確。要素どうしの関係が保証される |
-| 概念・比喩・登場人物 | `illustrations`（`icon_flow` / `pyramid` / `iceberg` …） | 図形で描く。**ネットワーク不要・毎回同じ絵**・テーマ配色 |
-| 業務語彙のアイコン | `icons`（`asset_icon` / `asset_icon_flow` …） | Scalar ブランドの素材 62 種。ブランド準拠。**通信が要る**。→ `icons.md` |
-| クラウド構成図 | `cloud_icons`（`cloud_icon` / `cloud_zone` …） | AWS/GCP/Azure 公式 1,757 種。**色・回転の変更は禁止**。→ `cloud-icons.md` |
-| 雰囲気・情景・表紙 | `images`（`ai_image` / `image`） | AI 生成か手持ちの画像。表現力は高いが再現性は生成時のキャッシュ頼み |
+| Structure, procedure, or numeric relationships | `diagrams.Canvas` (`flow` / `cards` / `hbars` / `connect`) | Precise. Relationships between elements are guaranteed |
+| Concept, metaphor, characters | `illustrations` (`icon_flow` / `pyramid` / `iceberg` …) | Drawn with shapes. **No network needed, same picture every time**, themed colors |
+| Icons for business vocabulary | `icons` (`asset_icon` / `asset_icon_flow` …) | 62 Scalar-branded assets. On-brand. **Requires network access**. See `icons.md` |
+| Cloud architecture diagrams | `cloud_icons` (`cloud_icon` / `cloud_zone` …) | 1,757 official AWS/GCP/Azure icons. **Changing color or rotation is forbidden**. See `cloud-icons.md` |
+| Mood, scenery, cover art | `images` (`ai_image` / `image`) | AI-generated or your own images. High expressive power, but reproducibility depends entirely on the generation-time cache |
 
-いずれも `Canvas` のメソッドとして生えているので、同じスライドに混ぜて使える。
-座標はすべてインチ、原点はスライド左上、**戻り値は描画領域の下端 y**。
+All of these hang off `Canvas` as methods, so they can be mixed on the same slide.
+Coordinates are always in inches, the origin is the slide's top-left, and **the return value is
+the bottom y of the drawn area**.
 
 ```python
 d = Canvas(deck, ref["slideId"], template)
@@ -21,9 +24,9 @@ b = d.label(0.7, b + 0.2, 8.6, 0.3, "…")
 
 ---
 
-## 1. ピクトグラム（`illustrations`）
+## 1. Pictograms (`illustrations`)
 
-30 種。`icon()` は size×size の正方形に描き、`label` を渡すと下にキャプションを付ける。
+30 types. `icon()` draws into a size×size square; pass `label` to add a caption below.
 
 ```
 person people server database cloud document documents gear lock shield
@@ -31,14 +34,14 @@ browser mobile bot chart clock check cross warning mail key
 network code stack folder bulb search sync flag coin chip
 ```
 
-| 使う場面 | メソッド |
+| When to use | Method |
 |---|---|
-| 1 個だけ置く | `icon(name, x, y, size, color=…, label=…)` |
-| 横一列に並べる | `icon_row(x, y, w, items)` |
-| 矢印でつないで流れにする | `icon_flow(x, y, w, items)` |
-| 格子状に並べる | `icon_grid(x, y, w, items, cols=4)` |
+| Place a single one | `icon(name, x, y, size, color=…, label=…)` |
+| Line them up horizontally | `icon_row(x, y, w, items)` |
+| Connect with arrows into a flow | `icon_flow(x, y, w, items)` |
+| Arrange in a grid | `icon_grid(x, y, w, items, cols=4)` |
 
-`items` は名前か `(名前, ラベル)`。色は `color=` に 1 色、または要素ごとのリスト。
+`items` is a name, or `(name, label)`. Color is a single `color=` value, or a per-element list.
 
 ```python
 d.icon_flow(0.5, 1.3, 9.0, [
@@ -47,150 +50,159 @@ d.icon_flow(0.5, 1.3, 9.0, [
 ], size=0.92)
 ```
 
-**キャプションの幅は既定で size の 2 倍。** 横に詰めて並べるときは `label_w` を
-セル幅に合わせて明示すること。放っておくと隣のキャプションとぶつかり、
-`audit_overlaps()` に拾われる。
+**Caption width defaults to twice `size`.** When packing icons tightly side by side, set
+`label_w` explicitly to match the cell width. Left alone, captions collide with the neighboring
+one and get caught by `audit_overlaps()`.
 
-**`icon_flow` は `w / 個数 − size − 0.2in` の隙間に矢印を引く。** 絵を大きくすると
-ここが負になり、右向きのはずの矢印が逆向きに描かれる（`_anchored` な線なので
-`audit_connectors()` は拾わない）。隙間が足りないときは `ValueError` で止まるので、
-`size` を下げるか `w` を広げるか、矢印の要らない `icon_row` に替える。
-狭い枠（表紙や章扉のカードなど）では `icon_row` のほうが収まりがよい。
+**`icon_flow` draws its arrow into the gap of `w / count − size − 0.2in`.** If you enlarge the
+icons, this can go negative, causing an arrow meant to point right to be drawn backward (since
+it's an `_anchored` line, `audit_connectors()` won't catch it). When the gap runs out it stops
+with a `ValueError`; either lower `size`, widen `w`, or switch to `icon_row`, which needs no
+arrow. In tight frames (e.g. cover or section-divider cards), `icon_row` tends to fit better.
 
-### ブランドのアイコンを使う場合
+### Using branded icons
 
-`illustrations` の 30 種は汎用の部品なので、「情報銀行」「証拠チェーン」「内定」の
-ような業務語彙は描けない。そこは `assets/scalar/pictograms/` のブランド素材（62 種）を使う。
-使い方は同じ形で、メソッド名に `asset_` が付く。
+Since the 30 types in `illustrations` are generic parts, they can't depict business vocabulary
+like "data bank," "evidence chain," or "job offer." For that, use the branded assets (62 types)
+in `assets/scalar/pictograms/`. The usage is the same shape, just with `asset_` prefixed to the
+method name.
 
 ```python
 d.asset_icon_flow(0.5, 1.15, 9.0, [("job-seeker", "求職者"), ("interview", "面接")])
 ```
 
-一覧・検索・色の扱い・制約は **`references/icons.md`** にまとめてある。
+The catalog, search, color handling, and constraints are all covered in
+**`references/icons.md`**.
 
-## 2. 比喩図（`illustrations`）
+## 2. Metaphor diagrams (`illustrations`)
 
-| メソッド | 何を見せる図か | 主な引数 |
+| Method | What it shows | Key arguments |
 |---|---|---|
-| `pyramid(x,y,w,h,levels)` | 階層。上ほど少数・上位 | `captions=` で各段の右に補足 |
-| `funnel(x,y,w,h,stages)` | 絞り込み。段ごとに数を添える | `stages=[(ラベル, 値)]` |
-| `venn(x,y,w,h,sets)` | 重なり。2 個か 3 個 | `center=` で共通部分のラベル |
-| `iceberg(x,y,w,h,above,below)` | 見えている一部と水面下の大半 | `art_ratio=` で絵と文字の配分 |
-| `balance(x,y,w,h,left,right)` | 2 案の比較 | `tilt=1` で右が重い |
-| `steps(x,y,w,h,items)` | 段階を踏んで上がる | 左が最初、右が最後 |
-| `layers(x,y,w,h,items)` | 積層。技術スタック等 | `items=[(ラベル, 補足)]` |
-| `hub(x,y,w,h,center,spokes)` | 中心と放射 | 中心が主役のとき |
-| `matrix(x,y,w,h,quadrants)` | 4 象限で位置づける | 左上・右上・左下・右下の順。軸は `(下, 上)` `(左, 右)` |
-| `before_after(x,y,w,h,before,after)` | 左右の対比 | 中央に矢印が入る。`comparison` の 2 列特化形 |
-| `comparison(x,y,w,h,columns)` | N 案を横に並べる | `columns=[(見出し, [項目…])]`。`arrows=True` は移り変わりのときだけ、`highlight=i` で推奨案を強調 |
-| `influence_graph(x,y,w,h,people)` | 関与者を組織構造で並べる | 役割=上帯 / 影響度=下帯 / 立場=塗り / 未面談=破線。`links` で対等な関係、`more` で省略数。データは `account_graph.py` が検証 |
-| `outcome_tree(x,y,w,h,nodes)` | Goal・Strategy・Tactics の支持関係 | `edges` は支える側→支えられる側。**段は tier ではなくグラフの深さ**。多親可 |
-| `journey(x,y,w,h,milestones)` | 道のり。上下交互に配置 | `milestones=[(見出し, 補足)]` |
-| `timeline(x,y,w,items)` | 横方向の時系列 | `items=[(時点, 見出し)]` |
+| `pyramid(x,y,w,h,levels)` | Hierarchy — fewer and higher-ranked toward the top | `captions=` for a note to the right of each tier |
+| `funnel(x,y,w,h,stages)` | Narrowing down, with a count attached per stage | `stages=[(label, value)]` |
+| `venn(x,y,w,h,sets)` | Overlap. 2 or 3 sets | `center=` for a label in the shared area |
+| `iceberg(x,y,w,h,above,below)` | The small visible part vs. the bulk underwater | `art_ratio=` for the split between art and text |
+| `balance(x,y,w,h,left,right)` | Comparing two options | `tilt=1` weights the right side heavier |
+| `steps(x,y,w,h,items)` | Climbing through stages | Left is first, right is last |
+| `layers(x,y,w,h,items)` | Stacked layers, e.g. a technology stack | `items=[(label, note)]` |
+| `hub(x,y,w,h,center,spokes)` | A center with radiating spokes | For when the center is the main subject |
+| `matrix(x,y,w,h,quadrants)` | Positioning across 4 quadrants | Order: top-left, top-right, bottom-left, bottom-right. Axes are `(bottom, top)` `(left, right)` |
+| `before_after(x,y,w,h,before,after)` | Side-by-side contrast | An arrow appears in the middle. A 2-column specialization of `comparison` |
+| `comparison(x,y,w,h,columns)` | Lining up N options side by side | `columns=[(heading, [item…])]`. `arrows=True` only for a transition; `highlight=i` emphasizes the recommended option |
+| `influence_graph(x,y,w,h,people)` | Laying out stakeholders in an org structure | Role = top band / influence = bottom band / stance = fill / not yet met = dashed. `links` for peer relationships, `more` for an omitted count. Data is validated by `account_graph.py` |
+| `outcome_tree(x,y,w,h,nodes)` | The support relationships of Goal / Strategy / Tactics | `edges` go from the supporting side to the supported side. **Tiers are graph depth, not fixed tiers**. Multiple parents allowed |
+| `journey(x,y,w,h,milestones)` | A path, alternating above and below | `milestones=[(heading, note)]` |
+| `timeline(x,y,w,items)` | A horizontal chronology | `items=[(point in time, heading)]` |
 
-**JSON 仕様で書く場合、`levels` / `stages` / `sets` / `spokes` / `milestones` の
-ような位置引数はすべて `FIGURES` 定義のキー名（多くは `items`）で渡す。**
-Python のシグネチャの引数名のままでは通らない（`hub` の `center`、`iceberg` の
-`above` / `below` のように `FIGURES` 側も固有名のものはそのまま）。
+**When writing a JSON spec, positional arguments like `levels` / `stages` / `sets` / `spokes` /
+`milestones` are all passed under the key name used in the `FIGURES` definition (usually
+`items`).** The Python signature's argument names don't carry over as-is (though ones with
+distinct names on the `FIGURES` side too, like `hub`'s `center` or `iceberg`'s `above` /
+`below`, stay unchanged).
 
-### 枠の外に出るもの
+### Content that spills outside the frame
 
-`pyramid(captions=…)` と `funnel` の値表示は、**`x + w` の右外側**を使う。
-その分の余白を残して `w` を決めること。残さないと `audit_bounds()` が
-「スライドの外に出ています」で落とす。
+`pyramid(captions=…)` and `funnel`'s value labels use the space **just outside the right edge of
+`x + w`**. Leave that margin when deciding `w`. If you don't, `audit_bounds()` fails with "goes
+outside the slide."
 
-### 台形は `TRAPEZOID` で描いていない
+### Trapezoids are not drawn with `TRAPEZOID`
 
-Slides の `TRAPEZOID` は**上底の食い込みが「高さ × 0.25」に固定**で、幅でも
-scaleY でも変えられない（実測。`api-notes.md` セクション 15）。段ごとに幅が違う
-ピラミッドやファネルをこれで積むと、段ごとに傾きが変わって輪郭がギザギザになる。
+Slides' `TRAPEZOID` has its **top-edge inset fixed at height × 0.25**, and neither width nor
+scaleY can change it (measured empirically; `api-notes.md` section 15). Stacking a pyramid or
+funnel whose width differs tier by tier with this shape makes the slope change from tier to
+tier, producing a jagged outline.
 
-そこで `pyramid` / `funnel` は「中央の矩形＋左右の直角三角形」の 3 部品で
-1 段を描いている（`_taper()`）。各段の上底をひとつ上の段の下底に合わせているので、
-輪郭は一直線につながる。自分で台形を描きたいときも `_taper()` を使うこと。
+So `pyramid` / `funnel` draw each tier as 3 parts: a center rectangle plus a right-angle triangle
+on each side (`_taper()`). Each tier's top edge is aligned to the tier above's bottom edge, so
+the outline connects in one continuous line. Use `_taper()` too if you want to draw your own
+trapezoid.
 
-### 回転した図形に文字を入れてはいけない
+### Never put text on a rotated shape
 
-五角形（`shield`）などは 180 度回して使っている。**回すと中の文字も一緒に回り、
-上下逆さまに出る。** 図形は `text` 無しで描き、文字は別に `label()` を重ねること。
-`shape()` は 0/90/270 度以外の回転に文字を入れると警告する。
+Shapes like the pentagon (`shield`) are used rotated 180 degrees. **Rotating it also rotates any
+text inside, rendering it upside down.** Draw the shape with no `text`, and overlay the text
+separately via `label()`. `shape()` warns if text is added to a rotation other than 0/90/270
+degrees.
 
-`label(rotation=270)` で意図的に縦にすることはできるが、**日本語では使わないこと。**
-文字が横倒しになって読みにくい。縦のラベルが要るときは 1 文字ずつ改行して積む
-（`matrix` の縦軸ラベルはこの方式）。
+`label(rotation=270)` can be used to intentionally make text vertical, but **don't use it for
+Japanese.** The characters end up sideways and hard to read. When a vertical label is needed,
+stack it one character per line (this is how `matrix`'s vertical-axis label is done).
 
 ---
 
-## 3. 画像（`images`）
+## 3. Images (`images`)
 
-### 手持ちの画像を貼る
+### Placing an existing image
 
 ```python
 d.image(0.6, 1.1, 4.2, 2.6, "assets/screenshot.png", fit="contain",
         caption="管理画面", outline="#D6E4F2")
 ```
 
-キャプションの位置は `caption_at` で決める。
+The caption's position is controlled by `caption_at`.
 
-- `"image"`（既定）… 画像の実際の下端。1 枚だけ置くときはこちら
-- `"box"` … 枠の下端。**画像を横に並べるときはこちら**。`fit` が違うと画像の
-  下端がずれるため、既定のままだとキャプションの高さが揃わない
+- `"image"` (default) — the image's actual bottom edge. Use this when placing a single image
+- `"box"` — the frame's bottom edge. **Use this when placing images side by side**. When `fit`
+  differs, the images' bottom edges shift, so with the default setting caption heights won't
+  line up
 
-`source` は次のいずれか。
+`source` is one of:
 
-- ローカルのパス（**実行時のカレントディレクトリから解決される**）
-- `http(s)://…` の URL
-- Drive のファイル URL、または `drive:<fileId>`
+- A local path (**resolved from the current working directory at runtime**)
+- An `http(s)://…` URL
+- A Drive file URL, or `drive:<fileId>`
 
-| `fit` | 挙動 |
+| `fit` | Behavior |
 |---|---|
-| `contain`（`image()` の既定） | 比率を保って枠内に収める。余白ができる |
-| `cover` | 枠を埋め、はみ出す分を切り落とす |
-| `stretch` | 枠に合わせて引き伸ばす（比率が崩れる） |
+| `contain` (`image()`'s default) | Fits within the frame preserving aspect ratio. Leaves margins |
+| `cover` | Fills the frame, cropping whatever overflows |
+| `stretch` | Stretches to fit the frame (distorts aspect ratio) |
 
-**`ai_image()` の既定は `cover`**（枠を埋める）。生成比は枠と完全には一致しない
-ため、`contain` だと余白にテンプレートの地が覗く。「枠に合わせて生成する」を参照。
+**`ai_image()`'s default is `cover`** (fills the frame). Since the generated aspect ratio never
+matches the frame exactly, `contain` would expose the template's background in the margins. See
+"Generating to match the frame."
 
-Slides が受け付けるのは **PNG / JPEG / GIF のみ**、50MB 未満・25 メガピクセル未満。
-それ以外は挿入前にエラーにする。
+Slides only accepts **PNG / JPEG / GIF**, under 50MB and under 25 megapixels. Anything else
+errors out before insertion.
 
-### テンプレートに画像枠があるなら、そこに置く
+### If the template has an image slot, place it there
 
-**座標を自分で決める前に、レイアウトの `imageSlots` を見ること。** 表紙・章扉・
-事例紹介のようなレイアウトは「ここに絵を入れる」枠を持っていることが多く、
-そこを外すとテンプレートのデザインから浮く。
+**Check the layout's `imageSlots` before deciding coordinates yourself.** Layouts like covers,
+section dividers, or case-study introductions often carry a "put the picture here" slot, and
+missing it makes the result look detached from the template's design.
 
 ```json
 { "layout": "SECTION", "title": "第1章 …",
   "figures": [ { "type": "aiImage", "prompt": "…", "style": "isometric" } ] }
 ```
 
-`x` / `y` / `w` / `h` を省略すると `build_deck.py` が枠の座標を埋め、`fit` も
-`"cover"` にする（枠は縦横比までデザインなので、余白付きで収めるより枠を
-埋めるほうが合う）。枠が複数あるレイアウトでは `"slot": 1` のように選ぶ。
+Omitting `x` / `y` / `w` / `h` lets `build_deck.py` fill in the slot's coordinates, and also
+sets `fit` to `"cover"` (since the slot's aspect ratio is itself part of the design, filling the
+slot suits it better than fitting with margins). For a layout with multiple slots, select one
+with e.g. `"slot": 1`.
 
-`aiImage` なら、**絵そのものも枠に合わせて生成される**（枠の比に最も近い比率で
-描き、切り取られる分を見越した構図をモデルに指示する）。詳しくは
-「枠に合わせて生成する」。
+For `aiImage`, **the artwork itself is generated to match the slot** (drawn at the ratio closest
+to the slot's, with the composition instructed to account for what will be cropped). See
+"Generating to match the frame" for details.
 
 ```bash
-# どのレイアウトにどんな枠があるかを見る
-python scripts/inspect_template.py <URL>        # レポートに imageSlot[N] が出る
+# See which layouts have which slots
+python scripts/inspect_template.py <URL>        # the report shows imageSlot[N]
 ```
 
-枠があるのに別の場所へ置くと `--dry-run` が警告する（`--strict` ならエラー）。
-枠が無いレイアウトでは、これまでどおり座標を自分で決める。
+If a slot exists but you place the image elsewhere, `--dry-run` warns (`--strict` turns it into
+an error). For layouts without a slot, decide the coordinates yourself as before.
 
-**もう出来ているデッキ**の空き枠を埋めるなら `scripts/fill_image_slots.py`
-（`image-slots` スキル）。仕様の無いデッキや、URL を変えられないデッキが対象。
+To fill empty slots in **a deck that's already been built**, use `scripts/fill_image_slots.py`
+(the `image-slots` skill). This targets decks with no spec, or decks whose URL can't change.
 
 ```bash
-python scripts/fill_image_slots.py <URL> --dry-run   # どの枠が埋まるかを見る
+python scripts/fill_image_slots.py <URL> --dry-run   # see which slots would be filled
 python scripts/fill_image_slots.py <URL>
 ```
 
-### AI で生成する
+### Generating with AI
 
 ```python
 d.ai_image(5.2, 1.1, 4.2, 2.6,
@@ -199,93 +211,98 @@ d.ai_image(5.2, 1.1, 4.2, 2.6,
 ```
 
 ```bash
-# 単体で試す（--show-prompt なら API を呼ばずにプロンプトだけ見られる）
+# Try it standalone (--show-prompt shows just the prompt, without calling the API)
 python scripts/images.py --prompt "…" --style flat_vector \
     --template templates/aixdevops.json --out out/hero.png
 ```
 
-| `style` | 向いている用途 |
+| `style` | Suited for |
 |---|---|
-| `flat_vector`（既定） | ビジネス資料の挿絵全般。線画＋テーマ配色 |
-| `line_art` | 軽い装飾。文字の邪魔をしない |
-| `isometric` | システム構成・インフラの俯瞰 |
-| `blueprint` | 技術的な設計の比喩 |
-| `paper` | 柔らかい印象の扉 |
-| `photo` | 表紙・セクション扉の背景。本文の説明図には不向き |
+| `flat_vector` (default) | General illustration for business materials. Line art with the theme's colors |
+| `line_art` | Light decoration. Doesn't compete with the text |
+| `isometric` | System architecture or infrastructure overviews |
+| `blueprint` | Technical-design metaphors |
+| `paper` | A softer feel for section dividers |
+| `photo` | Backgrounds for covers or section dividers. Not suited for explanatory figures in body text |
 
-- プロンプトには**テンプレートの配色**（`d._template_colors` 由来）と、
-  「文字・ロゴを描かない」「余白を取る」といった制約が自動で足される。
-- `aspect` を省略すると**枠に合わせて生成される**。詳しくは次項。
-- 生成物は `cache/images/<hash>.png` にキャッシュされる。キーは
-  (モデル, スタイル, 比率, プロンプト全文)。**同じ指定ならデッキを作り直しても
-  同じ絵が出る。** プロンプトはサイドカーの `.json` に残る。
-- `GEMINI_API_KEY` が必要。既定のモデルは `gemini-3.1-flash-image`
-  （`GSLIDES_IMAGE_MODEL` で変更可）。
+- The prompt automatically has **the template's color palette** appended (sourced from
+  `d._template_colors`), along with constraints like "don't draw text or logos" and "leave
+  margins."
+- Omitting `aspect` **generates it to match the frame**. See the next section for details.
+- Output is cached at `cache/images/<hash>.png`. The key is
+  (model, style, aspect ratio, full prompt text). **The same spec produces the same picture even
+  if you rebuild the deck.** The prompt is kept in a sidecar `.json`.
+- Requires `GEMINI_API_KEY`. The default model is `gemini-3.1-flash-image`
+  (changeable via `GSLIDES_IMAGE_MODEL`).
 
-> **画像モデルは無料枠のクォータが 0。** キーが無料枠のプロジェクトのものだと
-> `HTTP 429 / limit: 0` が返る。課金を有効にしたプロジェクトの API キーが要る。
-> 図形で描く `illustrations` のほうはキー無しで動く。
+> **The image model has zero free-tier quota.** If the key belongs to a free-tier project, it
+> returns `HTTP 429 / limit: 0`. You need an API key from a project with billing enabled.
+> The shape-based `illustrations` still works without any key.
 
-### 枠に合わせて生成する
+### Generating to match the frame
 
-`aspect` を省略すると、置き先の枠（テンプレートの `imageSlots` でも、自分で
-決めた座標でも）に合わせて生成される。ただし**モデルが作れる比率は 10 種類しか
-無い**ので、枠とぴったり同じ比率にはならない。
+Omitting `aspect` generates the image to match the destination frame (whether that's a
+template's `imageSlots` or coordinates you chose yourself). However, **the model can only
+produce 10 aspect ratios**, so it never matches the frame's ratio exactly.
 
-そこで次の 2 つで埋めている。
+The gap is closed with two steps:
 
-1. 枠の比に**最も近い比率**で生成する
-2. 残った差は `fit="cover"` の切り取りで埋める。`ai_image` の `fit` は既定が
-   `cover` で、枠を必ず埋める（`contain` だと余白にテンプレートの地が覗く）
+1. Generate at the ratio **closest to the frame's**
+2. Fill the remaining difference by cropping with `fit="cover"`. `ai_image`'s `fit` defaults to
+   `cover` and always fills the frame (`contain` would expose the template's background in the
+   margins)
 
-切り取りは中央から行われるため、主題が端に寄っていると欠ける。これを避けるため、
-比率のずれが 2% を超える場合は**切り取られる分を見越した構図**をプロンプトで
-指示する（「1.13:1 の枠に入り、左右が約 9% 切られる。主題は中央に寄せ、端には
-残したいものを置かない」）。生成時に次のように出る。
+Cropping happens from the center, so a subject positioned near an edge can get clipped. To avoid
+this, whenever the ratio mismatch exceeds 2%, the prompt is given **a composition instruction
+that accounts for what will be cropped** ("fits into a 1.13:1 frame with about 9% cropped off
+the left and right; keep the subject centered, and don't put anything you want to keep near the
+edges"). At generation time it prints something like:
 
 ```
   note: 1.13:1 の枠に対して 5:4 で生成します（切り取りで主題が欠けない構図を指示済み）
 ```
 
-枠の比はプロンプト全文に入るのでキャッシュキーにも効く。**同じ絵を別の比率の枠に
-置くと作り直しになる**（その枠のための構図で描き直される）。
+Since the frame's ratio is embedded in the full prompt text, it also affects the cache key.
+**Placing the same image into a differently-shaped frame triggers a regeneration** (redrawn with
+a composition suited to that frame).
 
-比率を自分で決めたいときは `aspect` を明示する。その場合、枠と合っているかは
-指定した側の責任とみなし、構図の指示は付けない。
+To choose the ratio yourself, set `aspect` explicitly. In that case, matching it to the frame is
+treated as your responsibility, and no composition instruction is added.
 
-### 何が起きているか（ローカル画像の場合）
+### What happens under the hood (for local images)
 
-1. 存在・形式・サイズを検査する（ローカル完結。ここで弾かれた指定は
-   `d.image()` の呼び出し位置で例外になる）
-2. Drive への一時アップロードと「リンクを知る全員が閲覧可」の付与を
-   **別スレッドに投げる**（`AssetStore.defer()`）。`createImage` は URL を
-   **匿名で**取りに行くため、認証済みの自分がアクセスできるだけでは足りない
-3. 実寸はローカルのファイルから読むので、URL の確定を待たずに配置を決められる。
-   `createImage` は `url` を空にしたまま組み立てておく
-4. `commit()` の冒頭で全アップロードの完了を待ち、`url` を埋める
-   （`AssetStore.flush()`）。同じソースは何枚貼っても 1 回しか上げない
-5. `batchUpdate` で挿入する（Slides が画像をプレゼンテーション内へコピーする）
-6. その直後に一時ファイルを削除し、既存ファイルに付けた公開共有を外す
-   （`AssetStore.cleanup()`。並列に実行する）
+1. Existence, format, and size are checked (entirely local; a rejected spec raises an exception
+   at the `d.image()` call site)
+2. A temporary upload to Drive plus granting "anyone with the link can view" is **dispatched to a
+   separate thread** (`AssetStore.defer()`). `createImage` fetches the URL **anonymously**, so
+   being able to access it as your authenticated self isn't enough
+3. Since real dimensions are read from the local file, placement can be decided without waiting
+   for the URL to resolve. `createImage` is assembled with `url` left empty for now
+4. At the start of `commit()`, it waits for every upload to finish and fills in `url`
+   (`AssetStore.flush()`). The same source is uploaded only once no matter how many times it's
+   pasted
+5. Inserted via `batchUpdate` (Slides copies the image into the presentation)
+6. Immediately after, the temporary file is deleted and any public sharing added for existing
+   files is revoked (`AssetStore.cleanup()`, run in parallel)
 
-アップロードは 1 枚あたり実測 3.1 秒（アップロード 1.9s ＋ 共有設定 1.2s）かかる。
-描画の途中で 1 枚ずつ同期に待つと画像 10 枚のデッキで 30 秒以上が画像だけに消えるため、
-2〜4 の形で裏に回している（実測 37.3s → 16.9s）。
+An upload measures 3.1 seconds per image in practice (1.9s upload + 1.2s setting sharing). If
+each image were awaited synchronously mid-render, a 10-image deck would burn over 30 seconds on
+images alone, so steps 2–4 are pushed to the background instead (measured 37.3s → 16.9s).
 
-リモート（http / Drive）のソースは実寸を読むのに URL 自体が要るので、ここは
-同期に解決する。
+Remote (http / Drive) sources need the URL itself to read the real dimensions, so those are
+resolved synchronously.
 
-組織のポリシーで「リンクを知る全員」が禁止されていると 2 が失敗する。その場合は
-あらかじめ公開されている URL を渡すか、`illustrations` で描くこと。
+If your organization's policy forbids "anyone with the link" sharing, step 2 fails. In that
+case, either pass a URL that's already public, or draw with `illustrations` instead.
 
-中断した実行の後始末は `atexit` に登録してある。飛行中のアップロードも待ってから
-畳むので、公開状態の一時ファイルは残らない。
+Cleanup for an interrupted run is registered with `atexit`. It waits for any in-flight uploads
+before shutting down, so no temporary file is left in a public state.
 
 ---
 
-## デッキ仕様（JSON）から使う
+## Using it from a deck spec (JSON)
 
-`build_deck.py` の spec で、スライドに `figures` を足せる。
+In `build_deck.py`'s spec, a slide can be given `figures`.
 
 ```json
 {
@@ -302,38 +319,39 @@ python scripts/images.py --prompt "…" --style flat_vector \
 }
 ```
 
-- `type` の正は `scripts/build_deck.py` の `FIGURES` 辞書（45 種）。
-  系統別の一覧は `references/template-schema.md` を参照。
-- 位置引数以外のキーは **camelCase → snake_case** に直して渡される
-  （`labelSize` → `label_size`、`xAxis` → `x_axis`）。
-- `--dry-run` は API を一切呼ばずに図を座標へ展開し、はみ出し・重なり・文字溢れを
-  検査する。**画像は実物を取りに行く必要があるため検査対象外。**
+- The canonical `type` list lives in `scripts/build_deck.py`'s `FIGURES` dict (45 types). See
+  `references/template-schema.md` for the list grouped by family.
+- Keys other than the positional arguments are converted from **camelCase to snake_case** before
+  being passed through (`labelSize` → `label_size`, `xAxis` → `x_axis`).
+- `--dry-run` expands the figures into coordinates without calling the API at all, checking for
+  overflow, overlap, and text spillover. **Images require fetching the real file, so they're
+  excluded from this check.**
 
 ---
 
-## 生成前に必ず通す 4 つの検査
+## The 4 checks to always run before generating
 
 ```python
-for msg in (d.audit_bounds()        # スライドの外に出た図形
-            + d.audit_connectors()  # 浮いた線・埋まった線
-            + d.audit_overlaps()    # 隠れた文字・ぶつかった文字
-            + d.audit_text_fit()):  # 文字の溢れと、みっともない折り返し
+for msg in (d.audit_bounds()        # shapes that go outside the slide
+            + d.audit_connectors()  # dangling or overlapping lines
+            + d.audit_overlaps()    # hidden or colliding text
+            + d.audit_text_fit()):  # text overflow, and ugly wrapping
     print(msg)
 ```
 
-`audit_text_fit()` は 2 種類を見る。
+`audit_text_fit()` checks two kinds of problems.
 
-1. **溢れ** … 枠に対して文字が多く、はみ出して読めなくなるもの
-2. **孤立行** … 折り返した最後の行に 1 文字しか残らないもの（「…デプロ / イ」）。
-   収まってはいるが明らかに不格好で、枠を数 mm 広げれば消える
+1. **Overflow** — too much text for the frame, spilling out and becoming unreadable
+2. **Orphan lines** — a wrapped last line with only a single character left ("…デプロ / イ").
+   It technically fits, but is obviously unsightly, and widening the frame by a few mm fixes it
 
-1 行に入る文字数は **Slides のテキスト枠の左右インセット（各 0.1in）を引いて**
-見積もる。引かないと 1〜2 字多く入る計算になり、実際には折り返しているのに
-検査が素通りする。
+The number of characters that fit on one line is estimated **after subtracting Slides' text-box
+left/right insets (0.1in each)**. Without subtracting them, the estimate allows 1–2 extra
+characters, so the check passes even though the text actually wraps.
 
-`build_deck.py` は spec から生成するとき、これを自動で回して結果を表示する。
-`--strict` を付けると 1 件でも出たら終了コードを 1 にする。
+`build_deck.py` runs this automatically when generating from a spec, and prints the results.
+Adding `--strict` makes it exit with code 1 if even one issue is found.
 
-`audit_bounds()` は図の部品が枠の外へ突き抜けたときに効く。部品は与えられた枠から
-自分で座標を計算するため、**枠が正しくても中身が外へ出る**ことがあり、これは
-図形単位で見ないと拾えない。
+`audit_bounds()` catches figure parts that poke outside their frame. Since parts compute their
+own coordinates from the given frame, **content can go outside even when the frame itself is
+correct**, and this can only be caught by looking at each figure individually.

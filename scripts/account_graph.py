@@ -7,7 +7,7 @@ disagrees with the .drawio beside it is worse than either alone.
 
     influence  people[] {id, roles[], org, name, influence, stance, met,
                          reportsTo, note}
-               links[]  {from, to, label}      対等な関係・補足の線
+               links[]  {from, to, label}      peer relationships / supplementary lines
     discovery  nodes[]  {id, tier, text, owner}
                edges[]  {from, to}             Tactics -> Strategy -> Goal
 
@@ -28,7 +28,7 @@ ROLES = {"F": "購買者", "T": "技術者", "U": "利用者", "C": "コーチ",
 INFLUENCE = ("champion", "high", "medium", "low")
 STANCE = ("close", "neutral", "opposed")
 TIERS = ("goal", "strategy", "tactics")
-# 下位 tier から上位 tier へしか結べない
+# can only connect from a lower tier to a higher tier
 TIER_RANK = {"tactics": 0, "strategy": 1, "goal": 2}
 
 INFLUENCE_SCORE = {"champion": 4, "high": 3, "medium": 2, "low": 1}
@@ -111,7 +111,7 @@ def validate(graph: dict) -> list[str]:
     if problems:
         return problems
 
-    # 参照の健全性
+    # referential integrity
     for it in items:
         parent = it.get("reportsTo")
         if parent is not None and parent not in ids:
@@ -129,8 +129,9 @@ def validate(graph: dict) -> list[str]:
         by_id = {n["id"]: n for n in items}
         for i, e in enumerate(graph.get("edges", []) or []):
             lo, hi = by_id[e["from"]]["tier"], by_id[e["to"]]["tier"]
-            # 同 tier は可（下位目標が上位目標を支える、下位戦略が上位戦略を支える）。
-            # 禁じるのは上位 tier から下位 tier へ向かう辺だけ。
+            # Same tier is fine (a lower goal supports a higher goal, a lower
+            # strategy supports a higher strategy). Only edges running from a
+            # higher tier to a lower tier are forbidden.
             if TIER_RANK[lo] > TIER_RANK[hi]:
                 problems.append(
                     f"edges[{i}]: {lo} -> {hi} points downwards; edges run "
@@ -179,13 +180,14 @@ def _score(graph: dict, item: dict, parents: dict[str, list[str]]) -> tuple:
     """Higher sorts first."""
     children = sum(1 for v in parents.values() if item["id"] in v)
     if graph["type"] == "influence":
-        # 同じ影響度なら、決裁に絡む人 > 会えている人 > 部下の多い人。
-        # 未面談で影響度も低い人はスライドでは最も情報量が少ないので後ろへ。
+        # Within the same influence level: decision-makers > people already met >
+        # people with more reports. Someone unmet and low-influence carries the
+        # least information for a slide, so they sort last.
         return (INFLUENCE_SCORE.get(item.get("influence"), 0),
                 1 if "F" in item.get("roles", []) else 0,
                 1 if item.get("met", True) else 0,
                 children)
-    # goal > strategy > tactics。同 tier なら支えている数が多いほうを残す
+    # goal > strategy > tactics. Within the same tier, keep whichever supports more
     return (TIER_RANK[item["tier"]], children)
 
 
@@ -204,15 +206,16 @@ def extract(graph: dict, limit: int | None = None) -> tuple[dict, list[dict]]:
 
     ranked = sorted(items, key=lambda it: _score(graph, it, parents), reverse=True)
     cut = min(limit, len(ranked))
-    # 境目で同点なら、その同点グループごと落とす。等しく重要な兄弟のうち 1 人だけ
-    # 載せると、選ばれなかった人が存在しないかのように読めるため。
+    # If there's a tie at the cutoff, drop the whole tied group together.
+    # Including only one of several equally important siblings would read as if
+    # the others who weren't picked don't exist.
     if 0 < cut < len(ranked):
         edge_score = _score(graph, ranked[cut - 1], parents)
         if edge_score == _score(graph, ranked[cut], parents):
             while cut > 0 and _score(graph, ranked[cut - 1], parents) == edge_score:
                 cut -= 1
     keep: set[str] = {it["id"] for it in ranked[:cut]}
-    # 祖先を引き込む（切れた辺を残さない）
+    # pull in ancestors (don't leave any dangling edges)
     stack = list(keep)
     while stack:
         for p in parents[stack.pop()]:
@@ -230,7 +233,8 @@ def extract(graph: dict, limit: int | None = None) -> tuple[dict, list[dict]]:
     else:
         thin["links"] = [e for e in graph.get("links", []) or []
                          if e["from"] in keep and e["to"] in keep]
-        # 祖先は必ず残るので通常は起きないが、念のため宙に浮いた reportsTo は切る
+        # Ancestors are always kept so this normally can't happen, but sever any
+        # dangling reportsTo just in case
         thin[key] = [dict(it, reportsTo=(it.get("reportsTo")
                                          if it.get("reportsTo") in keep else None))
                      for it in thin[key]]

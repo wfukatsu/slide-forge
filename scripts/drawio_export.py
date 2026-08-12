@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""draw.io (.drawio) ファイルを PNG に書き出す（スライド挿入用）。
+"""Export a draw.io (.drawio) file to PNG (for inserting into slides).
 
     python scripts/drawio_export.py <in.drawio> [--out out/diagrams/x.png]
         [--scale 2] [--page N] [--transparent] [--border 4]
 
-drawio デスクトップ CLI（`brew install --cask drawio` で入る
-/opt/homebrew/bin/drawio、無ければアプリ内バイナリ）のヘッドレス
-エクスポートを使う。PNG はページサイズではなく描画内容の外接矩形で
-切り出される。
+Uses the drawio desktop CLI's headless export (`/opt/homebrew/bin/drawio`,
+installed via `brew install --cask drawio`; falls back to the in-app binary
+if that's missing). The PNG is cropped to the bounding box of the drawn
+content, not the page size.
 
-書き出した PNG は必ず Read ツールで目視確認すること: 存在しない
-resIcon / shape 名はエラーにならず「無地の色付き四角」として描画される
-ため、CLI の戻り値からは検出できない。記法と検証済みスタイルは
-references/drawio.md を参照。
+Always visually verify the exported PNG with the Read tool: a nonexistent
+resIcon / shape name doesn't raise an error — it's rendered as a "plain
+colored square" instead, which can't be detected from the CLI's return
+value. See references/drawio.md for notation and verified styles.
 """
 from __future__ import annotations
 
@@ -68,7 +68,7 @@ def find_drawio() -> str:
 
 
 def check_xml(path: str) -> None:
-    """well-formed か・mxfile 構造かを書き出し前に検査する。"""
+    """Check that the file is well-formed and has an mxfile structure before exporting."""
     try:
         root = ET.parse(path).getroot()
     except ET.ParseError as e:

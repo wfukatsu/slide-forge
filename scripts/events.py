@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""イベント案内図（`diagrams.Canvas` に混ぜて使うミックスイン）。
+"""Event guide diagrams (a mixin used together with `diagrams.Canvas`).
 
-セミナー・勉強会・カンファレンスの案内デッキで定番の部品を型にしたもの。
-オンライン開催・会場（オフライン）開催・ハイブリッド開催の 3 形式に対応する。
-すべて図形だけで描くのでキーもネットワークも不要、色はテンプレートの配色に従う。
+Turns the standard building blocks of seminar / study-session / conference
+guide decks into reusable parts. Supports three formats: online, venue
+(offline), and hybrid.
+Everything is drawn with shapes alone, so no keys or network access are
+needed; colors follow the template's palette.
 
     d = Canvas(deck, slide_id, template)
     d.event_overview(0.5, 1.2, 4.4, [
@@ -25,9 +27,11 @@
         ["山田 太郎", "株式会社Scalar CTO", "基調講演"],
     ])
 
-すべての図は他の部品と同じ積み上げ規約に従い、**描画領域の下端 y を返す**。
-座標はインチ。描いたら `audit_*` の自己点検を必ず通すこと。
-日付・会場・URL などの中身はユーザーの素材から取る（勝手に埋めない）。
+Every diagram follows the same stacking convention as the other building
+blocks and **returns the bottom y of the drawn area**. Coordinates are in
+inches. Always run the `audit_*` self-checks after drawing. Pull the actual
+content — dates, venue, URLs, etc. — from the user's own material (never
+fill it in yourself).
 """
 from __future__ import annotations
 
@@ -61,13 +65,13 @@ MODE_LABELS = {
 
 
 class EventMixin:
-    # ---------- 開催形式バッジ ----------
+    # ---------- Event-format badge ----------
 
     def event_mode_badge(self, x, y, mode, *, label=None, size=10) -> float:
-        """開催形式のピル型バッジ。戻り値は下端 y。
+        """Pill-shaped badge for the event format. Returns the bottom y.
 
-        mode: "online" / "offline" / "hybrid"。label で文言を差し替えられる
-        （例: "オンライン開催（無料）"）。
+        mode: "online" / "offline" / "hybrid". Use `label` to override the
+        text (e.g. "オンライン開催（無料）").
         """
         if mode not in MODES:
             raise ValueError(t("mode must be one of {allowed} (got: {mode})",
@@ -81,15 +85,16 @@ class EventMixin:
                    valign="MIDDLE", color="#FFFFFF")
         return y + h
 
-    # ---------- 開催概要 ----------
+    # ---------- Event overview ----------
 
     def event_overview(self, x, y, w, rows, *, mode=None, size=11,
                        term_w=1.15, icon_size=0.34, row_h=0.5) -> float:
-        """開催概要のアイコン付き項目リスト。戻り値は下端 y。
+        """Icon-labeled list of overview items. Returns the bottom y.
 
-        rows は [ピクトグラム名, 項目, 値] の並び。値が 2 行になるときは
-        row_h を広げる（自動では広げない — 座標検査で拾えるように）。
-        mode を渡すと先頭に開催形式バッジを置く。
+        rows are [pictogram name, term, value] tuples. If a value wraps to
+        two lines, widen row_h yourself (it isn't widened automatically, so
+        the coordinate check can catch it). Passing `mode` places the
+        event-format badge at the top.
         """
         cy = y
         if mode:
@@ -112,15 +117,16 @@ class EventMixin:
             cy += row_h
         return cy
 
-    # ---------- タイムテーブル ----------
+    # ---------- Timetable ----------
 
     def event_timetable(self, x, y, w, rows, *, size=11, time_w=1.55,
                         row_h=0.42, zebra=True) -> float:
-        """プログラム（時刻 | 内容 | 登壇者）。戻り値は下端 y。
+        """Program (time | session | speaker). Returns the bottom y.
 
-        rows は [時刻, 内容] か [時刻, 内容, 登壇者]。時刻は "15:00–15:30" の
-        ような文字列をそのまま描く。行数が多いときは row_h を詰めるより
-        2 枚に分けること（1 枚 8 行まで目安）。
+        rows are [time, session] or [time, session, speaker]. The time is
+        drawn as-is, as a string like "15:00–15:30". If there are many rows,
+        split into two slides instead of shrinking row_h (roughly 8 rows per
+        slide is the guideline).
         """
         speaker_w = 0.0
         for row in rows:
@@ -155,15 +161,16 @@ class EventMixin:
                   free=True)
         return bottom
 
-    # ---------- 登壇者 ----------
+    # ---------- Speakers ----------
 
     def event_speakers(self, x, y, w, speakers, *, size=10, icon="person",
                        gap=0.24) -> float:
-        """登壇者カードの横並び。戻り値は下端 y。
+        """Row of speaker cards. Returns the bottom y.
 
-        speakers は [氏名, 肩書] か [氏名, 肩書, 講演タイトル]。1 行 5 人まで
-        （超えるなら 2 回呼んで 2 段にする）。氏名・肩書は実在の登壇者の
-        確定情報だけを使うこと。
+        speakers are [name, title] or [name, title, talk title]. Up to 5
+        speakers per row (call it twice for two rows if there are more).
+        Use only confirmed information about real speakers for the name and
+        title.
         """
         n = len(speakers)
         if n > 5:
@@ -199,18 +206,20 @@ class EventMixin:
                            color=self.P.primaryDark, line_spacing=112)
         return y + ch
 
-    # ---------- アクセス（会場 / オンライン） ----------
+    # ---------- Access (venue / online) ----------
 
     def event_access(self, x, y, w, h, *, mode, venue=None, online=None,
                      size=10.5) -> float:
-        """参加方法パネル。戻り値は下端 y。
+        """Panel for how to participate. Returns the bottom y.
 
-        - mode="offline": venue（{"name", "address", "access"}）のパネルのみ
-        - mode="online":  online（{"platform", "url", "note"}）のパネルのみ
-        - mode="hybrid":  両方を左右に並べる（venue と online の両方が必要）
+        - mode="offline": only the venue panel (venue = {"name", "address",
+          "access"})
+        - mode="online":  only the online panel (online = {"platform", "url",
+          "note"})
+        - mode="hybrid":  both, side by side (requires both venue and online)
 
-        URL や住所は確定情報だけを描く。未確定は「申込後にご案内」のような
-        文言にする（勝手に URL を作らない）。
+        Only draw confirmed URLs and addresses. For anything unconfirmed, use
+        wording like "申込後にご案内" (never make up a URL yourself).
         """
         if mode not in MODES:
             raise ValueError(t("mode must be one of {allowed} (got: {mode})",
@@ -262,6 +271,6 @@ class EventMixin:
 
 
 def _text_width(text: str, size: float) -> float:
-    """ラベル幅の見積もり（CJK=1、半角=0.55 文字換算）。"""
+    """Estimates label width (CJK counts as 1 char, half-width as 0.55)."""
     units = sum(1.0 if ord(ch) > 0x2E7F else 0.55 for ch in str(text))
     return units * size / 10

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""図解主体のデッキを宣言的に書くためのキット。
+"""A kit for declaratively writing diagram-centric decks.
 
-デッキは「1 モジュール = 1 デッキ」で書く。モジュールは `slide()` / `plain()` で
-スライドを登録し、`SLIDES` に溜める。`render_deck.py` が生成し、
-`validate_layout.py` が API を呼ばずに座標を検査する。
+A deck is written as "1 module = 1 deck". A module registers slides via
+`slide()` / `plain()`, which accumulate in `SLIDES`. `render_deck.py` generates
+the deck, and `validate_layout.py` checks coordinates without calling the API.
 
     # mydeck.py
     from deckkit import *
@@ -18,10 +18,10 @@
         ])
         foot(d, ["・要点を1行で"], "提供: ... ｜ 状況: GA")
 
-座標はすべてインチ。原点はスライド左上。`d` は diagrams.Canvas。
+All coordinates are in inches. The origin is the top-left of the slide. `d` is a diagrams.Canvas.
 
-レイアウトの安全域（LAYOUT）はテンプレートのページサイズから算出する。
-既定値は 10 x 5.625 インチ（16:9）のテンプレートで実測した値。
+The layout safe area (LAYOUT) is computed from the template's page size.
+The defaults are values measured on a 10 x 5.625 inch (16:9) template.
 """
 from __future__ import annotations
 
@@ -35,51 +35,54 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from diagrams import Canvas, Palette, darken, lighten, mix, readable_on  # noqa: E402,F401
 
 __all__ = [
-    # 登録
+    # Registration
     "SLIDES", "slide", "plain", "reset",
-    # レイアウト定数
+    # Layout constants
     "X0", "W", "XE", "DY0", "DY1", "NY", "EY", "PAGE_W", "PAGE_H",
     "TITLE_EM_MAX", "BODY_FONT_SIZE", "BODY_LINE_SPACING", "BODY_MAX_LINES",
     "configure_layout",
-    # 下部固定要素
+    # Bottom fixed elements
     "foot", "FOOT_MODE",
-    # 複合パーツ（基本）
+    # Composite parts (basic)
     "caption", "grouphead", "zone", "db", "grid", "layers", "steps_v",
     "pill", "pills", "xmark", "checkmark", "banner", "kv_rows",
-    # 複合パーツ（レイアウトパターン）
+    # Composite parts (layout patterns)
     "tone_colors", "tone_solid",
     "compare_panels", "swimlane", "timeline", "tree", "decision",
     "quadrant", "matrix_map", "roadmap", "pyramid", "cycle", "funnel",
     "callouts", "stats", "checklist", "pipeline", "legend",
-    # 計測
+    # Measurement
     "em", "fits_one_line",
-    # 再エクスポート
+    # Re-exports
     "Canvas", "Palette", "lighten", "darken", "mix", "readable_on",
 ]
 
 # ---------------------------------------------------------------------------
-# レイアウト定数
+# Layout constants
 #
-# 16:9（10 x 5.625in）テンプレートでの実測値。
-#   - タイトルのプレースホルダは y=0.126, h=0.351 → 1 行なら y=0.48 で終わる
-#   - マスターのロゴ・著作権フッターは y=5.197 付近から始まる
-#   - よって図は y=0.84〜4.30 に収め、その下を要点行とエディション行に充てる
-# 別サイズのテンプレートを使う場合は configure_layout() で上書きする。
+# Values measured on a 16:9 (10 x 5.625in) template.
+#   - The title placeholder is y=0.126, h=0.351 -> a single line ends at y=0.48
+#   - The master's logo/copyright footer starts around y=5.197
+#   - So diagrams should stay within y=0.84-4.30, with the key-points and
+#     edition lines below that
+# For templates of a different size, override with configure_layout().
 # ---------------------------------------------------------------------------
 PAGE_W, PAGE_H = 10.0, 5.625
 X0, W, XE = 0.5, 9.0, 9.5
-DY0, DY1 = 0.84, 4.30           # 図を描いてよい上端・下端
-NY = 4.38                       # 要点行（最大2行）
-EY = 4.86                       # 提供エディション行（1行）
+DY0, DY1 = 0.84, 4.30           # top/bottom bounds where diagrams may be drawn
+NY = 4.38                       # key-points line (up to 2 lines)
+EY = 4.86                       # edition/availability line (1 line)
 
-# タイトルが 1 行に収まる全角換算幅の上限。
-# 20pt bold で em=31.0 は 1 行、em=33.0 は 2 行になったため 30.5 を上限とする。
-# 2 行になるとタイトルが DY0 を侵食して図と重なる。
+# Upper bound (in full-width-equivalent chars) for a title to fit on one line.
+# At 20pt bold, em=31.0 fit on 1 line while em=33.0 wrapped to 2 lines, so the
+# cap is set to 30.5. If it wraps to 2 lines, the title encroaches on DY0 and
+# overlaps the diagram.
 TITLE_EM_MAX = 30.5
 
-# 本文プレースホルダに流し込む場合の推奨値。
-# Google の lineSpacing はフォント本来の行高（Noto Sans JP で約 1.45em）に対する
-# 百分率なので、12pt / 120% で 1 行あたり約 0.29in。h=4.068in に約 14 行入る。
+# Recommended values when flowing text into the body placeholder.
+# Google's lineSpacing is a percentage of the font's native line height
+# (about 1.45em for Noto Sans JP), so 12pt / 120% gives roughly 0.29in per
+# line. h=4.068in fits about 14 lines.
 BODY_FONT_SIZE = 12
 BODY_LINE_SPACING = 120
 BODY_MAX_LINES = 14
@@ -88,9 +91,9 @@ BODY_MAX_LINES = 14
 def configure_layout(*, page_w=None, page_h=None, margin=None,
                      diagram_top=None, diagram_bottom=None,
                      note_y=None, edition_y=None, title_em_max=None):
-    """ページサイズや安全域を上書きする。テンプレートが 16:9 でない場合に使う。
+    """Override the page size or safe area. Use this when the template is not 16:9.
 
-    margin だけ渡せば X0 / W / XE を再計算する。
+    Passing just `margin` recomputes X0 / W / XE.
     """
     global PAGE_W, PAGE_H, X0, W, XE, DY0, DY1, NY, EY, TITLE_EM_MAX
     if page_w is not None:
@@ -114,11 +117,11 @@ def configure_layout(*, page_w=None, page_h=None, margin=None,
 
 
 # ---------------------------------------------------------------------------
-# 計測
+# Measurement
 # ---------------------------------------------------------------------------
 
 def em(s: str) -> float:
-    """文字列の全角換算幅。全角=1.0、半角=0.5 で数える。"""
+    """Full-width-equivalent width of a string. Counts full-width chars as 1.0, half-width as 0.5."""
     return sum(1.0 if unicodedata.east_asian_width(c) in "WFA" else 0.5 for c in s)
 
 
@@ -127,23 +130,24 @@ def fits_one_line(title: str) -> bool:
 
 
 # ---------------------------------------------------------------------------
-# スライドの登録
+# Slide registration
 # ---------------------------------------------------------------------------
 
 SLIDES: list[dict] = []
 
 
 def reset() -> None:
-    """登録済みスライドを消す（テストや再読み込み用）。"""
+    """Clear registered slides (for tests / reloading)."""
     SLIDES.clear()
 
 
 def slide(title=None, *, layout="TITLE_ONLY", note=None, **kw):
-    """図を描くスライドを登録するデコレータ。
+    """Decorator that registers a slide which draws a diagram.
 
-    デコレートした関数は draw(d) として呼ばれる。d は diagrams.Canvas。
-    layout はテンプレートのロール名またはレイアウトキー。図を自分で描くので
-    本文プレースホルダを持たない TITLE_ONLY 系が既定。
+    The decorated function is called as draw(d), where d is a diagrams.Canvas.
+    layout is the template's role name or layout key. Since the diagram is
+    drawn manually, the default is a TITLE_ONLY-style layout with no body
+    placeholder.
     """
     def deco(fn):
         SLIDES.append(dict(layout=layout, title=title, notes=note, draw=fn, **kw))
@@ -152,29 +156,31 @@ def slide(title=None, *, layout="TITLE_ONLY", note=None, **kw):
 
 
 def plain(*, layout, **kw):
-    """プレースホルダだけで完結するスライド（表紙・中扉・裏表紙など）を登録する。
+    """Register a slide that consists only of placeholders (cover, section divider, back cover, etc.).
 
-    title / subtitle / body / bodies / notes をそのまま渡せる。
-    body に配列を渡すと改行で連結される。
+    title / subtitle / body / bodies / notes are passed through as-is.
+    Passing an array for body joins it with newlines.
     """
     SLIDES.append(dict(layout=layout, draw=None, **kw))
 
 
 # ---------------------------------------------------------------------------
-# 下部の固定要素
+# Bottom fixed elements
 #
-# FOOT_MODE が True の間に描かれた図形は validate_layout の境界検査から外れる。
-# 要点行とエディション行は DY1 より下に置くのが正しいため。
+# Shapes drawn while FOOT_MODE is True are excluded from validate_layout's
+# boundary checks, since it is correct for the key-points and edition lines
+# to sit below DY1.
 # ---------------------------------------------------------------------------
 
 FOOT_MODE = [False]
 
 
 def foot(d, points=None, edition=None):
-    """スライド下部に要点（最大2行）と提供状況の行を置く。
+    """Place the key-points line (up to 2 lines) and an availability line at the bottom of the slide.
 
-    points はスライドの持ち帰りメッセージ。edition は「提供: ... ｜ 状況: GA」など、
-    機能ページで一貫して示したい補足。どちらも省略できる。
+    points is the slide's takeaway message. edition is supplementary text you
+    want to show consistently on feature pages, such as "Provided: ... | Status: GA".
+    Both are optional.
     """
     FOOT_MODE[0] = True
     try:
@@ -189,26 +195,26 @@ def foot(d, points=None, edition=None):
 
 
 # ---------------------------------------------------------------------------
-# 複合パーツ
+# Composite parts
 # ---------------------------------------------------------------------------
 
 def caption(d, x, y, w, text, *, size=9, color=None, align="CENTER", h=0.22):
-    """図の下に添える小さな説明。"""
+    """Small caption placed under a diagram."""
     return d.label(x, y, w, h, text, size=size, align=align, valign="TOP",
                    color=color or d.P.muted, line_spacing=115)
 
 
 def grouphead(d, x, y, w, text, *, fill=None, size=10, h=0.28):
-    """帯状の見出し。"""
+    """Banner-style heading."""
     return d.shape(x, y, w, h, kind="RECTANGLE",
                    fill=fill or lighten(d.P.primary, 0.86), stroke=None,
                    text=text, size=size, bold=True, color=d.P.primaryDark)
 
 
 def zone(d, x, y, w, h, label=None, *, fill=None, stroke=None, size=9):
-    """要素をまとめる領域。左上に小見出しを置ける。
+    """A region that groups elements together. Can have a small heading in the top-left.
 
-    領域の中身は y + 0.34 以降に描くと見出しと重ならない。
+    Draw the region's contents at y + 0.34 or below so they don't overlap the heading.
     """
     d.shape(x, y, w, h, kind="ROUND_RECTANGLE", fill=fill or "#FBFCFE",
             stroke=stroke or lighten(d.P.primary, 0.72), stroke_weight=1.0)
@@ -218,7 +224,7 @@ def zone(d, x, y, w, h, label=None, *, fill=None, stroke=None, size=9):
 
 
 def banner(d, y, text, *, tone="info", size=9, h=0.34, x=None, w=None):
-    """全幅の注意書き・要約バー。tone は info / good / warn / bad。"""
+    """Full-width notice/summary bar. tone is info / good / warn / bad."""
     tones = {
         "info": (lighten(d.P.primary, 0.90), lighten(d.P.primary, 0.62), d.P.text),
         "good": (lighten(d.P.success, 0.86), None, darken(d.P.success, 0.45)),
@@ -232,10 +238,10 @@ def banner(d, y, text, *, tone="info", size=9, h=0.34, x=None, w=None):
 
 
 def db(d, x, y, w, h, name, *, sub=None, fill="#FFFFFF", stroke=None):
-    """データベースの円柱アイコン＋下部ラベル。
+    """Database cylinder icon plus a label below it.
 
-    ラベルは h の下に約 0.22in（sub があれば 0.42in）はみ出すので、
-    下端の余裕を見て y を決めること。
+    The label extends about 0.22in below h (0.42in if sub is given), so
+    choose y with that margin at the bottom in mind.
     """
     d.shape(x, y, w, h, kind="CAN", fill=fill, stroke=stroke or d.P.muted,
             stroke_weight=1.0)
@@ -249,10 +255,10 @@ def db(d, x, y, w, h, name, *, sub=None, fill="#FFFFFF", stroke=None):
 def grid(d, x, y, w, cols, rows, *, col_w=None, head_h=0.32, row_h=0.30,
          size=9, head_size=9, first_align="START", head_fill=None,
          cell_colors=None):
-    """表。cols は見出しの配列、rows は行の配列（各行はセルの配列）。
+    """Table. cols is an array of headers, rows is an array of rows (each row an array of cells).
 
-    cell_colors(i, j, cell) -> (fill, color) | None で、セルごとに配色できる。
-    ○×や可否を色で示すときに使う。戻り値は表の下端 y。
+    cell_colors(i, j, cell) -> (fill, color) | None lets you color individual
+    cells. Use it to show OK/NG (○/×) or yes/no via color. Returns the table's bottom y.
     """
     n = len(cols)
     if col_w is None:
@@ -282,9 +288,9 @@ def grid(d, x, y, w, cols, rows, *, col_w=None, head_h=0.32, row_h=0.30,
 
 
 def layers(d, x, y, w, items, *, row_h=0.62, gap=0.1, label_w=1.55):
-    """水平レイヤー図。items は (レイヤー名, 説明, 色) の配列で上から下へ並ぶ。
+    """Horizontal layer diagram. items is an array of (layer name, description, color), stacked top to bottom.
 
-    アーキテクチャの階層を示すのに使う。戻り値は下端 y。
+    Use this to show an architecture's layers. Returns the bottom y.
     """
     for i, (name, body, col) in enumerate(items):
         ry = y + i * (row_h + gap)
@@ -298,7 +304,7 @@ def layers(d, x, y, w, items, *, row_h=0.62, gap=0.1, label_w=1.55):
 
 
 def steps_v(d, x, y, w, items, *, row_h=0.52, gap=0.16, num_w=0.34):
-    """番号付きの縦フロー。items は (見出し, 説明) の配列。戻り値は下端 y。"""
+    """Numbered vertical flow. items is an array of (heading, description). Returns the bottom y."""
     for i, (head, body) in enumerate(items):
         ry = y + i * (row_h + gap)
         d.shape(x, ry + (row_h - num_w) / 2, num_w, num_w, kind="ELLIPSE",
@@ -320,7 +326,7 @@ def steps_v(d, x, y, w, items, *, row_h=0.52, gap=0.16, num_w=0.34):
 
 def kv_rows(d, x, y, w, items, *, key_w=1.85, row_h=0.32, gap=0.06,
             key_fill=None, key_color=None, size=8):
-    """「項目 → 補足」の2列リスト。表よりも軽く見せたいときに使う。"""
+    """A two-column "item -> note" list. Use this when a table would feel too heavy."""
     for i, (k, v) in enumerate(items):
         ry = y + i * (row_h + gap)
         d.shape(x, ry, key_w, row_h, kind="ROUND_RECTANGLE",
@@ -332,7 +338,7 @@ def kv_rows(d, x, y, w, items, *, key_w=1.85, row_h=0.32, gap=0.06,
 
 
 def pill(d, x, y, w, h, text, *, fill=None, color=None, size=8.5):
-    """角丸のチップ1個。"""
+    """A single rounded chip."""
     return d.shape(x, y, w, h, kind="ROUND_RECTANGLE",
                    fill=fill or lighten(d.P.primary, 0.85), stroke=None,
                    text=text, size=size, color=color or d.P.primaryDark, bold=True)
@@ -340,9 +346,9 @@ def pill(d, x, y, w, h, text, *, fill=None, color=None, size=8.5):
 
 def pills(d, x, y, w, items, *, per_row=5, h=0.26, gap=0.08, fill=None,
           color=None, size=8.5):
-    """チップの格子。対応製品や権限の一覧など、順序が重要でない列挙に使う。
+    """Grid of chips. Use this for enumerations where order doesn't matter, like supported products or permissions.
 
-    戻り値は下端 y。
+    Returns the bottom y.
     """
     rows = (len(items) + per_row - 1) // per_row
     pw = (w - gap * (per_row - 1)) / per_row
@@ -354,31 +360,33 @@ def pills(d, x, y, w, items, *, per_row=5, h=0.26, gap=0.08, fill=None,
 
 
 def xmark(d, cx, cy, *, r=0.14, color=None):
-    """不可・失敗を示す丸バツ。中心座標で置く。"""
+    """Circled X mark indicating no/failure. Positioned by center coordinates."""
     c = color or d.P.danger
     d.shape(cx - r, cy - r, r * 2, r * 2, kind="ELLIPSE", fill=c, stroke=None,
             text="×", size=11, bold=True, color="#FFFFFF")
 
 
 def checkmark(d, cx, cy, *, r=0.14, color=None):
-    """可・成功を示す丸チェック。中心座標で置く。"""
+    """Circled check mark indicating yes/success. Positioned by center coordinates."""
     c = color or d.P.success
     d.shape(cx - r, cy - r, r * 2, r * 2, kind="ELLIPSE", fill=c, stroke=None,
             text="✓", size=10, bold=True, color="#FFFFFF")
 
 
 # ---------------------------------------------------------------------------
-# レイアウトパターン
+# Layout patterns
 #
-# 共通の約束:
-#   - 座標はインチ。x, y は左上。
-#   - **戻り値は必ず描画領域の下端 y**。次のブロックはその値を起点に置く。
-#     これを守れば「前のブロックがはみ出して次に重なる」事故が起きない。
-#   - tone は "primary" / "info" / "good" / "warn" / "bad" / "muted" / "accent"。
+# Common conventions:
+#   - Coordinates are in inches. x, y is the top-left corner.
+#   - **The return value is always the bottom y of the drawn area.** The next
+#     block should be positioned starting from that value. Following this
+#     convention prevents the "previous block overflows and overlaps the next"
+#     accident.
+#   - tone is one of "primary" / "info" / "good" / "warn" / "bad" / "muted" / "accent".
 # ---------------------------------------------------------------------------
 
 def tone_colors(d, tone="info"):
-    """tone 名から (塗り, 枠, 文字色) を返す。淡い面＋濃い文字の組。"""
+    """Return (fill, stroke, text color) for a tone name. A pale fill paired with a dark text color."""
     P = d.P
     m = {
         "primary": (P.primary, None, "#FFFFFF"),
@@ -393,17 +401,17 @@ def tone_colors(d, tone="info"):
 
 
 def tone_solid(d, tone="info"):
-    """tone 名から、点や帯に使う濃い単色を返す。"""
+    """Return a solid, saturated color for a tone name, for use in dots or bars."""
     P = d.P
     return {
         "primary": P.primary,
         "accent": P.info,
-        # info は淡い面と対になる中間色にする。primary と同じ色にすると
-        # 凡例やマーカーで両者を見分けられない
+        # Make info a mid-tone that pairs with the pale fill. Using the same
+        # color as primary would make the two indistinguishable in legends/markers
         "info": lighten(P.primary, 0.35),
         "good": P.success,
-        # warning をそのまま暗くすると茶色になり「注意」に見えない。
-        # danger 側へ少し寄せて琥珀色にする
+        # Darkening warning as-is turns it brown, which doesn't read as
+        # "caution". Shift it slightly toward danger to get an amber tone
         "warn": darken(mix(P.warning, P.danger, 0.25), 0.12),
         "bad": P.danger,
         "muted": lighten(P.muted, 0.20),
@@ -412,21 +420,22 @@ def tone_solid(d, tone="info"):
 
 def _fit(d, x, y, w, h, text, *, size, bold=False, color=None, align="CENTER",
          valign="MIDDLE", ls=110):
-    """箱の中にテキストを置く。パターン内部で使う薄いラッパー。"""
+    """Place text inside a box. A thin wrapper used internally by patterns."""
     return d.label(x, y, w, h, text, size=size, bold=bold,
                    color=color or d.P.text, align=align, valign=valign,
                    line_spacing=ls)
 
 
-# ---- 1. 対比パネル（Before / After・A / B） ----
+# ---- 1. Compare panels (Before / After, A / B) ----
 
 def compare_panels(d, x, y, w, h, left, right, *, gap=0.50, arrow=True):
-    """2 枚のパネルを左右に並べて対比する。
+    """Place two panels side by side for comparison.
 
-    left / right は dict:
-        {"title": 見出し, "tone": "bad"/"good"/…, "head": 中央の強調行,
-         "items": [項目, …], "note": 下部の注記}
-    左右で同じ構造・同じ位置に要素を置くと、差分だけが目に入る。
+    left / right is a dict:
+        {"title": heading, "tone": "bad"/"good"/…, "head": center emphasis line,
+         "items": [item, …], "note": bottom note}
+    Placing elements in the same structure and position on both sides makes
+    only the differences catch the eye.
     """
     pw = (w - gap) / 2
     for i, spec in enumerate((left, right)):
@@ -459,17 +468,18 @@ def compare_panels(d, x, y, w, h, left, right, *, gap=0.50, arrow=True):
     return y + h
 
 
-# ---- 2. スイムレーン ----
+# ---- 2. Swimlane ----
 
 def swimlane(d, x, y, w, lanes, steps, *, lane_h=1.02, lane_gap=0.30,
              label_w=1.30, box_gap=0.20):
-    """レーン（担当）× ステップの図。
+    """Lane (owner) x step diagram.
 
-    lanes = [(レーン名, 色), …]（上から順）
-    steps = [(見出し, 本文, レーンindex, tone), …]（左から順）
+    lanes = [(lane name, color), …] (top to bottom)
+    steps = [(heading, body, lane index, tone), …] (left to right)
 
-    ステップ間の矢印は**実際の座標を結ぶ**。レーンをまたぐ場合に水平線を引くと
-    経路が嘘になるため、始点と終点をそのまま繋いでいる。
+    Arrows between steps **connect the actual coordinates**. Drawing a
+    horizontal line when crossing lanes would misrepresent the path, so the
+    start and end points are connected directly instead.
     """
     cx = x + label_w + 0.10
     cw = w - label_w - 0.10
@@ -507,16 +517,16 @@ def swimlane(d, x, y, w, lanes, steps, *, lane_h=1.02, lane_gap=0.30,
     return y + len(lanes) * (lane_h + lane_gap) - lane_gap
 
 
-# ---- 3. タイムライン ----
+# ---- 3. Timeline ----
 
 def timeline(d, x, y, w, marks, *, bands=None, h=1.60, label_w=1.90):
-    """横軸の時系列。
+    """Time series along a horizontal axis.
 
-    marks = [(位置0.0〜1.0, ラベル, tone), …]
-    bands = [(開始位置, 終了位置, ラベル, tone), …]（線の上に敷く期間の帯）
+    marks = [(position 0.0-1.0, label, tone), …]
+    bands = [(start position, end position, label, tone), …] (period bands laid over the line)
 
-    補足はマーカーのラベルに持たせること。別ラベル＋縦矢印にすると
-    他のマーカーの説明文や下のブロックに重なる。
+    Put supplementary text in the marker's own label. A separate label plus a
+    vertical arrow would overlap other markers' descriptions or the block below.
     """
     line_y = y + h * 0.46
 
@@ -524,7 +534,7 @@ def timeline(d, x, y, w, marks, *, bands=None, h=1.60, label_w=1.90):
         return x + 0.30 + (w - 0.60) * p
 
     d.line(x + 0.30, line_y, x + w - 0.30, line_y,
-           color=lighten(d.P.muted, 0.30), weight=1.5, free=True)   # 軸
+           color=lighten(d.P.muted, 0.30), weight=1.5, free=True)   # axis
     for a, b, label, tone in (bands or []):
         fill, _, col = tone_colors(d, tone)
         d.shape(px(a), line_y - 0.38, px(b) - px(a), 0.24, kind="ROUND_RECTANGLE",
@@ -540,14 +550,14 @@ def timeline(d, x, y, w, marks, *, bands=None, h=1.60, label_w=1.90):
     return y + h
 
 
-# ---- 4. 階層ツリー ----
+# ---- 4. Hierarchical tree ----
 
 def tree(d, x, y, w, nodes, *, row_h=0.46, gap=0.10, indent=0.24,
          box_w=1.45, size=8.5):
-    """深さ付きのツリー。nodes = [(深さ, 名前, 説明), …] を上から順に置く。
+    """Tree with depth. nodes = [(depth, name, description), …], placed top to bottom.
 
-    親からのかぎ線は、同じ深さの直前のノードではなく「1 つ浅い直近のノード」
-    から引く。
+    The connector line from a parent is drawn from "the nearest node one
+    level shallower", not from the previous node at the same depth.
     """
     last_y = {}
     for i, (depth, name, desc) in enumerate(nodes):
@@ -574,14 +584,15 @@ def tree(d, x, y, w, nodes, *, row_h=0.46, gap=0.10, indent=0.24,
     return y + len(nodes) * (row_h + gap) - gap
 
 
-# ---- 5. 条件分岐 ----
+# ---- 5. Decision branch ----
 
 def decision(d, x, y, w, question, branches, *, dia_w=3.70, dia_h=0.78,
              box_h=0.60, drop=0.42):
-    """菱形の判定と、その下に扇状に広がる 2〜3 の帰結。
+    """A diamond decision with 2-3 outcomes fanning out below it.
 
-    branches = [(分岐ラベル, 帰結テキスト, tone), …]
-    菱形の文字は図形に直接入れず、別ラベルを重ねる（端が切れるため）。
+    branches = [(branch label, outcome text, tone), …]
+    The diamond's text is not placed directly on the shape but overlaid as a
+    separate label (otherwise the edges get clipped).
     """
     cx = x + w / 2
     d.shape(cx - dia_w / 2, y, dia_w, dia_h, kind="DIAMOND",
@@ -595,7 +606,8 @@ def decision(d, x, y, w, question, branches, *, dia_w=3.70, dia_h=0.78,
     for i, (label, text, tone) in enumerate(branches):
         fill, stroke, col = tone_colors(d, tone)
         bx = x + i * (bw + 0.30)
-        # 矢印は箱の中央よりやや右に落とし、ラベルは左寄せにして経路を避ける
+        # Drop the arrow slightly right of the box's center, and left-align
+        # the label, to keep them clear of the path
         d.arrow(cx + (i - (n - 1) / 2) * 0.55, y + dia_h + 0.02,
                 bx + bw * 0.62, by - 0.02, color=tone_solid(d, tone), weight=1.5)
         d.label(bx, by - 0.26, bw * 0.46, 0.22, label, size=7.5,
@@ -605,14 +617,14 @@ def decision(d, x, y, w, question, branches, *, dia_w=3.70, dia_h=0.78,
     return by + box_h
 
 
-# ---- 6. 2×2 マトリクス ----
+# ---- 6. 2x2 matrix ----
 
 def quadrant(d, x, y, w, h, quads, *, x_label="", y_label="",
              x_axis=("低", "高"), y_axis=("低", "高")):
-    """2×2 のマトリクス。quads は [左上, 右上, 左下, 右下] の順で
-    (見出し, [項目, …], tone)。優先度づけや配置戦略に使う。
+    """2x2 matrix. quads is a list in [top-left, top-right, bottom-left, bottom-right] order,
+    each (heading, [item, …], tone). Use this for prioritization or positioning strategy.
     """
-    pad = 0.42                       # 軸ラベルの余白
+    pad = 0.42                       # margin for axis labels
     gx, gy = x + pad, y
     gw, gh = w - pad, h - pad
     cw, ch = gw / 2, gh / 2
@@ -628,7 +640,7 @@ def quadrant(d, x, y, w, h, quads, *, x_label="", y_label="",
             d.label(qx + 0.16, qy + 0.36, cw - 0.32, ch - 0.46,
                     "\n".join("・" + s for s in items), size=8, align="START",
                     valign="TOP", color=d.P.text, line_spacing=125)
-    # 軸
+    # axes
     d.label(x, gy, pad - 0.06, gh, y_label, size=8, bold=True, align="CENTER",
             valign="MIDDLE", color=d.P.muted)
     d.label(gx, y + h - pad + 0.06, gw, pad - 0.10, x_label, size=8, bold=True,
@@ -640,13 +652,13 @@ def quadrant(d, x, y, w, h, quads, *, x_label="", y_label="",
     return y + h
 
 
-# ---- 7. ポジショニングマップ（2 軸散布） ----
+# ---- 7. Positioning map (2-axis scatter) ----
 
 def matrix_map(d, x, y, w, h, items, *, x_label="", y_label="",
                x_axis=("低", "高"), y_axis=("低", "高"), dot=0.13):
-    """2 軸上に項目を配置する。items = [(名前, x0〜1, y0〜1, tone), …]
+    """Place items on two axes. items = [(name, x0-1, y0-1, tone), …]
 
-    y は上が 1.0。競合比較や機能の位置づけに使う。
+    y=1.0 is the top. Use this for competitive comparisons or feature positioning.
     """
     pad_l, pad_b = 0.46, 0.40
     gx, gy = x + pad_l, y
@@ -654,7 +666,7 @@ def matrix_map(d, x, y, w, h, items, *, x_label="", y_label="",
     d.shape(gx, gy, gw, gh, kind="RECTANGLE", fill="#FBFCFE",
             stroke=lighten(d.P.primary, 0.75), stroke_weight=1.0)
     d.line(gx, gy + gh / 2, gx + gw, gy + gh / 2, color=lighten(d.P.muted, 0.55),
-           weight=0.9, dashed=True, free=True)                      # 目盛り
+           weight=0.9, dashed=True, free=True)                      # gridline
     d.line(gx + gw / 2, gy, gx + gw / 2, gy + gh, color=lighten(d.P.muted, 0.55),
            weight=0.9, dashed=True, free=True)
     for name, px_, py_, tone in items:
@@ -676,14 +688,14 @@ def matrix_map(d, x, y, w, h, items, *, x_label="", y_label="",
     return y + h
 
 
-# ---- 8. ロードマップ（フェーズ × レーン） ----
+# ---- 8. Roadmap (phases x lanes) ----
 
 def roadmap(d, x, y, w, phases, lanes, *, head_h=0.32, lane_h=0.44, gap=0.10,
             label_w=1.90):
-    """フェーズを列、レーンを行にしたロードマップ。
+    """Roadmap with phases as columns and lanes as rows.
 
-    phases = [列見出し, …]
-    lanes  = [(レーン名, [(開始列index, 列数, ラベル, tone), …]), …]
+    phases = [column heading, …]
+    lanes  = [(lane name, [(start column index, column span, label, tone), …]), …]
     """
     n = len(phases)
     cw = (w - label_w) / n
@@ -706,12 +718,12 @@ def roadmap(d, x, y, w, phases, lanes, *, head_h=0.32, lane_h=0.44, gap=0.10,
     return y + head_h + 0.06 + len(lanes) * (lane_h + gap) - gap
 
 
-# ---- 9. ピラミッド（成熟度・階層） ----
+# ---- 9. Pyramid (maturity / hierarchy) ----
 
 def pyramid(d, x, y, w, h, levels, *, gap=0.08, min_ratio=0.40):
-    """上ほど狭い段組み。levels は上から [(名前, 説明, tone), …]。
+    """Tiers that narrow toward the top. levels, top to bottom, is [(name, description, tone), …].
 
-    成熟度モデルや「土台 → 応用」の関係を示すのに使う。
+    Use this to show a maturity model or a "foundation -> application" relationship.
     """
     n = len(levels)
     lh = (h - gap * (n - 1)) / n
@@ -727,34 +739,36 @@ def pyramid(d, x, y, w, h, levels, *, gap=0.08, min_ratio=0.40):
                 valign="TOP" if inside else "MIDDLE")
         if desc:
             side = (w - lw) / 2 - 0.12
-            if side >= 1.2:                       # 横に置ける
+            if side >= 1.2:                       # fits alongside
                 d.label(x + w - side, ly, side, lh, desc, size=8,
                         align="START", valign="MIDDLE", color=d.P.text,
                         line_spacing=110)
-            else:                                 # 置けなければ段の中に入れる
+            else:                                 # otherwise, put it inside the tier
                 d.label(lx + 0.10, ly + lh * 0.52, lw - 0.20, lh * 0.42, desc,
                         size=7.5, align="CENTER", valign="TOP",
                         color=lighten("#FFFFFF", 0.0) if False else "#E8F1FA")
     return y + h
 
 
-# ---- 10. サイクル（循環プロセス） ----
+# ---- 10. Cycle (circular process) ----
 
 def cycle(d, x, y, w, h, steps, *, box_w=1.95, box_h=0.62, size=8.5,
           tone="info"):
-    """矩形 (x, y, w, h) に内接する循環プロセス。steps = [ラベル, …]（4〜6 個が適切）
+    """A circular process inscribed in the rectangle (x, y, w, h). steps = [label, …] (4-6 is a good count)
 
-    半径は箱がこの矩形からはみ出さないよう自動で決まる。中心と半径を直接
-    指定する形にすると、上端が安全域を突き抜ける事故が起きやすいため。
-    矢印はステップ間の中間角に接線方向で置く。
+    The radius is chosen automatically so the boxes don't overflow this
+    rectangle. Directly specifying the center and radius makes it easy for
+    the top edge to poke through the safe area, so this is avoided.
+    Arrows are placed tangentially at the midpoint angle between steps.
     """
     cx, cy = x + w / 2, y + h / 2
     n = len(steps)
-    # 矢印は箱の外側の環に置くので、その分だけ箱の半径を内側に取る
+    # Arrows sit on a ring outside the boxes, so shrink the box radius
+    # inward by that amount
     ring = box_h * 0.55 + 0.10
     r = max(0.30, min((h - box_h) / 2 - ring, (w - box_w) / 2))
-    # 半径が小さいと向かい合う箱どうしがぶつかる。箱の幅を半径に合わせて詰め、
-    # 細くなったぶん半径を取り直す
+    # If the radius gets too small, opposing boxes collide. Shrink the box
+    # width to fit the radius, then recompute the radius for the narrower box
     box_w = min(box_w, max(0.85, 2 * r - 0.16))
     r = max(0.30, min((h - box_h) / 2 - ring, (w - box_w) / 2))
     fill, stroke, col = tone_colors(d, tone)
@@ -767,21 +781,21 @@ def cycle(d, x, y, w, h, steps, *, box_w=1.95, box_h=0.62, size=8.5,
         d.shape(px - box_w / 2, py - box_h / 2, box_w, box_h,
                 kind="ROUND_RECTANGLE", fill=fill, stroke=stroke,
                 text=s, size=size, color=col, line_spacing=105)
-    ra = r + ring                                  # 矢印を置く環の半径
+    ra = r + ring                                  # radius of the ring where arrows sit
     for i in range(n):
         th = -math.pi / 2 + 2 * math.pi * (i + 0.5) / n
         ax = cx + ra * math.cos(th)
         ay = cy + ra * math.sin(th)
-        tx, ty = -math.sin(th), math.cos(th)      # 接線（時計回り）
+        tx, ty = -math.sin(th), math.cos(th)      # tangent (clockwise)
         d.arrow(ax - tx * 0.22, ay - ty * 0.22, ax + tx * 0.22, ay + ty * 0.22,
-                color=d.P.primary, weight=1.6, free=True)   # 箱の間を回る矢印
+                color=d.P.primary, weight=1.6, free=True)   # arrow circling between the boxes
     return y + h
 
 
-# ---- 11. ファネル ----
+# ---- 11. Funnel ----
 
 def funnel(d, x, y, w, h, stages, *, gap=0.08, min_ratio=0.42):
-    """上ほど広い漏斗。stages = [(ラベル, 補足, tone), …] を上から順に。"""
+    """A funnel that widens toward the top. stages = [(label, note, tone), …], top to bottom."""
     n = len(stages)
     sh = (h - gap * (n - 1)) / n
     for i, (label, sub, tone) in enumerate(stages):
@@ -796,28 +810,28 @@ def funnel(d, x, y, w, h, stages, *, gap=0.08, min_ratio=0.42):
                 valign="TOP" if inside else "MIDDLE")
         if sub:
             side = (w - sw) / 2 - 0.12
-            if side >= 1.2:                       # 横に置ける
+            if side >= 1.2:                       # fits alongside
                 d.label(x + w - side, sy, side, sh, sub, size=8, align="START",
                         valign="MIDDLE", color=d.P.text, line_spacing=110)
-            else:                                 # 置けなければ段の中に入れる
+            else:                                 # otherwise, put it inside the tier
                 d.label(sx + 0.10, sy + sh * 0.52, sw - 0.20, sh * 0.42, sub,
                         size=7.5, align="CENTER", valign="TOP", color="#E8F1FA")
     return y + h
 
 
-# ---- 12. 注釈つき図（中央＋番号つきコールアウト） ----
+# ---- 12. Annotated diagram (center + numbered callouts) ----
 
 def callouts(d, x, y, w, h, center, notes, *, note_w=2.40, tone="primary"):
-    """中央の対象に番号つきの注釈を左右から付ける。
+    """Attach numbered annotations from the left and right to a central subject.
 
-    center = (見出し, 本文)
-    notes  = [(注釈テキスト, "left" | "right"), …]（付けた順に 1, 2, 3…）
+    center = (heading, body)
+    notes  = [(annotation text, "left" | "right"), …] (numbered 1, 2, 3… in the order given)
     """
     fill, stroke, col = tone_colors(d, tone)
     ccx = x + w / 2
     cw = w - 2 * (note_w + 0.34)
-    # 中央の箱は内容に合わせた高さにして上下中央へ。h いっぱいに広げると
-    # 文字が上に寄って下half が空洞に見える。
+    # Size the center box to its content and center it vertically. Stretching
+    # it to fill h pushes the text upward, leaving the bottom half looking empty.
     ch = min(h - 0.20, 1.50)
     cyy = y + (h - ch) / 2
     d.shape(ccx - cw / 2, cyy, cw, ch, kind="ROUND_RECTANGLE",
@@ -849,24 +863,25 @@ def callouts(d, x, y, w, h, center, notes, *, note_w=2.40, tone="primary"):
                     valign="MIDDLE", color=d.P.text, line_spacing=115)
             edge = ccx - cw / 2 if side == "left" else ccx + cw / 2
             anchor = nx + note_w if side == "left" else nx
-            # 接続線の終点は箱の高さに丸める。箱の外に伸ばすと何も指さない線になる
+            # Clamp the connector line's endpoint to the box's height. Letting
+            # it extend outside the box would make it point at nothing
             ly = min(max(ny + nh / 2, cyy + 0.12), cyy + ch - 0.12)
             d.line(anchor + (0.06 if side == "left" else -0.06),
-                   ny + nh / 2, edge, ly, free=True,   # 注釈側は文字なので接点なし
+                   ny + nh / 2, edge, ly, free=True,   # no dot on the annotation side, since it's just text
                    color=lighten(d.P.primary, 0.60), weight=0.9, dashed=True)
     return y + h
 
 
-# ---- 13. 指標の行（KPI） ----
+# ---- 13. Metrics row (KPI) ----
 
 def stats(d, x, y, w, items, *, h=0.92, gap=0.20, value_size=22):
-    """大きな数値を横並びにする。items = [(値, 説明, tone), …]
+    """Lay out large numbers side by side. items = [(value, description, tone), …]
 
-    出典のある数値にだけ使うこと。推測値を大きく見せてはいけない。
+    Use this only for figures with a real source. Don't display estimates prominently.
     """
     n = len(items)
     cw = (w - gap * (n - 1)) / n
-    # 枠が低いときは数値のフォントを縮める。固定サイズだと枠から溢れて切れる
+    # Shrink the value's font when the box is short. A fixed size would overflow and get clipped
     vh = h * 0.54
     vs = min(value_size, vh * 72.0 / Canvas.LINE_EM)
     for i, (value, cap, tone) in enumerate(items):
@@ -881,10 +896,10 @@ def stats(d, x, y, w, items, *, h=0.92, gap=0.20, value_size=22):
     return y + h
 
 
-# ---- 14. チェックリスト ----
+# ---- 14. Checklist ----
 
 def checklist(d, x, y, w, items, *, row_h=0.34, gap=0.08, size=9):
-    """状態つきの項目リスト。items = [(テキスト, "done"|"todo"|"warn"), …]"""
+    """List of items with state. items = [(text, "done"|"todo"|"warn"), …]"""
     marks = {"done": ("✓", "good"), "todo": ("□", "muted"), "warn": ("!", "warn")}
     for i, (text, state) in enumerate(items):
         glyph, tone = marks.get(state, marks["todo"])
@@ -901,13 +916,13 @@ def checklist(d, x, y, w, items, *, row_h=0.34, gap=0.08, size=9):
     return y + len(items) * (row_h + gap) - gap
 
 
-# ---- 15. パイプライン（範囲強調つき） ----
+# ---- 15. Pipeline (with range highlight) ----
 
 def pipeline(d, x, y, w, steps, *, h=0.80, gap=0.30, highlight=None,
              highlight_note=None, size=8.5):
-    """左から右への工程。highlight=(開始index, 終了index) の範囲だけ強調する。
+    """A process flowing left to right. Only the highlight=(start index, end index) range is emphasized.
 
-    「全体の流れのうち、自分たちが担うのはここ」を示すのに使う。
+    Use this to show "which part of the overall flow is ours" within a larger process.
     """
     n = len(steps)
     bw = (w - gap * (n - 1)) / n
@@ -933,19 +948,19 @@ def pipeline(d, x, y, w, steps, *, h=0.80, gap=0.30, highlight=None,
     return bottom
 
 
-# ---- 16. 凡例 ----
+# ---- 16. Legend ----
 
 def legend(d, x, y, w, items, *, size=8, h=0.24, gap=0.28, swatch=0.16):
-    """色の凡例。items = [(色または tone 名, ラベル), …] を横に並べる。"""
+    """Color legend. items = [(color or tone name, label), …], laid out horizontally."""
     cx = x
     for col, label in items:
         if isinstance(col, str) and col.startswith("#"):
             fill, stroke = col, None
         else:
-            fill, stroke, _ = tone_colors(d, col)   # 図形と同じ塗りを見せる
+            fill, stroke, _ = tone_colors(d, col)   # show the same fill as the shape
         d.shape(cx, y + (h - swatch) / 2, swatch, swatch, kind="ROUND_RECTANGLE",
                 fill=fill, stroke=stroke)
-        # テキストボックスの内側余白があるため、実測幅に 1.1 倍と 0.22in を足す
+        # Text boxes have inner padding, so add a 1.1x factor and 0.22in to the measured width
         tw = em(label) * size / 72 * 1.10 + 0.22
         d.label(cx + swatch + 0.08, y, tw, h, label, size=size, align="START",
                 valign="MIDDLE", color=d.P.muted)

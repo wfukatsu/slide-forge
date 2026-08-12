@@ -1,3 +1,5 @@
+*[日本語](README.ja.md)*
+
 # slide-forge
 
 Agent-driven Google Slides deck generation for Codex and Claude Code: seventeen
@@ -21,18 +23,18 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `google-slides` | From-scratch decks without a corporate master. Spec path (`templates/blank-16x9.json` + the same engine) or code-first path (`deckkit.py` + offline layout validation for connector-heavy diagrams). |
 | `template-forge` | Create and register a **new template (master)** from a design spec — brand colors, fonts, logo, footer (`scripts/build_template.py`). The Slides API cannot create masters, so a base (Google default or a registered template) is copied and its layouts restyled via batchUpdate; roles are assigned deterministically and the result lands in `templates/<id>.json`, ready for `google-slides-template`. Ships 3 design presets (`templates/presets/`). |
 | `slide-template-creator` | Create and register reusable **single-slide content templates** with semantic input slots, examples, offline validation, and catalog previews. These live under `slide-templates/` and are independent of Google Slides masters. |
-| `current-state-analysis` | Run **current-state analysis / problem-identification frameworks** (現状分析・課題の特定) on user-supplied material and render the results with the `analysis` pack: PEST, Five Forces, process pain-points, logic tree, KPI tree, why-why, fishbone, Pareto, As-Is/To-Be gap analysis and an impact-effort priority matrix (SWOT / 3C reuse the `marketing-analysis` pack). Facts go in the figures, interpretation in the insight, sources are mandatory, and each template's guardrails encode the method's misuse patterns. |
+| `current-state-analysis` | Run **current-state analysis / problem-identification frameworks** (current-state analysis and problem identification) on user-supplied material and render the results with the `analysis` pack: PEST, Five Forces, process pain-points, logic tree, KPI tree, why-why, fishbone, Pareto, As-Is/To-Be gap analysis and an impact-effort priority matrix (SWOT / 3C reuse the `marketing-analysis` pack). Facts go in the figures, interpretation in the insight, sources are mandatory, and each template's guardrails encode the method's misuse patterns. |
 | `analysis-template-creator` | Create and maintain the **analysis-framework slide templates** themselves (the `slide-templates/analysis/` pack) and their drawing primitives (`fishbone`, `pareto` are the precedents): encodes the framework-specific design rules — one question per template, fact/interpretation slot split, required sources, misuse guardrails — and follows `slide-template-creator`'s schema/validation/registration rules for everything else. |
-| `b2b-account-maps` | Build the two account maps a B2B software deal turns on: an **influence map** of the buying committee (影響力 × 賛否, champion highlighted) and a **discovery map** colouring each MEDDPICC item confirmed / partly known / still assumed, plus the committee table, approval path, pain chain, and the gaps with who to ask by when. Eight page templates ship as the `b2b-sales` pack under `slide-templates/`. Internal working artifacts, not customer-facing pages. |
+| `b2b-account-maps` | Build the two account maps a B2B software deal turns on: an **influence map** of the buying committee (influence × for/against, champion highlighted) and a **discovery map** colouring each MEDDPICC item confirmed / partly known / still assumed, plus the committee table, approval path, pain chain, and the gaps with who to ask by when. Eight page templates ship as the `b2b-sales` pack under `slide-templates/`. Internal working artifacts, not customer-facing pages. |
 | `scalar-account-plan` | Keep one **sales ledger per customer** (`accounts/<AE>/<customer>/account.json`) — facts labelled said / observed / assumed, the buying committee, MEDDPICC status, the pain chain, BANT risk, the current stage's exit criteria with the customer-side evidence for each, and the open actions — and render it as a nine-page **activity plan whose URL never changes** (`build_deck.py --into` replaces the pages of the existing deck). What the ledger cannot answer becomes the deliverable: `account_ledger.py gaps` checks the playbook's ten review questions and turns every unanswered one into an action with a person to ask, a deadline and a completion condition, carried over between runs and written as both a slide and Markdown for the CRM. Internal only. |
 | `scalar-account-planning-session` | Build the annual **Account Planning Session** decks for an account the ledger already covers — a full Plan Document for the account team and a nine-page executive review deck — from one `aps.json` that adds the customer's published material to the ledger. Ties each proposal to a sentence of the customer's own mid-term management plan, gives every deal its own chapter, and works out **who to meet next** per legal entity from published officer lists and org charts, each name carrying the person we would go through. The builder holds only the layout; every string lives in `aps.json` under the ignored `accounts/` tree. Internal only. |
-| `scalar-ae-materials` | Build **one visit's materials**, routed by deal phase (0–6) × audience × purpose, so the customer-facing one-pager, the internal visit plan, the WPS win plan and the Deal Desk / 稟議 packet are never the same file. Includes a pre-generation check that no judgement about a named individual, competitor weakness or unconfirmed figure reaches anything a customer will read, and files each artifact under `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` in Drive. Eight page templates ship as the `scalar-ae` pack. Rules come from `references/scalar/sales-playbook.md`. |
+| `scalar-ae-materials` | Build **one visit's materials**, routed by deal phase (0–6) × audience × purpose, so the customer-facing one-pager, the internal visit plan, the WPS win plan and the Deal Desk / internal approval (ringi) packet are never the same file. Includes a pre-generation check that no judgement about a named individual, competitor weakness or unconfirmed figure reaches anything a customer will read, and files each artifact under `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` in Drive. Eight page templates ship as the `scalar-ae` pack. Rules come from `references/scalar/sales-playbook.md`. |
 | `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
 | `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
 | `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
 | `image-slots` | Fill the empty picture frames of an **existing** deck with AI-generated images (`scripts/fill_image_slots.py`): finds the frames the same three ways template registration does (PICTURE placeholders, empty image elements left in a layout, frames the deck reuses), draws each picture for that frame's shape, and places it filling the frame. Standalone on any deck URL — including decks slide-forge did not generate — and needs no registered template. For decks still driven by a spec, put `aiImage` in the spec instead and regenerate. |
 | `slide-qa` | Thumbnail-based visual QA of a generated deck: fetch every page as PNG, inspect against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files (`scripts/cleanup_qa.py`). Invoked by the generation skills when the user opts in at intake (the default), or standalone on any deck URL. |
-| `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (出力形式) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
+| `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (output format) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
 | `spreadsheets` | Line-item spreadsheets — estimates, BOMs, cost breakdowns — as Excel and/or Google Spreadsheet from one JSON spec (`scripts/build_sheet.py`): typed columns, real formulas for amounts and subtotal/tax/total, `--dry-run` validation, and in-place updates that keep the Spreadsheet URL stable. Companion to a proposal deck's cost slide (same Drive folder), or standalone. Worked example: `examples/estimate-sample.json`. |
 
 ## End-to-end workflow
@@ -51,17 +53,17 @@ export via `pptx-export` (when chosen) → final report.
 Two more commands cover the sales side, where the deliverable is not a deck but
 the AE's next action:
 
-- `/account <顧客名>` — create or update a customer's activity plan. Reads the
+- `/account <customer name>` — create or update a customer's activity plan. Reads the
   ledger, records what came out of the last meeting, checks the playbook's ten
   review questions, turns the unanswered ones into dated actions, and replaces
   the contents of the same activity-plan deck (the shared link keeps working).
-- `/visit <顧客名>` — prepare one visit. Routes phase × audience to the right
+- `/visit <customer name>` — prepare one visit. Routes phase × audience to the right
   material type, keeps customer-facing and internal artifacts in separate
   files and folders, generates and files them, then writes the visit back to
   the ledger and refreshes the activity plan.
 
-Both keep the source of truth in `accounts/<AE 名>/<顧客名>/account.json`
-(git-ignored) and file the output under `<Drive ルート>/<AE 名>/<顧客名>/`.
+Both keep the source of truth in `accounts/<AE name>/<customer name>/account.json`
+(git-ignored) and file the output under `<Drive root>/<AE name>/<customer name>/`.
 The Drive root is asked once and remembered in `config/sales.json`. The phases,
 gate IDs, five material types and ten checkpoints all live in
 `references/scalar/sales-playbook.md`.
@@ -370,14 +372,14 @@ Which page shapes can this build? See
 
 | Group | Patterns | Picks |
 |---|---|---|
-| 骨格 6 種 | 6 | How the page itself is laid out |
-| 構成ページ | 4 | Deck scaffolding — summary, agenda, storyline, ghost |
-| 定量ページ | 7 | Arguing with numbers |
-| 比較・評価ページ | 6 | Putting options side by side |
-| 構造・論理ページ | 7 | Making a relationship visible |
-| 計画・体制ページ | 5 | Time and people |
-| 定性・技術ページ | 5 | Everything that isn't a number |
-| 締め・付録ページ | 3 | The decision and what follows |
+| Skeletons (6 types) | 6 | How the page itself is laid out |
+| Scaffolding pages | 4 | Deck scaffolding — summary, agenda, storyline, ghost |
+| Quantitative pages | 7 | Arguing with numbers |
+| Comparison/evaluation pages | 6 | Putting options side by side |
+| Structure/logic pages | 7 | Making a relationship visible |
+| Planning/org pages | 5 | Time and people |
+| Qualitative/technical pages | 5 | Everything that isn't a number |
+| Closing/appendix pages | 3 | The decision and what follows |
 
 Beyond these page patterns, `slide-templates/` registers 37 ready-made
 one-page templates in five packs (marketing-analysis, b2b-sales, scalar-ae,

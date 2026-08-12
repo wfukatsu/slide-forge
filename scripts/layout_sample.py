@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""テンプレートの全レイアウトを1枚ずつ並べた「レイアウトサンプル」を生成する。
+"""Generates a "layout sample" deck that lays out every layout in the
+template, one per slide.
 
-どのレイアウトがどう見えるか、どのプレースホルダを持つか、どのロールに割り当てられて
-いるかを、実際に文字を流し込んだ状態で確認するためのカタログ。ロールの割当が正しいかを
-目視で検証するのにも使う。
+A catalog for checking, with actual text flowed in, how each layout looks,
+which placeholders it has, and which role it's assigned to. Also used to
+visually verify that role assignments are correct.
 
     python scripts/layout_sample.py --template templates/scalar-2026.json
     python scripts/layout_sample.py --template templates/aixdevops.json --only-roles
@@ -47,7 +48,7 @@ def roles_of(template: dict, key: str) -> list[str]:
 
 
 def annotate(deck, template: dict, slide_id: str, key: str, layout: dict, index: int):
-    """スライド下部に、レイアウトの素性を示す帯を描く。"""
+    """Draws a band at the bottom of the slide showing the layout's identity."""
     d = Canvas(deck, slide_id, template)
     roles = roles_of(template, key)
     ph = layout.get("placeholders", [])
@@ -59,7 +60,7 @@ def annotate(deck, template: dict, slide_id: str, key: str, layout: dict, index:
     d.label(0.55, y + 0.03, 4.6, 0.28, left, size=9, bold=True,
             color=d.P.primaryDark, valign="MIDDLE")
 
-    # 右側は 1 行に収める。折り返すと帯からはみ出す
+    # Keep the right side to a single line. Wrapping would overflow the band
     parts = [" / ".join(roles) if roles else "ロール未割当",
              ", ".join(ph) if ph else "placeholder なし"]
     if "body" in geo:
@@ -70,12 +71,13 @@ def annotate(deck, template: dict, slide_id: str, key: str, layout: dict, index:
 
 
 def sample_text(key: str, layout: dict, template: dict) -> dict:
-    """レイアウトが持つプレースホルダに応じたサンプル文言を組み立てる。"""
+    """Assembles sample copy suited to the placeholders a layout has."""
     ph = layout.get("placeholders", [])
     roles = roles_of(template, key)
     out: dict = {}
     if "TITLE" in ph:
-        # タイトルはレイアウトキーのみ。表示名まで入れると折り返して本文に食い込む
+        # The title is just the layout key. Including the display name too
+        # would wrap and crowd into the body
         out["title"] = key
     if "SUBTITLE" in ph:
         name = layout.get("displayName", "")

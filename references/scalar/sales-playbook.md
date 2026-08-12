@@ -1,257 +1,274 @@
-# Scalar B2B 営業・提案活動プレイブック（機械可読版）
+*[日本語](sales-playbook.ja.md)*
 
-株式会社 Scalar の「B2B 営業・提案活動標準」を、スキルとスクリプトから引ける形に
-落としたもの。`scalar-account-plan` と `scalar-ae-materials` が共通で読む**唯一の
-出典**であり、両スキルはここに書いてあることを再定義しない。
+# Scalar B2B Sales & Proposal Playbook (machine-readable edition)
 
-原典の構成（§1 原則 → §3 プロセス → §4 フォーキャスト → §5 資料種別 →
-§6 フェーズ別要件 → §8 会議体 → §9 情報管理 → §10 チェックポイント）に対応する。
+A machine-readable rendering of Scalar, Inc.'s "B2B sales & proposal activity standard,"
+structured so that skills and scripts can reference it. It is the **single source of
+truth** shared by `scalar-account-plan` and `scalar-ae-materials`; neither skill
+redefines what is written here.
+
+It maps to the structure of the original document (§1 Principles → §3 Process → §4 Forecast →
+§5 Material types → §6 Phase requirements → §8 Meeting bodies → §9 Information management → §10 Checkpoints).
 
 ---
 
-## 1. 判断の土台となる原則
+## 1. Foundational principles for decision-making
 
-資料を作る前に、これらに反していないかを見る。**資料は作ること自体が目的ではなく、
-次の意思決定を成立させる証拠**である。
+Before producing a material, check that it doesn't conflict with these. **A material is not
+an end in itself — it is evidence that makes the next decision possible.**
 
-| # | 原則 | 資料づくりへの含意 |
+| # | Principle | Implication for material creation |
 |---|---|---|
-| 1 | 営業は確率論で管理する（接点数・勝率・サイクル・TCV） | 勝率と金額の低い商談に、正式提案の工数を割かない |
-| 2 | WHAT・WHY から提案する | 顧客の要件に HOW だけで答える資料を作らない。あるべき姿と「なぜ今か」を先に置く |
-| 3 | 顧客を指導し、意思決定を支援する（チャレンジャー型） | 顧客提示用は「地ならし → 再構成 → 裏付け → 当事者化 → 新しい方法 → 実行案」の順に組む |
-| 4 | 信頼を先に構築する | 自社製品以外の情報・選択肢・避けるべきリスクも載せる。売り急がない |
-| 5 | ステージは活動量ではなく顧客の合意で進める | 「説明した」「提案書を出した」は移行の根拠にならない。§2 のゲートに顧客側の証拠を紐づける |
-| 6 | 小さく早く契約し、拡張可能な商流を作る | 大きな構想でも実行可能な単位に割る。ライセンスとサービスを分離して見積る |
+| 1 | Sales is managed probabilistically (touchpoint count, win rate, cycle, TCV) | Don't spend formal-proposal effort on deals with low win rate and low value |
+| 2 | Propose from WHAT and WHY | Don't produce materials that answer the customer's requirements with HOW alone. Put the target state and "why now" first |
+| 3 | Coach the customer and support their decision-making (Challenger-style) | Customer-facing materials are structured in the order: reframe → reconstruct → reinforce → make it personal → new way → action plan |
+| 4 | Build trust first | Include information, options, and risks to avoid beyond your own product. Don't rush the sale |
+| 5 | Stages advance on customer agreement, not activity volume | "We explained it" or "we sent the proposal" is not grounds for advancing a stage. Tie the gates in §2 to customer-side evidence |
+| 6 | Contract small and fast, and build an expandable channel | Break even a large vision into executable units. Estimate license and services separately |
 
 ---
 
-## 2. フェーズとステージ移行条件（ゲート）
+## 2. Phases and stage-transition conditions (gates)
 
-`account.json` の `meta.stage` はこの 0〜6 を取る。`gates` の各項目は下表の
-**ゲート ID** をキーにする（ID は台帳・スライド・スキル間で共有する安定した識別子で、
-勝手に増減させない）。
+`account.json`'s `meta.stage` takes values 0–6. Each item under `gates` is keyed by the
+**gate ID** in the table below (the ID is a stable identifier shared across the ledger,
+slides, and skills — do not add or remove them arbitrarily).
 
-### フェーズ 0 — Territory / Account Planning
+### Phase 0 — Territory / Account Planning
 
-狙う市場・顧客・ユースケース・接点を定める。社内判断は「どこに、なぜ、誰が時間を投資するか」。
+Define the target market, customers, use cases, and touchpoints. The internal decision is
+"where, why, and who invests time."
 
-| ゲート ID | 移行条件 |
+| Gate ID | Transition condition |
 |---|---|
-| `g0.icp-fit` | 対象アカウントが ICP に適合している |
-| `g0.hypothesis-defined` | 想定課題・対象者・購買トリガー・接点獲得方法が定義されている |
-| `g0.capacity-assigned` | 投資する営業工数と担当が決まっている |
+| `g0.icp-fit` | The target account fits the ICP |
+| `g0.hypothesis-defined` | The hypothesized problem, target persona, buying trigger, and touchpoint-acquisition method are defined |
+| `g0.capacity-assigned` | The sales effort to invest and the owner are decided |
 
-主な活動: 市場・規制・競合・顧客の中期経営計画と IT 戦略の調査／ Scalar が不可欠に
-なり得る課題と購買トリガーの定義／ CIO・CTO・CDO・CISO・LoB のペルソナ別訴求設計／
-重点アカウントの組織・既存システム・既存ベンダー・パートナーの仮説化。
-**訪問目標は「アポイント取得」ではなく「検証する仮説」と「得たい次の紹介」で設計する。**
+Main activities: researching the market, regulations, competitors, and the customer's
+mid-term management plan and IT strategy / defining the problems and buying triggers where
+Scalar could become indispensable / designing persona-specific messaging for CIO, CTO, CDO,
+CISO, and LoB / hypothesizing the organization, existing systems, existing vendors, and
+partners of priority accounts. **Design the visit goal not as "get an appointment" but as
+"the hypothesis to validate" and "the next introduction to obtain."**
 
-### フェーズ 1 — Assessment & Qualification
+### Phase 1 — Assessment & Qualification
 
-顧客にビジネス課題を認識してもらい、Scalar が解決手段を持つことを理解してもらう。
-同時に、商談として投資すべきかを評価する。
+Get the customer to recognize their business problem and understand that Scalar has a way
+to solve it. At the same time, assess whether the deal is worth investing in.
 
-| ゲート ID | 移行条件 |
+| Gate ID | Transition condition |
 |---|---|
-| `g1.problem-recognized` | Scalar で解決可能な課題を**顧客自身が**認識している |
-| `g1.owner-reached` | 課題の所有部門・責任者につながっている、または紹介が合意されている |
-| `g1.linked-to-exec` | 経営・部門課題との関係が確認できている |
-| `g1.timeframe-6q` | 原則 6 四半期以内に意思決定可能である |
-| `g1.next-discovery-agreed` | 次回のディスカバリー対象者とテーマが合意されている |
+| `g1.problem-recognized` | **The customer themselves** recognizes a problem that Scalar can solve |
+| `g1.owner-reached` | Reached the department/owner responsible for the problem, or an introduction has been agreed |
+| `g1.linked-to-exec` | The connection to a management/departmental problem has been confirmed |
+| `g1.timeframe-6q` | In principle, a decision can be made within 6 quarters |
+| `g1.next-discovery-agreed` | The attendees and theme for the next discovery session have been agreed |
 
-### フェーズ 2 — Discovery
+### Phase 2 — Discovery
 
-顧客組織を横断して信頼関係を構築し、表面的な要望ではなく、業務ゴール・根本課題・
-システム課題・購買条件を明らかにする。**ディスカバリーは契約まで継続する。**
+Build trust across the customer's organization and uncover, beyond surface-level requests,
+the business goals, root causes, system issues, and buying conditions. **Discovery
+continues through to contract.**
 
-| ゲート ID | 移行条件 |
+| Gate ID | Transition condition |
 |---|---|
-| `g2.goal-agreed` | 顧客が達成したい業務ゴールと課題を合意している |
-| `g2.requirements-agreed` | 課題を解決するためのシステム課題・要件を合意している |
-| `g2.three-maps` | ディスカバリー / システム / インフルーエンスの 3 マップが作成・検証されている |
-| `g2.buying-process` | 提案対象・対象者・パートナー・既存環境・購買プロセスが明確である |
-| `g2.wps-done` | WPS を実施し、SA を含む提案チームが組成されている |
+| `g2.goal-agreed` | The business goal and problem the customer wants to achieve are agreed |
+| `g2.requirements-agreed` | The system issues/requirements needed to solve the problem are agreed |
+| `g2.three-maps` | The Discovery, System, and Influence maps have been created and validated |
+| `g2.buying-process` | The proposal target, attendees, partners, existing environment, and buying process are clear |
+| `g2.wps-done` | A WPS has been held and a proposal team including an SA has been formed |
 
-道具: SPIN（Situation / Problem / Implication / Need-payoff）で課題を深掘りする。
-3 マップの作図は `b2b-account-maps` スキルが持つ。
+Tools: use SPIN (Situation / Problem / Implication / Need-payoff) to dig into the problem.
+Drawing the 3 maps is owned by the `b2b-account-maps` skill.
 
-### フェーズ 3 — Solution Development
+### Phase 3 — Solution Development
 
-顧客要件を再定義し、Scalar とパートナーによる To-Be・価値・仕様・導入方法を設計する。
-デモ・プロトタイプ・必要に応じた PoC で、顧客が実現可能性と制約を正しく理解した状態を作る。
+Redefine the customer's requirements and design the To-Be, value, specification, and
+implementation approach together with Scalar and partners. Use a demo, prototype, and a PoC
+where needed, to make sure the customer correctly understands feasibility and constraints.
 
-| ゲート ID | 移行条件 |
+| Gate ID | Transition condition |
 |---|---|
-| `g3.demo-understood` | デモまたはプロトタイプを提示し、**できること・できないこと**を顧客が正しく理解している |
-| `g3.poc-agreed` | Scalar 製品による対応方法が理解され、未評価事項には PoC 実施が合意されている |
-| `g3.value-quotable` | To-Be・要件・概算構成・価値・差別化・概算金額が説明可能である |
-| `g3.deal-desk` | Deal Desk で提案リスクがレビューされている |
+| `g3.demo-understood` | A demo or prototype has been presented, and the customer correctly understands **what it can and cannot do** |
+| `g3.poc-agreed` | The customer understands how Scalar's products would address it, and a PoC has been agreed for unevaluated items |
+| `g3.value-quotable` | The To-Be, requirements, rough configuration, value, differentiation, and rough price can all be explained |
+| `g3.deal-desk` | The proposal risk has been reviewed at Deal Desk |
 
-### フェーズ 4 — Solution Presentation
+### Phase 4 — Solution Presentation
 
-課題・To-Be・実現方式・ROI・差別化・導入計画・価格を、**一つの意思決定ストーリー**に
-統合する。
+Integrate the problem, To-Be, implementation approach, ROI, differentiation, implementation
+plan, and price into **a single decision-making story**.
 
-| ゲート ID | 移行条件 |
+| Gate ID | Transition condition |
 |---|---|
-| `g4.product-selected` | Scalar 製品が選定されている |
-| `g4.budget-agreed` | 概算予算と購入金額が合意され、予算確保が確認できている |
-| `g4.partner-decided` | 導入パートナーが決定している |
-| `g4.closing-reviewed` | 契約までの課題とタスクを Deal Desk でレビューしている |
+| `g4.product-selected` | The Scalar product has been selected |
+| `g4.budget-agreed` | The rough budget and purchase amount are agreed, and budget availability is confirmed |
+| `g4.partner-decided` | The implementation partner is decided |
+| `g4.closing-reviewed` | The issues and tasks remaining to contract have been reviewed at Deal Desk |
 
-競合が強い要件は、**要件の再定義**またはパートナー能力による**同質化**を検討する。
-Champion だけでなく、決裁者・技術・利用・購買・法務の評価観点に適応する。
+Where competition is strong, consider **redefining the requirements** or **neutralizing**
+via partner capability. Adapt to the evaluation perspectives not just of the Champion but
+also the decision-maker, technical, user, procurement, and legal stakeholders.
 
-### フェーズ 5 — Resolution
+### Phase 5 — Resolution
 
-契約締結だけでなく、提供義務を履行できる条件・商流・注文・サポート・将来の更新が
-円滑に進む基本条件を確定する。
+Beyond signing the contract, finalize the conditions, channel, order, support, and future
+renewal basics needed to fulfill delivery obligations smoothly.
 
-| ゲート ID | 完了条件 |
+| Gate ID | Completion condition |
 |---|---|
-| `g5.terms-signed` | エンドユーザーと Term & Conditions を締結している |
-| `g5.channel-open` | パートナー商流がある場合、代理店契約と注文経路が開通している |
-| `g5.po-received` | 注文書を受領している |
-| `g5.services-contracted` | 必要なサービス契約を締結している |
-| `g5.support-ready` | 利用開始までにサポート窓口を開設できる |
+| `g5.terms-signed` | Terms & Conditions have been signed with the end user |
+| `g5.channel-open` | Where a partner channel exists, the reseller agreement and order path are open |
+| `g5.po-received` | The purchase order has been received |
+| `g5.services-contracted` | The necessary services contract(s) have been signed |
+| `g5.support-ready` | Support can be opened by the time of go-live |
 
-**ライセンスとサービスは分離する。** 値引きは、事例化・数量・複数年・リスク低減など
-の対価と交換する。
+**Keep license and services separate.** Exchange discounts for something in return — case
+study rights, volume, multi-year terms, risk reduction, etc.
 
-### フェーズ 6 — Delivery / Renewal / Expansion
+### Phase 6 — Delivery / Renewal / Expansion
 
-提案時の価値を実現し、利用定着・更新・ライセンス追加・他部門展開・事例化につなげる。
-ここに固定のゲートは置かず、次のヘルス項目を四半期ごとに見る。
+Realize the value promised at proposal time and drive adoption, renewal, additional
+licenses, expansion to other departments, and case-study creation. No fixed gates are set
+here; instead, review the following health items quarterly.
 
-`h6.value-realized`（提案時の KPI に対する実績）/ `h6.utilization`（未利用の有無）/
-`h6.satisfaction` / `h6.renewal-risk`（更新日と更新リスク）/ `h6.expansion`（追加
-ユースケース候補）/ `h6.reference`（事例化・リファレンスの履行）。
+`h6.value-realized` (actual results against the KPIs promised at proposal time) /
+`h6.utilization` (whether there is unused capacity) / `h6.satisfaction` /
+`h6.renewal-risk` (renewal date and renewal risk) / `h6.expansion` (candidate additional
+use cases) / `h6.reference` (fulfillment of case-study/reference commitments).
 
 ---
 
-## 3. 資料 5 種 × フェーズのマトリクス
+## 3. Matrix of the 5 material types × phase
 
-同じ商談情報を、一つの資料で全員に見せてはならない。
+The same deal information must never be shown to everyone using a single material.
 
-| 種別 | 主目的 | 主な読み手 | 必須要件 |
+| Type | Primary purpose | Primary audience | Required elements |
 |---|---|---|---|
-| **社内説明用** | 投資判断・リソース確保・リスク管理・ステージ審査 | 経営、営業、SA、製品、法務、財務、Delivery | 事実と仮説の分離、根拠、未確認事項、リスク、担当、期限、意思決定依頼を明示。**顧客への転送は禁止** |
-| **顧客提示用** | 情報提供・対話・課題探索・信頼形成 | 顧客担当者、利用部門、技術部門 | 顧客業界への示唆、仮説、事例、質問を中心に。断定しすぎない。製品説明だけにしない |
-| **顧客提案用** | 選定・予算化・稟議・契約の意思決定 | Champion、決裁者、技術評価者、購買 | 正式で自己完結的。顧客が社内転送・上申できる構造 |
-| **パートナー提示用** | Scalar の価値理解・協業可能性の探索 | パートナー営業、SE、事業責任者 | 再利用しやすい標準情報。顧客固有の機密情報は必要最小限 |
-| **パートナー提案用** | 共同案件の役割・商流・見積・提案内容の合意 | パートナー案件責任者、営業、SE、法務、経営 | 共同勝ち筋、RACI、商流、見積境界、知財・守秘、契約責任を明示 |
+| **Internal-facing** | Investment decisions, resource allocation, risk management, stage review | Management, sales, SA, product, legal, finance, delivery | Clear separation of fact vs. hypothesis, evidence, unconfirmed items, risks, owner, deadline, and the decision being requested. **Forwarding to the customer is prohibited** |
+| **Customer-facing (informational)** | Information sharing, dialogue, problem exploration, trust-building | Customer contacts, business units, technical staff | Centered on implications for the customer's industry, hypotheses, case studies, and questions. Avoid over-asserting. Not just a product pitch |
+| **Customer-facing (proposal)** | Selection, budgeting, internal approval, and contract decisions | Champion, decision-maker, technical evaluator, procurement | Formal and self-contained. Structured so the customer can forward and escalate it internally |
+| **Partner-facing (informational)** | Understanding Scalar's value, exploring collaboration potential | Partner sales, SE, business owner | Reusable standard information. Minimize customer-specific confidential information |
+| **Partner-facing (proposal)** | Agreement on roles, channel, estimate, and proposal content for a joint deal | Partner deal owner, sales, SE, legal, management | Explicit joint win strategy, RACI, channel, estimate boundaries, IP/confidentiality, and contractual responsibility |
 
-### フェーズ別に作るもの
+### What gets produced by phase
 
-`slide-forge` の実装状況を併記する。**「後続」はテンプレート未実装**であり、
-現時点では汎用テンプレート（`google-slides-template`）で書く。
+The `slide-forge` implementation status is noted alongside. **"Upcoming" means the template
+is not yet implemented**, and for now such materials are written using the generic template
+(`google-slides-template`).
 
-| フェーズ | 社内説明用 | 顧客提示用 | 顧客提案用 |
+| Phase | Internal-facing | Customer-facing (informational) | Customer-facing (proposal) |
 |---|---|---|---|
-| 0 | テリトリープラン / ICP / アカウントプラン / ペルソナ仮説 | 業界トレンド・課題仮説資料、会社紹介、事例集 | **原則まだ作らない**（企画相談があれば「検討論点整理」として仮説を明記） |
-| 1 | 訪問計画（`visit-plan`）、Qualification メモ、議事録、商談登録票 | 顧客別会社・製品紹介、関連事例、課題仮説ワンページャー（`challenge-hypothesis`） | 検討テーマ整理・初期構想メモ（1〜3 ページ） |
-| 2 | 3 マップ（`b2b-account-maps`）、WPS（`win-plan`）、課題・要件台帳、購買プロセス | ヒアリングガイド、課題構造図、As-Is 概要、検討論点、他社事例 | ディスカバリー結果確認書、構想策定・PoC 提案書 |
-| 3 | Solution Strategy、要件台帳、アーキテクチャ、ROI モデル、競合分析、Deal Desk 資料 | デモ資料、To-Be コンセプト、技術解説、アーキテクチャ概要、FAQ | PoC 提案書／実施計画、構想提案書、概算見積（`scalar-proposal-slides` / `spreadsheets`） |
-| 4 | 最終提案レビュー、価格承認、フォーキャスト、クロージングプラン | エグゼクティブサマリー、個別補足、FAQ、デモ結果報告 | **正式提案書**、見積書、実施計画、ROI／TCO、上申支援版（`scalar-proposal-slides`） |
-| 5 | 契約条件サマリー、承認稟議、履行義務チェック、受注引継書 | 契約・導入開始チェックリスト、FAQ、サポート案内 | 最終見積、注文書、契約添付仕様、SOW |
-| 6 | 受注引継書、ヘルスレビュー、更新計画、拡張アカウントプラン | 導入キックオフ、定例報告、活用状況、ロードマップ共有 | 更新提案、追加ライセンス、他部門展開、追加サービス提案 |
+| 0 | Territory plan / ICP / account plan / persona hypotheses | Industry trend & problem hypothesis materials, company introduction, case study collection | **In principle, not yet produced** (if there is a planning discussion, state the hypotheses explicitly as a "discussion-point summary") |
+| 1 | Visit plan (`visit-plan`), qualification notes, meeting minutes, deal registration form | Company/product introduction by customer, related case studies, problem-hypothesis one-pager (`challenge-hypothesis`) | Discussion-theme summary, initial concept memo (1-3 pages) |
+| 2 | 3 maps (`b2b-account-maps`), WPS (`win-plan`), problem/requirements ledger, buying process | Discovery guide, problem structure diagram, As-Is overview, discussion points, case studies from other companies | Discovery-results confirmation document, concept design/PoC proposal |
+| 3 | Solution Strategy, requirements ledger, architecture, ROI model, competitive analysis, Deal Desk materials | Demo materials, To-Be concept, technical explanation, architecture overview, FAQ | PoC proposal/implementation plan, concept proposal, rough estimate (`scalar-proposal-slides` / `spreadsheets`) |
+| 4 | Final proposal review, price approval, forecast, closing plan | Executive summary, individual supplements, FAQ, demo results report | **Formal proposal**, quotation, implementation plan, ROI/TCO, internal-escalation-support version (`scalar-proposal-slides`) |
+| 5 | Contract terms summary, approval workflow, delivery-obligation checklist, order handoff document | Contract/implementation-kickoff checklist, FAQ, support guide | Final quotation, purchase order, contract-attached specification, SOW |
+| 6 | Order handoff document, health review, renewal plan, expansion account plan | Implementation kickoff, regular reporting, usage status, roadmap sharing | Renewal proposal, additional licenses, expansion to other departments, additional services proposal |
 
-パートナー提示用・パートナー提案用は原典 §6 に定義があるが、**slide-forge の
-テンプレート実装は後続**。共同提案方針書に必ず入れる項目は原典 §7.5 を参照。
+Partner-facing (informational) and partner-facing (proposal) are defined in §6 of the
+original document, but the `slide-forge` template implementation is **upcoming**. See §7.5
+of the original document for the items that must always be included in a joint proposal
+policy document.
 
-### 資料種別を取り違えないための検査
+### Check to avoid mixing up material types
 
-顧客提示用・顧客提案用を作ったら、生成前に必ず見る:
+When producing a customer-facing (informational) or customer-facing (proposal) material,
+always check before generating it:
 
-- 個人の影響力・賛否・社内政治の記述が入っていないか（→ 社内説明用にしかない情報）
-- 競合の弱点を名指しした記述が入っていないか
-- 未確認の事項が、確定事項のように書かれていないか（「本日確認したい」に落とす）
-- 価格・ロードマップの取扱いが、その相手に開示してよい範囲か
-
----
-
-## 4. 全資料に共通する品質基準（原典 §5.1）
-
-- 目的、対象読者、期待する意思決定または反応を冒頭に置く
-- 事実、顧客発言、分析、仮説、提案を区別する
-- As-Is、課題、影響、To-Be、実現方法の**因果を切らない**
-- 機能ではなく、業務成果・リスク低減・収益・コスト・時間への効果を示す
-- 図表の前提、対象範囲、版、作成日、オーナーを記載する
-- 価格・効果・性能などの数値には、計算根拠と前提条件を付ける
-- 顧客名、個人名、競合情報、価格、契約情報を適切に分類し、配布範囲を管理する
-- 次のアクション、担当者、期日、完了条件を明記する
-- 古いテンプレートの顧客名、金額、構成、注記を残さない
+- Does it contain descriptions of individuals' influence, stances, or internal politics? (→ information that belongs only in internal-facing materials)
+- Does it name a competitor's weakness directly?
+- Is an unconfirmed item written as if it were confirmed? (frame it as "to be confirmed today")
+- Is the handling of pricing/roadmap information within what's appropriate to disclose to that audience?
 
 ---
 
-## 5. フォーキャストと商談リスク（原典 §4）
+## 4. Quality standards common to all materials (original §5.1)
 
-| 区分 | 定義 |
+- State the purpose, target audience, and the decision or reaction expected, up front
+- Distinguish fact, customer statement, analysis, hypothesis, and proposal
+- Do not break the causal chain of As-Is → problem → impact → To-Be → implementation approach
+- Show the effect on business outcomes, risk reduction, revenue, cost, and time — not features
+- Record the assumptions, scope, version, creation date, and owner of every diagram/table
+- Attach a calculation basis and assumptions to any figure for price, effect, or performance
+- Properly classify and control the distribution of customer names, personal names, competitive information, pricing, and contract information
+- State the next action, owner, due date, and completion condition explicitly
+- Never leave behind old customer names, amounts, configurations, or notes from a reused template
+
+---
+
+## 5. Forecast and deal risk (original §4)
+
+| Category | Definition |
 |---|---|
-| `Pipeline` | リスクが十分に把握できていない |
-| `Best` | リスクは把握しているが、自社でコントロールできない |
-| `Commit` | リスクを把握し、自社と顧客の**合意した行動**でコントロールできる |
-| `Closed` | 契約・注文が完了している |
+| `Pipeline` | Risk is not yet sufficiently understood |
+| `Best` | Risk is understood, but not controllable by us |
+| `Commit` | Risk is understood and controllable through **actions agreed by both us and the customer** |
+| `Closed` | Contract/order is complete |
 
-`account.json` の `meta.forecast` はこの 4 値を取る。**根拠を書けない `Commit` は
-`Best` に落とす。**
+`account.json`'s `meta.forecast` takes one of these 4 values. **A `Commit` that cannot be
+backed by evidence should be downgraded to `Best`.**
 
-BANT の各項目は台帳の `bant` に対応し、`level` は `ok` / `risk` / `unknown` を取る:
+Each BANT item corresponds to the ledger's `bant`, and `level` takes `ok` / `risk` / `unknown`:
 
-| キー | 確認する内容 | `ok` と言える条件 |
+| Key | What to confirm | Condition for `ok` |
 |---|---|---|
-| `budget` | 予算枠、名目、金額、執行可能日 | 4 つすべてが顧客発言または文書で取れている |
-| `authority` | 上申者、決裁者、評価者、購買、法務の役割と判断基準 | 決裁者が特定でき、判断基準を聞けている |
-| `needs` | 課題と経済効果が明確で、Scalar を必要とする選定条件があるか | 選定条件に自社の差別化が入っている |
-| `timeframe` | 導入日と、そこから逆算した意思決定・契約マイルストーン | 顧客と逆算日程を合意している |
+| `budget` | Budget line, budget name, amount, and date funds become available | All 4 have been obtained from customer statements or documents |
+| `authority` | Roles and decision criteria of the escalator, decision-maker, evaluator, procurement, and legal | The decision-maker is identified and their decision criteria are known |
+| `needs` | Whether the problem and economic impact are clear, and whether the selection criteria require Scalar | Our differentiation is included in the selection criteria |
+| `timeframe` | The go-live date and the decision/contract milestones worked back from it | The reverse-engineered schedule is agreed with the customer |
 
 ---
 
-## 6. 会議体（原典 §8）
+## 6. Meeting bodies (original §8)
 
-| 会議体 | タイミング | 目的 | アウトプット |
+| Meeting | Timing | Purpose | Output |
 |---|---|---|---|
-| Account Planning Session | 四半期・重点顧客更新時 | アカウント戦略と投資配分 | アカウントプラン、接点計画 |
-| WPS (Win Planning Session) | Discovery 完了時、勝ち筋変更時 | 商談の勝ち筋と提案投資の判断 | 移行判断、提案チーム、リスク対策 |
-| Deal Desk | Solution Development 後、正式提案後、契約例外時 | 技術・価格・契約・Delivery リスクの承認 | 承認条件、修正事項、クロージング判断 |
-| Forecast Review | 週次 | 着地予測とギャップ対策 | Pipeline/Best/Commit、次の行動 |
-| Customer Success Review | 四半期 | 成果・満足度・更新・拡張の確認 | ヘルス、改善、更新・拡張計画 |
+| Account Planning Session | Quarterly / at priority-account updates | Account strategy and investment allocation | Account plan, touchpoint plan |
+| WPS (Win Planning Session) | At Discovery completion, or when the win strategy changes | Deal win strategy and proposal-investment decision | Stage-transition decision, proposal team, risk countermeasures |
+| Deal Desk | After Solution Development, after formal proposal, or on contract exceptions | Approval of technical, pricing, contract, and delivery risk | Approval conditions, required fixes, closing decision |
+| Forecast Review | Weekly | Landing forecast and gap countermeasures | Pipeline/Best/Commit, next actions |
+| Customer Success Review | Quarterly | Confirming outcomes, satisfaction, renewal, and expansion | Health status, improvements, renewal/expansion plan |
 
 ---
 
-## 7. 運用チェックポイント 10 問と台帳フィールドの対応
+## 7. The 10 operational checkpoint questions and their ledger fields
 
-各レビューで**必ず答えられなければならない** 10 問（原典 §10）。
-`account_ledger.gaps()` はこの表を根拠に、答えられない問いをアクション候補に変換する。
+10 questions that **must always be answerable** at every review (original §10).
+`account_ledger.gaps()` uses this table as the basis for converting unanswerable questions
+into candidate actions.
 
-| # | 問い | 台帳フィールド | 未充足のときのアクション相手 |
+| # | Question | Ledger field | Who to act on it when unmet |
 |---|---|---|---|
-| 1 | 顧客が達成したい事業成果は何か | `discovery.metrics` | 課題所有部門の責任者 |
-| 2 | なぜ今、意思決定する必要があるのか | `discovery.compellingEvent` | Champion |
-| 3 | 課題を放置した場合の影響は何か | `painChain` | 現場担当と、その上位管理職 |
-| 4 | 課題と To-Be は顧客と合意できているか | `gates.g2.goal-agreed` | Champion |
-| 5 | なぜ Scalar が必要で、競合や現状維持では不十分なのか | `discovery.decisionCriteria` | 技術評価者 |
-| 6 | 誰が Champion、決裁者、技術評価者、利用者、反対者、コーチか | `people[]`（`role` と `stance`） | 既知の関与者からの紹介 |
-| 7 | 予算、決裁、購買、法務、導入のマイルストーンは何か | `bant`, `discovery.decisionProcess` | 購買・情シス |
-| 8 | パートナーは誰で、なぜ Scalar と組み、何に責任を持つか | `partners[]` | パートナー営業責任者 |
-| 9 | 最大のリスクと、それをコントロールする次の行動は何か | `risks[]` → `actions[]` | 社内（WPS / Deal Desk） |
-| 10 | 今のステージの完了条件を示す**顧客側の証拠**は何か | `gates[<現ステージ>]` の `evidence` | Champion |
+| 1 | What business outcome does the customer want to achieve | `discovery.metrics` | The owner of the department that owns the problem |
+| 2 | Why does the decision need to be made now | `discovery.compellingEvent` | Champion |
+| 3 | What is the impact of leaving the problem unaddressed | `painChain` | The frontline owner and their manager |
+| 4 | Is the problem and the To-Be agreed with the customer | `gates.g2.goal-agreed` | Champion |
+| 5 | Why is Scalar needed, and why are competitors or the status quo insufficient | `discovery.decisionCriteria` | Technical evaluator |
+| 6 | Who are the Champion, decision-maker, technical evaluator, user, opponent, and coach | `people[]` (`role` and `stance`) | Introduction from a known stakeholder |
+| 7 | What are the budget, decision, procurement, legal, and implementation milestones | `bant`, `discovery.decisionProcess` | Procurement / IT department |
+| 8 | Who is the partner, why are they partnering with Scalar, and what are they responsible for | `partners[]` | Partner sales owner |
+| 9 | What is the biggest risk, and what is the next action to control it | `risks[]` → `actions[]` | Internal (WPS / Deal Desk) |
+| 10 | What **customer-side evidence** demonstrates the completion condition of the current stage | `evidence` under `gates[<current stage>]` | Champion |
 
-**答えを埋めないこと。** 未確認は未確認として残し、確認相手と期限を付けて
-`actions[]` に入れる。これが AE の行動計画になる。
+**Do not fill in answers.** Leave unconfirmed items unconfirmed, and put them into
+`actions[]` with a person to confirm with and a deadline. This becomes the AE's action plan.
 
 ---
 
-## 8. 情報管理（原典 §9）
+## 8. Information management (original §9)
 
-- CRM を商談ステージ・金額・予定日・活動・Next Action の**正本**とする。
-  slide-forge の `account.json` は資料生成のための作業台帳であり、CRM を置き換えない。
-- 顧客から受領した契約・正式資料は、商談に紐づく管理対象フォルダに格納する
-- CRM、議事録、ファイルの顧客名・商談名・日付・金額・ステージを一致させる
-- ステージ変更時に、必須成果物と**移行証拠へのリンク**を登録する
-- パートナーに共有する前に、顧客情報の共有権限・NDA・目的・再共有可否を確認する
+- Treat the CRM as the **single source of truth** for deal stage, amount, expected date,
+  activity, and Next Action. slide-forge's `account.json` is a working ledger for material
+  generation, and does not replace the CRM.
+- Store contracts and formal documents received from the customer in the managed folder tied to the deal
+- Keep the customer name, deal name, date, amount, and stage consistent across the CRM, meeting minutes, and files
+- When a stage changes, register the required deliverables and a **link to the transition evidence**
+- Before sharing with a partner, confirm the sharing permissions, NDA, purpose, and re-sharing rights for customer information
 
-### slide-forge 上の置き場
+### Where things live in slide-forge
 
 ```
 <Drive ルート>/<AE 名>/<顧客名>/
@@ -261,5 +278,5 @@ BANT の各項目は台帳の `bant` に対応し、`level` は `ok` / `risk` / 
   90_社内/       社内説明用（訪問計画・WPS・Deal Desk・稟議）
 ```
 
-`00_活動計画` と `90_社内` の中身は**顧客に渡さない**。顧客へ共有するときは
-`01_顧客提示` / `02_顧客提案` のファイルを個別に共有する。
+The contents of `00_活動計画` and `90_社内` are **never given to the customer**. When
+sharing with the customer, share the files in `01_顧客提示` / `02_顧客提案` individually.

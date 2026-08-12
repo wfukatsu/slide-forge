@@ -1,29 +1,31 @@
-# アカウントグラフ（インフルーエンスマップ / ディスカバリーマップ）
+*[日本語](account-graphs.ja.md)*
 
-## 目次
+# Account graphs (influence map / discovery map)
 
-- どういう図か
-- データモデル
-- 検証で止まること
-- 抽出（スライド用の間引き）
-- draw.io 出力
-- 使い分け
+## Table of contents
 
-## どういう図か
+- What kind of diagram this is
+- Data model
+- What validation blocks
+- Extraction (thinning for slides)
+- draw.io output
+- When to use which
 
-B2B の商談で使う 2 つのグラフ。**どちらも 1 つの JSON から、全体は draw.io へ、
-主要部分はスライドへ**出力する。同じ元データを使うのは、隣り合う 2 つの図が
-食い違うのを防ぐため。
+## What kind of diagram this is
 
-- **インフルーエンス**: 購買関与者を組織構造でつなぎ、役割・影響度・立場・
-  面談の有無を注記する
-- **ディスカバリー**: Goal / Strategy / Tactics を上向きの支持関係でつなぐ。
-  1 つの Tactics が複数の Strategy を支える多親構造を取れる
+Two graphs used in B2B deals. **Both are produced from a single JSON, with the full graph
+going to draw.io and the key subset going to a slide.** Using the same source data prevents
+the two adjacent diagrams from disagreeing with each other.
 
-2 軸に配置する `influence-map`（`slide-templates/b2b-sales/`）とは別物で、
-あちらは位置関係、こちらは**構造**を見せる。
+- **Influence**: connects buying-committee participants via organizational structure,
+  annotating role, influence level, stance, and whether a meeting has taken place
+- **Discovery**: connects Goal / Strategy / Tactics via upward "supports" relationships. A
+  single Tactic can support multiple Strategies (a multi-parent structure)
 
-## データモデル
+This is distinct from `influence-map` (`slide-templates/b2b-sales/`), which places people on
+2 axes; that one shows positional relationships, while this one shows **structure**.
+
+## Data model
 
 ```json
 {
@@ -38,14 +40,14 @@ B2B の商談で使う 2 つのグラフ。**どちらも 1 つの JSON から�
 }
 ```
 
-| 項目 | 値 | 表示 |
+| Field | Value | Rendering |
 |---|---|---|
-| `roles` | `F` 購買者 / `T` 技術者 / `U` 利用者 / `C` コーチ / `S` サポート役員 | 上帯に `F/C` と連結 |
-| `influence` | `champion` / `high` / `medium` / `low` | 下帯 |
-| `stance` | `close` 親密 / `neutral` / `opposed` 反発 | 本文の塗り |
-| `met` | `false` で未面談 | カード全体を破線 |
-| `reportsTo` | 上司の `id` | 上下の実線 |
-| `links` | 対等な関係・補足 | ラベル付きの横線 |
+| `roles` | `F` buyer / `T` technical / `U` user / `C` coach / `S` supporting executive | Joined as `F/C` in the top band |
+| `influence` | `champion` / `high` / `medium` / `low` | Bottom band |
+| `stance` | `close` warm / `neutral` / `opposed` hostile | Body fill |
+| `met` | `false` means not yet met | Whole card rendered dashed |
+| `reportsTo` | Manager's `id` | Solid line up/down |
+| `links` | Peer relationship / annotation | Labeled horizontal line |
 
 ```json
 {
@@ -55,38 +57,39 @@ B2B の商談で使う 2 つのグラフ。**どちらも 1 つの JSON から�
 }
 ```
 
-`tier` は `goal` / `strategy` / `tactics`。`edges` は **支える側 → 支えられる側**。
+`tier` is `goal` / `strategy` / `tactics`. `edges` run **from the supporting side to the
+supported side**.
 
-## 検証で止まること
+## What validation blocks
 
-`account_graph.validate()` が以下を弾く。生成前に必ず通る。
+`account_graph.validate()` rejects the following. Always run it before generation.
 
-- `id` の重複、存在しない `id` への参照（`reportsTo` / `edges` / `links`）
-- 列挙値の誤り（役割・影響度・立場・tier）
-- **循環**（`a -> b -> a`）
-- **下向きの辺**（`goal -> tactics`）。同 tier どうしは可で、下位目標が上位目標を
-  支える形は正しい
+- Duplicate `id` values, references to a nonexistent `id` (`reportsTo` / `edges` / `links`)
+- Invalid enum values (role, influence, stance, tier)
+- **Cycles** (`a -> b -> a`)
+- **Downward edges** (`goal -> tactics`). Edges within the same tier are fine, and a
+  lower-level goal supporting a higher-level one is valid.
 
-## 抽出（スライド用の間引き）
+## Extraction (thinning for slides)
 
-`extract()` はスライドに載る分だけ残す。既定の上限は influence 7 / discovery 8。
+`extract()` keeps only what fits on a slide. Default caps are influence 7 / discovery 8.
 
-**上位 N 件を取るだけでは辺が壊れる。** 途中のノードが消えると、その先の辺が
-宙に浮く。そこで残したノードの**祖先を必ず引き込む**。結果が上限を超えることは
-あるが、読める図であるほうを優先する。
+**Simply taking the top N breaks edges.** If an intermediate node is dropped, the edges
+beyond it become dangling. So the extraction **always pulls in the ancestors** of the nodes it
+keeps. The result may exceed the cap, but a readable diagram is prioritized over a strict cap.
 
-境目で同点なら、その同点グループごと落とす。同じ重みの兄弟のうち 1 人だけ
-載せると、選ばれなかった人が存在しないかのように読めるため。
+On a tie at the cutoff, the whole tied group is dropped together. Showing only one sibling out
+of a group with equal weight would make it read as if the unselected ones don't exist.
 
-| グラフ | 優先順位 |
+| Graph | Priority order |
 |---|---|
-| influence | 影響度 → 購買者役割 (`F`) → 面談済み → 部下の数 |
-| discovery | tier（goal > strategy > tactics）→ 支えている数 |
+| influence | Influence level → buyer role (`F`) → met → number of direct reports |
+| discovery | Tier (goal > strategy > tactics) → number of things it supports |
 
-落としたノードは標準出力に列挙される。スライドには「他 N 名は draw.io 版参照」
-と明記すること。
+Dropped nodes are listed on stdout. The slide should state explicitly: "See the draw.io
+version for the other N people."
 
-## draw.io 出力
+## draw.io output
 
 ```bash
 .venv/bin/python scripts/build_account_graph.py <graph.json> --out out/x.drawio
@@ -94,38 +97,40 @@ B2B の商談で使う 2 つのグラフ。**どちらも 1 つの JSON から�
 .venv/bin/python scripts/drawio_export.py out/x.drawio --out out/x.png --scale 2
 ```
 
-カードは**グループ + 3 セル**（帯・本文・帯）。draw.io 上でカードごと動かせて、
-各部の塗りは保たれる。
+A card is a **group + 3 cells** (band, body, band). Each card can be moved as a unit in
+draw.io, and each part's fill is preserved.
 
-**辺はグループではなく本文セル（`_b`）に付ける。** 上下の帯は部分幅（tier バッジは
-右寄せ、影響度・オーナー帯は左寄せ）なので、グループの外枠に中央から線を出すと
-帯の横の空白から生えて「つながっていない」図になる。全幅で描かれているのは本文
-セルだけ。スライド側の `influence_graph` / `outcome_tree` も同じ理由で本文ボックス
-の辺に接続している。
+**Attach edges to the body cell (`_b`), not the group.** The top/bottom bands are only
+partial width (the tier badge is right-aligned, the influence/owner band is left-aligned), so
+drawing a line from the group's outer bounding box's center makes it sprout from the empty
+space beside a band, reading as "not connected." Only the body cell is drawn full-width. The
+slide-side `influence_graph` / `outcome_tree` connect edges to the body box for the same
+reason.
 
-配置は段組み。influence は `reportsTo` の木で、親は子の中央に寄せる。
-discovery は **tier ではなくグラフの深さ**で段を決める。tier で機械的に段を
-割ると、上位目標を支える下位目標が同じ段に並んで辺が横に走る。tier は
-バッジの色だけを決める。
+Layout is tiered. For influence, it's a tree by `reportsTo`, with parents centered over their
+children. For discovery, tiers are determined by **graph depth, not the `tier` field**.
+Mechanically assigning tiers by the `tier` field causes a lower-level goal that supports a
+higher-level one to land in the same tier, making the edge run horizontally. `tier` only
+determines the badge color.
 
-書き出した PNG は必ず Read で目視確認する。
+Always visually inspect the exported PNG with Read.
 
-## スライドに載せる
+## Placing on a slide
 
-抽出版は `slide-templates/b2b-sales/` の `influence-map-org` /
-`discovery-map-tree` から描く。図版部品は `influence_graph` / `outcome_tree` で、
-draw.io 版と同じ 3 段カードをテンプレートのセマンティックパレットで塗る
-（親密 = success 系、反発 = danger 系、tier は primary / warning / muted）。
+The extracted version is drawn from `influence-map-org` / `discovery-map-tree` in
+`slide-templates/b2b-sales/`. The diagram parts are `influence_graph` / `outcome_tree`, which
+paint the same 3-tier card as the draw.io version using the template's semantic palette
+(warm = success colors, hostile = danger colors, tier = primary / warning / muted).
 
 ```bash
 .venv/bin/python scripts/render_slide_template.py \
   --template influence-map-org --data out/<account>-key.json --out out/<account>-slide.json
 ```
 
-## 使い分け
+## When to use which
 
-| 状況 | 出力 |
+| Situation | Output |
 |---|---|
-| 関与者・項目が少ない | スライドに直接描く |
-| 多い | draw.io に全体、スライドには抽出版 |
-| 顧客に見せる | **どちらも見せない。** 実在の個人への判断を記録した内部資料 |
+| Few participants/items | Draw directly on the slide |
+| Many | Full graph in draw.io, extracted version on the slide |
+| Showing the customer | **Show neither.** This is an internal document recording judgments about real individuals |

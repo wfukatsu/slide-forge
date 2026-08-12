@@ -1,166 +1,188 @@
-# ページ単位の分担生成（並列・逐次両対応）
+*[日本語](parallel-generation.ja.md)*
 
-大きなデッキをページ単位の断片に分けて生成する手順。ホストとセッションが許可する
-場合はサブエージェントに分担させ、本体の文脈と待ち時間を抑える。並列実行が利用
-できない、または禁止されている場合は、同じ断片を主エージェントが逐次作成する。
+# Splitting Generation by Page (Parallel or Sequential)
 
-## Codex の逐次フォールバック
+A procedure for splitting a large deck into per-page fragments for
+generation. When the host and session allow it, delegate to sub-agents to
+keep the main context and wait time down. When parallel execution isn't
+available or is disallowed, the main agent creates the same fragments
+sequentially.
 
-Codex の現在の指示がサブエージェント利用を許可していない場合、並列化のためだけに
-委譲してはいけない。代わりに次を行う。
+## Sequential Fallback for Codex
 
-1. 主エージェントがアウトラインと全アクションタイトルを先に確定する。
-2. `out/<deck>/pages` に、2〜3ページ単位の番号付き断片を1ファイルずつ作る。
-3. 各断片を作るたびに、手順3の自己検証を実行する。
-4. 全断片を `assemble_spec.py` で結合し、完全なspecを `--dry-run --strict` で検証する。
-5. QAは6〜8枚の範囲に区切って順番に画像を開き、範囲ごとの指摘だけをメモする。
+If Codex's current instructions don't allow using sub-agents, don't delegate
+purely for the sake of parallelism. Instead:
 
-ファイル形式、番号、検証条件は並列時と同一である。変わるのは担当者と実行順だけ。
+1. The main agent finalizes the outline and all action titles first.
+2. Create one file per fragment, 2–3 pages each, under `out/<deck>/pages`, numbered.
+3. Run the self-check from Step 3 each time a fragment is created.
+4. Combine all fragments with `assemble_spec.py` and validate the complete spec with `--dry-run --strict`.
+5. Do QA in batches of 6–8 pages at a time, opening images in order and noting only the findings for each range.
 
-## いつ使うか（重要）
+The file format, numbering, and validation conditions are identical to the parallel case. Only who does the work and the execution order change.
 
-**分担は総トークンを減らさない。減らすのは主エージェントの文脈と待ち時間。**
-各エージェントが設計規約（`references/*.md`）を読み直すぶん、**合計は増える**。
-そのうえで割に合うのは次のとき:
+## When to Use This (Important)
 
-| 使う | 使わない |
+**Splitting the work doesn't reduce total token usage — it reduces the main
+agent's context and wait time.** Because each agent has to re-read the design
+conventions (`references/*.md`), **the total goes up**. Given that, it's
+worth it when:
+
+| Use it | Don't use it |
 |---|---|
-| 12 枚以上 | 10 枚以下（分担の段取りのほうが高くつく） |
-| 図が多い（ページごとに別の reference が要る） | 全ページが箇条書きだけ |
-| QA が 15 枚以上（画像が文脈を圧迫する） | 数枚の修正・再生成 |
-| 既存デッキの大量差し替え | 1 枚だけ直す |
+| 12+ pages | 10 or fewer (the coordination overhead costs more) |
+| Many figures (each page needs a different reference) | Every page is just bullet text |
+| QA covers 15+ pages (images crowd out context) | Fixing/regenerating a few pages |
+| A large-scale replacement of an existing deck | Fixing a single page |
 
-**QA の分担は枚数が少なくても効く。** サムネイル画像は 1 枚で数百〜千トークン規模。
-20 枚読めば主文脈が画像で埋まる。ここだけ分担する使い方は常に有効。
+**Splitting QA pays off even with fewer pages.** A single thumbnail image
+costs hundreds to a thousand tokens; reading 20 fills the main context with
+images. Splitting just this part is always worthwhile.
 
-## 分担してはいけない仕事
+## Work That Should Not Be Split
 
-- **アウトラインとアクションタイトルの決定。** タイトルは並べて読んで論旨になる
-  必要がある（横の論理）。ページごとに独立に書かせると必ず崩れる。**主エージェントが
-  全タイトルを先に確定させ**、各エージェントには確定済みのタイトルを渡す。
-- **テンプレート・レイアウト系統・`defaults` の決定。** 全ページに効くので 1 か所で決める。
-- **組み立てと生成。** `assemble_spec.py` → `--dry-run --strict` → `build_deck.py` は
-  主エージェントが 1 人でやる（書き手が複数いると再現性が壊れる）。
-- **数値・事実の調達。** 各エージェントに調べさせると出典がばらつく。
-  主エージェントが確定した数値を**逐語で**渡す。渡していない数字は書かせない。
+- **Deciding the outline and action titles.** Titles need to read together
+  and form the throughline (the horizontal logic). Having each page written
+  independently always breaks this. **The main agent decides all titles
+  first**, and each agent receives already-finalized titles.
+- **Deciding the template, layout family, and `defaults`.** These affect
+  every page, so decide them in one place.
+- **Assembly and generation.** `assemble_spec.py` → `--dry-run --strict` →
+  `build_deck.py` is done by the main agent alone (multiple writers break
+  reproducibility).
+- **Sourcing numbers and facts.** Having each agent look things up produces
+  inconsistent sourcing. The main agent finalizes the numbers and passes them
+  **verbatim**. Don't let an agent write a number it wasn't given.
 
-## 手順
+## Procedure
 
-### 1. 主エージェント: 骨子を決める（分担しない）
+### 1. Main agent: decide the skeleton (don't split this)
 
-アウトライン（ページ番号・レイアウト・アクションタイトル・骨格・中身・使うデータ）を
-テキストで確定させ、ユーザーの承認を取る（`references/interactive-intake.md`）。
-この段階では JSON を書かない。
+Finalize the outline (page number, layout, action title, skeleton, content,
+and data to use) as text and get the user's approval
+(`references/interactive-intake.md`). Don't write JSON at this stage.
 
-### 2. 主エージェント: 作業ディレクトリを用意する
+### 2. Main agent: set up the working directory
 
 ```bash
 mkdir -p out/<deck>/pages
 ```
 
-### 3. 分担: 1 エージェント = 1〜3 ページ
+### 3. Split: 1 agent = 1–3 pages
 
-**1 エージェントに 1 ページだと段取りのほうが高くつく。** 同じ骨格・同じ図の系統の
-ページをまとめて 2〜3 枚ずつ渡すと、reference の読み直しが 1 回で済む。
+**Giving one agent a single page makes the coordination overhead too
+costly.** Grouping 2–3 pages of the same skeleton/figure family per agent
+means the reference material only has to be read once.
 
-各エージェントへの指示に必ず含めるもの:
+Every agent's instructions must include:
 
-1. 出力先の絶対パス（`out/<deck>/pages/0120-cost-bars.json`）
-   — **10 刻みの連番**にしておくと後から間に挟める。並び順はファイル名の昇順
-2. `layout` と**確定済みのアクションタイトル**（考えさせない）
-3. 骨格（A〜F）と中身（部品名）
-4. 載せる数値・文言を**逐語で**。出典文字列も渡す
-5. 読む reference を**名指しで 1〜2 本だけ**（全部読ませない）
-6. 座標は `references/slide-patterns.md` の「骨格の標準座標」に従うこと
-7. 自己検証まで済ませること（下記）
+1. The absolute output path (`out/<deck>/pages/0120-cost-bars.json`) — use
+   **numbering in steps of 10** so pages can be inserted later. Order follows
+   filename ascending order
+2. The `layout` and **finalized action titles** (don't make the agent decide them)
+3. The skeleton (A–F) and content (component names)
+4. The numbers/copy to place, **verbatim**. Pass the source citation string too
+5. Which reference(s) to read, **named explicitly, only 1–2** (don't have it read everything)
+6. Coordinates must follow the "Standard Coordinates by Skeleton" in `references/slide-patterns.md`
+7. The self-check below must be completed
 
-各エージェントが最後に必ず実行する自己検証:
+Self-check every agent must run before returning:
 
 ```bash
-# slide-forge のリポジトリルートで実行する
+# Run from the slide-forge repository root
 .venv/bin/python scripts/assemble_spec.py --out /tmp/chk-$$.json --title chk \
     out/<deck>/pages/0120-cost-bars.json
 .venv/bin/python scripts/build_deck.py --template templates/<id>.json \
     --spec /tmp/chk-$$.json --dry-run --strict
 ```
 
-**ここを通してから返すこと**を指示に書く。通らない断片を主エージェントに
-返させると、修正のたびに主文脈へエラーが流れ込む。
+State in the instructions **that this must pass before returning**. If a
+broken fragment is returned to the main agent, every fix floods the main
+context with errors.
 
-エージェントの戻り値は**書いたファイルのパスと 1 行の要約だけ**にさせる。
-JSON の中身を返させない（それでは文脈を節約したことにならない）。
+An agent's return value should be **only the path of the file it wrote plus
+a one-line summary**. Don't have it return the JSON contents (doing so
+defeats the purpose of saving context).
 
-### 4. 主エージェント: 組み立てて検証
+### 4. Main agent: assemble and validate
 
 ```bash
 .venv/bin/python scripts/assemble_spec.py \
-    --out out/<deck>/deck.json --title "資料タイトル" out/<deck>/pages
+    --out out/<deck>/deck.json --title "Deck Title" out/<deck>/pages
 .venv/bin/python scripts/build_deck.py --template templates/<id>.json \
     --spec out/<deck>/deck.json --dry-run --strict
 ```
 
-断片が個別に通っていても、**全体では通らないことがある**（ページ番号の重複、
-図表番号の飛び、`defaults` の食い違い）。ここで拾って直す。
+Even if the fragments passed individually, **the whole may still fail**
+(duplicate page numbers, gaps in figure numbering, mismatched `defaults`).
+Catch and fix these here.
 
-### 5. 生成
+### 5. Generate
 
 ```bash
 .venv/bin/python scripts/build_deck.py --template templates/<id>.json \
-    --spec out/<deck>/deck.json --title "資料タイトル"
+    --spec out/<deck>/deck.json --title "Deck Title"
 ```
 
-### 6. QA も分担する
+### 6. Split QA too
 
-サムネイルを全部主エージェントで読むと、そこが一番高い。範囲で割る。
+If the main agent reads every thumbnail, that's the most expensive part.
+Split by range.
 
 ```bash
 .venv/bin/python scripts/fetch_thumbnails.py "<URL>" --out out/<deck>/qa
 ```
 
-エージェントごとに 6〜8 枚を担当させ、**指摘だけをテキストで返させる**:
+Assign 6–8 pages per agent and **have it return only the findings as text**:
 
-> `out/<deck>/qa/slide-17.png` 〜 `slide-24.png` を Read で開き、次を確認して
-> 問題のあるスライドだけを「番号: 症状」の 1 行で列挙せよ。無ければ「なし」とだけ返す。
-> 画像の説明や所感は書かない。
-> - 文字がプレースホルダ・枠からはみ出していないか
-> - テンプレートの装飾（帯・ロゴ・フッター）とテキストが重なっていないか
-> - ページ番号が出ているか、2 桁で切れていないか
-> - 矢印が意図しない図形を横切っていないか
-> - 図の色の意味が反転していないか（削減が赤、増加が緑など）
+> Open `out/<deck>/qa/slide-17.png` through `slide-24.png` with Read, check
+> the following, and list only the slides with problems as one line each,
+> "number: symptom." If there are none, respond with just "none." Don't
+> write descriptions or impressions of the images.
+> - Does text overflow its placeholder/box?
+> - Does the text overlap the template's decorations (band, logo, footer)?
+> - Is the page number present, and not clipped at 2 digits?
+> - Does an arrow cross an unrelated shape?
+> - Is the color meaning of the figure reversed (e.g. reduction shown in red, increase in green)?
 
-主エージェントは指摘の集合だけを受け取り、**該当ページの断片だけを直して
-再生成する**（デッキ全体を書き直さない）。
+The main agent only receives the collected findings and **fixes and
+regenerates only the affected page's fragment** (it doesn't rewrite the
+whole deck).
 
-QA が終わったら、取得したサムネイルは
-`.venv/bin/python scripts/cleanup_qa.py` で削除する（`out/qa` / `out/qa-*` /
-`out/*/qa` を掃除する。手順の全体は `slide-qa` スキル）。
+Once QA is done, delete the fetched thumbnails with
+`.venv/bin/python scripts/cleanup_qa.py` (it cleans up `out/qa` / `out/qa-*`
+/ `out/*/qa`; the full procedure lives in the `slide-qa` skill).
 
-## モデルの選び方
+## Choosing a Model
 
-ページの難しさは「座標を考える必要があるか」でほぼ決まる。
+A page's difficulty is almost entirely determined by whether it requires
+reasoning about coordinates.
 
-| ページ | model | 判断基準 |
+| Page | model | Rationale |
 |---|---|---|
-| `COVER` / `SECTION` / `CLOSING` / `CONTENT`（本文のみ） | `haiku` | 図が無い。文字を流し込むだけ |
-| 骨格 A・F（表 1 つ・箇条書き）でデータが逐語で渡っている | `haiku` | 標準座標をそのまま使える |
-| 骨格 B（図 + 示唆）、標準的なグラフ 1〜2 個 | `sonnet` | **大半はここ。** 座標は標準形、値の整形だけ判断が要る |
-| 骨格 C・D・E（複数図の配置）、`exhibit_frame` の入れ子 | `sonnet` | 標準座標の組み合わせで済むが、高さの配分に判断が要る |
-| Canvas を直に使う構成図、クラウド構成図、3 系統以上の混在 | `opus` | 座標を新たに設計する。audit を通すのに試行が要る |
-| QA（サムネイル目視・指摘の列挙） | `sonnet` | 画像の異常検出。`haiku` だとはみ出しを見落とす |
+| `COVER` / `SECTION` / `CLOSING` / `CONTENT` (text only) | `haiku` | No figure. Just flows text in |
+| Skeleton A/F (one table, bullet list) with data passed verbatim | `haiku` | Standard coordinates apply directly |
+| Skeleton B (figure + implication), 1–2 standard charts | `sonnet` | **Most pages fall here.** Coordinates are the standard form; only value formatting needs judgment |
+| Skeleton C/D/E (multi-figure layout), nested `exhibit_frame` | `sonnet` | Combines standard coordinates, but height allocation needs judgment |
+| Composition diagrams built directly with Canvas, cloud architecture diagrams, 3+ mixed systems | `opus` | Coordinates must be designed from scratch. Passing the audit takes iteration |
+| QA (eyeballing thumbnails, listing findings) | `sonnet` | Detecting visual anomalies. `haiku` misses overflow |
 
-- 迷ったら `sonnet`。`haiku` は「考えることが無い」と言い切れるページだけ。
-- **`opus` は座標設計が要るページに限る。** 標準座標で足りるページに使っても
-  出来は変わらず高くつく。
-- QA を `haiku` にしない。**見落としは作り直しを招き、結局高くつく。**
+- When in doubt, use `sonnet`. Reserve `haiku` for pages you can say with certainty require no reasoning.
+- **Reserve `opus` for pages that require designing new coordinates.** Using it on pages where standard coordinates suffice costs more without improving the result.
+- Don't use `haiku` for QA. **A missed defect leads to a redo, which ends up costing more.**
 
-## 落とし穴
+## Pitfalls
 
-- **断片に `title` を書かせない。** デッキのタイトルは `assemble_spec.py --title` で
-  1 か所から与える。断片側の仕様レベルキーは**先に読んだものが勝つ**ので、
-  末尾のページが全体の既定を塗り替える事故は起きないが、そもそも書かせないのが安全。
-- **図表番号（`exhibit_frame`）は主エージェントが採番して渡す。** 各エージェントに
-  振らせると重複する。
-- **同じ出力パスを 2 つのエージェントに渡さない。** 後勝ちで消える。
-- **ページ数が変わる指示を出さない。** 「必要なら 2 枚に分けてよい」と言うと
-  連番が衝突する。分割が要ると分かったら主エージェントが番号を割り直す。
-- 断片は `out/` の下に置く（`.gitignore` 済み）。**成果物ではないのでコミットしない。**
+- **Don't let a fragment write a `title`.** The deck title is supplied from
+  one place, `assemble_spec.py --title`. Spec-level keys in a fragment are
+  decided by **whichever is read first**, so a later page silently
+  overwriting the overall default can't actually happen — but it's still
+  safer not to let fragments write it at all.
+- **Figure numbers (`exhibit_frame`) are numbered and handed out by the main
+  agent.** Letting each agent assign its own creates duplicates.
+- **Never give the same output path to two agents.** Whichever writes last silently overwrites the other.
+- **Don't issue instructions that let the page count change.** Saying "split
+  into 2 pages if needed" causes numbering collisions. Once a split turns out
+  to be necessary, the main agent renumbers.
+- Fragments live under `out/` (already gitignored). **They are not
+  deliverables — don't commit them.**

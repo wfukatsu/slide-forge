@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Account Planning Session のデッキを組む（元資料 FY17 AP Template 準拠）。
+"""Assemble the Account Planning Session decks (based on the original FY17 AP Template).
 
-同じ入力から読み手の違う 2 本を出す:
+Produces two outputs for two different audiences from the same input:
 
-    plan.json    アカウントチームのための Plan Document
-    review.json  役員レビュー用サマリー（本編 9 ページ + Appendix）
+    plan.json    Plan Document for the account team
+    review.json  Executive review summary (9 main pages + Appendix)
 
-**このスクリプトは図の種類・座標・書式だけを持つ。** 文字列は顧客ごとの
-`accounts/<AE>/<顧客>/aps.json`（Git 管理外）から読む。顧客名・実名・その人物
-への判断をここに書かないこと。
+**This script only holds figure types, coordinates, and formatting.** All text
+comes from the per-customer `accounts/<AE>/<customer>/aps.json` (not tracked in
+Git). Never write customer names, real names, or judgments about a person here.
 
     .venv/bin/python scripts/scalar/build_account_planning.py \\
-        --aps "accounts/<AE>/<顧客>/aps.json" --out "out/account-plan/<顧客>/ap"
+        --aps "accounts/<AE>/<customer>/aps.json" --out "out/account-plan/<customer>/ap"
 
-aps.json の作り方は references/account-planning-session.md を参照。
+See references/account-planning-session.md for how to build aps.json.
 """
 from __future__ import annotations
 
@@ -21,29 +21,29 @@ import argparse
 import json
 from pathlib import Path
 
-# 座標契約（references/layout-contract.md の実測値）
-#   governing_message y=0.42 / lead_in y=1.02 / 図の上端 1.50（lead あり）1.25（なし）
-#   図の下端 <= 4.80 / so_what 2 行は y=3.62 h=1.12、1 行は y=3.92 h=0.88
+# Coordinate contract (measured values from references/layout-contract.md)
+#   governing_message y=0.42 / lead_in y=1.02 / figure top edge 1.50 (with lead) 1.25 (without)
+#   figure bottom edge <= 4.80 / so_what 2 lines is y=3.62 h=1.12, 1 line is y=3.92 h=0.88
 #   source_note y=4.86
-# Slides API は幅 32pt (0.444in) 未満の表列を拒否する。--dry-run では検出できない
+# The Slides API rejects table columns narrower than 32pt (0.444in). Not detectable under --dry-run
 MIN_COL_IN = 0.45
 
-N = {str(i): chr(0x2460 + i - 1) for i in range(1, 21)}  # "1"→① … "20"→⑳
+N = {str(i): chr(0x2460 + i - 1) for i in range(1, 21)}  # "1"->① … "20"->⑳
 
 
 def deal_no(deal_id: str) -> str:
-    """商談番号の丸数字。⑳ を超えたら (21) のように括弧で表す。"""
+    """Circled-number form of a deal number. Above ⑳, falls back to parentheses like (21)."""
     return N.get(deal_id, f"({deal_id})")
 
-# ページに 1 つしか出ない図は名前付きスロット、それ以外は figures[] の順で対応する
+# Figures that appear only once per page use a named slot; everything else maps to figures[] in order
 SLOT = {"governing_message": ("title", "text"),
         "lead_in": ("lead", "text"),
         "source_note": ("source", "source")}
 
-# 商談 1 件のページ。カード 6 枚の型を全商談で揃える
+# The page for a single deal. Keeps the 6-card layout consistent across all deals
 DEAL_PAGE_KEYS = [["challenge", "solution", "diff"], ["people", "itsub", "deal"]]
-# 既定の見出し。IT 子会社の呼び名など顧客ごとに変えたいものは aps.json の
-# meta.dealPageHeads で上書きする
+# Default headings. Things that should vary per customer, like what to call the
+# IT subsidiary, are overridden via meta.dealPageHeads in aps.json
 DEAL_PAGE_HEADS = [["顧客の課題", "当社の解", "差別化要因"],
                    ["顧客側のキーパーソン", "システム子会社の担当組織", "金額・時期・ステージ"]]
 
@@ -343,8 +343,8 @@ LAYOUT: dict[str, list] = {
     ],
 }
 
-# ページの並び。中扉の見出しと考慮点は aps.json の sections から取る。
-# 顧客に合わない ページは meta.skipPages で外す（グループ構成が違う場合など）
+# Page ordering. Section-header titles and body text are taken from aps.json's sections.
+# Pages that don't fit a given customer are excluded via meta.skipPages (e.g. when the group structure differs)
 PLAN_A = ["group-orgchart", "bank-orgchart", "securities-orgchart", "card-orgchart",
           "itsub-orgchart", "itsub-mapping", "deal-portfolio",
           "company-stakeholders", "officer-coverage", "who-to-meet",
@@ -363,8 +363,9 @@ PLAN_E = ["strategy-summary", "management-asks", "challenge-requirement", "risks
 REVIEW_MAIN = ["strategy-summary", "deal-portfolio", "plan-alignment", "blueprint-map",
                "prioritization-map", "execution-plan", "action-plan", "management-asks",
                "challenge-requirement"]
-# "@deal-pages" は meta.reviewDealPages（Appendix に載せる商談ページの ID 列）に
-# 展開する。どの商談を役員レビューに載せるかは顧客ごとの判断なので aps.json が持つ
+# "@deal-pages" expands to meta.reviewDealPages (the list of deal-page IDs to
+# include in the Appendix). Which deals go into the executive review is a
+# per-customer decision, so it's held in aps.json
 REVIEW_APPENDIX = ["group-orgchart", "bank-orgchart", "securities-orgchart", "card-orgchart",
                    "itsub-orgchart", "itsub-mapping", "company-stakeholders",
                    "officer-coverage", "who-to-meet",
@@ -374,7 +375,7 @@ REVIEW_APPENDIX = ["group-orgchart", "bank-orgchart", "securities-orgchart", "ca
 
 
 def _check_columns(fig: dict, where: str) -> None:
-    """Slides API の列幅下限を組み立て時に検査する（--dry-run では出ない）。"""
+    """Check the Slides API's minimum column-width limit at assembly time (not caught by --dry-run)."""
     widths = fig.get("colWidths")
     if not widths:
         return
@@ -392,7 +393,7 @@ def _check_columns(fig: dict, where: str) -> None:
 
 
 def build_page(pid: str, data: dict, extra: dict | None = None) -> dict:
-    """LAYOUT の図の並びに、aps.json の内容を差し込んで 1 ページにする。"""
+    """Assemble one page by inserting aps.json content into LAYOUT's figure order."""
     if pid not in LAYOUT:
         raise ValueError(f"LAYOUT に '{pid}' がありません")
     content = list(data.get("figures", []))
@@ -419,12 +420,12 @@ def build_page(pid: str, data: dict, extra: dict | None = None) -> dict:
 
 
 def money_when(d: dict, sep: str = " / ") -> str:
-    """金額・時期の 1 行。どちらが空でも区切りだけが残らないようにする。"""
+    """A single line of amount / timing. Avoids leaving a bare separator if either is empty."""
     return sep.join(v for v in (d["amount"], d["period"]) if v)
 
 
 def by_company(deals: list) -> list:
-    """商談を会社ごとにまとめた mece_tree の枝を返す。"""
+    """Return mece_tree branches with deals grouped by company."""
     order, groups = [], {}
     for d in deals:
         if d["company"] not in groups:
@@ -435,7 +436,7 @@ def by_company(deals: list) -> list:
 
 
 def deal_page(d: dict, source: str, heads: list | None = None) -> dict:
-    """商談 1 件の全体像。カード 6 枚の型は全商談で同じにする。"""
+    """The overview page for one deal. The 6-card layout is identical across all deals."""
     heads = heads or DEAL_PAGE_HEADS
     if (len(heads) != len(DEAL_PAGE_KEYS)
             or any(len(row) != len(keys)
@@ -459,7 +460,7 @@ def deal_page(d: dict, source: str, heads: list | None = None) -> dict:
 
 
 def deal_section(d: dict) -> dict:
-    """商談ごとの中扉。会社名を先に置いて、どの会社の話かを明示する。"""
+    """The section header for each deal. Puts the company name first to make it clear whose deal this is."""
     return {"layout": "SECTION",
             "title": f"商談 {deal_no(d['id'])}　{d['company']}／{d['name']}",
             "body": f"顧客イニシアチブ: {d['initiative']}　／　"
@@ -470,11 +471,12 @@ DECKS = ("plan", "review")
 
 
 def skipped_pages(meta: dict) -> dict:
-    """meta.skipPages — そのデッキに載せないページ。
+    """meta.skipPages -- pages to exclude from a given deck.
 
-    リストなら両方のデッキから、{"plan": [...], "review": [...]} なら
-    指定したデッキからだけ外す。台帳にデータは残すので、外した判断は戻せる。
-    ページ ID の実在は build() で検査する（タイポを黙って無視しないため）。
+    A list excludes from both decks; a {"plan": [...], "review": [...]} dict
+    excludes only from the specified deck. Data stays in the ledger, so the
+    exclusion decision is reversible. Whether page IDs actually exist is checked
+    in build() (so typos aren't silently ignored).
     """
     spec = meta.get("skipPages") or {}
     if isinstance(spec, list):
@@ -508,8 +510,8 @@ def build(aps: dict) -> tuple[dict, dict]:
                 + "。ページ ID か deal-<商談番号> のタイポを確認してください")
     skip_both = skip["plan"] & skip["review"]
 
-    # 商談章の付録ページと、役員レビュー Appendix に載せる商談ページは
-    # 顧客ごとの判断なので aps.json（meta）が持つ
+    # Which deal-chapter appendix pages and which deal pages go into the executive
+    # review Appendix are per-customer decisions, so they're held in aps.json (meta)
     deal_extra = meta.get("dealExtraPages") or {}
     bad = sorted(set(deal_extra) - deal_ids)
     if bad:
@@ -542,7 +544,7 @@ def build(aps: dict) -> tuple[dict, dict]:
             + "。ページを足すか、PLAN_A / REVIEW_* の並びから外すか、"
               "meta.skipPages で両方のデッキから外してください")
 
-    # 両デッキとも載せないページは組み立てない（pages から消してあってもよい）
+    # Pages excluded from both decks are not assembled (fine even if removed from pages)
     P = {pid: build_page(pid, pages[pid])
          for pid in pages if pid != "deal-portfolio" and pid not in skip_both}
     if "deal-portfolio" in pages and "deal-portfolio" not in skip_both:
@@ -555,7 +557,7 @@ def build(aps: dict) -> tuple[dict, dict]:
                                         meta.get("dealPageHeads"))
 
     def deal_chapters(deck: str) -> list:
-        """商談ごとの章。章の中身が全部 skip されたら中扉ごと落とす。"""
+        """The chapter for each deal. Drops the section header too if all its content is skipped."""
         out = []
         for d in deals:
             keys = [f"deal-{d['id']}", *deal_extra.get(d["id"], [])]
@@ -565,7 +567,7 @@ def build(aps: dict) -> tuple[dict, dict]:
         return out
 
     def block(deck: str, section: dict, keys: list) -> list:
-        """中扉 + 本文。本文が全部 skip されたら中扉ごと落とす。"""
+        """Section header + body. Drops the section header too if the whole body is skipped."""
         body = [P[k] for k in keys if k not in skip[deck]]
         return [section, *body] if body else []
 

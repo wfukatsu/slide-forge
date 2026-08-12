@@ -1,110 +1,118 @@
-# 図のレシピ
+*[日本語](diagram-cookbook.ja.md)*
+# Diagram Recipes
 
-`d` は `diagrams.Canvas`。座標はインチ。ここに載せたパターンは 55 枚の図解デッキで
-実際に使って、サムネイル確認まで通したもの。
+`d` is `diagrams.Canvas`. Coordinates are in inches. The patterns here were all
+used in a 55-slide illustration-heavy deck and verified all the way through
+thumbnail review.
 
-## プリミティブ
+## Primitives
 
-`Canvas`（`scripts/diagrams.py`）:
+`Canvas` (`scripts/diagrams.py`):
 
-| メソッド | 用途 |
+| Method | Purpose |
 |---|---|
-| `shape(x, y, w, h, kind=, fill=, stroke=, text=, size=, bold=, color=, align=, valign=, line_spacing=)` | 図形。`fill=None` で塗りなし |
-| `box(...)` | 角丸・淡い面・枠あり（既定の箱） |
-| `solid(...)` | 塗りつぶし・太字（見出し用の箱） |
-| `label(...)` | 枠も塗りもないテキスト |
-| `band(...)` | 背景の帯 |
-| `line(x1, y1, x2, y2, color=, weight=, dashed=, end_arrow=, start_arrow=)` | 直線 |
-| `arrow(x1, y1, x2, y2, ...)` | 矢印（`end_arrow="FILL_ARROW"`） |
-| `arrow_shape(x, y, w, h, ...)` | 太い矢印図形（工程の流れ） |
-| `cards(x, y, w, h, items, accent=)` | 横並びカード。`items` は `(見出し, 本文)` |
-| `flow(x, y, w, h, steps)` | 左→右の工程フロー（矢印つき） |
-| `hbars(x, y, w, rows)` | 横棒グラフ。`rows` は `(ラベル, 数値, 表示文字列)` |
-| `metric(x, y, w, h, value, caption)` | 大きな数値＋説明 |
+| `shape(x, y, w, h, kind=, fill=, stroke=, text=, size=, bold=, color=, align=, valign=, line_spacing=)` | A shape. `fill=None` for no fill |
+| `box(...)` | Rounded, light fill, with a border (the default box) |
+| `solid(...)` | Filled, bold (a box for headings) |
+| `label(...)` | Text with no border and no fill |
+| `band(...)` | A background band |
+| `line(x1, y1, x2, y2, color=, weight=, dashed=, end_arrow=, start_arrow=)` | A straight line |
+| `arrow(x1, y1, x2, y2, ...)` | An arrow (`end_arrow="FILL_ARROW"`) |
+| `arrow_shape(x, y, w, h, ...)` | A thick arrow shape (for process flow) |
+| `cards(x, y, w, h, items, accent=)` | Side-by-side cards. `items` is `(heading, body)` |
+| `flow(x, y, w, h, steps)` | A left-to-right process flow (with arrows) |
+| `hbars(x, y, w, rows)` | A horizontal bar chart. `rows` is `(label, value, display string)` |
+| `metric(x, y, w, h, value, caption)` | A large number with a caption |
 
-`deckkit` の複合パーツ:
+`deckkit`'s composite parts:
 
-| 関数 | 用途 |
+| Function | Purpose |
 |---|---|
-| `zone(d, x, y, w, h, label)` | 要素をまとめる領域。中身は `y+0.34` 以降 |
-| `banner(d, y, text, tone=)` | 全幅の注意書き。`tone` は info/good/warn/bad |
-| `layers(d, x, y, w, items)` | 水平レイヤー図。`items` は `(名前, 説明, 色)` |
-| `steps_v(d, x, y, w, items)` | 番号付き縦フロー |
-| `grid(d, x, y, w, cols, rows, cell_colors=)` | 表。セルごとに配色可 |
-| `pills(d, x, y, w, items, per_row=)` | チップの格子 |
-| `kv_rows(d, x, y, w, items)` | 「項目 → 補足」の2列リスト |
-| `db(d, x, y, w, h, name, sub=)` | DB の円柱＋ラベル |
-| `xmark(d, cx, cy)` / `checkmark(d, cx, cy)` | 丸バツ・丸チェック（中心座標） |
-| `caption(d, x, y, w, text)` | 図に添える小さな説明 |
-| `foot(d, points, edition)` | 下部の要点行・補足行 |
+| `zone(d, x, y, w, h, label)` | A region grouping elements together. Content starts at `y+0.34` |
+| `banner(d, y, text, tone=)` | A full-width notice. `tone` is info/good/warn/bad |
+| `layers(d, x, y, w, items)` | A horizontal layer diagram. `items` is `(name, description, color)` |
+| `steps_v(d, x, y, w, items)` | A numbered vertical flow |
+| `grid(d, x, y, w, cols, rows, cell_colors=)` | A table. Cells can be colored individually |
+| `pills(d, x, y, w, items, per_row=)` | A grid of chips |
+| `kv_rows(d, x, y, w, items)` | A 2-column "item → note" list |
+| `db(d, x, y, w, h, name, sub=)` | A DB cylinder with a label |
+| `xmark(d, cx, cy)` / `checkmark(d, cx, cy)` | A circled X / circled checkmark (center coordinates) |
+| `caption(d, x, y, w, text)` | A small caption attached to a diagram |
+| `foot(d, points, edition)` | The footer summary line(s) |
 
-配色は `d.P`（`Palette`）。テンプレートの `colors` から作られる。
+Colors come from `d.P` (`Palette`), built from the template's `colors`.
 
-| 用途 | 使う色 |
+| Purpose | Color to use |
 |---|---|
-| 自社製品・主要コンポーネント | `d.P.primary` |
-| 強調・最上位 | `d.P.primaryDark` |
-| 良い状態・After・可 | `d.P.success` |
-| 問題・Before・不可 | `d.P.danger` |
-| 副系統・別カテゴリ | `d.P.info` |
-| 注意・条件付き | `d.P.warning` |
-| 本文・補足 | `d.P.text` / `d.P.muted` |
+| Our product / primary component | `d.P.primary` |
+| Emphasis / top priority | `d.P.primaryDark` |
+| Good state / After / OK | `d.P.success` |
+| Problem / Before / not OK | `d.P.danger` |
+| Secondary system / other category | `d.P.info` |
+| Caution / conditional | `d.P.warning` |
+| Body text / supplementary | `d.P.text` / `d.P.muted` |
 
-明度調整は `lighten(色, 0〜1)` / `darken(色, 0〜1)`。塗りの上の文字色は
-`readable_on(背景色)` でコントラストの高い方を選べる。
+For brightness adjustment, use `lighten(color, 0–1)` / `darken(color, 0–1)`. For
+text color over a fill, `readable_on(background color)` picks the higher-contrast
+option.
 
-**1 スライド最大 3 色**に抑える。色を増やすと意味が読めなくなる。
+**Cap each slide at 3 colors max.** More colors than that make the meaning
+unreadable.
 
 
-## パターン早見表
+## Pattern quick-reference
 
-「何を伝えたいか」から関数を選ぶ。すべて**戻り値は描画領域の下端 y**。
-次のブロックはその値を起点に置くこと（手で y を計算しない）。
+Choose the function based on "what you want to communicate." All of them
+**return the bottom y of the drawn area**. Place the next block starting from
+that value (don't compute y by hand).
 
-| 伝えたいこと | 関数 |
+| What you want to convey | Function |
 |---|---|
-| 現状 → 解決後、A / B、推奨と非推奨 | `compare_panels(d, x, y, w, h, left, right)` |
-| 誰が何をするか（担当をまたぐ流れ） | `swimlane(d, x, y, w, lanes, steps)` |
-| 時系列・期間・重要な時点 | `timeline(d, x, y, w, marks, bands=…)` |
-| 工程の流れ（担当範囲を強調） | `pipeline(d, x, y, w, steps, highlight=…)` |
-| 番号つきの手順（縦） | `steps_v(d, x, y, w, items)` |
-| 責務の階層 | `layers(d, x, y, w, items)` |
-| 親子関係・構造 | `tree(d, x, y, w, nodes)` |
-| 土台 → 応用（成熟度） | `pyramid(d, x, y, w, h, levels)` |
-| 母数 → 結果（絞り込み） | `funnel(d, x, y, w, h, stages)` |
-| 閉じた繰り返し（PDCA） | `cycle(d, x, y, w, h, steps)` |
-| 条件分岐と帰結 | `decision(d, x, y, w, question, branches)` |
-| 優先度・打ち手の4象限 | `quadrant(d, x, y, w, h, quads, x_label=…, y_label=…)` |
-| 2軸上の位置づけ（競合比較） | `matrix_map(d, x, y, w, h, items, x_label=…, y_label=…)` |
-| フェーズ × レーンの計画 | `roadmap(d, x, y, w, phases, lanes)` |
-| 中央の対象への番号つき注釈 | `callouts(d, x, y, w, h, center, notes)` |
-| 対応表・可否 | `grid(d, x, y, w, cols, rows, cell_colors=…)` |
-| 順序のない列挙 | `pills(d, x, y, w, items, per_row=…)` |
-| 項目 → 補足の2列 | `kv_rows(d, x, y, w, items)` |
-| 状態つきの確認項目 | `checklist(d, x, y, w, items)` |
-| 大きな数値（出典がある場合のみ） | `stats(d, x, y, w, items)` |
-| 色の意味 | `legend(d, x, y, w, items)` |
-| 3〜4項目の並列説明 | `Canvas.cards(x, y, w, h, items)` |
-| データの所在 | `db(d, x, y, w, h, name, sub=…)` |
-| 領域のグループ化 | `zone(d, x, y, w, h, label)` |
-| 全幅の注意書き・要約 | `banner(d, y, text, tone=…)` |
+| Current state → after resolution, A/B, recommended vs. not recommended | `compare_panels(d, x, y, w, h, left, right)` |
+| Who does what (a cross-role flow) | `swimlane(d, x, y, w, lanes, steps)` |
+| Timeline, duration, key points in time | `timeline(d, x, y, w, marks, bands=…)` |
+| Process flow (highlighting the scope of responsibility) | `pipeline(d, x, y, w, steps, highlight=…)` |
+| Numbered steps (vertical) | `steps_v(d, x, y, w, items)` |
+| Hierarchy of responsibility | `layers(d, x, y, w, items)` |
+| Parent-child relationship / structure | `tree(d, x, y, w, nodes)` |
+| Foundation → application (maturity) | `pyramid(d, x, y, w, h, levels)` |
+| Population → outcome (narrowing down) | `funnel(d, x, y, w, h, stages)` |
+| A closed loop (PDCA) | `cycle(d, x, y, w, h, steps)` |
+| Branching conditions and outcomes | `decision(d, x, y, w, question, branches)` |
+| Priority / a 4-quadrant view of options | `quadrant(d, x, y, w, h, quads, x_label=…, y_label=…)` |
+| Position on two axes (competitive comparison) | `matrix_map(d, x, y, w, h, items, x_label=…, y_label=…)` |
+| Phases × lanes planning | `roadmap(d, x, y, w, phases, lanes)` |
+| Numbered callouts on a central subject | `callouts(d, x, y, w, h, center, notes)` |
+| Comparison table / feature availability | `grid(d, x, y, w, cols, rows, cell_colors=…)` |
+| An unordered list of items | `pills(d, x, y, w, items, per_row=…)` |
+| Item → note, 2 columns | `kv_rows(d, x, y, w, items)` |
+| A checklist with status | `checklist(d, x, y, w, items)` |
+| A large number (only when there's a source) | `stats(d, x, y, w, items)` |
+| Meaning of colors | `legend(d, x, y, w, items)` |
+| 3–4 items explained in parallel | `Canvas.cards(x, y, w, h, items)` |
+| Where data lives | `db(d, x, y, w, h, name, sub=…)` |
+| Grouping a region | `zone(d, x, y, w, h, label)` |
+| A full-width notice / summary | `banner(d, y, text, tone=…)` |
 
-`tone` は `primary` / `info` / `good` / `warn` / `bad` / `muted` / `accent`。
-配色は `tone_colors(d, tone)` が (塗り, 枠, 文字色)、`tone_solid(d, tone)` が濃い単色を返す。
+`tone` is one of `primary` / `info` / `good` / `warn` / `bad` / `muted` /
+`accent`. `tone_colors(d, tone)` returns (fill, stroke, text color), and
+`tone_solid(d, tone)` returns a solid dark color.
 
-実際の描画例は `examples/pattern-gallery/deck.py` と、生成したギャラリーのスライドを見る。
+For real rendered examples, see `examples/pattern-gallery/deck.py` and the
+slides in the generated gallery.
 
-## コネクタ（矢印・線）
+## Connectors (arrows and lines)
 
-**図形どうしを結ぶときに座標を手で書かない。** 端点がずれていても Slides API は
-エラーにしないため、生成してサムネイルを見るまで気づけない。
+**Never hand-write coordinates to connect shapes.** The Slides API doesn't error
+even if the endpoints are off, so you won't notice until you generate the deck
+and look at the thumbnail.
 
-| 用途 | 書き方 |
+| Use case | How to write it |
 |---|---|
-| 図形 A → 図形 B（追従してほしい） | `d.connect(a, b)` |
-| 図形 A → 図形 B（辺にぴたりと合わせたい） | `d.link(a, b)` |
-| 図形の辺の一点が欲しい | `d.edge_point(a, (tx, ty), gap=0.04)` |
-| 軸・目盛り・引き出し線（接しないのが正しい） | `d.line(..., free=True)` |
+| Shape A → shape B, should follow if moved | `d.connect(a, b)` |
+| Shape A → shape B, should align exactly to the edge | `d.link(a, b)` |
+| Need a single point on a shape's edge | `d.edge_point(a, (tx, ty), gap=0.04)` |
+| Axes, tick marks, leader lines (should NOT touch) | `d.line(..., free=True)` |
 
 ```python
 a = d.shape(1.0, 1.0, 1.6, 0.6, text="A")     # shape() は objectId を返す
@@ -115,20 +123,25 @@ d.link(a, b, gap=0.04)             # 中心を結ぶ線と辺の交点を端点�
 d.connect(a, b, category="BENT")   # エルボー。1対多のファンアウトで経路が交差しにくい
 ```
 
-- `connect()` … `startConnection` / `endConnection` で図形に**本当に接続**する。
-  接続サイトは位置関係から自動で決まる（0=上 1=左 2=下 3=右）。上下左右の 4 点に
-  スナップするため、真横・真上下の関係にきれいに効く。
-- `link()` … 中心どうしを結ぶ直線と辺の交点を計算する。斜めの位置関係でも
-  端点がぴたりと辺に乗る。スナップさせたくないときはこちら。
-- `d.line()` / `d.arrow()` … 座標直指定。経路の折れ点や軸など、図形に接続しない線に使う。
-  この場合は `free=True` を付けて意図を明示する（付けないと検査で落ちる）。
+- `connect()` … genuinely **connects** to shapes via `startConnection`/
+  `endConnection`. The connection site is chosen automatically from the
+  relative position (0=top 1=left 2=bottom 3=right), snapping to the 4
+  cardinal points — works cleanly for strictly horizontal/vertical
+  relationships.
+- `link()` … computes the intersection of the center-to-center line with each
+  edge. The endpoint lands exactly on the edge even at an angle. Use this when
+  you don't want snapping.
+- `d.line()` / `d.arrow()` … raw coordinates. Use for path bends, axes, or any
+  line that shouldn't connect to a shape. In that case, add `free=True` to make
+  the intent explicit (omitting it fails the check).
 
-検査器は全コネクタの端点を調べ、**どの図形からも 0.22in 以上離れている**もの、
-**図形の内部に 0.06in 以上埋まっている**ものを報告する。ゾーンのような大きな容器と
-テキストボックスは判定から外れる（矢印が容器の中を通るのは正常なため）。
+The auditor inspects every connector's endpoints and reports any that are
+**at least 0.22in away from any shape**, or **embedded at least 0.06in inside a
+shape**. Large containers like zones and text boxes are excluded from this
+check (an arrow passing through a container is normal).
 
 
-## 積み方の約束
+## Stacking convention
 
 ```python
 b = layers(d, X0, DY0, W, [...])           # b は下端 y
@@ -138,45 +151,57 @@ banner(d, b + 0.20, "まとめの一行", tone="good")
 foot(d, ["・持ち帰ってほしい1行"])
 ```
 
-手で `DY0 + 2.7` のような値を書くと、内容が増えたときに下のブロックへ潜り込む。
-戻り値を使って積めば、この事故は構造的に起きない。
+Hardcoding a value like `DY0 + 2.7` causes content to get swallowed by the
+block below it as content grows. Stacking off return values makes this
+structurally impossible.
 
-検査器は重なりも検出するが、**検出は最後の砦であって設計ではない**。
-戻り値で積むのが本筋で、検査はその取りこぼしを拾うためにある。
+The auditor also detects overlaps, but **detection is the last line of defense,
+not the design.** Stacking with return values is the real fix; the audit exists
+to catch what that misses.
 
-`Canvas` の `cards` / `flow` / `hbars` / `metric` も下端 y を返すので、
-同じように積める。
+`Canvas`'s `cards` / `flow` / `hbars` / `metric` also return the bottom y, so
+they stack the same way.
 
-## パターン別のメモ
+## Notes per pattern
 
-- `compare_panels` … 左右で同じ構造にする。差分だけが目に入る。
-- `swimlane` … `steps` の第3要素がレーン index。矢印は実座標を結ぶので、
-  レーンをまたいでも経路が正しい。
-- `timeline` … 位置は 0.0〜1.0 の比率。補足は**マーカーのラベルに持たせる**。
-  別ラベル＋縦矢印にすると、他のマーカーの説明文や下のブロックに重なる。
-- `cycle` … 矩形に内接させる。半径は箱がはみ出さないよう自動で決まる。
-  ステップは 4〜6 個。
-- `quadrant` / `matrix_map` … **軸ラベルを必ず入れる**。軸のない 2×2 は解釈できない。
-  `matrix_map` の配置は主張そのものなので、根拠を示せないなら使わない。
-  `y_label` は縦に積まれて描かれるため 2〜4 文字にする。
-- `pyramid` / `funnel` … 横に余白があれば説明を横に、なければ段の中に入れる。
-  説明が消えることはない。段は 5 つまで。
-- `callouts` … 注釈は片側 3 個まで。中央の箱は内容に合わせた高さで上下中央に置かれる。
-- `decision` … 分岐は 2〜3 個。菱形の文字は図形に直接入れず別ラベルを重ねている
-  （直接入れると端が切れる）。
-- `stats` … **出典のある数値にだけ使う。** 推測値を大きく見せてはいけない。
-- `legend` … 凡例の色は図形と同じ塗りを出す。`tone` 名をそのまま渡せる。
-- `checklist` … 色だけでなく記号（✓ □ !）も併用しているので、モノクロでも読める。
+- `compare_panels` … keep the same structure on both sides. Only the difference
+  should catch the eye.
+- `swimlane` … the 3rd element of `steps` is the lane index. Arrows connect real
+  coordinates, so the path stays correct even across lanes.
+- `timeline` … positions are a 0.0–1.0 ratio. Put annotations **on the marker's
+  own label**. A separate label plus a vertical arrow will overlap another
+  marker's caption or the block below.
+- `cycle` … inscribed in a rectangle. The radius is auto-computed so boxes don't
+  overflow. 4–6 steps.
+- `quadrant` / `matrix_map` … **always include axis labels.** An unlabeled 2×2
+  can't be interpreted. `matrix_map`'s placement is itself a claim, so don't
+  use it without evidence to back it. `y_label` is drawn stacked vertically, so
+  keep it to 2–4 characters.
+- `pyramid` / `funnel` … put descriptions beside the shape if there's horizontal
+  room, inside the segment if not. The description never disappears. Up to 5
+  tiers.
+- `callouts` … up to 3 annotations per side. The center box is sized to its
+  content and vertically centered.
+- `decision` … 2–3 branches. The diamond's text isn't placed directly on the
+  shape but overlaid as a separate label (direct text gets clipped at the
+  edges).
+- `stats` … **use only for figures with a source.** Never inflate an estimate
+  to look authoritative.
+- `legend` … the legend's colors match the shape's own fill. `tone` names can
+  be passed directly.
+- `checklist` … uses symbols (✓ □ !) in addition to color, so it's still
+  legible in monochrome.
 
 ---
 
-## 手で組む場合のレシピ
+## Recipes for hand-assembled diagrams
 
-関数になっていない図（構成図など）や、パターンを組み合わせる場合の例。
+Examples for diagrams that don't have a dedicated function (architecture
+diagrams, etc.) or that combine multiple patterns.
 
-### Before / After の 2 パネル対比（compare_panels の中身）
+### Before/After 2-panel comparison (the internals of compare_panels)
 
-課題 → 解決を示す。最も効く図。
+Shows a problem → a solution. The most effective diagram type.
 
 ```python
 pw = (W - 0.5) / 2
@@ -195,9 +220,10 @@ zone(d, rx, DY0, pw, 3.30, "導入後：横断で1回だけ",
 checkmark(d, rx + pw - 0.30, DY0 + 1.24)
 ```
 
-左右で**同じ構造・同じ位置**に要素を置く。差分だけが目に入る。
+Place elements at **the same structure and same position** on both sides. Only
+the difference should catch the eye.
 
-## 2. レイヤー図（階層・責務）
+## 2. Layer diagram (hierarchy / responsibility)
 
 ```python
 layers(d, X0, DY0, W, [
@@ -207,17 +233,18 @@ layers(d, X0, DY0, W, [
 ])
 ```
 
-上から下へ「利用する側 → される側」。手描きで層を分けるなら、下位ほど濃くする。
+Top to bottom is "the consuming side → the consumed side." If hand-drawing
+layers, make lower tiers darker.
 
-## 3. 工程フロー
+## 3. Process flow
 
-横（4 段以内）:
+Horizontal (4 steps max):
 
 ```python
 d.flow(X0, DY0 + 0.4, W, 0.8, ["調査", "設計", "実装", "検証"])
 ```
 
-縦（説明を付けたい場合）:
+Vertical (when you want descriptions attached):
 
 ```python
 steps_v(d, X0, DY0, 4.2, [
@@ -227,8 +254,8 @@ steps_v(d, X0, DY0, 4.2, [
 ])
 ```
 
-ループにするなら、戻りの矢印は**列間の余白を通るエルボー**（3 本の線）で引く。
-本文の上を横切らせない。
+For a loop, draw the return arrow as an **elbow running through the gap between
+columns** (3 line segments). Never let it cross over body text.
 
 ```python
 xg = X0 + 4.2 + 0.20                       # 列間の余白
@@ -237,9 +264,10 @@ d.line(xg, DY0 + 0.31, xg, DY0 + 2.36,      color=d.P.primary, dashed=True)
 d.arrow(xg, DY0 + 0.31, X0 + 4.4, DY0 + 0.31, color=d.P.primary)
 ```
 
-## 4. スイムレーン（誰が何をするか）
+## 4. Swimlane (who does what)
 
-**レーンをまたぐ矢印は、始点と終点の実座標を結ぶ。** 水平に引くと経路が嘘になる。
+**For an arrow crossing lanes, connect the actual start and end coordinates.**
+Drawing it horizontally would misrepresent the path.
 
 ```python
 LX, LW = X0, 1.30                # レーン名の列
@@ -269,7 +297,7 @@ for i in range(len(centers) - 1):
     d.arrow(x_end + 0.03, y1, x_start - 0.03, y2, color=d.P.primary, weight=1.6)
 ```
 
-## 5. 条件分岐
+## 5. Branching condition
 
 ```python
 cx = X0 + 3.15                                     # フローの中心線
@@ -286,10 +314,11 @@ d.arrow(cx, y + 0.76, cx, y2 - 0.02, color=d.P.primary, weight=1.6)
 d.label(cx + 0.06, y + 0.80, 0.50, 0.20, "Yes", size=8, align="START")
 ```
 
-菱形の中の文字は `DIAMOND` に直接入れると端が切れる。**別の `label` で重ねる。**
-分岐ラベル（Yes/No）と結果ラベルは、矢印の経路を避けて `align` で外側へ寄せる。
+Text inside a diamond gets clipped at the edges when passed directly. **Overlay
+a separate `label` instead.** Keep branch labels (Yes/No) and outcome labels
+clear of the arrow path by nudging them outward with `align`.
 
-## 6. 対応表・可否マトリクス
+## 6. Comparison table / capability matrix
 
 ```python
 def cc(i, j, cell):
@@ -309,9 +338,10 @@ grid(d, X0, DY0, W,
      col_w=[3.20, 1.30, 1.40, 1.35, 1.75], row_h=0.255, cell_colors=cc)
 ```
 
-凡例（`●`＝提供、`○`＝プレビュー、`−`＝非提供）を表の下に小さく添える。
+Add a small legend below the table (`●` = available, `○` = preview, `−` = not
+available).
 
-## 7. 構成図（コンポーネントと通信）
+## 7. Architecture diagram (components and communication)
 
 ```python
 # 3 列構成：クライアント / 中核 / データ
@@ -331,10 +361,11 @@ for i, nm in enumerate(["MySQL", "Cassandra", "DynamoDB"]):
             fill="#FFFFFF", stroke=lighten(d.P.muted, 0.35), text=nm, size=8)
 ```
 
-**右端のパネルに 1.5in 未満の幅しか残らないなら、そこに文章を置かない。**
-下段の全幅カード（`zone` を 2 つ横並び）に移す。狭いパネルは必ず溢れる。
+**If a right-edge panel has less than 1.5in of width left, don't put prose in
+it.** Move it to a full-width card at the bottom instead (two `zone`s side by
+side). A narrow panel always overflows.
 
-## 8. RAG / パイプライン（一部だけ自社領域）
+## 8. RAG / pipeline (only part of it in-house)
 
 ```python
 steps = ["文書", "ベクトル化", "ストアに保存", "類似検索", "LLM が回答"]
@@ -354,7 +385,7 @@ d.label(X0 + 0.14 + sw + 0.30, DY0 + 1.20, sw * 3 + 0.60, 0.20,
         "この範囲を担う", size=8, bold=True, align="CENTER", color=d.P.primaryDark)
 ```
 
-## 9. タイムライン（期間と復旧ポイント）
+## 9. Timeline (duration and recovery points)
 
 ```python
 tl_y = DY0 + 0.78
@@ -373,7 +404,7 @@ mid = X0 + 2.49 + 3.90 / 2
 d.arrow(mid, tl_y + 0.72, mid, tl_y + 0.16, color=d.P.danger, weight=1.6)
 ```
 
-## 10. 階層ツリー（インデント式）
+## 10. Hierarchy tree (indented style)
 
 ```python
 levels = [("カタログ", "最上位", d.P.primaryDark),
@@ -392,21 +423,22 @@ for i, (nm, sub, col) in enumerate(levels):
 
 ---
 
-## 使える図形
+## Available shapes
 
-`RECTANGLE` `ROUND_RECTANGLE` `ELLIPSE` `TEXT_BOX` `DIAMOND` `CAN`（円柱＝DB）
+`RECTANGLE` `ROUND_RECTANGLE` `ELLIPSE` `TEXT_BOX` `DIAMOND` `CAN` (cylinder = DB)
 `CLOUD` `HEXAGON` `CHEVRON` `PENTAGON` `PARALLELOGRAM` `TRAPEZOID` `PLAQUE`
 `FOLDED_CORNER` `ARC` `DONUT` `STAR_5` `HOME_PLATE` `RIGHT_ARROW` `LEFT_RIGHT_ARROW`
 `UP_ARROW` `DOWN_ARROW` `BENT_ARROW` `CURVED_RIGHT_ARROW` `NOTCHED_RIGHT_ARROW`
 `FLOW_CHART_MAGNETIC_DISK` `WEDGE_ROUND_RECTANGLE_CALLOUT`
 
-## やってはいけないこと
+## Things not to do
 
-- **出典のない数値をグラフにする。** `hbars` / `metric` は実測値か公表値だけに使う。
-  無い場合は「変えるべき変数」など構造を図にする。
-- **レーンをまたぐ矢印を水平に引く。** 経路が嘘になる。
-- **0.12in 未満の矢印。** 描画されず点のように見える。
-- **マスター由来のロゴ・フッターを自分で描く。** 二重になる。
-- **全面サイズの不透明な矩形。** マスターのフッターを覆って消す。
-- **狭いパネル（1.5in 未満）に文章を置く。** 必ず溢れる。
-- **1 スライドに 4 色以上。** 色の意味が読めなくなる。
+- **Chart a number with no source.** `hbars` / `metric` should only use measured
+  or published figures. If none exists, diagram the structure instead (e.g.
+  "the variable that would need to change").
+- **Draw a lane-crossing arrow horizontally.** It misrepresents the path.
+- **Use an arrow shorter than 0.12in.** It won't render and looks like a dot.
+- **Redraw the master's logo or footer yourself.** It duplicates what's already there.
+- **Use a full-slide-sized opaque rectangle.** It covers and erases the master's footer.
+- **Put prose in a narrow panel (under 1.5in).** It always overflows.
+- **Use 4+ colors on one slide.** The meaning of color stops being readable.

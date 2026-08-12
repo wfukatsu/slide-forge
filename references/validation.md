@@ -1,3 +1,5 @@
+*[日本語](validation.ja.md)*
+
 # Validation Gates: Offline Coordinate Checks and Thumbnail QA
 
 Discovering breakage after generation is the most expensive outcome. Two gates

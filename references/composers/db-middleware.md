@@ -1,13 +1,15 @@
-# コンポーザー仕様: db-middleware カテゴリ
+*[日本語](db-middleware.ja.md)*
 
-db-middleware カテゴリ 4 タイプのレンダリング仕様。データフロー・マルチクラウド・ベンチマーク・マイグレーションの DB/ミドルウェア固有スライドを構築する。
+# Composer Specification: db-middleware Category
 
-> **規約**: `C` = 色定数, `L` = レイアウト定数, `sb` = SlideBuilder インスタンス。
-> 座標単位はインチ。ページサイズ: 10.0" x 5.625"。
+Rendering specification for the 4 types in the db-middleware category. Builds DB/middleware-specific slides for data flow, multi-cloud, benchmark, and migration.
 
-### クラウドアイコン
+> **Convention**: `C` = color constants, `L` = layout constants, `sb` = SlideBuilder instance.
+> Coordinate units are inches. Page size: 10.0" x 5.625".
 
-`assets/shared/cloud-icons/` にプロバイダ別のアイコンを格納。コンポーザーから `add_image_from_asset()` で参照する。
+### Cloud Icons
+
+Provider-specific icons are stored under `assets/shared/cloud-icons/`. Composers reference them via `add_image_from_asset()`.
 
 ```
 assets/shared/cloud-icons/
@@ -36,37 +38,37 @@ def _place_cloud_icon(sb, slide_id, icon, x, y, size=0.45):
     sb.add_cloud_icon(slide_id, icon, x, y, size, label="")
 ```
 
-> `sb` は `CloudIconMixin` を混ぜた SlideBuilder。名前の探し方・ライセンス上の
-> 制約は `references/cloud-icons.md` を参照。ラベルを出さない場合は
-> `label=""` を明示する（既定は正式名称が入る）。
+> `sb` is a SlideBuilder mixed with `CloudIconMixin`. For how names are resolved and the
+> licensing constraints, see `references/cloud-icons.md`. When not displaying a label,
+> explicitly pass `label=""` (the default shows the official name).
 
 ---
 
 ## 1. compose_data_flow
 
-データフロー（ソース → 処理 → ストア → 出力）をノード+矢印で表示するスライド。
+A slide that displays the data flow (source → process → store → output) using nodes and arrows.
 
-- **マスター**: CONTENT
-- **パターン**: Pattern 10/11 (Flow / Decision Flow)
-- **レイアウト**: 水平フローダイアグラム + クラウドアイコン付きノード
+- **Master**: CONTENT
+- **Pattern**: Pattern 10/11 (Flow / Decision Flow)
+- **Layout**: Horizontal flow diagram + nodes with cloud icons
 
-### コンテンツ領域
+### Content Area
 
-| 要素 | X | Y | W | H | 備考 |
+| Element | X | Y | W | H | Note |
 |------|----:|----:|----:|----:|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT 標準 |
-| フロー領域 | 0.500 | 0.900 | 9.000 | 4.100 | ノード + コネクタ |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT standard |
+| Flow area | 0.500 | 0.900 | 9.000 | 4.100 | Nodes + connectors |
 
-### ノードタイプ別スタイル
+### Style by Node Type
 
-| type | シェイプ | 色 | 用途 |
+| type | Shape | Color | Purpose |
 |------|---------|-----|------|
-| `source` | ROUND_RECTANGLE | `C["accent"]` | データソース（DB、API） |
-| `process` | RECTANGLE | `C["primary"]` | Scalar 製品（変換・処理） |
-| `store` | ROUND_RECTANGLE | `C["primaryDark"]` | データストア |
-| `output` | ROUND_RECTANGLE | `C["success"]` | 出力先（アプリ、レポート） |
+| `source` | ROUND_RECTANGLE | `C["accent"]` | Data source (DB, API) |
+| `process` | RECTANGLE | `C["primary"]` | Scalar product (transform/process) |
+| `store` | ROUND_RECTANGLE | `C["primaryDark"]` | Data store |
+| `output` | ROUND_RECTANGLE | `C["success"]` | Output destination (app, report) |
 
-### Python コードテンプレート
+### Python Code Template
 
 ```python
 def compose_data_flow(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -198,32 +200,32 @@ def compose_data_flow(sb, slide_id, content, theme, page_num, total_pages=None):
         legend_x += 1.50
 ```
 
-### デザインノート
+### Design Notes
 
-- ノード数は 3-5 を想定。6 以上の場合は 2 行配置に変更するか、`box_w` を縮小
-- `process` ノード（Scalar 製品）は角丸なしの RECTANGLE で他タイプと視覚的に区別
-- dashed コネクタはオプション経路（エラーパス等）に使用
-- 技術図の色規約: Blue=Scalar, Gray=外部, Orange=ユーザー/クライアント, Green=正常フロー
+- Assumes 3-5 nodes. For 6 or more, switch to a 2-row layout or reduce `box_w`
+- `process` nodes (Scalar products) use a non-rounded RECTANGLE so they are visually distinct from other types
+- Dashed connectors are used for optional paths (e.g. error paths)
+- Technical diagram color convention: Blue=Scalar, Gray=External, Orange=User/client, Green=Normal flow
 
 ---
 
 ## 2. compose_multi_cloud
 
-マルチクラウド構成（AWS / GCP / Azure + Scalar レイヤ）を表示するスライド。
+A slide that displays a multi-cloud configuration (AWS / GCP / Azure + Scalar layer).
 
-- **マスター**: CONTENT
-- **パターン**: Pattern 10 (Flow) + クラウドアイコン
-- **レイアウト**: 上段=Scalar レイヤ、下段=クラウドプロバイダ列（2-3列）
+- **Master**: CONTENT
+- **Pattern**: Pattern 10 (Flow) + cloud icons
+- **Layout**: Top row = Scalar layer, bottom row = cloud provider columns (2-3 columns)
 
-### コンテンツ領域
+### Content Area
 
-| 要素 | X | Y | W | H | 備考 |
+| Element | X | Y | W | H | Note |
 |------|----:|----:|----:|----:|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT 標準 |
-| Scalar レイヤ | 0.500 | 0.900 | 9.000 | 1.100 | 中央帯、primary 背景 |
-| クラウド列 | 0.500 | 2.250 | 9.000 | 2.750 | プロバイダ別カード |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT standard |
+| Scalar layer | 0.500 | 0.900 | 9.000 | 1.100 | Center band, primary background |
+| Cloud columns | 0.500 | 2.250 | 9.000 | 2.750 | Per-provider cards |
 
-### Python コードテンプレート
+### Python Code Template
 
 ```python
 def compose_multi_cloud(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -359,32 +361,32 @@ def compose_multi_cloud(sb, slide_id, content, theme, page_num, total_pages=None
                         alignment="START", valign="MIDDLE")
 ```
 
-### デザインノート
+### Design Notes
 
-- クラウド数は 2-3 を想定（4 プロバイダ以上はカード幅が狭くなる）
-- 各プロバイダのブランドカラーをヘッダーに使用し、視覚的に識別しやすくする
-- Scalar レイヤを上段に配置することで「ベンダー非依存の統一レイヤ」を視覚的に表現
-- サービスアイコンは `assets/shared/cloud-icons/{provider}/` から読み込み。アセットが無い場合はバッジにフォールバック
+- Assumes 2-3 clouds (4 or more providers narrows the card width)
+- Uses each provider's brand color in the header for easy visual identification
+- Placing the Scalar layer on top visually expresses the "vendor-independent unified layer" concept
+- Service icons are loaded from `assets/shared/cloud-icons/{provider}/`. Falls back to a badge if the asset is missing
 
 ---
 
 ## 3. compose_benchmark
 
-ベンチマーク・性能比較を横棒グラフで表示するスライド。
+A slide that displays a benchmark / performance comparison as horizontal bar charts.
 
-- **マスター**: CONTENT
-- **パターン**: Pattern 4 (Bar Chart)
-- **レイアウト**: 指標ごとの横棒グラフ（自社製品をハイライト）
+- **Master**: CONTENT
+- **Pattern**: Pattern 4 (Bar Chart)
+- **Layout**: Horizontal bar chart per metric (own product highlighted)
 
-### コンテンツ領域
+### Content Area
 
-| 要素 | X | Y | W | H | 備考 |
+| Element | X | Y | W | H | Note |
 |------|----:|----:|----:|----:|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT 標準 |
-| チャート領域 | 0.500 | 0.900 | 8.500 | 3.700 | 複数メトリクス |
-| ソース | 0.500 | 4.750 | 9.000 | 0.300 | ベンチマーク出典 |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT standard |
+| Chart area | 0.500 | 0.900 | 8.500 | 3.700 | Multiple metrics |
+| Source | 0.500 | 4.750 | 9.000 | 0.300 | Benchmark source |
 
-### Python コードテンプレート
+### Python Code Template
 
 ```python
 def compose_benchmark(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -478,33 +480,33 @@ def compose_benchmark(sb, slide_id, content, theme, page_num, total_pages=None):
                     alignment="START", valign="MIDDLE")
 ```
 
-### デザインノート
+### Design Notes
 
-- メトリクス数は 1-3 を想定。4 以上は縦方向が密になるため、2 スライドに分割を推奨
-- 自社製品（`isOurs: true`）は `C["primary"]`（Scalar Blue）、競合は `C["border"]`（グレー）で明確に区別
-- 値ラベルをバー右端の外側に配置し、凡例への依存を排除（Tufte 原則: Data-Ink Ratio 最大化）
-- ソース出典は 9pt でフッター直上に配置（データの信頼性担保）
+- Assumes 1-3 metrics. For 4 or more, the vertical layout becomes dense, so splitting into 2 slides is recommended
+- Own product (`isOurs: true`) is clearly distinguished with `C["primary"]` (Scalar Blue); competitors use `C["border"]` (gray)
+- Value labels are placed outside the right end of the bar, eliminating reliance on a legend (Tufte principle: maximize the data-ink ratio)
+- The source citation is placed at 9pt directly above the footer (to ensure data credibility)
 
 ---
 
 ## 4. compose_migration_path
 
-マイグレーションパス（移行元 → ステップ群 → 移行先）を水平フロー+タイムラインで表示するスライド。
+A slide that displays the migration path (source → steps → destination) as a horizontal flow + timeline.
 
-- **マスター**: CONTENT
-- **パターン**: Pattern 10 (Flow) + Pattern 2 (H-Timeline)
-- **レイアウト**: 左端=移行元、右端=移行先、中央=ステップチェーン
+- **Master**: CONTENT
+- **Pattern**: Pattern 10 (Flow) + Pattern 2 (H-Timeline)
+- **Layout**: Left edge = migration source, right edge = migration destination, center = step chain
 
-### コンテンツ領域
+### Content Area
 
-| 要素 | X | Y | W | H | 備考 |
+| Element | X | Y | W | H | Note |
 |------|----:|----:|----:|----:|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT 標準 |
-| 移行元ノード | 0.500 | 1.200 | 1.400 | 1.400 | 円形 or 角丸 |
-| ステップチェーン | 2.200 | 1.500 | 5.600 | 3.200 | フロー + 詳細 |
-| 移行先ノード | 8.100 | 1.200 | 1.400 | 1.400 | 円形 or 角丸 |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT standard |
+| Source node | 0.500 | 1.200 | 1.400 | 1.400 | Circle or rounded rect |
+| Step chain | 2.200 | 1.500 | 5.600 | 3.200 | Flow + details |
+| Destination node | 8.100 | 1.200 | 1.400 | 1.400 | Circle or rounded rect |
 
-### Python コードテンプレート
+### Python Code Template
 
 ```python
 def compose_migration_path(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -654,19 +656,19 @@ def compose_migration_path(sb, slide_id, content, theme, page_num, total_pages=N
                      end_arrow="FILL_ARROW")
 ```
 
-### デザインノート
+### Design Notes
 
-- ステップ数は 3-5 を想定。2 以下は直接矢印+テキストで十分。6 以上はボックスが狭くなるため 2 行配置に変更
-- ステップのグラデーション（accent → primary）で進行方向を視覚的に表現
-- 移行先ノードは primary ボーダー + アクセントバーで「ゴール」を強調
-- クラウドアイコンは `_place_cloud_icon()` で移行元/移行先に配置。例: `"aws/rds.png"` → `"gcp/cloud-spanner.png"`
-- 詳細テキスト（description + duration）はステップ下に 9pt で配置。折り返し防止のため各 15 文字以内を推奨
+- Assumes 3-5 steps. For 2 or fewer, a direct arrow + text is sufficient. For 6 or more, boxes become narrow, so switch to a 2-row layout
+- The step gradient (accent → primary) visually expresses the direction of progress
+- The destination node emphasizes the "goal" with a primary border + accent bar
+- Cloud icons are placed at the source/destination via `_place_cloud_icon()`. Example: `"aws/rds.png"` → `"gcp/cloud-spanner.png"`
+- Detail text (description + duration) is placed below each step at 9pt. To prevent wrapping, keep each within roughly 15 characters (for Japanese text; see the text constraints table below for language-specific limits)
 
 ---
 
-## 共通事項
+## Common Notes
 
-### CONTENT マスター座標（全コンポーザー共通）
+### CONTENT Master Coordinates (Common to All Composers)
 
 ```
 タイトル:   (0.323, 0.303) w=9.354 h=0.437
@@ -675,29 +677,29 @@ Body 終了:  y=5.208 (contentBottom)
 フッター:   y=5.208 以下（ロゴ・著作権・ページ番号）
 ```
 
-### クラウドアイコン統合パターン
+### Cloud Icon Integration Patterns
 
-| パターン | 使用場所 | アイコンサイズ | 備考 |
+| Pattern | Usage Location | Icon Size | Note |
 |---------|---------|:----------:|------|
-| ノード内アイコン | data_flow ノード | 0.45" | ノード上部に中央配置 |
-| カードヘッダーアイコン | multi_cloud プロバイダ | 0.28" | ヘッダーバー内に左寄せ |
-| サービスリストアイコン | multi_cloud サービス | 0.30" | テキスト左に配置 |
-| 端点ノードアイコン | migration_path 移行元/先 | 0.45" | カード上部に中央配置 |
+| In-node icon | data_flow node | 0.45" | Centered at top of node |
+| Card header icon | multi_cloud provider | 0.28" | Left-aligned within header bar |
+| Service list icon | multi_cloud service | 0.30" | Placed to the left of text |
+| Endpoint node icon | migration_path source/destination | 0.45" | Centered at top of card |
 
-### テキスト制約
+### Text Constraints
 
-| 要素 | 日本語上限 | 英語上限 |
+| Element | Japanese Limit | English Limit |
 |------|-----------|---------|
-| アクションタイトル | 50文字 | 100文字 |
-| ノード名（data_flow） | 10文字 | 20文字 |
-| フローラベル | 8文字 | 15文字 |
-| プロバイダ名 | 10文字 | 20文字 |
-| サービス名 | 15文字 | 30文字 |
-| メトリクス名（benchmark） | 15文字 | 30文字 |
-| ステップ名（migration_path） | 8文字 | 16文字 |
-| ステップ詳細 | 15文字 | 30文字 |
+| Action title | 50 chars | 100 chars |
+| Node name (data_flow) | 10 chars | 20 chars |
+| Flow label | 8 chars | 15 chars |
+| Provider name | 10 chars | 20 chars |
+| Service name | 15 chars | 30 chars |
+| Metric name (benchmark) | 15 chars | 30 chars |
+| Step name (migration_path) | 8 chars | 16 chars |
+| Step detail | 15 chars | 30 chars |
 
-### 技術図カラーコーディング
+### Technical Diagram Color Coding
 
 ```
 Blue   (#2673BB / C["primary"])     → Scalar 製品コンポーネント
@@ -709,11 +711,11 @@ Dashed lines                        → オプション経路
 Solid lines                         → 必須経路
 ```
 
-### パターンマッピング
+### Pattern Mapping
 
-| コンポーザー | 主要パターン | 補助パターン |
+| Composer | Primary Pattern | Secondary Pattern |
 |------------|------------|------------|
 | `compose_data_flow` | Pattern 10/11 (Flow) | -- |
-| `compose_multi_cloud` | Pattern 10 + アイコン | -- |
+| `compose_multi_cloud` | Pattern 10 + icons | -- |
 | `compose_benchmark` | Pattern 4 (Bar Chart) | -- |
 | `compose_migration_path` | Pattern 10 (Flow) | Pattern 2 (Timeline) |

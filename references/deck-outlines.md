@@ -1,110 +1,128 @@
-# デッキの構成テンプレート
+*[日本語](deck-outlines.ja.md)*
 
-「何の図を描くか」の前に「どの順で何を話すか」。定番のデッキ構成と、
-各セクションで使う部品の対応表。構成は間引いてよいが、**順序は保つ**こと
-（結論を支える論点が先に出ていないと、後のスライドが宙に浮く）。
+# Deck Structure Templates
 
-対話でどれを使うか決める手順は `references/interactive-intake.md`。
-ここの見出しがそのまま選択肢になる。
+Before "what diagram to draw" comes "what order to talk in." Standard deck
+structures and a mapping of the components each section uses. You may thin
+out the structure, but **keep the order** (if the points supporting the
+conclusion don't come first, the later slides have nothing to stand on).
 
-| 型 | 向いている場面 | 標準の枚数 |
+The procedure for deciding which one to use through dialogue is in
+`references/interactive-intake.md`. The headings here become the choices
+directly.
+
+| Type | Best fit | Standard page count |
 |---|---|---|
-| [課題解決型の提案](#課題解決型の提案営業導入提案) | 営業・導入提案。相手の課題が起点 | 12〜20 |
-| [新規事業・企画の社内提案](#新規事業企画の社内提案稟議) | 稟議・投資判断。承認者が読む | 20〜60 |
-| [製品・サービス紹介](#製品サービス紹介) | 初回訪問・製品説明 | 10〜20 |
-| [登壇・勉強会](#登壇勉強会技術解説) | 外部登壇・社内勉強会 | 15〜30 |
+| [Problem-Solving Proposal](#problem-solving-proposal-sales-and-deployment-proposals) | Sales / deployment proposals. Starts from the counterpart's challenges | 12–20 |
+| [New Business / Initiative Internal Proposal](#new-business-and-initiative-internal-proposal-ringi-approval) | Ringi approval, investment decisions. Read by approvers | 20–60 |
+| [Product and Service Introduction](#product-and-service-introduction) | First visit, product explanation | 10–20 |
+| [Conference Talks and Study Sessions](#conference-talks-and-study-sessions-technical-deep-dive) | External talks, internal study sessions | 15–30 |
 
 ---
 
-## 課題解決型の提案（営業・導入提案）
+## Problem-Solving Proposal (Sales and Deployment Proposals)
 
-一番よく使う型。**相手の課題から始めて自社の話は後**に置く。「弊社は…」で
-始まるデッキは読まれる前に閉じられる。
+The most commonly used type. **Start with the counterpart's challenges and
+put your own company's story later.** A deck that opens with "Our
+company…" gets closed before anyone reads it.
 
-| # | セクション | 主なスライドと使う部品 |
+| # | Section | Main slides and components used |
 |---|---|---|
-| 0 | 表紙・アジェンダ | `COVER` + `table`（目次） |
-| 1 | 背景と現状 | `before_after`、`icon_flow`（現状の業務フロー）、`metric` |
-| 2 | 課題 | `cards`（3 点に絞る）、`hbars` / `vbars`（課題の大きさを数値で）、`iceberg`（見えている問題と根本原因） |
-| 3 | 打ち手 | `flow` / `steps`（打ち手の全体像）、`layers`（構成）、`cloud_zone` + `cloud_icon_row`（構成図） |
-| 4 | 期待効果 | `vbars_grouped`（従来 vs 提案）、`metric`、`table`（定量効果の内訳） |
-| 5 | 進め方 | `gantt`、`journey`（フェーズ） |
-| 6 | 体制・費用 | `orgchart`、`table`（費目）、`vbars_stacked`（コスト構成） |
-| 7 | 次のステップ | `flow`（今日決めること → 次回まで） |
+| 0 | Cover and agenda | `COVER` + `table` (table of contents) |
+| 1 | Background and current state | `before_after`, `icon_flow` (current workflow), `metric` |
+| 2 | Challenges | `cards` (narrow down to 3 points), `hbars` / `vbars` (quantify the size of the challenge), `iceberg` (visible problems and root causes) |
+| 3 | Approach | `flow` / `steps` (overview of the approach), `layers` (composition), `cloud_zone` + `cloud_icon_row` (architecture diagram) |
+| 4 | Expected impact | `vbars_grouped` (before vs. proposed), `metric`, `table` (breakdown of quantitative impact) |
+| 5 | Timeline | `gantt`, `journey` (phases) |
+| 6 | Team and cost | `orgchart`, `table` (cost items), `vbars_stacked` (cost breakdown) |
+| 7 | Next steps | `flow` (what to decide today → until next time) |
 
-- **課題は 3 点まで。** 5 点並べると全部が薄くなる。
-- 効果の数値は**必ず算定根拠を `label` で添える**。根拠が無いなら書かない。
-- 費用に触れないデッキは意思決定に乗らない。概算でも幅で示す。
+- **Limit challenges to 3 points.** Listing 5 dilutes all of them.
+- For impact figures, **always attach the calculation basis in `label`**.
+  If there's no basis, don't write the number.
+- A deck that doesn't touch on cost won't reach a decision. Show at least a
+  rough range.
 
 ---
 
-## 製品・サービス紹介
+## Product and Service Introduction
 
-| # | セクション | 主なスライドと使う部品 |
+| # | Section | Main slides and components used |
 |---|---|---|
-| 0 | 表紙 | `COVER` |
-| 1 | 顧客の課題 | `cards`、`icon_flow` |
-| 2 | 製品の位置づけ | `posmap`、`venn`（バリュープロポジション） |
-| 3 | 特長（3 つ） | `asset_icon_cards` / `cards` |
-| 4 | 仕組み・アーキテクチャ | `layers`、`cloud_zone` + `cloud_icon_flow`、`code_block` |
-| 5 | 導入事例 | `testimonial`、`metric`、`before_after` |
-| 6 | 次のステップ | `flow`、`journey` |
+| 0 | Cover | `COVER` |
+| 1 | Customer challenges | `cards`, `icon_flow` |
+| 2 | Product positioning | `posmap`, `venn` (value proposition) |
+| 3 | Key features (3) | `asset_icon_cards` / `cards` |
+| 4 | Architecture | `layers`, `cloud_zone` + `cloud_icon_flow`, `code_block` |
+| 5 | Case studies | `testimonial`, `metric`, `before_after` |
+| 6 | Next steps | `flow`, `journey` |
 
-- 特長は **3 つに固定**する。機能一覧はここではなく Appendix。
-- 日本語デッキで特長の帯ラベルに "Value Proposition" と書かない（「特長」と書く）。
+- **Fix the number of key features at 3.** A full feature list belongs in
+  the Appendix, not here.
+- In Japanese-language decks, don't label the feature band "Value
+  Proposition" — use the Japanese term 特長 instead.
 
 ---
 
-## 登壇・勉強会（技術解説）
+## Conference Talks and Study Sessions (Technical Deep Dive)
 
-Presentation 系レイアウト（`CONTENT_PRESENTATION` / `TITLE_ONLY_PRESENTATION`）を使う。
-**1 枚 1 メッセージ**。読み物ではないので本文は箇条書き 3 行まで。
+Use Presentation-family layouts (`CONTENT_PRESENTATION` /
+`TITLE_ONLY_PRESENTATION`). **One message per slide.** This isn't meant to
+be read like a document, so keep body text to at most 3 bullet lines.
 
-| # | セクション | 主なスライドと使う部品 |
+| # | Section | Main slides and components used |
 |---|---|---|
-| 0 | 表紙・自己紹介 | `COVER`、`asset_icon` + `cards` |
-| 1 | 今日話すこと | `table`（アジェンダ）、`flow` |
-| 2 | 前提・背景 | `icon_flow`、`timeline` |
-| 3 | 本題（3〜5 章） | `SECTION` で章を区切る。章ごとに `layers` / `code_block` / `linechart` |
-| 4 | デモ・実例 | `code_block`、`cloud_icon_flow` |
-| 5 | まとめ | `cards`（持ち帰ってほしい 3 点） |
-| 6 | 参考資料 | `table`（URL 一覧） |
+| 0 | Cover and self-introduction | `COVER`, `asset_icon` + `cards` |
+| 1 | What we'll cover today | `table` (agenda), `flow` |
+| 2 | Context and background | `icon_flow`, `timeline` |
+| 3 | Main content (3–5 chapters) | Divide chapters with `SECTION`. Per chapter: `layers` / `code_block` / `linechart` |
+| 4 | Demo and examples | `code_block`, `cloud_icon_flow` |
+| 5 | Summary | `cards` (3 takeaways) |
+| 6 | References | `table` (list of URLs) |
 
-- 章ごとに `SECTION` を挟む。挟まないと聴衆が現在地を見失う。
-- コードは**画面で読める分量**まで削る（`references/code-blocks.md` の高さ見積もり）。
+- Insert a `SECTION` between chapters. Without it, the audience loses track
+  of where they are.
+- Trim code down to **an amount readable on screen** (see the height
+  estimate in `references/code-blocks.md`).
 
 ---
 
-## 新規事業・企画の社内提案（稟議）
+## New Business and Initiative Internal Proposal (Ringi Approval)
 
-出典: 才流「新規事業社内会議用プレゼンテーションテンプレート」の 15 セクション
-構成を、このスキルの部品にマッピングしたもの。社内承認が目的のデッキは
-「市場性 → 競争 → 収益 → リスク → 体制」の順で、承認者の不安を先回りして潰す。
+Source: the 15-section structure from 才流 (Sairu)'s "New Business Internal
+Meeting Presentation Template," mapped onto this skill's components. A deck
+aimed at internal approval follows the order "Market potential →
+Competition → Revenue → Risk → Team," preemptively addressing the
+approvers' concerns.
 
-| # | セクション | 主なスライドと使う部品 |
+| # | Section | Main slides and components used |
 |---|---|---|
-| 0 | 表紙・アジェンダ | `COVER` レイアウト + `table`（2 列の目次） |
-| 1 | 背景 | `before_after`（現状 → 新規事業の影響）、`cards` |
-| 2 | 課題と市場性 | `table`（顧客インタビュー・購買事例）、`cards` + `arrow`（悩み → 課題） |
-| 3 | ターゲット・市場規模 | `posmap`（セグメンテーション）、`table`（ペルソナ比較）、`nested_circles`（TAM/SAM/SOM）、`linechart`（市場推移） |
-| 4 | 事業内容 | `lean_canvas`、`cards`（料金プラン）、`venn`（バリュープロポジション）、`table`（エレベーターピッチ・ジャーニーマップ）、`pyramid`（顧客層別施策）、`steps`（階段設計） |
-| 5 | 顧客の生の声 | `testimonial`、`cards` + `arrow`（声 → インサイト） |
-| 6 | 競争環境 | `table`（競合一覧・KBF 比較）、`posmap`（現状 / 参入後の 2 枚） |
-| 7 | スケジュール | `flow` か `journey`（中長期ロードマップ）、`table`（施策一覧）、`gantt`（進め方） |
-| 8 | 収益性 | `vbars` / `linechart`（損益・販売計画）、`flow` + `metric`（KPI の連鎖）、`table`（KPI 詳細） |
-| 9 | 投資・コスト | `table`（費目一覧）、`vbars_stacked`（コスト構成の推移） |
-| 10 | リスクと撤退ライン | `linechart`（ベスト / ワーストシナリオ）、`cards` + `arrow`（要因 → 対策） |
-| 11 | 体制 | `orgchart`（プロジェクト体制）、`table`（役割分担） |
-| 12 | 実行方法 | `orgchart`（拡大後体制）、`table`（業務分担） |
-| 13 | 関連法規 | `table`（Q&A 形式） |
-| 14 | キーマン・有識者の声 | `testimonial` |
-| 15 | 全社戦略との関連 | `cards` + `arrow`（中計目標 → 貢献） |
+| 0 | Cover and agenda | `COVER` layout + `table` (2-column table of contents) |
+| 1 | Background | `before_after` (current state → impact of the new business), `cards` |
+| 2 | Challenges and market potential | `table` (customer interviews, purchase examples), `cards` + `arrow` (pain points → challenges) |
+| 3 | Target and market size | `posmap` (segmentation), `table` (persona comparison), `nested_circles` (TAM/SAM/SOM), `linechart` (market trend) |
+| 4 | Business overview | `lean_canvas`, `cards` (pricing plans), `venn` (value proposition), `table` (elevator pitch, journey map), `pyramid` (measures by customer segment), `steps` (staged rollout design) |
+| 5 | Voice of the customer | `testimonial`, `cards` + `arrow` (voices → insights) |
+| 6 | Competitive landscape | `table` (competitor list, KBF comparison), `posmap` (2 slides: current state / after entry) |
+| 7 | Schedule | `flow` or `journey` (mid- to long-term roadmap), `table` (list of initiatives), `gantt` (execution plan) |
+| 8 | Profitability | `vbars` / `linechart` (P&L, sales plan), `flow` + `metric` (KPI chain), `table` (KPI detail) |
+| 9 | Investment and cost | `table` (list of cost items), `vbars_stacked` (cost breakdown over time) |
+| 10 | Risk and exit line | `linechart` (best / worst case scenarios), `cards` + `arrow` (factors → countermeasures) |
+| 11 | Team structure | `orgchart` (project structure), `table` (role assignments) |
+| 12 | Execution approach | `orgchart` (post-expansion structure), `table` (division of work) |
+| 13 | Related regulations | `table` (Q&A format) |
+| 14 | Voices of key people and experts | `testimonial` |
+| 15 | Alignment with company-wide strategy | `cards` + `arrow` (mid-term plan goals → contribution) |
 
-使い方のヒント:
+Usage tips:
 
-- セクション区切りは `SECTION` ロールのレイアウトを使う（自分で描かない）。
-- 8〜10 は承認者が最初に見る場所。数値は必ず出典か算定根拠を `label` で添える。
-- ポジショニングマップは「現状」と「参入後（自社入り）」の 2 枚に分けると
-  参入インパクトが伝わる（1 枚に押し込まない）。
-- 全 15 セクションで 60 枚超になる。役員会 15 分なら 1・3・4・8・10 に絞り、
-  残りは Appendix に回す。
+- Use the `SECTION`-role layout for section breaks (don't draw them
+  yourself).
+- Sections 8–10 are what approvers look at first. Always attach a source or
+  calculation basis for numbers in `label`.
+- Splitting the positioning map into "current state" and "after entry (with
+  our company)" conveys the impact of entry (don't cram it into one
+  slide).
+- All 15 sections together run to 60+ slides. For a 15-minute board
+  meeting, narrow down to sections 1, 3, 4, 8, and 10, and move the rest to
+  the Appendix.

@@ -1,31 +1,37 @@
 #!/usr/bin/env python3
-"""表とグラフを描くミックスイン（`diagrams.Canvas` に混ぜて使う）。
+"""Mixin that draws tables and charts (mix into `diagrams.Canvas`).
 
     d = Canvas(deck, slide_id, template)
-    d.table(0.5, 1.2, 9.0, ["項目", "従来", "提案"],
-            [["構築期間", "6ヶ月", "2ヶ月"], ["運用工数", "3人月", "0.5人月"]])
+    d.table(0.5, 1.2, 9.0, ["Item", "Before", "Proposed"],
+            [["Build time", "6 months", "2 months"], ["Ops effort", "3 person-months", "0.5 person-months"]])
     d.vbars(0.5, 1.2, 6.0, 3.2, [("2023", 120), ("2024", 210), ("2025", 380)])
     d.vbars_grouped(0.5, 1.2, 9.0, 3.4, ["Q1", "Q2"],
-                    [("従来", [40, 42]), ("提案", [18, 12])])
-    d.linechart(0.5, 1.2, 9.0, 3.2, ["1月", "2月", "3月"],
-                [("応答時間", [320, 180, 90])], unit="ms")
-    d.pie(0.7, 1.3, 2.8, [("移行済み", 62), ("移行中", 23), ("未着手", 15)])
+                    [("Before", [40, 42]), ("Proposed", [18, 12])])
+    d.linechart(0.5, 1.2, 9.0, 3.2, ["Jan", "Feb", "Mar"],
+                [("Response time", [320, 180, 90])], unit="ms")
+    d.pie(0.7, 1.3, 2.8, [("Migrated", 62), ("In progress", 23), ("Not started", 15)])
 
-設計の約束（データ可視化の一般則に合わせている）:
+Design commitments (aligned with general data-visualization principles):
 
-- **棒グラフの基線は必ずゼロ。** 負値・途中からの軸は受け付けない
-  （変化を誇張するため）。折れ線だけ `y_min` を動かせる。
-- **系列色は `Palette.series()` の固定順**（primary → success → info →
-  danger → 暗黄。CVD 検証済みの並び。詳細は colors.py）。並べ替えたり
-  循環させたりしない。色は系列＝実体について回り、順位や大小では塗らない。
-  単一系列の棒は primary 一色。
-- **文字は本文色（text / muted）で描く。** 系列の識別は隣の色見本が担う。
-- **軸・グリッドは控えめに**（border 色・破線）。数値は選択的に直接ラベル。
-- 表は Slides ネイティブのテーブル（後から編集できる）。グラフは図形で
-  描くので、`audit_*` の自己点検と `--dry-run` がそのまま効く。
-  円グラフだけ SVG → PNG で貼る（Slides API に扇形が無いため）。
+- **A bar chart's baseline is always zero.** Negative values or axes that
+  don't start at zero are rejected (they exaggerate change). Only a line
+  chart's `y_min` can be moved.
+- **Series colors follow the fixed order of `Palette.series()`** (primary →
+  success → info → danger → dark yellow. A CVD-verified order; see
+  colors.py for details). Never reorder or cycle them. Color follows the
+  series (= the entity), never rank or magnitude. A single-series bar is a
+  solid primary color.
+- **Text is drawn in body colors (text / muted).** Series identity is
+  carried by the adjacent color swatch.
+- **Axes and gridlines stay understated** (border color, dashed). Numbers
+  are labeled selectively, directly on the data.
+- Tables are native Slides tables (editable afterward). Charts are drawn as
+  shapes, so `audit_*` self-checks and `--dry-run` work on them as-is. Only
+  pie charts are pasted as SVG → PNG (the Slides API has no pie-slice
+  primitive).
 
-座標はインチ。戻り値は他の部品と同じく描画領域の下端 y。
+Coordinates are in inches. Like other components, the return value is the
+y coordinate of the bottom edge of the drawn area.
 """
 from __future__ import annotations
 
@@ -91,14 +97,14 @@ CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 
 def _fmt(v) -> str:
-    """数値の既定表示。整数は桁区切り、小数は 1 桁。"""
+    """Default number display: integers get thousands separators, floats get 1 decimal place."""
     if isinstance(v, float) and not v.is_integer():
         return f"{v:,.1f}"
     return f"{int(v):,}"
 
 
 def _nice_ceil(v: float) -> float:
-    """軸の上限に使う「きりのよい数」への切り上げ（1 / 2 / 2.5 / 5 × 10^k）。"""
+    """Round up to a "nice" number for use as an axis maximum (1 / 2 / 2.5 / 5 × 10^k)."""
     if v <= 0:
         return 1.0
     exp = math.floor(math.log10(v))
@@ -110,7 +116,7 @@ def _nice_ceil(v: float) -> float:
 
 
 def _series_pairs(series) -> list[tuple[str, list]]:
-    """[(名前, [値…]), …] に正規化する。JSON 由来のリストも受ける。"""
+    """Normalize into [(name, [values, ...]), ...]. Also accepts lists sourced from JSON."""
     out = []
     for s in series:
         if isinstance(s, dict):
@@ -122,24 +128,24 @@ def _series_pairs(series) -> list[tuple[str, list]]:
 
 
 class ChartMixin:
-    """`Canvas` に表とグラフを足すミックスイン。"""
+    """Mixin that adds tables and charts to `Canvas`."""
 
-    # ---- 表（Slides ネイティブのテーブル） ----
+    # ---- Tables (native Slides tables) ----
 
     def table(self, x, y, w, headers, rows, *, col_widths=None, row_h=0.34,
               header_h=0.38, size=10, header_size=None, aligns=None,
               header_fill=None, zebra=True, border=None) -> float:
-        """表を描き、下端 y を返す。headers は列見出し、rows は行のリスト。
+        """Draw a table and return the bottom y. headers are column headers, rows is a list of rows.
 
-        - `col_widths` は列幅の比率（例 `[2, 1, 1]`）。省略すると等分
-        - `aligns` は列ごとの寄せ（"START" / "CENTER" / "END"）。省略すると
-          1 列目 START・残り CENTER
-        - `zebra` で偶数行に薄い縞を敷く（行数が多いときの読み違え防止）
-        - セルは Slides のテーブルなので、生成後にユーザーが編集できる
+        - `col_widths` are column-width ratios (e.g. `[2, 1, 1]`). Omit for equal widths
+        - `aligns` is the alignment per column ("START" / "CENTER" / "END").
+          Omit for START on column 1, CENTER on the rest
+        - `zebra` shades even rows lightly (avoids misreading when there are many rows)
+        - Cells are native Slides tables, so the user can edit them after generation
 
-        `row_h` は**最小**行高。文字が折り返すと行は勝手に伸びるので、
-        戻り値はあくまで見積もり。セルに入り切らない文字は `audit_text_fit()`
-        が生成前に拾う。
+        `row_h` is the **minimum** row height. Rows grow taller on their own
+        when text wraps, so the return value is only an estimate. Text that
+        doesn't fit in a cell is caught by `audit_text_fit()` before generation.
         """
         ncols = len(headers)
         for i, r in enumerate(rows):
@@ -165,7 +171,7 @@ class ChartMixin:
             "objectId": oid, "rows": nrows, "columns": ncols,
             "elementProperties": self._elem_props(x, y, w, h_total)}}]
 
-        # 列幅・行高（minRowHeight なので文字が多いと伸びる）
+        # Column widths / row heights (minRowHeight, so rows grow taller with more text)
         for c, cw in enumerate(widths):
             reqs.append({"updateTableColumnProperties": {
                 "objectId": oid, "columnIndices": [c],
@@ -184,7 +190,7 @@ class ChartMixin:
                     "minRowHeight": {"magnitude": _auth.inches(row_h), "unit": "EMU"}},
                 "fields": "minRowHeight"}})
 
-        # 罫線は控えめに 1 本の色で
+        # Keep the borders understated, a single color
         reqs.append({"updateTableBorderProperties": {
             "objectId": oid, "borderPosition": "ALL",
             "tableBorderProperties": {
@@ -205,7 +211,7 @@ class ChartMixin:
                     "contentAlignment": "MIDDLE"},
                 "fields": "tableCellBackgroundFill.solidFill,contentAlignment"}})
 
-        # 全セルの縦位置を中央へ（塗りは行単位で上書き）
+        # Center all cells vertically (fill color is overridden per row)
         reqs.append({"updateTableCellProperties": {
             "objectId": oid,
             "tableRange": {"location": {"rowIndex": 0, "columnIndex": 0},
@@ -252,9 +258,10 @@ class ChartMixin:
         self.rects[oid] = (x, y, w, h_total, "TABLE")
         self.solids.append({"rect": (x, y, w, h_total), "seq": self._seq,
                             "name": t("table {head}", head=str(headers[0])[:12])})
-        # セルごとの文字を audit_text_fit / audit_overlaps の対象に登録する。
-        # セルの内側余白は左右 0.05in（図形の 0.1in より狭い）だが、検査側の
-        # 見積もり（TEXT_INSET_X）に合わせて保守的に評価される
+        # Register each cell's text as a target for audit_text_fit / audit_overlaps.
+        # A cell's inner padding is 0.05in left/right (narrower than a shape's
+        # 0.1in), but it's evaluated conservatively to match the auditor's
+        # estimate (TEXT_INSET_X)
         cx0 = x
         for c, cw in enumerate(widths):
             cy0 = y
@@ -271,19 +278,21 @@ class ChartMixin:
             cx0 += cw
         return y + h_total
 
-    # ---- 縦棒グラフ ----
+    # ---- Vertical bar chart ----
 
-    VBAR_VAL_H = 0.24   # 棒の上の数値ラベルの高さ
-    VBAR_LAB_H = 0.30   # 基線の下のカテゴリラベルの高さ
+    VBAR_VAL_H = 0.24   # height of the value label above the bar
+    VBAR_LAB_H = 0.30   # height of the category label below the baseline
 
     def vbars(self, x, y, w, h, items, *, max_value=None, colors=None, unit="",
               size=10, value_size=10, bar_ratio=0.62) -> float:
-        """縦棒グラフ。items は (ラベル, 数値) か (ラベル, 数値, 表示文字列)。
+        """Vertical bar chart. items are (label, value) or (label, value, display string).
 
-        基線はゼロ固定（負値は不可）。棒は primary 一色が既定で、`colors` に
-        リストを渡したときだけ塗り分ける（強調は 1 本だけ等、意図があるとき）。
-        数値は各棒の上に直接ラベルする。出典のある数値にだけ使うこと。
-        戻り値は下端 y（= y + h）。
+        The baseline is fixed at zero (negative values are not allowed). Bars
+        default to a single primary color, and are only color-differentiated
+        when a `colors` list is passed (for a deliberate purpose, e.g.
+        highlighting a single bar). Values are labeled directly above each
+        bar. Only use this for values that have a source. Returns the bottom
+        y (= y + h).
         """
         plot_h = h - self.VBAR_VAL_H - self.VBAR_LAB_H
         if plot_h < 0.4:
@@ -323,10 +332,10 @@ class ChartMixin:
     def vbars_grouped(self, x, y, w, h, categories, series, *, max_value=None,
                       colors=None, unit="", size=10, value_size=8.5,
                       legend=True, values=True) -> float:
-        """グループ化した縦棒。categories は横軸、series は [(系列名, [値…]), …]。
+        """Grouped vertical bars. categories is the x-axis, series is [(series name, [values, ...]), ...].
 
-        系列色は `Palette.series()` の固定順。凡例は上に 1 行。
-        戻り値は下端 y（= y + h）。
+        Series colors follow the fixed order of `Palette.series()`. The
+        legend is a single row on top. Returns the bottom y (= y + h).
         """
         pairs = _series_pairs(series)
         ns, ncat = len(pairs), len(categories)
@@ -378,15 +387,18 @@ class ChartMixin:
                       colors=None, unit="", size=10, value_size=8.5,
                       legend=True, values=False, totals=True,
                       bar_ratio=0.55) -> float:
-        """積み上げ縦棒。内訳（構成）の変化をカテゴリ間で比較する。
+        """Stacked vertical bars. Compares how the breakdown (composition) changes across categories.
 
-        categories は横軸、series は [(系列名, [値…]), …]。下から最初の系列を
-        積む。系列色は `Palette.series()` の固定順。合計は棒の上に直接ラベルし、
-        セグメント内の数値は `values=True` のときだけ、**入る高さがある
-        セグメントに限って**描く（積み上げの外側ラベルは誤読のもとなので無い）。
-        戻り値は下端 y（= y + h）。
+        categories is the x-axis, series is [(series name, [values, ...]), ...].
+        The first series is stacked from the bottom. Series colors follow the
+        fixed order of `Palette.series()`. Totals are labeled directly above
+        each bar, and in-segment values are drawn only when `values=True`,
+        **and only for segments tall enough to hold the label** (no labels
+        outside the stack, since those invite misreading). Returns the
+        bottom y (= y + h).
 
-        系列が 4 を超えると内訳は読み取れない。「その他」に畳んでから渡すこと。
+        With more than 4 series, the breakdown becomes unreadable. Fold the
+        tail into "other" before passing it in.
         """
         pairs = _series_pairs(series)
         ns, ncat = len(pairs), len(categories)
@@ -409,8 +421,9 @@ class ChartMixin:
         if plot_h < 0.4:
             raise ValueError(t("h={h} leaves no room for the plot area", h=h))
         sums = [sum(vs[ci] for _, vs in pairs) for ci in range(ncat)]
-        # 軸目盛りを描かないので「きりのよい上限」は要らない。_nice_ceil だと
-        # 260 → 500 のような切り上げでプロットの上半分が空く
+        # No axis ticks are drawn, so a "nice" upper bound isn't needed.
+        # With _nice_ceil, a rounding like 260 → 500 would leave the top
+        # half of the plot empty
         mx = max_value or max(sums) * 1.05
         base_y = plot_top + plot_h
         cell = w / ncat
@@ -426,7 +439,7 @@ class ChartMixin:
                 if sh > 0.005:
                     self.shape(bx, top - sh, bw, sh, kind="RECTANGLE",
                                fill=cols[si], stroke=None)
-                    # セグメント中央の値。文字の行高より低い段には描かない
+                    # The value at the segment's center. Not drawn on a segment shorter than the text's line height
                     if values and sh >= value_size * 1.6 / 72.0:
                         self.label(bx, top - sh / 2 - 0.09, bw, 0.18,
                                    _fmt(vs[ci]), size=value_size, align="CENTER",
@@ -443,11 +456,11 @@ class ChartMixin:
         return y + h
 
     def _legend_row(self, x, y, w, entries, *, size=10) -> float:
-        """色見本＋名前を 1 行に左詰めで並べる凡例。entries は [(名前, 色), …]。"""
+        """Legend that lays out a color swatch + name in a left-aligned row. entries is [(name, color), ...]."""
         ex = x
         for name, c in entries:
-            # ラベル枠は文字幅＋テキストインセット（左右 0.1in）＋ゆとり。
-            # ぴったりに切ると Slides 側の実描画で折り返す
+            # The label box is text width + text inset (0.1in left/right) +
+            # margin. Cutting it exact causes wrapping in Slides' actual rendering
             tw = self._em(str(name)) * size / 72.0 * 1.1 + 0.30
             self.shape(ex, y + 0.075, 0.16, 0.11, kind="RECTANGLE",
                        fill=c, stroke=None)
@@ -460,19 +473,21 @@ class ChartMixin:
                     w=w, need=ex - 0.30 - x), file=sys.stderr)
         return y + 0.26
 
-    # ---- 折れ線グラフ ----
+    # ---- Line chart ----
 
     def linechart(self, x, y, w, h, labels, series, *, y_min=0, y_max=None,
                   grid=4, unit="", markers=True, size=9.5, legend=True,
                   axis_w=0.6, end_values=False) -> float:
-        """折れ線グラフ。labels は横軸の目盛り、series は [(系列名, [値…]), …]。
+        """Line chart. labels are the x-axis ticks, series is [(series name, [values, ...]), ...].
 
-        軸は 1 本だけ（二重軸は作れない仕様）。スケールの違う 2 系列は
-        グラフを分けること。`grid` は横グリッドの分割数で、目盛りの数値は
-        左の `axis_w` 幅に出す（単位は最上段の目盛りにだけ付く）。
-        `y_max` を省略すると目盛りが丸い数字になるよう上限を選ぶ。
-        `end_values=True` で各系列の最後の点にだけ数値を添える
-        （全点ラベルはしない）。戻り値は下端 y（= y + h）。
+        There is only one axis (dual axes aren't supported by design). Two
+        series with different scales should be split into separate charts.
+        `grid` is the number of horizontal grid divisions; tick values are
+        shown in the `axis_w`-wide area on the left (the unit is only
+        attached to the topmost tick). If `y_max` is omitted, an upper bound
+        is chosen so the ticks land on round numbers. `end_values=True` adds
+        a value label only at the last point of each series (not at every
+        point). Returns the bottom y (= y + h).
         """
         pairs = _series_pairs(series)
         ns, npt = len(pairs), len(labels)
@@ -488,8 +503,8 @@ class ChartMixin:
         if y_max is not None:
             mx = y_max
         else:
-            # 目盛りが 100 / 200 / … のような丸い数字になるよう、
-            # 「きりのよい刻み × 分割数」を上限にする
+            # Use "a nice step × the number of divisions" as the upper bound,
+            # so the ticks land on round numbers like 100 / 200 / ...
             raw = max(allv)
             step = _nice_ceil((raw - mn) / grid) if raw > mn else 1.0
             mx = mn + step * grid
@@ -497,8 +512,9 @@ class ChartMixin:
             raise ValueError(t("y_max ({mx}) must be greater than y_min ({mn})",
                                mx=mx, mn=mn))
 
-        # 目盛り文字列を先に決め、最長のものが折り返さない軸幅を確保する
-        # （Slides の実描画は見積もりより広く食うので係数は甘めに取る）
+        # Decide the tick label strings first, and reserve an axis width wide
+        # enough that the longest one doesn't wrap (Slides' actual rendering
+        # takes up more space than the estimate, so the factor is kept generous)
         ticks = [_fmt(mn + g / grid * (mx - mn)) + (unit if g == grid else "")
                  for g in range(grid + 1)]
         need_w = max(self._em(t) for t in ticks) * 8.5 / 72.0 * 1.2 + 0.34
@@ -518,7 +534,7 @@ class ChartMixin:
         def ypos(v):
             return py0 + ph - (v - mn) / (mx - mn) * ph
 
-        # グリッドと目盛り。基線だけ実線、上は破線で控えめに
+        # Grid and ticks. Only the baseline is a solid line; the rest are understated dashed lines
         for g in range(grid + 1):
             frac = g / grid
             gy = py0 + ph - frac * ph
@@ -548,8 +564,9 @@ class ChartMixin:
             if end_values:
                 txt = _fmt(vs[-1]) + unit
                 ly = ypos(vs[-1]) - 0.30
-                # 数値がグリッド線や折れ線に重なると読めない。値の位置は
-                # データで決まるので避けようがなく、下地を敷いて隠す
+                # A value overlapping a gridline or the plotted line becomes
+                # unreadable. Its position is determined by the data so it
+                # can't be avoided, so a backing shape is drawn to mask it
                 tw = self._em(txt) * 9 / 72.0 + 0.10
                 self.shape(xs[-1] - tw / 2, ly, tw, 0.2, kind="RECTANGLE",
                            fill=self.P.page, stroke=None)
@@ -557,24 +574,28 @@ class ChartMixin:
                            align="CENTER", valign="BOTTOM", color=self.P.text)
         return y + h
 
-    # ---- 円 / ドーナツグラフ ----
+    # ---- Pie / donut chart ----
 
     def pie(self, x, y, size, items, *, donut=True, colors=None,
             legend_w=None, label_size=10, unit="", bg="#FFFFFF") -> float:
-        """円グラフ（既定はドーナツ）。items は [(ラベル, 数値), …]。
+        """Pie chart (donut by default). items is [(label, value), ...].
 
-        Slides API には角度を指定できる扇形が無いため、円だけ SVG を PNG に
-        焼いて画像として貼る（cairosvg か rsvg-convert が要る）。凡例は右側に
-        図形で描くので、文字の検査は通常どおり効く。`--dry-run` では円の
-        代わりに同じ大きさの円形プレースホルダを置いて座標だけ検査する。
+        Since the Slides API has no primitive for an angle-specified pie
+        slice, only the circle itself is rasterized from SVG to PNG and
+        pasted as an image (needs cairosvg or rsvg-convert). The legend is
+        drawn as shapes on the right, so text auditing works on it as
+        usual. In `--dry-run`, a circular placeholder of the same size is
+        placed instead of the circle, so only coordinates are checked.
 
-        - 構成比を見せる用途にだけ使う。系列が 7 つ以上なら「その他」に
-          まとめるか、棒グラフ（vbars / hbars）に変えること
-        - 12 時から時計回り、渡した順に描く（勝手に並べ替えない）
-        - ドーナツの穴と切れ目は `bg` 色で塗る（既定は白）。白背景以外の
-          スライドでは `bg` を背景色に合わせること
+        - Only use this to show composition ratios. With 7 or more series,
+          fold them into "other" or switch to a bar chart (vbars / hbars)
+        - Drawn clockwise from 12 o'clock, in the order passed (never
+          reordered)
+        - The donut's hole and the slice separators are filled with the
+          `bg` color (white by default). On a slide with a non-white
+          background, set `bg` to match the background color
 
-        戻り値は下端 y（= y + size）。
+        Returns the bottom y (= y + size).
         """
         vals = [float(v) for _, v in items]
         if any(v < 0 for v in vals) or sum(vals) <= 0:
@@ -610,7 +631,7 @@ class ChartMixin:
         return y + size
 
     def _pie_png(self, vals, cols, donut, bg) -> str:
-        """円グラフの SVG を組み立てて PNG に焼き、パスを返す。"""
+        """Assemble the pie-chart SVG, rasterize it to PNG, and return the path."""
         px = 1024
         cx = cy = px / 2
         r = px / 2 - 8
@@ -637,7 +658,7 @@ class ChartMixin:
                 x2 = cx + r * math.cos(math.radians(a1))
                 y2 = cy + r * math.sin(math.radians(a1))
                 large = 1 if sweep > 180 else 0
-                # 切れ目は 2px 相当の縁取りで作る（データの隙間ではなく見た目の分離）
+                # The separator is made with a ~2px-equivalent outline (a visual separation, not a gap in the data)
                 parts.append(
                     f'<path d="M{cx:.2f},{cy:.2f} L{x1:.2f},{y1:.2f} '
                     f'A{r:.2f},{r:.2f} 0 {large} 1 {x2:.2f},{y2:.2f} Z" '
@@ -661,21 +682,24 @@ class ChartMixin:
                 os.unlink(tmp)
         return path
 
-    # ---- パレート図 ----
+    # ---- Pareto chart ----
 
-    # 「その他」は 1 つの要因ではないので、大きさに関係なく末尾に置く
+    # "Other" is not a single factor, so it's placed last regardless of its size
     PARETO_OTHER = {"その他", "other"}
 
     def pareto(self, x, y, w, h, items, *, unit="", size=9.5, threshold=80,
                axis_w=0.6) -> float:
-        """パレート図（構成比の棒 + 累積構成比の折れ線）。戻り値は下端 y。
+        """Pareto chart (composition-ratio bars + cumulative-ratio line). Returns the bottom y.
 
-        items は (ラベル, 数値)。値の大きい順に自動で並べ替える（「その他」
-        だけは大きさに関係なく末尾）。二重軸は作れない規約（linechart 参照）
-        に合わせ、棒も線も **構成比（%）** の 1 本の軸に載せる。棒の中には
-        実数値、線の点には累積 % をラベルする。threshold（既定 80。0 で
-        非表示）の高さに破線を引き、上位の少数要因で大半を説明できるかを
-        見せる。件数・金額など合計に意味がある量にだけ使うこと。出典必須。
+        items is (label, value). Automatically sorted in descending order of
+        value ("other" is always placed last regardless of size). Following
+        the no-dual-axes convention (see linechart), both the bars and the
+        line are plotted on a single **composition ratio (%)** axis. Bars
+        are labeled with the raw value, and line points with the cumulative
+        %. A dashed line is drawn at the threshold height (default 80; 0
+        hides it), showing whether a small number of top factors can
+        account for most of the total. Only use this for quantities where a
+        total is meaningful, such as counts or amounts. A source is required.
         """
         norm = []
         for it in items:
@@ -700,7 +724,7 @@ class ChartMixin:
             cums.append(acc)
 
         lab_h = 0.30
-        val_h = 0.30          # 100% の点の累積ラベルが領域からはみ出ない高さ
+        val_h = 0.30          # height that keeps the cumulative label at the 100% point from overflowing the area
         ticks = [f"{p}%" for p in (0, 25, 50, 75, 100)]
         need_w = max(self._em(s) for s in ticks) * 8.5 / 72.0 * 1.2 + 0.30
         axis_w = max(axis_w, need_w)
@@ -740,7 +764,7 @@ class ChartMixin:
             if bh > 0.005:
                 self.shape(bx, base_y - bh, bw, bh, kind="RECTANGLE",
                            fill=self.P.primary, stroke=None)
-            # 実数値は棒の中の上端に。棒の外に出すと累積線・累積 % と衝突する
+            # The raw value goes near the top inside the bar. Placing it outside the bar would collide with the cumulative line/%
             if bh >= 0.26:
                 self.label(bx, base_y - bh + 0.02, bw, 0.2, _fmt(v) + unit,
                            size=8.5, bold=True, align="CENTER", valign="TOP",
@@ -756,8 +780,9 @@ class ChartMixin:
             self.shape(xs[i] - mr, ypos(cums[i]) - mr, mr * 2, mr * 2,
                        kind="ELLIPSE", fill=line_c, stroke=self.P.white,
                        stroke_weight=1.0)
-            # 累積 % は点の上に。グリッドや線に重なって読めなくなるので
-            # 下地を敷く（linechart の end_values と同じ手当て）
+            # The cumulative % goes above the point. It would become
+            # unreadable if it overlapped the grid or the line, so a backing
+            # shape is drawn (the same treatment as linechart's end_values)
             txt = f"{cums[i]:.0f}%"
             tw = self._em(txt) * 8.5 / 72.0 + 0.10
             ly = ypos(cums[i]) - 0.26

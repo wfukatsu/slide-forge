@@ -1,209 +1,226 @@
-# 表とグラフ（charts.py）
+*[日本語](charts.ja.md)*
 
-`diagrams.Canvas` に混ざっている `ChartMixin` の使い方。表は Slides ネイティブの
-テーブル、グラフは図形で描く（円グラフだけ SVG → PNG の画像）。座標はインチ、
-戻り値はすべて描画領域の下端 y。
+# Tables and charts (charts.py)
+
+How to use `ChartMixin`, which is mixed into `diagrams.Canvas`. Tables use Slides-native
+tables; charts are drawn as shapes (only pie charts are rendered as SVG → PNG images).
+Coordinates are in inches, and every return value is the y-coordinate of the bottom edge of
+the drawn area.
 
 ```python
 from diagrams import Canvas
 ref = deck.add_slide("TITLE_ONLY", title="…")
 d = Canvas(deck, ref["slideId"], template)
 
-b = d.table(0.5, 1.2, 9.0, ["項目", "従来", "提案"],
-            [["構築期間", "6ヶ月", "2ヶ月"], ["運用工数", "3人月", "0.5人月"]])
+b = d.table(0.5, 1.2, 9.0, ["Item", "Before", "Proposed"],
+            [["Build time", "6 months", "2 months"], ["Ops effort", "3 person-months", "0.5 person-months"]])
 b = d.vbars(0.5, b + 0.3, 6.0, 3.0, [("2023", 120), ("2024", 210), ("2025", 380)])
 ```
 
-デッキ仕様（JSON）の `figures` からも同名の type で使える。実例は
-`examples/charts-demo.json`（6 種のうち `vbars_stacked` を除く 5 種の動くデモ。
-`vbars_stacked` は `examples/patterns-demo.json` にある）。
+These can also be used from a deck spec's (JSON) `figures` under the same type name. Working
+examples live in `examples/charts-demo.json` (a live demo of 5 of the 6 types, excluding
+`vbars_stacked`; `vbars_stacked` is in `examples/patterns-demo.json`).
 
-## どれを使うか
+## Which one to use
 
-| 見せたいもの | 使うもの | 補足 |
+| What you want to show | Use | Notes |
 |---|---|---|
-| 数値・仕様の正確な比較 | `table` | 生成後にユーザーが編集できる |
-| 量の比較（カテゴリ間） | `vbars` / `hbars`(diagrams) | 項目名が長ければ横棒 |
-| 量の比較 × 系列（例: 従来 vs 提案） | `vbars_grouped` | 系列 2〜3 まで |
-| 合計の推移 × 内訳（例: コスト構成） | `vbars_stacked` | 系列 4 まで。内訳の比較が主なら grouped |
-| 時間の変化・傾向 | `linechart` | 複数系列可。**二重軸は作れない**（仕様） |
-| 全体に占める構成比 | `pie` | 系列 6 まで。それ以上は「その他」に畳む |
-| 要因の集中度（80:20） | `pareto` | 値の大きい順に自動整列。「その他」は常に末尾 |
-| 1 つの数字を大きく | `metric`(diagrams) | グラフにしない方が強い |
+| Precise comparison of numbers/specs | `table` | Users can edit it after generation |
+| Comparing quantities (across categories) | `vbars` / `hbars` (diagrams) | Use horizontal bars if item names are long |
+| Comparing quantities × series (e.g., before vs. proposed) | `vbars_grouped` | Up to 2–3 series |
+| Total trend × breakdown (e.g., cost composition) | `vbars_stacked` | Up to 4 series. Use grouped if comparing the breakdown is the main point |
+| Change/trend over time | `linechart` | Multiple series allowed. **A dual axis cannot be made** (by design) |
+| Share of a whole | `pie` | Up to 6 series. Fold anything beyond that into "Other" |
+| Concentration of factors (80:20) | `pareto` | Auto-sorted by descending value. "Other" always goes last |
+| A single number, large | `metric` (diagrams) | Stronger without turning it into a chart |
 
-## 共通の設計規約
+## Shared design conventions
 
-- **棒の基線はゼロ固定**。負値や途中からの軸は `ValueError`（変化の誇張を防ぐ）。
-  折れ線だけ `y_min` / `y_max` を動かせる。
-- **系列色は `Palette.series()` の固定順**: 青 → 緑 → 水色 → 赤 → 暗黄。
-  この順は色覚多様性の検証（隣接ペアの CVD ΔE ≥ 9.2）を通してある。
-  並べ替え・循環はしない。単一系列の棒は primary 一色。
-- **文字は本文色**（text / muted）。系列の識別は凡例の色見本が担う。
-- 緑と暗黄は白背景とのコントラストが 3:1 未満なので、**凡例と数値の直接
-  ラベルを消さないこと**（既定で付く）。
-- 出典のある数値にだけ使う。飾りでグラフを置かない。
-- 図形ベース（表・棒・折れ線）は `audit_bounds` / `audit_overlaps` /
-  `audit_text_fit` と `--dry-run` がそのまま効く。**生成前に必ず通すこと。**
+- **The bar baseline is fixed at zero.** Negative values or a truncated axis raise
+  `ValueError` (to prevent exaggerating change). Only line charts allow moving
+  `y_min` / `y_max`.
+- **Series colors follow the fixed order of `Palette.series()`**: blue → green → cyan →
+  red → dark yellow. This order has been validated for color-vision diversity (adjacent-pair
+  CVD ΔE ≥ 9.2). Do not reorder or cycle it. A single-series bar chart uses primary alone.
+- **Text uses body colors** (text / muted). Series identification is carried by the legend's
+  color swatches.
+- Green and dark yellow have contrast under 3:1 against a white background, so **do not
+  remove the legend and direct value labels** (they are on by default).
+- Only use charts for numbers that have a source. Do not place a chart purely for decoration.
+- For shape-based figures (table, bar, line), `audit_bounds` / `audit_overlaps` /
+  `audit_text_fit` and `--dry-run` apply as-is. **Always run them before generating.**
 
-## table — 表
+## table
 
 ```python
 d.table(x, y, w, headers, rows,
-        col_widths=None,   # 列幅の比率。例 [2, 1, 1]。省略で等分
-        row_h=0.34,        # 最小行高（文字が折り返すと伸びる）
+        col_widths=None,   # column-width ratios, e.g. [2, 1, 1]. Even split if omitted
+        row_h=0.34,        # minimum row height (grows if text wraps)
         header_h=0.38,
         size=10, header_size=None,
-        aligns=None,       # 列ごとの寄せ。省略で 1 列目 START、残り CENTER
-        header_fill=None,  # 見出し行の塗り（既定 primary。文字色は自動）
-        zebra=True,        # 偶数行に薄い縞
-        border=None)       # 罫線色（既定 border）
+        aligns=None,       # per-column alignment. Defaults to START for column 1, CENTER for the rest
+        header_fill=None,  # header row fill (default: primary; text color chosen automatically)
+        zebra=True,        # light stripe on even rows
+        border=None)       # border color (default: border)
 ```
 
-- Slides ネイティブのテーブルなので**生成後にユーザーが編集できる**（図形で
-  組んだ疑似表との一番の違い）。
-- `row_h` は最小値。セル内で文字が折り返すと行が伸び、戻り値の下端 y より
-  実物が下がる。セルの文字量は `audit_text_fit()` が生成前に検査する。
-- 行数が多い表は文字を小さくするより**スライドを分ける**。
+- Because this is a Slides-native table, **users can edit it after generation** (the key
+  difference from a pseudo-table built out of shapes).
+- `row_h` is a minimum. When text wraps inside a cell, the row grows and the actual result
+  extends below the returned bottom-edge y. `audit_text_fit()` checks cell text volume before
+  generation.
+- For a table with many rows, **split across slides** rather than shrinking the font.
 
-## vbars — 縦棒
+## vbars — vertical bars
 
 ```python
-d.vbars(x, y, w, h, items,      # items: (ラベル, 数値) or (ラベル, 数値, 表示文字列)
-        max_value=None,          # 軸の上限（既定はきりのよい数へ切り上げ）
-        colors=None,             # 塗り分けは意図があるときだけ（例: 1 本だけ強調）
-        unit="",                 # 表示文字列を省略したときの単位（"h" "件" 等）
-        bar_ratio=0.62)          # セル幅に対する棒の太さ
+d.vbars(x, y, w, h, items,      # items: (label, value) or (label, value, display string)
+        max_value=None,          # axis ceiling (defaults to rounding up to a clean number)
+        colors=None,             # only color-code with intent (e.g., highlighting a single bar)
+        unit="",                 # unit used when the display string is omitted ("h", "items", etc.)
+        bar_ratio=0.62)          # bar thickness relative to cell width
 ```
 
-数値は各棒の上に直接ラベルされる。時系列でも点が 3〜4 個なら折れ線より
-縦棒が読みやすい。
+Values are labeled directly above each bar. Even for a time series, if there are only 3–4
+points, vertical bars read more easily than a line chart.
 
-## vbars_grouped — グループ縦棒
+## vbars_grouped — grouped vertical bars
 
 ```python
 d.vbars_grouped(x, y, w, h, categories, series,
-                # categories: 横軸のラベル ["Q1", "Q2", …]
-                # series: [(系列名, [値, …]), …] 値の数は categories と同数
+                # categories: x-axis labels ["Q1", "Q2", …]
+                # series: [(series name, [values, …]), …] — value count must match categories
                 unit="", legend=True, values=True)
 ```
 
-系列は 2〜3 まで。4 系列を超えるなら表かグラフの分割を検討する。
+Up to 2–3 series. Beyond 4 series, consider a table or splitting the chart.
 
-## vbars_stacked — 積み上げ縦棒
+## vbars_stacked — stacked vertical bars
 
 ```python
 d.vbars_stacked(x, y, w, h, categories, series,
-                # categories: 横軸のラベル ["2024", "2025", …]
-                # series: [(系列名, [値, …]), …] 下から最初の系列を積む
+                # categories: x-axis labels ["2024", "2025", …]
+                # series: [(series name, [values, …]), …]; the first series is stacked from the bottom
                 unit="",
-                values=False,   # セグメント中央の数値（入る高さの段だけ描く）
-                totals=True,    # 合計を棒の上に直接ラベル
+                values=False,   # value at the center of each segment (only for segments tall enough)
+                totals=True,    # label the total directly above the bar
                 legend=True)
 ```
 
-- 「合計の推移」と「内訳の構成」を同時に見せる図。**内訳の系列間比較が主目的なら
-  `vbars_grouped` を使う**（積み上げは基線が揃わず段の増減を読み違えやすい）。
-- 系列は 4 まで。超えるなら「その他」に畳んでから渡す。
-- 軸目盛りを描かないので上限は最大合計の 1.05 倍（`_nice_ceil` の切り上げで
-  上半分が空くのを避けるため）。`max_value` で明示もできる。
+- A diagram that shows "trend of the total" and "composition of the breakdown" at once. **If
+  the main goal is comparing series within the breakdown, use `vbars_grouped`** (stacking
+  misaligns baselines and makes it easy to misread increases/decreases within a tier).
+- Up to 4 series. Fold anything beyond that into "Other" before passing it in.
+- Since axis ticks are not drawn, the ceiling defaults to 1.05× the maximum total (to avoid
+  leaving the upper half empty due to `_nice_ceil`'s rounding up). Can also be set explicitly
+  via `max_value`.
 
-## linechart — 折れ線
+## linechart
 
 ```python
 d.linechart(x, y, w, h, labels, series,
-            # labels: 横軸 ["1月", "2月", …] / series: [(系列名, [値, …]), …]
-            y_min=0, y_max=None,  # 省略時は目盛りが丸い数字になるよう自動
-            grid=4,               # 横グリッドの分割数
-            unit="",              # 最上段の目盛りにだけ付く（"ms" 等）
+            # labels: x-axis ["Jan", "Feb", …] / series: [(series name, [values, …]), …]
+            y_min=0, y_max=None,  # auto-chosen for round tick values if omitted
+            grid=4,               # number of horizontal grid divisions
+            unit="",              # attached only to the topmost tick ("ms", etc.)
             markers=True,
-            end_values=False,     # 各系列の最後の点にだけ数値を添える
-            axis_w=0.6)           # 目盛り列の幅。長い目盛りは自動で広がる
+            end_values=False,     # attach a value only at the last point of each series
+            axis_w=0.6)           # tick-label column width; widens automatically for long ticks
 ```
 
-- **軸は 1 本**。スケールの違う 2 つの量（件数と金額など）を 1 枚に重ねる
-  API は意図的に無い。グラフを 2 つ並べるか、基準を揃えて指数化する。
-- 全点に数値ラベルは付けない（`end_values` で終端だけ）。
+- **A single axis only.** There is deliberately no API for overlaying two quantities with
+  different scales (e.g., counts and dollars) on one chart. Either place two charts
+  side-by-side or normalize to a common index.
+- Not every point gets a value label (only the endpoint, via `end_values`).
 
-## pie — 円 / ドーナツ
+## pie
 
 ```python
-d.pie(x, y, size, items,        # items: [(ラベル, 数値), …]。size は直径（インチ）
+d.pie(x, y, size, items,        # items: [(label, value), …]. size is the diameter (inches)
       donut=True,
-      unit="",                   # 付けると凡例が「名前 62件（62%）」形式になる
-      legend_w=2.4,              # 右側の凡例の幅
-      bg="#FFFFFF")              # ドーナツの穴と切れ目の色。白背景以外では合わせる
+      unit="",                   # when set, the legend reads "Name 62 (62%)"
+      legend_w=2.4,              # width of the legend on the right
+      bg="#FFFFFF")              # color of the donut hole and gap; match if not on a white background
 ```
 
-- Slides API には角度を指定できる扇形が無いため、円の部分だけ SVG を PNG に
-  焼いて貼る（cairosvg か rsvg-convert が必要。アイコンと同じ経路）。
-  `--dry-run` では同じ大きさの円形プレースホルダに置き換えて座標だけ検査する。
-- 凡例は右側に図形で描くので文字の検査は通常どおり効く。
-- 12 時から時計回りに、**渡した順**で描く（勝手に並べ替えない）。
-- 系列が 7 つ以上なら警告が出る。「その他」に畳むか棒グラフへ。
+- Since the Slides API has no way to specify an angled sector, only the circular part is
+  rendered as SVG baked to PNG and pasted in (requires cairosvg or rsvg-convert — the same
+  path as icons). `--dry-run` substitutes an equal-sized circular placeholder and checks only
+  the coordinates.
+- The legend is drawn as shapes on the right, so text checking works as usual.
+- Drawn clockwise from 12 o'clock, **in the order passed in** (never reordered automatically).
+- A warning fires if there are 7 or more series. Fold into "Other" or switch to a bar chart.
 
-## pareto — パレート図
+## pareto
 
 ```python
-d.pareto(x, y, w, h, items,     # items: [(ラベル, 数値), …]。正の数のみ
-         unit="",                # 棒の中の実数値ラベルに付く（"件" 等）
-         threshold=80,           # 累積 % の基準線。0 で非表示
-         axis_w=0.6)             # 目盛り列の幅
+d.pareto(x, y, w, h, items,     # items: [(label, value), …]. Positive numbers only
+         unit="",                # attached to the raw-value label inside each bar ("items", etc.)
+         threshold=80,           # cumulative-% reference line. 0 to hide
+         axis_w=0.6)             # tick-label column width
 ```
 
-- **値の大きい順に自動で並べ替える**（パレート図の定義。渡した順は保たない）。
-  ラベルが「その他」/「other」の項目だけは、大きさに関係なく末尾に置く。
-- 二重軸は作れない規約に合わせ、棒＝構成比（%）・線＝累積構成比（%）を
-  **同じ 0〜100% の軸**に載せる。実数値は棒の中に、累積 % は点の上にラベルする。
-- 項目は 3〜10 個。超える分は「その他」に畳んでから渡す（`ValueError`）。
-- 課題の優先順位付け（どの要因から潰すか）に使う。構成比を見せたいだけなら
-  `pie` か `vbars`。
+- **Automatically sorted in descending order of value** (the definition of a Pareto chart;
+  the input order is not preserved). Only items labeled "その他"/"other" are placed last
+  regardless of magnitude.
+- In keeping with the no-dual-axis rule, bars = composition (%) and the line = cumulative
+  composition (%) both sit on **the same 0–100% axis**. Raw values are labeled inside the
+  bars, cumulative % is labeled above the points.
+- 3–10 items. Fold anything beyond that into "Other" before passing it in (`ValueError`
+  otherwise).
+- Used for prioritizing issues (which factor to tackle first). If you only want to show
+  composition, use `pie` or `vbars`.
 
 ```json
 { "type": "pareto", "x": 0.7, "y": 1.05, "w": 8.6, "h": 3.0,
-  "items": [["入力ミス", 42], ["仕様不明", 31], ["連携エラー", 12],
-            ["その他", 15]], "unit": "件" }
+  "items": [["Input errors", 42], ["Unclear spec", 31], ["Integration errors", 12],
+            ["Other", 15]], "unit": "cases" }
 ```
 
-## デッキ仕様（JSON）から使う
+## Using it from a deck spec (JSON)
 
 ```json
-{ "layout": "TITLE_ONLY", "title": "アクションタイトル",
+{ "layout": "TITLE_ONLY", "title": "Action-oriented title",
   "figures": [
     { "type": "table", "x": 0.5, "y": 1.2, "w": 9.0,
-      "headers": ["項目", "従来", "提案"],
-      "rows": [["構築期間", "6ヶ月", "2ヶ月"]],
+      "headers": ["Item", "Before", "Proposed"],
+      "rows": [["Build time", "6 months", "2 months"]],
       "colWidths": [1.4, 2, 2], "rowH": 0.5 },
     { "type": "vbars", "x": 1.2, "y": 1.3, "w": 5.4, "h": 3.4,
       "items": [["2023", 120], ["2024", 210], ["2025", 380]] },
     { "type": "vbars_grouped", "x": 0.7, "y": 1.25, "w": 8.6, "h": 3.5,
       "categories": ["Q1", "Q2"],
-      "series": [["従来", [40, 42]], ["提案", [18, 12]]], "unit": "h" },
+      "series": [["Before", [40, 42]], ["Proposed", [18, 12]]], "unit": "h" },
     { "type": "linechart", "x": 0.6, "y": 1.25, "w": 8.8, "h": 3.5,
-      "labels": ["1月", "2月", "3月"],
+      "labels": ["Jan", "Feb", "Mar"],
       "series": [["p95", [320, 240, 90]]], "unit": "ms", "endValues": true },
     { "type": "pie", "x": 1.2, "y": 1.35, "size": 3.2,
-      "items": [["移行済み", 62], ["移行中", 23], ["未着手", 15]] }
+      "items": [["Migrated", 62], ["In progress", 23], ["Not started", 15]] }
   ] }
 ```
 
-キーは snake_case でも camelCase でもよい（`colWidths` → `col_widths`）。
+Keys can be either snake_case or camelCase (`colWidths` → `col_widths`).
 
-## 落とし穴
+## Pitfalls
 
-- **表の実高は伸びる。** `row_h` は最小値。下に別の部品を置くときは戻り値の
-  下端 y に余裕を足すか、セルの文字量を `--dry-run` の検査で先に潰す。
-- **`row_h` を下げても行は縮まない。** Slides のテーブル行にはフォントに応じた
-  最小内寸がある（実測で size 9 → 約 0.34in、size 10 → 約 0.36in）。行数の多い表を
-  `row_h` を小さくして 1 枚に収めようとしても効かないので、**スライドを分ける**こと。
-- **表の下端はページの端ではなくフッター帯で止まる。** マスターがロゴと © 表記を
-  敷いている帯（scalar-2026 では y=5.20in 以下）に表が入ると、ロゴが読めなくなる。
-  `--dry-run` は行数から高さを見積もり（`min_table_row_h`）、この帯に重なる表を
-  **エラーで止める**。目安として **1 枚 10 行前後が上限**。
-  全面の白い矩形でフッターを覆うレイアウト（`*_PRESENTATION` 系）はこの検査から外れる。
-- **円グラフは画像なので生成後に Slides 上で編集できない。** 数値を直したい
-  ときは仕様を直して作り直す（このスキルの流儀どおり）。
-- **`vbars` の `h` には数値ラベル（0.24in）とカテゴリラベル（0.30in）が
-  含まれる。** プロット部だけの高さではない。h < 0.94 だとエラーになる。
-- 折れ線の目盛り幅（`axis_w`）は目盛り文字列から自動で広がるが、その分
-  プロットが狭くなる。桁の大きい値は `unit` で単位を外に出して桁を減らす
-  （例: 12,000ms → 12s、3,400万円 → 単位を「百万円」に）。
+- **A table's actual height grows.** `row_h` is a minimum. When placing another part below
+  it, either add margin to the returned bottom-edge y, or use `--dry-run`'s check to trim
+  cell text volume beforehand.
+- **Lowering `row_h` does not shrink rows.** Slides table rows have a minimum inner height
+  tied to the font (measured: size 9 → ~0.34in, size 10 → ~0.36in). Trying to fit a
+  many-row table onto one slide by lowering `row_h` doesn't work, so **split across
+  slides** instead.
+- **A table's bottom edge stops at the footer band, not the page edge.** If a table extends
+  into the band where the master places the logo and © notice (y=5.20in and below on
+  scalar-2026), the logo becomes unreadable. `--dry-run` estimates height from row count
+  (`min_table_row_h`) and **errors out** on tables that overlap this band. As a rule of
+  thumb, **around 10 rows per slide is the ceiling**. Layouts that cover the footer with a
+  full-page white rectangle (the `*_PRESENTATION` family) are exempt from this check.
+- **A pie chart is an image, so it cannot be edited in Slides after generation.** To change a
+  value, edit the spec and regenerate (per this skill's convention).
+- **`vbars`'s `h` includes the value label (0.24in) and the category label (0.30in).** It is
+  not just the plot area's height. `h < 0.94` raises an error.
+- A line chart's tick-label width (`axis_w`) automatically widens based on the tick strings,
+  which narrows the plot area accordingly. For large-magnitude values, move the unit out via
+  `unit` to cut digits (e.g., 12,000ms → 12s, ¥34,000,000 → use "millions of yen" as the
+  unit).

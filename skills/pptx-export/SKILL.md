@@ -14,6 +14,8 @@ description: >-
   Google Slides deck via slide-qa, before export), and non-Slides sources.
 ---
 
+*[日本語](SKILL.ja.md)*
+
 # PPTX Export for Generated Decks
 
 ## Important
@@ -29,9 +31,10 @@ description: >-
 - **Run every command from the slide-forge root as cwd** — `${CLAUDE_PLUGIN_ROOT}`
   when running from an installed plugin, `/path/to/slide-forge` on a
   local clone. Auth and the venv are shared at the repo root (`config/`, `.venv`).
-- **Whether to export PPTX is settled at generation time** via the 出力形式
-  question in intake (`references/interactive-intake.md` §2); the default is
-  Google Slides only. Standalone runs on an existing deck URL need no intake.
+- **Whether to export PPTX is settled at generation time** via the output
+  format question in intake (`references/interactive-intake.md` §2); the
+  default is Google Slides only. Standalone runs on an existing deck URL need
+  no intake.
 - **From-scratch PPTX authoring is a different job.** When the user wants a
   PPTX built or edited directly (no Google Slides involved), hand off to
   `document-skills:pptx` instead of this skill.
@@ -40,9 +43,9 @@ description: >-
 
 | Task | Command |
 |------|---------|
-| Export (saves to `out/pptx/<デッキ名>.pptx`) | `.venv/bin/python scripts/export_pptx.py <URL or ID>` |
+| Export (saves to `out/pptx/<deck name>.pptx`) | `.venv/bin/python scripts/export_pptx.py <URL or ID>` |
 | Export to an explicit path | `--out path/to/deck.pptx` |
-| Also archive in the deck's Drive folder | `--folder <Drive フォルダ URL/ID>` |
+| Also archive in the deck's Drive folder | `--folder <Drive folder URL/ID>` |
 
 Decks over the 10MB `files.export` limit fall back to `exportLinks`
 automatically — no flag needed.
@@ -68,7 +71,7 @@ The export is Google's own converter, so layout and geometry carry over
 exactly — but the file opens in PowerPoint, a different rendering engine:
 
 - **Fonts must exist on the viewer's machine.** Decks styled with Google
-  Fonts (Noto Sans JP など) fall back to a substitute font if not installed
+  Fonts (Noto Sans JP, etc.) fall back to a substitute font if not installed
   locally, which can shift line breaks. Mention the deck's font when it is
   not a system font.
 - **Google-specific features degrade**: linked Sheets charts become static

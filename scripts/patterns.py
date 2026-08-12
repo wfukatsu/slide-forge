@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""ビジネスフレームワーク図（`diagrams.Canvas` に混ぜて使うミックスイン）。
+"""Business framework diagrams (a mixin meant to be mixed into `diagrams.Canvas`).
 
-新規事業提案・企画稟議のデッキで定番の「型」を部品にしたもの。
-`illustrations` が一般的な比喩図（ピラミッド・氷山…）を担うのに対し、
-こちらはビジネスフレームワークそのものの形を描く。
+Turns the standard "shapes" seen in new-business proposal and internal
+approval decks into reusable parts. Where `illustrations` handles generic
+metaphorical diagrams (pyramids, icebergs, ...), this module draws the
+shapes of business frameworks themselves.
 
     d = Canvas(deck, slide_id, template)
     d.posmap(0.6, 1.2, 6.0, 3.6, [("A社", 0.8, 0.2), ("自社", 0.8, 0.9)],
@@ -19,8 +20,9 @@
     d.testimonial(0.6, 1.2, 8.6, 2.4, "コスト削減につながりそう", "田中 一郎",
                   role="株式会社○○ 情報システム部長")
 
-すべての図は他の部品と同じ積み上げ規約に従い、**描画領域の下端 y を返す**。
-座標はインチ。描いたら `audit_*` の自己点検を必ず通すこと。
+Every diagram follows the same stacking convention as the other parts:
+**it returns the y-coordinate of the bottom edge of the drawn area.**
+Coordinates are in inches. After drawing, always run the `audit_*` self-checks.
 """
 from __future__ import annotations
 
@@ -71,7 +73,7 @@ register({
         "fishbone: カテゴリ「{name}」には原因が最低 1 個必要です",
 })
 
-# lean_canvas のブロック定義。(キー, 見出し) を標準のリーンキャンバスの並びで持つ
+# Block definitions for lean_canvas. Holds (key, heading) pairs in the standard Lean Canvas order
 LEAN_CANVAS_KEYS = {
     "problem": "課題",
     "solution": "解決策",
@@ -86,12 +88,12 @@ LEAN_CANVAS_KEYS = {
 
 
 def _card_band_h(h: float) -> float:
-    """3 段カードの上下帯の高さ。カード本体と接続線の両方がこれを使う。"""
+    """Height of the top/bottom band in a 3-tier card. Used by both the card body and the connector line."""
     return min(0.15, h * 0.26)
 
 
 def _node(tree):
-    """orgchart のノードを (ラベル, [子…]) に正規化する。JSON 由来のリストも受ける。"""
+    """Normalize an orgchart node to (label, [children...]). Also accepts lists that come from JSON."""
     if isinstance(tree, str):
         return tree, []
     if isinstance(tree, dict):
@@ -111,25 +113,29 @@ def _depth(tree) -> int:
 
 
 class PatternMixin:
-    """`Canvas` にビジネスフレームワーク図を足すミックスイン。"""
+    """Mixin that adds business framework diagrams to `Canvas`."""
 
-    # ---- ポジショニングマップ ----
+    # ---- Positioning map ----
 
     def posmap(self, x, y, w, h, points, *, x_axis=("低", "高"),
                y_axis=("低", "高"), highlight=None, highlight_color=None,
                size=10, bubble=0.72) -> float:
-        """ポジショニングマップ（2 軸上の位置関係）。戻り値は下端 y。
+        """Positioning map (position relative to two axes). Returns the y-coordinate
+        of the bottom edge.
 
-        points は (ラベル, px, py)。px / py は 0〜1 の相対座標で、
-        0 が左・下、1 が右・上。x_axis / y_axis は軸の両端ラベル (低い側, 高い側)。
-        highlight に挙げたラベル（例「自社」）だけ強調色で塗る。
+        points are (label, px, py). px / py are relative coordinates in 0-1,
+        with 0 at left/bottom and 1 at right/top. x_axis / y_axis are the labels
+        for the two ends of each axis (low side, high side).
+        Only the label(s) listed in highlight (e.g. "自社") get filled with the accent color.
 
-        `matrix()` が「4 象限への分類」を見せるのに対し、こちらは競合との
-        「位置関係」を見せる。象限に名前を付けたいだけなら matrix() を使うこと。
+        Where `matrix()` shows "classification into 4 quadrants", this shows the
+        "positional relationship" against competitors. If you just want to name
+        the quadrants, use matrix() instead.
         """
-        cap_h = 0.30                       # 上下の軸端ラベルの高さ
-        # 左右の軸端ラベルは箱に入れる。幅は長いほうのラベルが 1 行で入る分を
-        # 確保する（固定幅だと「8 字＋1 字」のような折り返しになりやすい）
+        cap_h = 0.30                       # Height of the top/bottom axis-end labels
+        # Left/right axis-end labels are placed in boxes. The width reserved is
+        # whatever fits the longer label on one line (a fixed width tends to wrap
+        # awkwardly, e.g. "8 chars + 1 char")
         need = max(self._em(str(t)) for t in x_axis) \
             * (size - 1) / 72.0 * 1.1 + 0.34
         side_w = min(max(1.0, need), w * 0.30)
@@ -146,7 +152,8 @@ class PatternMixin:
                   end_arrow="FILL_ARROW", start_arrow="FILL_ARROW", free=True)
         self.line(gx, cy, gx + gw, cy, color=ax, weight=1.5,
                   end_arrow="FILL_ARROW", start_arrow="FILL_ARROW", free=True)
-        # 軸端ラベル。上下はプロットの外、左右は軸の延長線上に白い箱で置く
+        # Axis-end labels. Top/bottom sit outside the plot area; left/right sit
+        # as white boxes on the extension of the axis line
         self.label(gx, y, gw, cap_h - 0.04, y_axis[1], size=size, bold=True,
                    align="CENTER", valign="BOTTOM", color=self.P.text)
         self.label(gx, gy + gh + 0.04, gw, cap_h - 0.04, y_axis[0], size=size,
@@ -177,25 +184,26 @@ class PatternMixin:
                        line_spacing=100)
         return y + h
 
-    # ---- ガントチャート ----
+    # ---- Gantt chart ----
 
     def gantt(self, x, y, w, h, columns, rows, *, label_w=None, size=10,
               colors=None, zebra=True) -> float:
-        """ガントチャート（線表）。戻り値は下端 y。
+        """Gantt chart (schedule bar chart). Returns the y-coordinate of the bottom edge.
 
-        columns は期間の見出し（例 ["4月", "5月", "6月"]）。rows は
-        (行ラベル, 開始, 終了) か (行ラベル, 開始, 終了, バーのラベル)。
-        開始・終了は列単位の小数で、0 が最初の列の左端、len(columns) が右端。
-        **開始 == 終了 の行はマイルストーン（◆）**として描く。
+        columns are the period headings (e.g. ["4月", "5月", "6月"]). rows are
+        (row label, start, end) or (row label, start, end, bar label).
+        start/end are fractional column units, where 0 is the left edge of the
+        first column and len(columns) is the right edge.
+        **A row where start == end is drawn as a milestone (◆).**
 
-        バーの重なりや依存関係の矢印は表現しない。細かい依存を見せたい図は
-        表（table）で書くほうが編集もしやすい。
+        Bar overlaps and dependency arrows are not represented. If you need to
+        show fine-grained dependencies, a table is easier to draw and edit.
         """
         ncols = len(columns)
         lw = label_w if label_w is not None else min(1.8, w * 0.20)
         head_h = 0.34
         track_x, track_w = x + lw, w - lw
-        cu = track_w / ncols               # 1 列ぶんの幅
+        cu = track_w / ncols               # width of one column
         row_h = (h - head_h) / len(rows)
         body_y = y + head_h
 
@@ -231,18 +239,21 @@ class PatternMixin:
                        align="START", valign="MIDDLE", color=self.P.text)
             c = (colors[i] if isinstance(colors, (list, tuple)) else colors) \
                 or self.P.primary
-            if end - start < 1e-9:         # マイルストーン
+            if end - start < 1e-9:         # milestone
                 ms = 0.20
                 self.shape(track_x + start * cu - ms / 2, cyy - ms / 2, ms, ms,
                            kind="DIAMOND", fill=darken(c, 0.15), stroke=None)
                 if caption:
-                    # 右端のマイルストーンは、右に書くと枠からも最終列の線からも
-                    # はみ出す。入らなければ左へ回す。どちらに置いても列の線と
-                    # 重なりうるので、行の地の色で下地を敷いて線を隠す
+                    # A milestone at the right edge would overflow both the frame
+                    # and the last column's line if written to the right. Flip it
+                    # to the left when it doesn't fit. Either placement can overlap
+                    # a column line, so paint the row's background color underneath
+                    # to hide the line
                     cs = size - 1
                     mx = track_x + start * cu
-                    # 枠の左右インセット(0.10×2)を足さないと、字の実寸ちょうどの
-                    # 枠になって折り返す。太字ぶんの 1.1 倍はバー内ラベルと同じ
+                    # Without adding the box's left/right inset (0.10 x 2), the box
+                    # would be exactly the text's raw width and wrap. The 1.1x
+                    # bold-text margin matches the in-bar label
                     need = self._em(caption) * cs / 72.0 * 1.1 + 0.24
                     room = (track_x + track_w) - (mx + ms / 2 + 0.06)
                     bg = self.P.surfaceAlt if (zebra and i % 2) else self.P.page
@@ -261,7 +272,7 @@ class PatternMixin:
                        fill=c, stroke=None)
             if caption:
                 need = self._em(caption) * (size - 1) / 72.0 * 1.1 + 0.16
-                if need <= bw:             # 入るならバーの中、無理なら右隣
+                if need <= bw:             # fits inside the bar if possible, otherwise place to the right
                     self.label(bx, cyy - 0.13, bw, 0.26, caption, size=size - 1,
                                align="CENTER", valign="MIDDLE",
                                color=readable_on(c))
@@ -272,18 +283,19 @@ class PatternMixin:
                                color=self.P.muted)
         return y + h
 
-    # ---- 体制図・組織図 ----
+    # ---- Org chart ----
 
     def orgchart(self, x, y, w, h, tree, *, size=10, node_h=None,
                  root_fill=None) -> float:
-        """体制図（トップダウンの木）。戻り値は下端 y。
+        """Org chart (top-down tree). Returns the y-coordinate of the bottom edge.
 
-        tree は (ラベル, [子…])。子は同じ形の入れ子・文字列・
-        {"label": …, "children": […]} のいずれでもよい。ラベルを
-        「役割\\n氏名」のように 2 行にすると典型的な体制図の見た目になる。
+        tree is (label, [children...]). Children may be the same nested form,
+        a string, or {"label": ..., "children": [...]}. Making the label two
+        lines like "role\\nname" gives the typical org-chart look.
 
-        列の幅は葉の数で自動配分する。深さ 4 以上や葉が 8 を超える木は
-        文字が潰れるので、部門ごとに orgchart を並べて分割すること。
+        Column width is auto-allocated by leaf count. Trees with depth >= 4 or
+        more than 8 leaves will have crushed text, so split them by placing
+        multiple orgchart calls side by side per department.
         """
         label, _ = _node(tree)
         depth = _depth(tree)
@@ -331,18 +343,18 @@ class PatternMixin:
         place(tree, x, y, True)
         return y + h
 
-    # ---- リーンキャンバス ----
+    # ---- Lean Canvas ----
 
     def lean_canvas(self, x, y, w, h, blocks, *, size=9, title_size=9.5) -> float:
-        """リーンキャンバス（9 ブロック）。戻り値は下端 y。
+        """Lean Canvas (9 blocks). Returns the y-coordinate of the bottom edge.
 
-        blocks はキー → 内容（文字列か文字列のリスト）の辞書。キーは
+        blocks is a dict of key -> content (a string or list of strings). Keys are
         problem / solution / key_metrics / uvp / advantage / channels /
-        segments / cost / revenue（`LEAN_CANVAS_KEYS` 参照）。
-        無いキーのブロックは枠だけ描く。
+        segments / cost / revenue (see `LEAN_CANVAS_KEYS`).
+        Blocks whose key is missing are drawn as an empty frame only.
 
-        9 ブロックすべてに長文を入れると必ず溢れる。各ブロック 2〜3 項目・
-        1 項目 15 文字程度までに要約してから渡すこと。
+        Putting long text in all 9 blocks will always overflow. Summarize each
+        block to 2-3 items, each around 15 characters or fewer, before passing it in.
         """
         unknown = set(blocks) - set(LEAN_CANVAS_KEYS)
         if unknown:
@@ -356,7 +368,7 @@ class PatternMixin:
         half = (top_h - g) / 2
         bot_y = y + top_h + g
         col = [x + i * (cw + g) for i in range(5)]
-        cells = {                          # キー → (x, y, w, h)
+        cells = {                          # key -> (x, y, w, h)
             "problem":     (col[0], y, cw, top_h),
             "solution":    (col[1], y, cw, half),
             "key_metrics": (col[1], y + half + g, cw, half),
@@ -386,29 +398,31 @@ class PatternMixin:
                        line_spacing=118)
         return y + h
 
-    # ---- 入れ子の円（TAM / SAM / SOM） ----
+    # ---- Nested circles (TAM / SAM / SOM) ----
 
     def nested_circles(self, x, y, w, h, rings, *, size=10, colors=None) -> float:
-        """入れ子の円で全体と部分の規模感を見せる（TAM / SAM / SOM など）。
-        戻り値は下端 y。
+        """Nested circles that show whole-vs-part scale (TAM / SAM / SOM, etc.).
+        Returns the y-coordinate of the bottom edge.
 
-        rings は**外側から**順に (ラベル, 値の表示) か文字列。円は下端を
-        揃えて重ね、右側にラベルを引き出す。値は出典のある数値にだけ使うこと。
+        rings are, **from the outside in**, (label, value display) or a string.
+        Circles are stacked with aligned bottom edges, with labels drawn out to
+        the right. Only use values that have a cited source.
         """
         n = len(rings)
         if n < 2:
             raise ValueError(t("nested_circles needs at least 2 rings"))
         d0 = min(h, w * 0.52)
         ccx = x + d0 / 2
-        base = y + (h + d0) / 2            # 円の下端（縦中央に配置）
+        base = y + (h + d0) / 2            # bottom edge of the circle (vertically centered)
         cols = colors or [lighten(self.P.primary, 0.82 - 0.62 * i / (n - 1))
                           for i in range(n)]
         lab_x = ccx + d0 / 2 + 0.35
         lab_w = x + w - lab_x
         if lab_w < 1.2:
             raise ValueError(t("w={w} leaves no room for the labels", w=w))
-        # ラベルは行間を広めに取る。詰めると「値」と次のリングの「名前」が
-        # ひとかたまりに見え、どの円の値か読み違える
+        # Give the labels generous line spacing. Cramming them together makes
+        # the "value" and the next ring's "name" look like one block, causing
+        # the value's owning circle to be misread
         lab_h = 0.52
         row_gap = max(0.24, (h - lab_h * n) / max(n - 1, 1) - lab_h * 0.4)
         row_gap = min(row_gap, 0.55)
@@ -418,7 +432,8 @@ class PatternMixin:
             d = d0 * (n - i) / n
             self.shape(ccx - d / 2, base - d, d, d, kind="ELLIPSE",
                        fill=cols[i], stroke=self.P.white, stroke_weight=1.5)
-            # 引き出し線の起点は、そのリングだけが見えている頂部の帯の中心
+            # The leader line starts at the center of the top band that's
+            # visible only for that ring
             d_in = d0 * (n - i - 1) / n
             ay = base - d + (d - d_in) / 4
             ly = y + (h - lab_h * n - row_gap * (n - 1)) / 2 \
@@ -433,15 +448,17 @@ class PatternMixin:
                            valign="TOP", color=darken(cols[i], 0.35))
         return y + h
 
-    # ---- 顧客・キーマンの声 ----
+    # ---- Customer / key-person testimonial ----
 
     def testimonial(self, x, y, w, h, quote, name, *, role=None, points=None,
                     icon="person", size=10, quote_size=13) -> float:
-        """引用カード（顧客の生の声・社内キーマンのコメント）。戻り値は下端 y。
+        """Quote card (verbatim customer voice / internal key-person comment).
+        Returns the y-coordinate of the bottom edge.
 
-        左に人物ピクトグラムと氏名・肩書、右に引用文。points を渡すと
-        引用の下に箇条書きの補足を置く。**引用は実在の発言にだけ使うこと**
-        （デザイン部品が発言をでっち上げてよい理由にはならない）。
+        A person pictogram plus name/title on the left, the quote on the right.
+        Passing points adds bullet-point supplementary notes below the quote.
+        **Only use quotes from real, actual statements**
+        (being a design component is not a license to fabricate a quote).
         """
         self.shape(x, y, w, h, kind="RECTANGLE", fill=self.P.surfaceAlt,
                    stroke=self.P.border)
@@ -475,12 +492,12 @@ class PatternMixin:
                        line_spacing=122)
         return y + h
 
-    # ---- アカウントグラフ（インフルーエンス / ディスカバリー） ----
+    # ---- Account graph (influence / discovery) ----
 
     def _account_card(self, x, y, w, h, *, band_text, body_text, foot_text,
                       body_fill, band_fill, foot_fill, band_color, foot_color,
                       size, dashed=False, band_right=False):
-        """帯・本文・帯の 3 段カード。draw.io 版と同じ見た目をスライドで作る。"""
+        """Band-body-band 3-tier card. Reproduces the same look as the draw.io version on a slide."""
         bh = _card_band_h(h)
         stroke = lighten(self.P.text, 0.55 if not dashed else 0.72)
         dash = "DASH" if dashed else "SOLID"
@@ -499,17 +516,21 @@ class PatternMixin:
 
     def influence_graph(self, x, y, w, h, people, *, links=None, size=9,
                         more=None) -> float:
-        """購買関与者を組織構造で並べたインフルーエンスマップ。戻り値は下端 y。
+        """Influence map that arranges buying-committee members in an org structure.
+        Returns the y-coordinate of the bottom edge.
 
-        `people` は `(id, roles, org, name, influence, stance, met, reportsTo)`
-        を持つ辞書のリスト（`scripts/account_graph.py` と同じ形）。役割は上帯、
-        影響度は下帯、立場は本文の塗り、未面談は破線で表す。
+        `people` is a list of dicts with `(id, roles, org, name, influence, stance,
+        met, reportsTo)` (same shape as `scripts/account_graph.py`). Role goes in
+        the top band, influence in the bottom band, stance is shown as the body
+        fill color, and not-yet-met is shown with a dashed border.
 
-        塗りはブランド色ではなくセマンティックパレットを使う: 親密は success、
-        反発は danger、中立は surfaceAlt。テンプレートの配色に自動で馴染む。
+        Fills use the semantic palette rather than brand colors: close is success,
+        opposed is danger, neutral is surfaceAlt. This automatically fits the
+        template's color scheme.
 
-        人数が多いときは `account_graph.extract()` で間引き、`more` に
-        「他 N 名は draw.io 版参照」を渡すこと。全員を 1 枚に詰めない。
+        When there are many people, thin them with `account_graph.extract()` and
+        pass "N more: see the draw.io version" to `more`. Don't cram everyone
+        onto one slide.
         """
         if not people:
             raise ValueError(t("influence_graph needs at least 1 person"))
@@ -565,8 +586,10 @@ class PatternMixin:
                 size=size, dashed=not p.get("met", True))
             if not kids[nid]:
                 return
-            # 下帯は部分幅。外枠の下端から線を出すと帯の横の空白から生えるので、
-            # 全幅で描かれている本文ボックスの下端に付ける
+            # The bottom band is partial width. Drawing the line from the outer
+            # frame's bottom edge would make it sprout from the band's side
+            # padding, so attach it to the bottom edge of the body box, which is
+            # drawn full width
             body_bottom = top + ch - _card_band_h(ch)
             bus = top + ch + (level_h - ch) / 2
             self.line(cx, body_bottom, cx, bus, color=self.P.border, weight=1.2,
@@ -594,20 +617,25 @@ class PatternMixin:
                 continue
             (ax, ay, aw), (bx, by, bw) = centers[a], centers[b]
             if abs(ay - by) > 0.01:
-                # 段をまたぐ線は他のカードの上を通ってしまう。黙って歪めるより
-                # 止めて、reportsTo で表すか同じ段の 2 人に絞らせる。
+                # A line crossing levels would run across the top of other cards.
+                # Rather than silently distorting it, stop and require it to be
+                # expressed via reportsTo, or restrict it to two people at the
+                # same level.
                 raise ValueError(t(
                     "links join people on different levels ({a} / {b}); a link "
                     "line can only run along one level. Use reportsTo for a "
                     "reporting line, or note the relationship in the kicker",
                     a=a, b=b))
-            # 余白はカード幅から出す。固定値だと隣り合うカードで線長が負になり、
-            # エラーにならないまま線が消える
+            # Derive the margin from the card width. A fixed value would make
+            # the line length negative for adjacent cards, causing the line to
+            # silently disappear without an error
             (lx, lw), (rx, rw) = ((ax, aw), (bx, bw)) if ax < bx else ((bx, bw), (ax, aw))
             x1, x2 = lx + lw / 2 + 0.04, rx - rw / 2 - 0.04
             if x2 - x1 <= 0.06:
-                # 隣り合うカードの間には線を引く幅がない。黙って捨てると関係が
-                # 無かったことになるので、示唆に回すよう促して止める。
+                # There's no width to draw a line between adjacent cards.
+                # Silently dropping it would make the relationship look like it
+                # never existed, so stop and prompt the caller to move it into
+                # the kicker instead.
                 raise ValueError(t(
                     "{a} and {b} sit side by side, leaving no room for a link "
                     "line. Put the relationship in the kicker, or keep it only "
@@ -621,14 +649,17 @@ class PatternMixin:
 
     def outcome_tree(self, x, y, w, h, nodes, *, edges=None, size=9,
                      more=None) -> float:
-        """Goal / Strategy / Tactics を支持関係で結んだ図。戻り値は下端 y。
+        """A diagram connecting Goal / Strategy / Tactics by support relationships.
+        Returns the y-coordinate of the bottom edge.
 
-        `nodes` は `(id, tier, text, owner)` の辞書、`edges` は
-        `{"from": 支える側, "to": 支えられる側}`。1 つの Tactics が複数の
-        Strategy を支える多親構造を取れる。
+        `nodes` are dicts of `(id, tier, text, owner)`, `edges` are
+        `{"from": the supporting side, "to": the supported side}`. A multi-parent
+        structure is allowed, where one Tactics item supports multiple Strategy
+        items.
 
-        **段は tier ではなくグラフの深さで決まる。** 上位目標を支える下位目標も
-        tier は goal だが、段は 1 つ下に来る。tier はバッジの色だけを決める。
+        **The row is determined by graph depth, not tier.** A sub-goal that
+        supports a higher-level goal still has tier "goal", but its row is one
+        level lower. tier only determines the badge color.
         """
         if not nodes:
             raise ValueError(t("outcome_tree needs at least 1 node"))
@@ -660,8 +691,9 @@ class PatternMixin:
         gap_y = 0.30
         ch = min(0.72, (h - note_h - gap_y * (len(rows) - 1)) / len(rows))
         level_h = (h - note_h - ch) / max(len(rows) - 1, 1)
-        # 3 段が一目で分かれる必要がある。primary と info はどちらも青系の
-        # テンプレートが多く、隣り合わせると区別できないので使い分けない。
+        # The three tiers need to be visually distinguishable at a glance. Since
+        # primary and info are both blue-ish in many templates, they'd be hard
+        # to tell apart side by side, so they aren't used together here.
         tier_fill = {"goal": lighten(self.P.primary, 0.68),
                      "strategy": lighten(self.P.warning, 0.42),
                      "tactics": lighten(self.P.text, 0.86)}
@@ -694,11 +726,13 @@ class PatternMixin:
                 continue
             fx, fy = pos[e["from"]]
             tx, ty = pos[e["to"]]
-            # 終点は本文ボックスの下端。外枠の下端はオーナー帯の幅しかなく、
-            # 中央に矢印を落とすと帯の横の空白に着地する
+            # The endpoint is the bottom edge of the body box. The outer frame's
+            # bottom edge only spans the owner-band width, so dropping the
+            # arrow at the center would land it in the band's side padding
             end = ty + ch - _card_band_h(ch)
-            # 斜めに引くと、終点へ近づく途中でオーナー帯の上を横切る。段の間で
-            # 折る直交ルーティングにして、縦に入って縦に出る形にする
+            # A diagonal line would cross over the owner band on its way to the
+            # endpoint. Use orthogonal routing that bends between rows, entering
+            # and exiting vertically instead
             bus = (fy + end) / 2
             self.line(fx, fy, fx, bus, color=self.P.border, weight=1.2, free=True)
             if abs(tx - fx) > 0.02:
@@ -711,21 +745,24 @@ class PatternMixin:
                        color=self.P.muted, align="START", valign="MIDDLE")
         return y + h
 
-    # ---- 特性要因図（フィッシュボーン） ----
+    # ---- Cause-and-effect diagram (fishbone) ----
 
     def fishbone(self, x, y, w, h, problem, categories, *, size=9,
                  head_w=None) -> float:
-        """特性要因図（フィッシュボーン）。戻り値は下端 y。
+        """Cause-and-effect diagram (fishbone). Returns the y-coordinate of the bottom edge.
 
-        `problem` は右端の頭（特性）、`categories` は `(カテゴリ名, [原因…])`
-        のリスト。上下交互（0,2,4… が上段、1,3,5… が下段）に大骨を配る。
-        カテゴリは 2〜6 個、原因は 1 カテゴリ 4 個まで。溢れる分は事前に
-        統合してから渡すこと（フィッシュボーンは網羅の証明図ではなく、
-        原因の当たりを付ける図）。
+        `problem` is the head at the right end (the effect), `categories` is a
+        list of `(category name, [causes...])`. Main bones alternate top and
+        bottom (0, 2, 4... on top, 1, 3, 5... on bottom).
+        Categories must be 2-6, and causes at most 4 per category. Merge
+        anything that overflows before passing it in (a fishbone diagram isn't
+        meant to prove exhaustive coverage — it's meant to narrow in on likely
+        causes).
 
-        Slides に斜め文字は置けないので、教科書どおりの斜め小骨には
-        しない。大骨の斜線だけ残し、原因は水平の箇条書きで大骨に沿わせる
-        （読みやすさ優先の簡略形）。
+        Since Slides can't place text at an angle, this doesn't use textbook-style
+        diagonal sub-bones. Only the main bone's diagonal line is kept, and causes
+        are laid out as horizontal bullet points running alongside the main bone
+        (a simplified form that favors readability).
         """
         n = len(categories)
         if not 2 <= n <= 6:
@@ -749,7 +786,7 @@ class PatternMixin:
         cy = y + h / 2
         hw = head_w if head_w is not None else min(1.6, w * 0.18)
         hh = min(0.86, h * 0.30)
-        # 背骨。頭のボックスに刺さる位置まで引く
+        # Spine. Drawn up to the point where it meets the head box
         self.line(x, cy, x + w - hw, cy, color=self.P.primary, weight=2.5,
                   free=True)
         self.shape(x + w - hw, cy - hh / 2, hw, hh, kind="RECTANGLE",
@@ -781,8 +818,9 @@ class PatternMixin:
                 self.shape(bx, by, bw, cat_h, kind="RECTANGLE",
                            fill=self.P.surface, stroke=self.P.border,
                            text=name, size=size, bold=True, color=self.P.text)
-                # 大骨。箱の右端から背骨へ、頭側へ倒して刺す。原因の箇条書きは
-                # 右 0.5in を空けて置く（骨の通り道と文字が交差しないように）
+                # Main bone. Runs from the box's right edge to the spine, angled
+                # toward the head. The cause bullet list leaves 0.5in of space on
+                # the right (so the bone's path doesn't cross the text)
                 sx = bx + bw - 0.15
                 ex = min(bx + bw + 0.35, x + w - hw - 0.1)
                 sy = by + cat_h if row == "top" else by

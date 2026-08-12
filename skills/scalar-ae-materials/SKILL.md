@@ -4,98 +4,112 @@ description: >-
   Build the materials a Scalar Account Executive needs for one customer visit,
   chosen by deal phase and audience: the customer-facing one-pager that opens a
   conversation, the internal visit plan, the WPS win plan that asks for
-  proposal investment, and the Deal Desk / 稟議 packet that asks for internal
-  approval. Use when asked to prepare for a customer meeting or 訪問; to make
-  材料 for a phase-0..6 conversation; to write a 訪問計画, WPS or Deal Desk
-  資料; to get internal resources or approval for a deal; or to produce
-  顧客提示用 / 社内説明用 資料. Files land under 「AE 名 / 顧客名」 in Drive and
-  every run updates the account ledger. Route the standing activity plan to
+  proposal investment, and the Deal Desk / internal-approval packet that asks
+  for internal approval. Use when asked to prepare for a customer meeting or
+  visit; to make materials for a phase-0..6 conversation; to write a visit
+  plan, WPS, or Deal Desk material; to get internal resources or approval for
+  a deal; or to produce customer-facing / internal-explanation materials.
+  Files land under "AE name / customer name" in Drive and every run updates
+  the account ledger. Route the standing activity plan to
   `scalar-account-plan`, the formal proposal to `scalar-proposal-slides`, and
   the stakeholder maps to `b2b-account-maps`.
 ---
 
+*[日本語](SKILL.ja.md)*
+
 # Scalar AE Materials
 
-**同じ商談情報を、一つの資料で全員に見せてはならない。** このスキルの仕事は、
-フェーズ（0〜6）× 相手（顧客 / 社内）× 目的から資料種別を選び、その種別の
-必須要件を満たしたものだけを作ることにある。
+**The same deal information must never be shown to everyone through a single
+document.** This skill's job is to choose the material type from phase
+(0–6) × audience (customer / internal) × purpose, and to build only a
+document that satisfies that type's required content.
 
-作業ディレクトリは slide-forge ルート。コマンドは `.venv/bin/python` で実行する。
+Working directory: the slide-forge root. Run commands with `.venv/bin/python`.
 
-判断の出典は [references/scalar/sales-playbook.md](../../references/scalar/sales-playbook.md)
-（フェーズと移行条件は §2、資料 5 種は §3、品質基準は §4、会議体は §6）。
+The source of truth for these decisions is
+[references/scalar/sales-playbook.md](../../references/scalar/sales-playbook.md)
+(phases and transition conditions in §2, the 5 material types in §3, quality
+standards in §4, meeting bodies in §6).
 
 ## Boundaries
 
-| 依頼 | 行き先 |
+| Request | Where it goes |
 |---|---|
-| 訪問 1 回分の資料一式 | このスキル |
-| 社内の承認・リソース獲得（WPS / Deal Desk / 稟議） | このスキル |
-| 顧客ごとの活動計画（常設・追記型） | `scalar-account-plan` |
-| 年次の Account Planning Session（組織図・商談棚卸しのデッキ） | `scalar-account-planning-session` |
-| 正式提案書・見積 | `scalar-proposal-slides` + `spreadsheets` |
-| 関与者マップ・ディスカバリーマップ | `b2b-account-maps` |
-| Scalar の会社・製品紹介（顧客固有でない） | `scalar-product-slides` |
-| 生成したデッキの目視検査 | `slide-qa` |
+| A full set of materials for one visit | This skill |
+| Internal approval / resource acquisition (WPS / Deal Desk / internal approval) | This skill |
+| Per-customer activity plan (standing, append-only) | `scalar-account-plan` |
+| Annual Account Planning Session (org chart / deal review deck) | `scalar-account-planning-session` |
+| Formal proposal / quotation | `scalar-proposal-slides` + `spreadsheets` |
+| Stakeholder map / discovery map | `b2b-account-maps` |
+| Scalar company/product introduction (not customer-specific) | `scalar-product-slides` |
+| Visual inspection of a generated deck | `slide-qa` |
 
-## Step 1: フェーズと相手を確定する
+## Step 1: Settle the phase and the audience
 
-**台帳を先に読む。** `accounts/<AE 名>/<顧客名>/account.json` があれば、フェーズ・
-関与者・未確認事項はそこにある。無ければ `scalar-account-plan` の手順 1〜2 で作る。
+**Read the ledger first.** If `accounts/<AE name>/<customer name>/account.json`
+exists, the phase, stakeholders, and open items are in it. If it doesn't
+exist, create it with Steps 1–2 of `scalar-account-plan`.
 
 ```bash
 .venv/bin/python scripts/scalar/account_ledger.py validate <account.json>
 .venv/bin/python scripts/scalar/account_ledger.py gaps <account.json>
 ```
 
-台帳から取れない前提だけを、`AskUserQuestion` で 1 回にまとめて聞く
-（`references/interactive-intake.md` §0・§5 の作法に従う）:
+Ask only about premises that cannot be pulled from the ledger, in one batch
+via `AskUserQuestion` (following the conventions in
+`references/interactive-intake.md` §0 and §5):
 
-1. 誰に会うか（役職・部門・初対面か）
-2. この訪問で顧客から得たい一言は何か
-3. 社内で得たいもの（提案投資の承認 / 価格承認 / SA の稼働）があるか
-4. 生成後にビジュアル QA を行うか（既定・推奨は実行する）
+1. Who will you meet (title / department / first time)?
+2. What one statement do you want to get from the customer in this visit?
+3. Is there anything you want internally (approval of proposal investment /
+   price approval / SA staffing)?
+4. Should visual QA run after generation (default and recommended: run)?
 
-## Step 2: 資料種別を選ぶ（ルーティング）
+## Step 2: Choose the material type (routing)
 
-| 相手 / 目的 | フェーズ | 作るもの | 置き場 | 担当 |
+| Audience / purpose | Phase | What to build | Location | Owner |
 |---|---|---|---|---|
-| 社内 / 訪問前の準備 | 全 | `visit-plan` | `90_社内` | このスキル |
-| 顧客 / 対話を始める | 0〜2 | `challenge-hypothesis` ＋ 事例 | `01_顧客提示` | このスキル |
-| 顧客 / 課題を構造化する | 2 | 課題構造図・As-Is 概要・検討論点 | `01_顧客提示` | このスキル |
-| 社内 / 提案投資の判断（WPS） | 2 終了時 | `win-plan` ＋ 3 マップ | `90_社内` | このスキル ＋ `b2b-account-maps` |
-| 顧客 / 実現性を見せる | 3 | デモ資料・To-Be・アーキテクチャ概要 | `01_顧客提示` | `scalar-proposal-slides` |
-| 顧客 / PoC を合意する | 3 | PoC 提案書・実施計画 | `02_顧客提案` | `scalar-proposal-slides` |
-| 社内 / 価格・契約リスクの承認 | 3〜5 | Deal Desk 資料・稟議 | `90_社内` | このスキル |
-| 顧客 / 選定と予算化 | 4 | 正式提案書・見積・ROI | `02_顧客提案` | `scalar-proposal-slides` + `spreadsheets` |
-| 顧客 / 契約手続 | 5 | チェックリスト・SOW・注文書 | `02_顧客提案` | `google-slides-template` |
-| 社内 / 更新・拡張の計画 | 6 | ヘルスレビュー・更新計画 | `90_社内` | `scalar-account-plan` |
+| Internal / pre-visit preparation | All | `visit-plan` | `90_社内` | This skill |
+| Customer / start a conversation | 0–2 | `challenge-hypothesis` + case study | `01_顧客提示` | This skill |
+| Customer / structure the challenge | 2 | Challenge structure diagram, As-Is overview, discussion points | `01_顧客提示` | This skill |
+| Internal / decide on proposal investment (WPS) | End of 2 | `win-plan` + 3 maps | `90_社内` | This skill + `b2b-account-maps` |
+| Customer / show feasibility | 3 | Demo materials, To-Be, architecture overview | `01_顧客提示` | `scalar-proposal-slides` |
+| Customer / agree on a PoC | 3 | PoC proposal, implementation plan | `02_顧客提案` | `scalar-proposal-slides` |
+| Internal / approve pricing and contract risk | 3–5 | Deal Desk materials, internal approval | `90_社内` | This skill |
+| Customer / selection and budgeting | 4 | Formal proposal, quotation, ROI | `02_顧客提案` | `scalar-proposal-slides` + `spreadsheets` |
+| Customer / contract procedures | 5 | Checklist, SOW, purchase order | `02_顧客提案` | `google-slides-template` |
+| Internal / renewal and expansion planning | 6 | Health review, renewal plan | `90_社内` | `scalar-account-plan` |
 
-パートナー提示用・パートナー提案用（プレイブック §3 の残り 2 種）は**専用
-テンプレート未実装**。依頼されたら `google-slides-template` で作り、必須項目は
-プレイブック §3 と原典 §7.5 から拾う。
+Partner-facing / partner-proposal materials (the remaining 2 types in
+playbook §3) have **no dedicated template implemented**. If requested, build
+them with `google-slides-template`; pull the required items from playbook §3
+and the source material §7.5.
 
-判断がつかないときだけ `AskUserQuestion` で 1 回確認する。フェーズが台帳にあり、
-相手が指定されているなら聞かずに決める。
+Ask `AskUserQuestion` once, and only when you cannot decide. If the phase is
+in the ledger and the audience is specified, decide without asking.
 
-## Step 3: 顧客提示用に内部情報を混ぜていないか検査する（省略禁止）
+## Step 3: Check that customer-facing material isn't mixed with internal information (do not skip)
 
-顧客に渡す資料（`01_顧客提示` / `02_顧客提案`）を生成する**前に**、
-仕様の本文を読んで次を確認する:
+**Before** generating material to hand to the customer (`01_顧客提示` /
+`02_顧客提案`), read the spec body and confirm the following:
 
-- [ ] 個人の影響力・賛否・「未接触」などの判断が入っていないか
-- [ ] 競合の弱点を名指ししていないか（顧客が競合に伝える前提で読む）
-- [ ] 未確認の事項が、確定事項のように書かれていないか
-  → 「本日確認したい」に落とす。推測で埋めない
-- [ ] 出典のない数値を載せていないか（公開事例は出典を明記する）
-- [ ] 価格・ロードマップが、その相手に開示してよい範囲か
+- [ ] No judgments about an individual's influence, position, or "not yet
+  contacted" status are included
+- [ ] No competitor weaknesses are named (assume the customer will pass this
+  along to the competitor)
+- [ ] No unconfirmed item is written as if it were confirmed
+  → Rephrase it as "would like to confirm today." Do not fill it in with a guess
+- [ ] No figure without a source is included (cite sources for public case studies)
+- [ ] Pricing / roadmap information is within what is allowed to be disclosed
+  to this audience
 
-`challenge-hypothesis` のガードレールにも同じことが書いてある。1 つでも該当したら、
-その内容は `90_社内` の資料に移す。
+The `challenge-hypothesis` guardrails say the same thing. If even one item
+applies, move that content into a `90_社内` document instead.
 
-## Step 4: 仕様を書いてオフライン検証する
+## Step 4: Write the spec and validate it offline
 
-台帳から作れるページは台帳から作る（手で書き写さない）:
+Build pages that can be built from the ledger, from the ledger (don't
+hand-copy):
 
 ```bash
 .venv/bin/python scripts/scalar/account_ledger.py slots <account.json> visit-plan \
@@ -104,11 +118,13 @@ description: >-
     --data out/<顧客名>/visit-plan.json --out out/<顧客名>/visit-plan.slide.json
 ```
 
-`visit-plan` は台帳の `visits[]` のうち `status: "planned"` のものから作る。
-訪問の目的・問い・想定反論を先に台帳へ書けば、資料は台帳から出てくる。
+`visit-plan` is built from the `visits[]` entries in the ledger whose
+`status` is `"planned"`. Write the visit's purpose, questions, and expected
+objections into the ledger first, and the material follows from the ledger.
 
-台帳に無いページ（顧客提示用の事例など）は、`slide-templates` のテンプレートか
-`references/slide-pattern-catalog.md` の型で書く。組み上げと検証:
+Pages not in the ledger (e.g. customer-facing case studies) are written from a
+`slide-templates` template or a pattern from
+`references/slide-pattern-catalog.md`. Assemble and validate:
 
 ```bash
 .venv/bin/python scripts/assemble_spec.py out/<顧客名>/*.slide.json \
@@ -117,22 +133,23 @@ description: >-
     --spec out/<顧客名>/deck.json --dry-run --strict
 ```
 
-指摘が出たら**データを直す**（文言を短くする、人を離す）。テンプレートは直さない。
+If findings come back, **fix the data** (shorten the wording, separate
+people). Don't fix the template.
 
-## Step 5: 生成して正しいフォルダへ置く
+## Step 5: Generate and place it in the correct folder
 
 ```bash
 .venv/bin/python scripts/scalar/account_workspace.py ensure --ledger <account.json> --json
 ```
 
-出た ID から、Step 2 の表の置き場に合わせて `--folder` を選ぶ:
+From the returned IDs, choose `--folder` per the Step 2 location table:
 
-| 種別 | フォルダ |
+| Type | Folder |
 |---|---|
-| 顧客提示用 | `01_顧客提示` |
-| 顧客提案用 | `02_顧客提案` |
-| 社内説明用 | `90_社内` |
-| 活動計画 | `00_活動計画` |
+| Customer-facing | `01_顧客提示` |
+| Customer proposal | `02_顧客提案` |
+| Internal explanation | `90_社内` |
+| Activity plan | `00_活動計画` |
 
 ```bash
 .venv/bin/python scripts/build_deck.py --template templates/scalar-2026.json \
@@ -140,47 +157,61 @@ description: >-
 .venv/bin/python scripts/drive_folder.py upload <フォルダ ID> out/<顧客名>/deck.json
 ```
 
-**間違ったフォルダに置かない。** 社内資料が `01_顧客提示` に入ると、顧客への
-共有で個人の判断がそのまま渡る。
+**Never place it in the wrong folder.** If an internal document ends up in
+`01_顧客提示`, an individual's private judgments go straight to the customer
+when the folder is shared.
 
-## Step 6: 目視検査
+## Step 6: Visual inspection
 
-Step 1 で「実行する」を選んだ場合は `slide-qa` スキルの手順で行い、終わったら
-`.venv/bin/python scripts/cleanup_qa.py` で検証ファイルを消す。
-スキップした場合は、QA 未実施であることを報告に明記する。
+If you chose "run" in Step 1, follow the `slide-qa` skill's procedure, and
+when done, delete the verification files with
+`.venv/bin/python scripts/cleanup_qa.py`. If skipped, state clearly in the
+report that QA was not performed.
 
-## Step 7: 台帳へ戻す（省略禁止）
+## Step 7: Write back to the ledger (do not skip)
 
-**訪問資料を作って終わりにしない。** 作った資料と、そこで決めたことを台帳に
-書き戻し、活動計画を更新する。これが訪問資料と活動計画が乖離しない唯一の仕掛け。
+**Don't stop at making the visit materials.** Write back what you made and
+what was decided in it to the ledger, and update the activity plan. This is
+the only mechanism that keeps the visit materials and the activity plan from
+drifting apart.
 
-1. `visits[]` に今回の訪問を足す（訪問前は `status: "planned"`、
-   実施後に `status: "done"` と `heard` / `next` を書く）
-2. 新しく分かったことを `facts[]` に `kind` つきで足す
-3. 満たしたゲートを `gates` に**顧客側の証拠つきで**記録する
-4. `scalar-account-plan` の手順 4〜5 で未確認をアクションに変え、活動計画を差し替える
+1. Add this visit to `visits[]` (`status: "planned"` before the visit;
+   `status: "done"` with `heard` / `next` filled in after it happens)
+2. Add newly learned facts to `facts[]`, tagged with `kind`
+3. Record any gates that were satisfied in `gates`, **with evidence from the
+   customer side**
+4. Turn open items into actions with Steps 4–5 of `scalar-account-plan`, and
+   replace the activity plan
 
 ```bash
 .venv/bin/python scripts/scalar/build_account_plan.py <account.json> --carry-over
 ```
 
-## Step 8: 報告
+## Step 8: Report
 
-1. 作った資料の名前・種別・デッキ URL・置いた Drive フォルダ
-2. 顧客提示用については、Step 3 の検査を通したことと、内部情報を移した項目
-3. QA の結果（または未実施であること）
-4. **AE のアクションプラン** — 誰に・何を・いつまでに・何が取れたら完了か
-   （`out/account-plan/<顧客名>/action-plan.md`）
-5. 社内承認を求める資料の場合は、**判断を仰ぐ事項**（継続 / 保留 / 撤退、
-   値引きの対価、必要な稼働）を 1 行で
+1. The name, type, deck URL, and Drive folder of each material produced
+2. For customer-facing material: confirmation that the Step 3 check was
+   passed, and which items were moved out for being internal
+3. The QA result (or that it was not performed)
+4. **The AE's action plan** — who, what, by when, and what completion looks
+   like (`out/account-plan/<customer name>/action-plan.md`)
+5. For material requesting internal approval: **what decision is being
+   asked for**, in one line (continue / hold / withdraw, discount cost,
+   staffing required)
 
 ## Rules
 
-- **相手を間違えない。** 資料種別は読み手で決まる。迷ったら社内向けに倒す。
-- **ステージは活動量ではなく顧客の合意で進む。** 「説明した」「資料を出した」を
-  移行の根拠にしない（プレイブック §1 原則 5）。
-- **WHAT・WHY を飛ばさない。** 顧客の要件に HOW だけで答える資料を作らない。
-- **推測で埋めない。** 未確認は「本日確認したい」として資料に出す。
-- **数値には根拠を付ける。** 出典を書けない数字は載せない。
-- 古いテンプレートの顧客名・金額・構成・注記を残さない（プレイブック §4）。
-- `accounts/` と `config/` はコミットしない。作業ファイルは `out/` 配下。
+- **Never mistake the audience.** The material type is determined by the
+  reader. When in doubt, default to internal.
+- **Stage advances on customer agreement, not on activity volume.** Do not
+  treat "we explained it" or "we handed over a document" as grounds for
+  advancing the stage (playbook §1, principle 5).
+- **Never skip WHAT/WHY.** Don't produce material that answers the
+  customer's requirements with HOW alone.
+- **Never fill gaps with guesses.** Present unconfirmed items as "would like
+  to confirm today" in the material.
+- **Back every figure with a source.** Don't include a number you can't cite
+  a source for.
+- Don't leave a previous customer's name, amount, structure, or notes behind
+  from an old template (playbook §4).
+- Do not commit `accounts/` or `config/`. Keep working files under `out/`.

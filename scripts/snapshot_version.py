@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
-"""既存プレゼンテーションを編集する前に「版」を確保する（ロールバック用）。
+"""Secure a "version" of an existing presentation before editing it (for rollback).
 
-    python scripts/snapshot_version.py <URL または ID> [--out out/backups] [--no-export]
+    python scripts/snapshot_version.py <URL or ID> [--out out/backups] [--no-export]
 
-やること:
+What it does:
 
-1. 編集前の先頭リビジョン ID と更新時刻を記録して表示する
-2. そのリビジョンの keepForever ピン留めを試みる
-   （ネイティブの Slides ファイルでは API がサポートしないことがある → 警告のみ）
-3. 現状の PPTX をローカルへエクスポートしてバックアップする（--no-export で省略）
+1. Records and prints the pre-edit head revision ID and its modified time
+2. Attempts to pin that revision with keepForever
+   (native Slides files may not support this via the API -> warning only)
+3. Exports the current PPTX locally as a backup (omit with --no-export)
 
-ユーザーがすでに使っている既存デッキ（既知の URL）へスライドの挿入・修正を
-行うときは、最初にこのスクリプトを実行し、表示されたリビジョン ID と
-バックアップのパスを報告してから編集すること。差し戻しは Google Slides UI の
-「ファイル → 版の履歴」から行える。名前付きの版も API では作れないため、
-必要なら同 UI から付ける。
+When inserting or modifying slides in an existing deck the user is already
+using (a known URL), always run this script first, report the printed
+revision ID and backup path, and only then start editing. Rollback can be
+done from the Google Slides UI ("File -> Version history"). Named versions
+also can't be created via the API, so add one from that same UI if needed.
 """
 from __future__ import annotations
 
@@ -85,7 +85,7 @@ def export_backup(drive, file_id: str, out_dir: str, name: str, rev: dict) -> st
     except HttpError as e:
         if os.path.exists(path):
             os.remove(path)
-        # エクスポートは 10MB 制限があるため、画像の多いデッキは失敗しうる
+        # Export has a 10MB limit, so decks with many images can fail
         print(t("Warning: PPTX export failed (continuing without a backup): {err}",
                 err=e), file=sys.stderr)
         return None

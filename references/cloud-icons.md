@@ -1,22 +1,23 @@
-# クラウドアイコン（AWS / Google Cloud / Azure）
+*[日本語](cloud-icons.ja.md)*
+# Cloud Icons (AWS / Google Cloud / Azure)
 
-3 ベンダーの公式アイコン **1,757 種**を `assets/cloud-icons/` に置いて使う。
-SVG が正本で、使うときに必要な解像度へ焼く。
+Use the **1,757** official icons from the 3 vendors, kept in `assets/cloud-icons/`.
+SVG is the source of truth; it's rasterized to the resolution needed at use time.
 
-## 初回セットアップ（1 回だけ）
+## First-time setup (one time only)
 
-**アイコンはリポジトリに含めていない。** 各社の資産で再配布が許されていないため、
-**利用者が自分の環境へ取り込む**。
+**Icons are not bundled in the repo.** Each vendor's assets are not licensed for
+redistribution, so **each user pulls them into their own environment**.
 
 ```bash
 # slide-forge のリポジトリルートへ移動
 .venv/bin/python scripts/fetch_cloud_icons.py
 ```
 
-1〜2 分・約 8.6MB。取り込み済みかは `--verify` で確かめられる。
-未取り込みのまま `cloud_icon` を使うと、この手順を案内するエラーで止まる。
+1–2 minutes, about 8.6MB. Use `--verify` to check whether they've been fetched.
+Using `cloud_icon` without fetching first stops with an error that walks you through this step.
 
-**取り込んだ素材はコミットしない**（`.gitignore` 済み）。
+**Do not commit the fetched assets** (already in `.gitignore`).
 
 ```
 assets/cloud-icons/
@@ -28,40 +29,42 @@ cache/cloud-icons/          焼いた PNG（<vendor>-<slug>-<px>.png）
 scripts/cloud_icons.py      検索 CLI と Canvas 用ミックスイン
 ```
 
-素材の取り込み・更新は google-slides スキルの `scripts/fetch_cloud_icons.py` が
-**両スキルへまとめて**行う（版の管理を 1 箇所に集約するため）。
+Fetching and updating assets is handled by the google-slides skill's
+`scripts/fetch_cloud_icons.py`, which does it **for both skills at once**
+(to keep version management in one place).
 
-## ライセンス（先に読むこと）
+## License (read this first)
 
-3 ベンダーとも「**アーキテクチャ図・研修資料・ドキュメントでの利用**」だけを
-許諾している。共通して守ること:
+All 3 vendors permit use only for "**architecture diagrams, training materials,
+and documentation**." Rules to follow across all of them:
 
-- **色を変えない。回さない。反転しない。縦横比を変えない。**
-- **アイコンの近くに製品名を置く**（Azure は明示的に推奨、他社も同様の運用）
-- 自社製品・自社サービスを表すのに他社のアイコンを使わない
+- **Don't change the color. Don't rotate it. Don't flip it. Don't change the aspect ratio.**
+- **Place the product name next to the icon** (Azure explicitly recommends this; other
+  vendors follow the same practice)
+- Don't use another vendor's icon to represent your own product or service
 
-`cloud_icon()` は**正方形固定・既定でラベルあり**で、色や回転の引数を
-そもそも持たない。API の形で違反を防いでいるので、自前で `image()` して
-加工しないこと。
+`cloud_icon()` is **fixed to a square, with a label on by default**, and simply has
+no arguments for color or rotation. The API shape itself prevents violations, so
+don't work around it by calling `image()` yourself and processing the icon.
 
-| ベンダー | 条件 |
+| Vendor | Terms |
 |---|---|
 | AWS | https://aws.amazon.com/trademark-guidelines/ |
 | Azure | https://learn.microsoft.com/en-us/azure/architecture/icons/ |
 | Google Cloud | https://cloud.google.com/icons |
 
-## 他のアイコンとの使い分け
+## Choosing among the icon libraries
 
-| | `illustrations.icon()` | `icons.asset_icon()` | 本ライブラリ |
+| | `illustrations.icon()` | `icons.asset_icon()` | This library |
 |---|---|---|---|
-| 対象 | 汎用の概念（サーバ・鍵・雲） | Scalar の業務語彙 | **実在するクラウドサービス** |
-| 通信 | 不要 | 要る | 要る |
-| 色 | テーマ色 | テーマ色に染める | ベンダー指定の色（**変更不可**） |
+| Subject | Generic concepts (server, key, cloud) | Scalar business vocabulary | **Real cloud services** |
+| Network access | Not needed | Needed | Needed |
+| Color | Theme color | Tinted to theme color | Vendor-specified color (**cannot be changed**) |
 
-構成図に「Amazon RDS」と書くなら本ライブラリ、「データベース」一般なら
-`illustrations.icon("database")` を使う。同じスライドに混ぜてよい。
+If a diagram needs to say "Amazon RDS," use this library; for a generic "database,"
+use `illustrations.icon("database")`. Both can be mixed on the same slide.
 
-## 名前を探す
+## Finding a name
 
 ```bash
 .venv/bin/python scripts/cloud_icons.py --search s3                 # 別名でも引ける
@@ -71,39 +74,40 @@ scripts/cloud_icons.py      検索 CLI と Canvas 用ミックスイン
 .venv/bin/python scripts/cloud_icons.py --sources                   # 取り込んだ版
 ```
 
-指定できる名前は次のとおり。**曖昧・誤字は候補付きのエラーになる**ので、
-生成前に気づける。
+Names can be specified as follows. **Ambiguous or misspelled names fail with an
+error that suggests candidates**, so you catch it before generation.
 
-| 書き方 | 例 |
+| Form | Example |
 |---|---|
-| `<vendor>:<slug>`（確実） | `aws:ec2` `gcp:bigquery` `azure:cosmos-db` |
-| slug だけ | `ec2`（複数ベンダーに当たると落ちる） |
-| 通称・別名 | `s3` `eks` `aks` `gke` `vnet` `cosmos` |
-| 表示名 | `Amazon Simple Storage Service` `Cloud SQL` |
+| `<vendor>:<slug>` (unambiguous) | `aws:ec2` `gcp:bigquery` `azure:cosmos-db` |
+| slug alone | `ec2` (fails if it matches multiple vendors) |
+| Common name / alias | `s3` `eks` `aks` `gke` `vnet` `cosmos` |
+| Display name | `Amazon Simple Storage Service` `Cloud SQL` |
 
-`kind` は 4 種。`--kind` で絞れる。
+There are 4 `kind` values, filterable with `--kind`.
 
-| kind | 中身 | 用途 |
+| kind | Contents | Use |
 |---|---|---|
-| `service` | サービス本体（Amazon EC2 等） | 通常はこれ |
-| `resource` | サービス内の細かい部品（EC2 インスタンス種別等） | 詳細な図 |
-| `group` | 囲い（AWS Cloud / Region / VPC / サブネット） | ゾーンの見出し |
-| `category` | カテゴリの代表アイコン | 章扉・分類の図 |
+| `service` | The service itself (e.g. Amazon EC2) | Normal choice |
+| `resource` | Fine-grained parts within a service (e.g. EC2 instance types) | Detailed diagrams |
+| `group` | Enclosures (AWS Cloud / Region / VPC / subnet) | Zone headings |
+| `category` | Representative icon for a category | Section dividers, classification diagrams |
 
-## 使う
+## Usage
 
-`Canvas` のメソッドとして生えている。座標はインチ、**戻り値はラベルを含めた
-下端 y**（`illustrations` / `icons` と同じ規約）。
+Exposed as methods on `Canvas`. Coordinates are in inches, and **the return value is
+the bottom y including the label** (the same convention as `illustrations` / `icons`).
 
-| メソッド | 何をするか |
+| Method | What it does |
 |---|---|
-| `cloud_icon(name, x, y, size, label=…)` | 1 個置く |
-| `cloud_icon_row(x, y, w, items)` | 横一列 |
-| `cloud_icon_flow(x, y, w, items)` | 矢印でつなぐ |
-| `cloud_icon_grid(x, y, w, items, cols=4)` | 格子 |
-| `cloud_zone(x, y, w, h, vendor=…, title=…)` | 破線の囲いと見出し |
+| `cloud_icon(name, x, y, size, label=…)` | Place a single icon |
+| `cloud_icon_row(x, y, w, items)` | A horizontal row |
+| `cloud_icon_flow(x, y, w, items)` | Connected with arrows |
+| `cloud_icon_grid(x, y, w, items, cols=4)` | A grid |
+| `cloud_zone(x, y, w, h, vendor=…, title=…)` | A dashed enclosure with a heading |
 
-`items` は名前か `(名前, ラベル)`。ラベルを省くと**正式名称**が入る。
+`items` is a name, or `(name, label)`. Omitting the label inserts the **official
+service name**.
 
 ```python
 d = Canvas(deck, ref["slideId"], template)
@@ -116,8 +120,9 @@ d.cloud_icon_row(1.0, 1.9, 8.0, [
 ], size=0.7)
 ```
 
-デッキ仕様（JSON）からは `figures` の `type` で使う。**ゾーンは中身より先に
-書くこと**（後ろに書くと矩形が中身を覆う）。
+From a deck spec (JSON), use these through the `type` field of `figures`. **Write
+zones before their contents** (writing them after causes the rectangle to cover
+the contents).
 
 ```json
 "figures": [
@@ -128,18 +133,20 @@ d.cloud_icon_row(1.0, 1.9, 8.0, [
 ]
 ```
 
-動く実例:
+Working examples:
 
-- `examples/cloud-architecture.json` — ゾーン・マルチクラウド・データフロー（仕様 JSON）
-- `examples/scalardb-architecture.py` — **層を矢印で結ぶ構成図**（Canvas を直に使う）
-- `examples/scalardl-architecture.py` — 3 系統のアイコンを混ぜた構成図
-  （クラウド公式 + Scalar ブランド + 図形のピクトグラム）
+- `examples/cloud-architecture.json` — zones, multi-cloud, data flow (spec JSON)
+- `examples/scalardb-architecture.py` — **architecture diagram with layers joined by
+  arrows** (uses `Canvas` directly)
+- `examples/scalardl-architecture.py` — architecture diagram mixing 3 icon families
+  (official cloud icons + Scalar brand assets + shape-based pictograms)
 
-### 矢印で結ぶ構成図は Python で書く
+### Write arrow-connected architecture diagrams in Python
 
-`figures` には線を引く type が無い。アプリ層 → ScalarDB → データベース層のように
-**層と層を結ぶ図は `Canvas` を直に使う**（`examples/scalardb-architecture.py`）。
-クラウドアイコン・ピクトグラム・ブランドロゴ・コネクタを 1 枚に混ぜられる。
+`figures` has no type for drawing lines. Diagrams that **connect layer to layer**,
+such as app layer → ScalarDB → database layer, should **use `Canvas` directly**
+(`examples/scalardb-architecture.py`). Cloud icons, pictograms, brand logos, and
+connectors can all be mixed into one drawing.
 
 ```python
 d.cloud_zone(0.9, 3.55, 1.95, 1.5, vendor="aws")
@@ -147,35 +154,37 @@ d.cloud_icon("aws:dynamodb", 1.62, 3.89, 0.5, label="DynamoDB")
 d.arrow(1.87, 3.23, 1.87, 3.51, color=d.P.muted, _anchored=True)
 ```
 
-### 自社製品・OSS のアイコンは別で用意する
+### Icons for in-house products / OSS need a different source
 
-ベンダーのアイコン集には**そのベンダーのサービスしか無い**。次のものは別手段で描く。
+Vendor icon sets **only contain that vendor's own services**. For the following,
+use a different method.
 
-| 描きたいもの | 手段 |
+| What to draw | How |
 |---|---|
-| ScalarDB / ScalarDL | `assets/scalar/product-logos/*.png` を `image()` で貼る |
-| 証拠チェーン・改ざん検知・タイムスタンプ | `asset_icon("evidence-chain")` など（`references/icons.md`） |
-| Scalar のロゴ | `assets/scalar/logos/*.png`、または `asset_icon("scalar-logo")` |
-| 自前運用の PostgreSQL / MySQL / Cassandra | `illustrations.icon("database")` `icon("stack")`（商標の関係でベンダー集には無い） |
-| マネージドな DB エンジン | 公式アイコンがある（`aws:aurora-postgresql-instance` / `azure:database-mysql-server` / `azure:managed-instance-apache-cassandra` など） |
+| ScalarDB / ScalarDL | Paste `assets/scalar/product-logos/*.png` with `image()` |
+| Evidence chain, tamper detection, timestamping | `asset_icon("evidence-chain")` etc. (`references/icons.md`) |
+| Scalar logo | `assets/scalar/logos/*.png`, or `asset_icon("scalar-logo")` |
+| Self-managed PostgreSQL / MySQL / Cassandra | `illustrations.icon("database")` `icon("stack")` (not in vendor sets, for trademark reasons) |
+| Managed DB engines | Official icons exist (`aws:aurora-postgresql-instance` / `azure:database-mysql-server` / `azure:managed-instance-apache-cassandra`, etc.) |
 
-`VENDOR_COLOR` / `VENDOR_LABEL` にベンダー色（AWS #FF9900 / GCP #4285F4 /
-Azure #0078D4）と表示名が入っている。**枠線と見出しにだけ使う色**で、
-アイコンには適用しない。
+`VENDOR_COLOR` / `VENDOR_LABEL` hold each vendor's brand color (AWS #FF9900 /
+GCP #4285F4 / Azure #0078D4) and display name. **Use these colors only for
+borders and headings** — never apply them to the icons themselves.
 
-### `--dry-run` での扱い
+### Behavior under `--dry-run`
 
-`asset_icon` と同じく、**同じ大きさの矩形に置き換えて**座標だけ検査する。
-アイコン名の誤りもここで分かるので、生成前に必ず通すこと。
+Like `asset_icon`, this **substitutes a rectangle of the same size** and checks
+only the coordinates. Icon-name typos also surface here, so always run this
+before generating.
 
 ```bash
 .venv/bin/python scripts/build_deck.py --template templates/scalar-2026.json \
     --spec deck.json --dry-run
 ```
 
-## 素材を更新する
+## Updating the assets
 
-取り込みスクリプトは共有エンジンの `scripts/fetch_cloud_icons.py` にある。
+The fetch script lives in the shared engine, at `scripts/fetch_cloud_icons.py`.
 
 ```bash
 # slide-forge のリポジトリルートで実行
@@ -184,19 +193,24 @@ Azure #0078D4）と表示名が入っている。**枠線と見出しにだけ�
 .venv/bin/python scripts/fetch_cloud_icons.py --dry-run # URL 確認のみ
 ```
 
-- 配布 URL は**ベンダーのページから解決する**（AWS は四半期ごと、Azure は
-  V21 → V24 のように版が上がる）。ページの作りが変わって拾えないときは
-  エラーで止まるので、`SOURCES` の正規表現を直す。
-- 取り込み時に全 SVG を試し焼きし、焼けないものだけベンダー同梱の PNG を併置する。
-- GCP は core（現行デザイン）> category > legacy（2021 年）の順で重ねている。
-  legacy にしか無いサービスも多いので 3 本とも取り込む。
+- Distribution URLs are **resolved from each vendor's page** (AWS updates quarterly;
+  Azure's version bumps, e.g. V21 → V24). If a page's structure changes and
+  scraping breaks, the script stops with an error — fix the regex in `SOURCES`.
+- During fetch, every SVG is test-rendered; only the ones that fail to render fall
+  back to the vendor-bundled PNG alongside it.
+- For GCP, layers are stacked in the order core (current design) > category >
+  legacy (2021). Many services exist only in legacy, so all three are fetched.
 
-## 制約
+## Constraints
 
-- **通信が要る。** Slides は画像を URL からしか取り込めないため Drive を経由する。
-  同じアイコンを何枚使ってもアップロードは 1 回（パス単位でキャッシュ）。
-- 素材が無い名前は `CloudIconError`。**フォールバックで黙ってテキストバッジに
-  落とさない**（旧実装はそれで「アイコンが出ない」事故になっていた）。
-- Azure に数点だけ**正方形でないアイコン**がある。`render()` は長辺を指定画素数に
-  合わせ、**縦横比は必ず保つ**（幅と高さを両方指定すると引き伸ばされ、
-  「変形させない」条件に反するため）。正方形の枠に置くと上下か左右に余白が付く。
+- **Network access is required.** Slides can only ingest images from a URL, so
+  uploads go through Drive. Using the same icon multiple times still uploads only
+  once (cached per path).
+- A name with no matching asset raises `CloudIconError`. **It never silently
+  falls back to a text badge** (the old implementation did that, which caused
+  "the icon doesn't show up" incidents).
+- Azure has a handful of icons that **aren't square**. `render()` fits the long
+  edge to the requested pixel size and **always preserves the aspect ratio**
+  (specifying both width and height would stretch the icon, violating the
+  "don't distort" rule). Placing one in a square frame leaves margin on either
+  the top/bottom or the left/right.

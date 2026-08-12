@@ -1,23 +1,24 @@
-# draw.io (mxGraph XML) 作図リファレンス
+*[日本語](drawio.ja.md)*
+# draw.io (mxGraph XML) Diagram Reference
 
-`drawio-diagrams` スキル用。.drawio ファイルを直接書き、
-`scripts/drawio_export.py` で PNG に書き出してスライドへ挿入する。
-ここに載せたスタイルは 2026-08 にヘッドレスエクスポートで描画検証済み。
+For the `drawio-diagrams` skill. Write `.drawio` files directly, then export them
+to PNG with `scripts/drawio_export.py` and insert them into slides.
+The styles documented here were rendering-verified via headless export as of 2026-08.
 
-## いつ draw.io を使うか（diagrams.py との使い分け）
+## When to use draw.io (vs. diagrams.py)
 
-| | `diagrams.py`（ネイティブ図形） | draw.io → PNG |
+| | `diagrams.py` (native shapes) | draw.io → PNG |
 |---|---|---|
-| 向く図 | 数個〜十数個の要素の概念図・フロー | ノード数の多いクラウド構成図・データフロー図・ネットワーク図 |
-| アイコン | assets のベンダーアイコン画像 | draw.io 内蔵の AWS/GCP/Azure 公式準拠シェイプ（枠・グループ含む） |
-| 後編集 | スライド上で個別図形として編集可 | PNG（一枚絵）。ただし .drawio を渡せば draw.io で編集できる |
-| 品質保証 | validate_layout.py の幾何検査 | PNG の目視 QA のみ |
+| Good for | Conceptual diagrams / flows with a handful to a dozen or so elements | Cloud architecture, data-flow, and network diagrams with many nodes |
+| Icons | Vendor icon images from assets | draw.io's built-in AWS/GCP/Azure-compliant shapes (including frames and groups) |
+| Post-editing | Editable on the slide as individual shapes | PNG (a single flattened image), though the .drawio file itself can be handed off for editing in draw.io |
+| Quality assurance | Geometric checks via validate_layout.py | Visual QA of the PNG only |
 
-**判断基準**: VPC/サブネットのような入れ子コンテナが 2 段以上、またはノード
-10 個超・エッジ 15 本超の緻密な図は draw.io に切り替える。スライド上の
-図形数が多いと Slides API 生成も QA も辛くなる。
+**Rule of thumb**: switch to draw.io for dense diagrams with 2+ levels of nested
+containers (like VPC/subnet) or more than 10 nodes / 15 edges. When a slide has
+too many shapes, both Slides API generation and QA become painful.
 
-## ファイル骨格
+## File skeleton
 
 ```xml
 <mxfile host="app.diagrams.net">
@@ -33,17 +34,19 @@
 </mxfile>
 ```
 
-- `id="0"` と `id="1"` の 2 つの mxCell は必須の土台。図形は `parent="1"`
-  （またはコンテナの id）にぶら下げる
-- 座標は px。**コンテナの子の座標は親の左上からの相対**
-- PNG 書き出しは**描画内容の外接矩形**で切り出されるので `pageWidth/Height`
-  は実質無関係。図の縦横比は図形の配置そのもので決める（スライドの
-  本文領域に合わせるなら 16:9〜2:1 程度が収まりやすい）
-- XML なので `&` は `&amp;`、`<` は `&lt;` にエスケープする。日本語ラベルは可
+- The two mxCells `id="0"` and `id="1"` are the required base. Shapes hang off
+  `parent="1"` (or a container's id)
+- Coordinates are in px. **A container's child coordinates are relative to the
+  parent's top-left**
+- PNG export is cropped to the **bounding box of the drawn content**, so
+  `pageWidth`/`pageHeight` are effectively irrelevant. The diagram's aspect ratio
+  is determined entirely by the shape layout itself (roughly 16:9–2:1 fits well
+  within a slide's body area)
+- Since it's XML, escape `&` as `&amp;` and `<` as `&lt;`. Japanese labels are fine
 
-## 検証済みスタイル集
+## Verified style catalog
 
-### AWS（aws4 リソースアイコン）
+### AWS (aws4 resource icons)
 
 ```xml
 <mxCell id="lambda" value="Lambda" style="sketch=0;outlineConnect=0;fontColor=#232F3E;fillColor=#ED7100;strokeColor=#ffffff;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;" vertex="1" parent="1">
@@ -51,13 +54,13 @@
 </mxCell>
 ```
 
-- 描画検証済み resIcon: `ec2` `s3` `lambda` `rds`。他は必ず名前を確認して
-  から使う（下記「シェイプ名の調べ方」）
-- `fillColor` は AWS カテゴリ色に合わせる: Compute `#ED7100` / Storage
+- Rendering-verified resIcons: `ec2` `s3` `lambda` `rds`. For others, always
+  confirm the name first (see "Looking up shape names" below)
+- Match `fillColor` to the AWS category color: Compute `#ED7100` / Storage
   `#7AA116` / Database `#C925D1` / Networking `#8C4FFF` / Security `#DD344C`
-- `aspect=fixed` を外すとアイコンが歪む。サイズは 78x78 が標準
+- Removing `aspect=fixed` distorts the icon. Standard size is 78x78
 
-### AWS グループ枠（VPC・サブネット等の入れ子コンテナ）
+### AWS group frames (nested containers like VPC/subnet)
 
 ```xml
 <mxCell id="vpc" value="VPC" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=1;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_vpc2;strokeColor=#8C4FFF;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#AAB7B8;dashed=0;" vertex="1" parent="1">
@@ -65,12 +68,15 @@
 </mxCell>
 ```
 
-- 子要素は `parent="vpc"` にして**親相対座標**で置く。入れ子は
-  VPC → サブネット → リソースの 2 段まで検証済み
-- 塗りつぶし枠にするなら `grStroke=0;fillColor=#E6F6F7;`（サブネットの定石）
-- 検証済み grIcon: `group_vpc2` `group_security_group`。region 枠等は要確認
+- Children should have `parent="vpc"` and be placed with **coordinates relative
+  to the parent**. Nesting has been verified 2 levels deep: VPC → subnet →
+  resource
+- For a filled frame, use `grStroke=0;fillColor=#E6F6F7;` (the standard pattern
+  for a subnet)
+- Verified grIcons: `group_vpc2` `group_security_group`. Region frames etc.
+  need to be confirmed
 
-### GCP（gcp2 ヘキサゴンアイコン）
+### GCP (gcp2 hexagon icons)
 
 ```xml
 <mxCell id="gce" value="Compute Engine" style="sketch=0;fontColor=#5A6872;html=1;verticalLabelPosition=bottom;verticalAlign=top;align=center;shape=mxgraph.gcp2.hexIcon;prIcon=compute_engine;fillColor=#5184F3;strokeColor=none;" vertex="1" parent="1">
@@ -78,11 +84,11 @@
 </mxCell>
 ```
 
-- `prIcon` に**接頭辞なし**の名前を入れる（検証済み: `compute_engine`
-  `cloud_storage`）。存在確認は `mxgraph.gcp2.<name>` で調べる
-- サイズは 80x70（ヘキサゴンの縦横比）
+- `prIcon` takes the name **without a prefix** (verified: `compute_engine`
+  `cloud_storage`). Check existence by looking for `mxgraph.gcp2.<name>`
+- Size is 80x70 (the hexagon's aspect ratio)
 
-### Azure（azure2 SVG イメージシェイプ）
+### Azure (azure2 SVG image shapes)
 
 ```xml
 <mxCell id="vm" value="Azure VM" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/compute/Virtual_Machine.svg;labelBackgroundColor=none;verticalLabelPosition=bottom;verticalAlign=top;" vertex="1" parent="1">
@@ -90,11 +96,12 @@
 </mxCell>
 ```
 
-- `image=img/lib/azure2/<カテゴリ>/<名前>.svg` はアプリ同梱パス。検証済み:
-  `compute/Virtual_Machine.svg` `databases/SQL_Database.svg`
-- 幅・高さは SVG の縦横比に合わせる（歪み防止に `aspect=fixed`）
+- `image=img/lib/azure2/<category>/<name>.svg` is a path bundled with the app.
+  Verified: `compute/Virtual_Machine.svg` `databases/SQL_Database.svg`
+- Set width/height to match the SVG's aspect ratio (use `aspect=fixed` to
+  prevent distortion)
 
-### エッジ（接続線）とラベル
+### Edges (connecting lines) and labels
 
 ```xml
 <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#232F3E;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="lambda" target="rds">
@@ -105,18 +112,20 @@
 </mxCell>
 ```
 
-- **必ず `source` / `target` で図形 id に接続する**（自由座標のエッジは禁止。
-  diagrams.py と同じ規律）
-- 出入り口を固定したいときは `exitX/exitY` `entryX/entryY`（0〜1 の相対位置）
-- 経由点が必要なら `<Array as="points"><mxPoint x="…" y="…"/></Array>` を
-  mxGeometry の中に置く
-- ラベルはエッジの子 vertex（`edgeLabel` スタイル）。`x` は -1〜1 で線上の位置
-- 点線は `dashed=1;`、双方向は `startArrow=classic;startFill=1;`
+- **Always connect via `source`/`target` referencing shape ids** (freeform-coordinate
+  edges are forbidden, the same discipline as diagrams.py)
+- To fix the entry/exit points, use `exitX/exitY` `entryX/entryY` (relative
+  position 0–1)
+- For waypoints, add `<Array as="points"><mxPoint x="…" y="…"/></Array>` inside
+  mxGeometry
+- A label is a child vertex of the edge (`edgeLabel` style). `x` is the position
+  along the line, from -1 to 1
+- Dashed lines: `dashed=1;`. Bidirectional: `startArrow=classic;startFill=1;`
 
-## シェイプ名の調べ方
+## Looking up shape names
 
-内蔵ライブラリの全シェイプ名はアプリ本体から抽出できる（インストール済みの
-draw.io.app が前提）:
+All built-in shape names can be extracted from the app itself (requires an
+installed copy of draw.io.app):
 
 ```bash
 grep -ao 'mxgraph\.aws4\.[a-z0-9_]*'  /Applications/draw.io.app/Contents/Resources/app.asar | sort -u | grep -i <keyword>
@@ -124,12 +133,12 @@ grep -ao 'mxgraph\.gcp2\.[a-z0-9_]*'  /Applications/draw.io.app/Contents/Resourc
 grep -ao 'img/lib/azure2/[A-Za-z0-9_/]*\.svg' /Applications/draw.io.app/Contents/Resources/app.asar | sort -u | grep -i <keyword>
 ```
 
-**名前を推測で書かない。** 存在しない resIcon / prIcon はエラーにならず
-「無地の色付き四角」として描画され、目視 QA でしか発見できない。
+**Don't guess names.** A nonexistent resIcon/prIcon doesn't error out — it just
+renders as a "plain colored square," which you can only catch with visual QA.
 
-## 汎用図形（データフロー図・ER 風の箱など）
+## Generic shapes (data-flow diagrams, ER-style boxes, etc.)
 
-ベンダーアイコン以外は素の mxGraph スタイルで十分:
+Plain mxGraph styles are sufficient for anything other than vendor icons:
 
 ```xml
 <mxCell id="box1" value="正規化バッチ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;fontSize=12;" vertex="1" parent="1">
@@ -137,20 +146,23 @@ grep -ao 'img/lib/azure2/[A-Za-z0-9_/]*\.svg' /Applications/draw.io.app/Contents
 </mxCell>
 ```
 
-- 円柱（DB）: `shape=cylinder3;size=15;`、書類: `shape=document;`、
-  キュー・ストリームは細長い角丸で代用が無難
-- 配色はデッキ側のテンプレート色（template.json の colors）に合わせると
-  スライドに馴染む
+- Cylinder (DB): `shape=cylinder3;size=15;`. Document: `shape=document;`.
+  A queue/stream is best approximated with a slim rounded rectangle
+- Match colors to the deck's template colors (`colors` in template.json) so the
+  diagram fits the slide
 
-## 品質チェックリスト（PNG 書き出し後に Read で確認）
+## Quality checklist (check with Read after PNG export)
 
-- [ ] 無地の色付き四角になっている要素がない（シェイプ名の誤り）
-- [ ] ラベルが図形・線と重なっていない、途中で切れていない
-- [ ] エッジが無関係な図形を横切っていない、意味的に正しい図形に接続している
-- [ ] **エッジの先端が図形に接している。** 複数セルを束ねたグループに `source` /
-      `target` を付けると、外枠のうち帯が部分幅の辺（右寄せのバッジ、左寄せの
-      ラベル帯など）では中央が空白になり、矢印が何もない所で止まる。**全幅の
-      セルの id に付ける**こと。縮小表示では気づけないので拡大して見る
-- [ ] 入れ子コンテナの子がはみ出していない
-- [ ] scale 2 以上で書き出し、スライドに置いたとき文字が読める
-      （挿入幅 8in に対して図の横幅 1600px 以上が目安）
+- [ ] No element rendered as a plain colored square (wrong shape name)
+- [ ] Labels don't overlap shapes/lines and aren't cut off mid-word
+- [ ] Edges don't cross unrelated shapes, and connect to the semantically correct shape
+- [ ] **Edge tips actually touch the shape.** Attaching `source`/`target` to a cell
+      that bundles multiple sub-cells can leave the center empty when the outer
+      frame is only a partial-width edge (e.g. a right-aligned badge, a
+      left-aligned label band), leaving the arrow stopping in empty space.
+      **Attach to the id of the full-width cell.** This isn't visible at reduced
+      zoom, so check at full magnification
+- [ ] Nested container children don't overflow
+- [ ] Exported at scale 2 or higher, and text is legible once placed on a slide
+      (as a rule of thumb, the diagram's width should be 1600px+ against an 8in
+      insertion width)

@@ -1,3 +1,5 @@
+*[日本語](AGENTS.ja.md)*
+
 # slide-forge agent instructions
 
 This repository supports both Codex and Claude Code. Use the shared Python
@@ -24,10 +26,10 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Deck without a corporate master | `google-slides` |
 | Create/register a template | `template-forge` |
 | Create/register a reusable single-slide content template | `slide-template-creator` |
-| B2B の関与者マップ / ディスカバリー整理 | `b2b-account-maps` |
-| 顧客ごとの活動計画・商談台帳（AE の行動計画） | `scalar-account-plan` |
-| Account Planning Session（年次・半期の棚卸しと役員レビュー） | `scalar-account-planning-session` |
-| 訪問 1 回分の資料 / 社内承認資料（WPS・Deal Desk） | `scalar-ae-materials` |
+| B2B stakeholder map / discovery mapping | `b2b-account-maps` |
+| Per-customer activity plan / deal ledger (AE's action plan) | `scalar-account-plan` |
+| Account Planning Session (annual/semi-annual stocktake and executive review) | `scalar-account-planning-session` |
+| Materials for a single visit / internal approval materials (WPS, Deal Desk) | `scalar-ae-materials` |
 | Scalar product/company deck | `scalar-product-slides` |
 | Scalar customer proposal | `scalar-proposal-slides` |
 | Dense draw.io diagram | `drawio-diagrams` |

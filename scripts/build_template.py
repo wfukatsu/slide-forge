@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
-"""デザインスペック(JSON)から新しいテンプレート(マスター)を生成して登録する。
+"""Build and register a new template (master) from a design spec (JSON).
 
     python scripts/build_template.py --spec design.json --dry-run
     python scripts/build_template.py --spec design.json \
         [--base blank|<template-id>|<URL>] [--emit templates/<id>.json] \
-        [--title "<マスター名>"] [--folder <Drive URL/ID>] [--replace]
+        [--title "<master name>"] [--folder <Drive URL/ID>] [--replace]
 
-Slides API はマスター/レイアウトの新規作成・改名をサポートしない
-(references/api-notes.md §1)。そのためベース — 既定では presentations.create()
-が作る Google 既定マスター、または登録済みテンプレートのコピー — の
-レイアウトページを batchUpdate で再スタイルし、新ブランドのマスターに仕立てる。
-templates/corporate.json を手作業で作った派生手順の自動化版。
+The Slides API does not support creating or renaming masters/layouts from
+scratch (references/api-notes.md §1). So instead, this script restyles the
+layout pages of a base -- by default the Google default master created by
+presentations.create(), or a copy of a registered template -- via
+batchUpdate, turning it into a master for the new brand. This automates the
+derivation steps that used to be done by hand to build templates/corporate.json.
 
-生成後は inspect_template.build_template() で templates/<id>.json を発行する。
-ロールの割り当ては推測に頼らず、ベースのレイアウト対応表から決定的に書き込む
-(blank ベース: COVER→TITLE / SECTION→SECTION_HEADER / CONTENT→TITLE_AND_BODY /
-TITLE_ONLY→TITLE_ONLY / BLANK→BLANK / CLOSING→MAIN_POINT の再スタイル)。
+After generation, inspect_template.build_template() emits templates/<id>.json.
+Role assignment does not rely on guesswork; it is written deterministically
+from the base's layout mapping table (for a blank base: COVER→TITLE /
+SECTION→SECTION_HEADER / CONTENT→TITLE_AND_BODY / TITLE_ONLY→TITLE_ONLY /
+BLANK→BLANK / CLOSING→MAIN_POINT restyling).
 
-デザインスペックの形式と運用は skills/template-forge/SKILL.md を参照。
+See skills/template-forge/SKILL.md for the design-spec format and workflow.
 """
 from __future__ import annotations
 
@@ -110,7 +112,7 @@ _HEX_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
 _NAME_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
-# ---------- 検証 ----------
+# ---------- Validation ----------
 
 def validate_spec(spec: dict, repo_root: str) -> list[str]:
     errors: list[str] = []
@@ -156,7 +158,7 @@ def _looks_like_id(s: str) -> bool:
     return len(s) > 20 and re.match(r"^[A-Za-z0-9_-]+$", s) is not None
 
 
-# ---------- リクエスト部品 ----------
+# ---------- Request building blocks ----------
 
 def _rgb(hex_color: str) -> dict:
     return {"rgbColor": _auth.hex_to_rgb(hex_color)}
@@ -230,7 +232,7 @@ def _logo_request(oid: str, page_id: str, url: str, x: float, y: float,
 
 
 def _logo_box(source: str | None, target_w: float) -> tuple[float, float]:
-    """ロゴの描画サイズを返す。ローカルファイルは実寸からアスペクト比を守る。"""
+    """Return the logo's rendered size. For local files, preserve the aspect ratio from the actual dimensions."""
     if source and not source.startswith(("http://", "https://", "drive:")):
         try:
             from PIL import Image
@@ -240,10 +242,10 @@ def _logo_box(source: str | None, target_w: float) -> tuple[float, float]:
                 return target_w, round(target_w * ih / iw, 3)
         except Exception:
             pass
-    return target_w, round(target_w / 3.0, 3)  # 実寸不明時は横長 3:1 と仮定
+    return target_w, round(target_w / 3.0, 3)  # assume a 3:1 landscape aspect ratio when the actual size is unknown
 
 
-# ---------- ベース作成とロール対応 ----------
+# ---------- Base creation and role mapping ----------
 
 def _retry(call, what: str, attempts: int = 4):
     from googleapiclient.errors import HttpError
@@ -263,7 +265,7 @@ def _retry(call, what: str, attempts: int = 4):
 
 def create_base(slides, drive, spec: dict, base: str, title: str,
                 folder: str | None, repo_root: str) -> tuple[str, dict | None]:
-    """ベースを用意して (presentationId, base_template_json|None) を返す。"""
+    """Prepare the base and return (presentationId, base_template_json|None)."""
     fid = _auth.folder_id(folder)
     if base == "blank":
         print(t("Creating the base presentation ({base})...", base=base))
@@ -297,7 +299,7 @@ def create_base(slides, drive, spec: dict, base: str, title: str,
         supportsAllDrives=True).execute(), "files.copy")
     pid = copied["id"]
 
-    # 同梱スライドは全て削除する(実在リストを見る — build_deck と同じ流儀)
+    # Delete every bundled slide (using the actual list -- same convention as build_deck)
     pres = _retry(lambda: slides.presentations().get(
         presentationId=pid, fields="slides.objectId").execute(), "presentations.get")
     reqs = [{"deleteObject": {"objectId": s["objectId"]}}
@@ -310,7 +312,7 @@ def create_base(slides, drive, spec: dict, base: str, title: str,
 
 
 def _layout_placeholders(layout_page: dict) -> dict:
-    """レイアウトページのプレースホルダを {TYPE: {objectId, geo}} で返す。"""
+    """Return the layout page's placeholders as {TYPE: {objectId, geo}}."""
     out: dict = {}
     for el in layout_page.get("pageElements", []) or []:
         ph = (el.get("shape") or {}).get("placeholder")
@@ -323,7 +325,7 @@ def _layout_placeholders(layout_page: dict) -> dict:
 
 
 def map_roles(pres: dict, base_tpl: dict | None) -> dict:
-    """{role: {"layoutId", "placeholders": {TYPE: {objectId, geo}}}} を決定的に作る。"""
+    """Deterministically build {role: {"layoutId", "placeholders": {TYPE: {objectId, geo}}}}."""
     layouts = pres.get("layouts", [])
     by_id = {l["objectId"]: l for l in layouts}
     rolemap: dict = {}
@@ -347,7 +349,7 @@ def map_roles(pres: dict, base_tpl: dict | None) -> dict:
     return rolemap
 
 
-# ---------- スタイリング計画 ----------
+# ---------- Styling plan ----------
 
 def _ph(rolemap: dict, role: str, *types: str) -> dict | None:
     for tp in types:
@@ -359,11 +361,12 @@ def _ph(rolemap: dict, role: str, *types: str) -> dict | None:
 
 def plan_requests(spec: dict, rolemap: dict, logo_urls: dict[str, str],
                   derived: bool) -> tuple[dict[str, list], list[str], list[dict]]:
-    """(ロール別リクエスト, 帯 objectId 一覧, ロゴリクエスト) を返す。
+    """Return (per-role requests, list of band objectIds, logo requests).
 
-    ロゴの createImage は URL 到達性で失敗し得るため別バッチにして
-    非致命で適用する。帯の背面送りも同様(api-notes: layout ページでの
-    updatePageElementsZOrder は未確認のため)。
+    A logo's createImage can fail due to URL reachability, so it is applied
+    in a separate, non-fatal batch. Sending bands to the back is handled the
+    same way (api-notes: updatePageElementsZOrder on layout pages is
+    unverified).
     """
     c = spec["brand"]["colors"]
     f = spec["brand"]["fonts"]
@@ -376,8 +379,9 @@ def plan_requests(spec: dict, rolemap: dict, logo_urls: dict[str, str],
     reqs: dict[str, list] = {role: [] for role in ROLES}
     bands: list[str] = []
     logos: list[dict] = []
-    fresh = not derived   # 派生ベースでは装飾・フッター・背景はベース由来を使い、
-                          # 新設しない(色替えは derive.colorMap、文字は下のスタイルで行う)
+    fresh = not derived   # On a derived base, decoration/footer/background come from
+                          # the base and are not created fresh (recoloring is done via
+                          # derive.colorMap, text via the styling below)
 
     def footer_reqs(role: str, page_id: str) -> list[dict]:
         if not fresh or not footer.get("text"):
@@ -433,7 +437,7 @@ def plan_requests(spec: dict, rolemap: dict, logo_urls: dict[str, str],
                         c["accent"])
             bands.append("tf_section_rule")
 
-    # CONTENT / TITLE_ONLY: 上端のアクセントバー + タイトル/本文スタイル + フッター
+    # CONTENT / TITLE_ONLY: top accent bar + title/body style + footer
     for role in ("CONTENT", "TITLE_ONLY"):
         page = rolemap[role]["layoutId"]
         r = reqs[role]
@@ -458,7 +462,7 @@ def plan_requests(spec: dict, rolemap: dict, logo_urls: dict[str, str],
         reqs[role].append(_bg(page, c["background"]))
     reqs[role] += footer_reqs(role, page)
 
-    # CLOSING (blank ベースでは MAIN_POINT を締めページに転用)
+    # CLOSING (on a blank base, MAIN_POINT is repurposed as the closing page)
     role, page = "CLOSING", rolemap["CLOSING"]["layoutId"]
     r = reqs[role]
     if fresh:
@@ -479,10 +483,11 @@ def plan_requests(spec: dict, rolemap: dict, logo_urls: dict[str, str],
 
 
 def plan_derive_requests(spec: dict, pres: dict) -> list[dict]:
-    """derive.colorMap / deleteObjects をリクエストに展開する(派生ベースのみ)。
+    """Expand derive.colorMap / deleteObjects into requests (derived base only).
 
-    NOT_RENDERED(透明)の塗りは api-notes §3b の罠 — 塗ると不透明になり
-    マスターのフッターを覆うため、明示指定が無い限り触らない。
+    NOT_RENDERED (transparent) fills are the api-notes §3b trap -- filling
+    them makes them opaque and covers the master's footer, so they are left
+    alone unless explicitly specified.
     """
     derive = spec.get("derive") or {}
     color_map = {k.upper(): v for k, v in (derive.get("colorMap") or {}).items()}
@@ -512,7 +517,7 @@ def plan_derive_requests(spec: dict, pres: dict) -> list[dict]:
 
 
 def master_font_requests(pres: dict, spec: dict) -> list[dict]:
-    """マスターページの TITLE/BODY プレースホルダにフォント既定を設定する。"""
+    """Set the default font on the master page's TITLE/BODY placeholders."""
     masters = pres.get("masters", [])
     if not masters:
         return []
@@ -533,7 +538,7 @@ def apply(slides, pid: str, requests: list[dict]) -> None:
             presentationId=pid, body={"requests": chunk}).execute(), "batchUpdate")
 
 
-# ---------- 登録 ----------
+# ---------- Registration ----------
 
 def register_template(slides, pid: str, spec: dict, emit_path: str,
                       rolemap: dict, base_desc: str) -> dict:
@@ -567,9 +572,9 @@ def register_template(slides, pid: str, spec: dict, emit_path: str,
             layout["elements"].setdefault(
                 "slideNumber", {"x": 9.45, "y": 5.34, "w": 0.4, "h": 0.2})
         else:
-            # 表紙・クロージング(とページ番号無効時の全ロール)には番号を描かせない。
-            # ベースのレイアウトが SLIDE_NUMBER を持っていても build_deck 側では
-            # hasPageNumber で判定される
+            # Don't render a page number on the cover/closing (and on every
+            # role when page numbers are disabled). Even if the base layout
+            # has a SLIDE_NUMBER, build_deck decides based on hasPageNumber
             layout["hasPageNumber"] = False
 
     os.makedirs(os.path.dirname(emit_path) or ".", exist_ok=True)
@@ -616,7 +621,7 @@ def main() -> int:
         return 1
 
     if args.dry_run:
-        # 合成 rolemap でリクエストを組み、規模を見せる(API なし)
+        # Build requests using a synthetic rolemap to show the scale (no API calls)
         fake_geo = {"x": 0.6, "y": 2.4, "w": 8.8, "h": 0.9}
         fake = {role: {"layoutId": f"dry_{role}",
                        "placeholders": {tp: {"objectId": f"dry_{role}_{tp}",
@@ -671,8 +676,8 @@ def main() -> int:
         apply(slides, pid, flat)
 
         if bands:
-            # updatePageElementsZOrder は 1 リクエスト内の要素が同一ページ
-            # 限定のため、帯ごとに 1 リクエストに分ける
+            # updatePageElementsZOrder requires the elements in a single
+            # request to be on the same page, so split into one request per band
             try:
                 apply(slides, pid, [{"updatePageElementsZOrder": {
                     "pageElementObjectIds": [b], "operation": "SEND_TO_BACK"}}

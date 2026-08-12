@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""デッキモジュールを Google Slides に生成する。
+"""Render a deck module to Google Slides.
 
-    python scripts/render_deck.py path/to/mydeck.py --title "タイトル"
-    python scripts/render_deck.py mydeck.py --only 1-12        # 部分生成（試作用）
-    python scripts/render_deck.py mydeck.py --folder <URL/ID>  # 出力先フォルダ
-    python scripts/render_deck.py mydeck.py --dry-run          # 構成の一覧だけ
+    python scripts/render_deck.py path/to/mydeck.py --title "Title"
+    python scripts/render_deck.py mydeck.py --only 1-12        # partial render (for prototyping)
+    python scripts/render_deck.py mydeck.py --folder <URL/ID>  # destination folder
+    python scripts/render_deck.py mydeck.py --dry-run          # just list the structure
 
-生成前に validate_layout.py の検査を必ず通す（--skip-validate で外せるが非推奨）。
-検査は API を呼ばないので、無駄な生成とクォータ消費を防げる。
+Always run the validate_layout.py checks before generating (can be skipped
+with --skip-validate, but that's not recommended). The checks don't call the
+API, so they avoid wasted generation and quota usage.
 """
 from __future__ import annotations
 

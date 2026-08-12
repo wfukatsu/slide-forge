@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
-"""デッキモジュールの座標を、Google Slides API を呼ばずに検査する。
+"""Check a deck module's coordinates without calling the Google Slides API.
 
     python scripts/validate_layout.py path/to/mydeck.py [--template templates/x.json]
 
-検査する内容:
+What it checks:
 
-1. 図形がフッター領域（DY1 より下）に侵入していないか
-   → 侵入するとマスターのロゴ・著作権表示・要点行と重なる
-2. 図形がスライドの左右外に出ていないか
-3. タイトルが 1 行に収まるか
-   → 2 行になるとタイトルが図の領域を侵食する
-4. 描画中に例外が出ないか（座標計算のミスをここで捕まえる）
-5. レイアウト名がテンプレートで解決できるか、プレースホルダが存在するか
-6. コネクタ（矢印・線）の端点が図形に接しているか
-   → どの図形からも離れている / 図形の内部に埋まっている端点を検出する
-7. 文字を持つ図形どうしが部分的に重なっていないか（入れ子は許す）
-8. 枠に対して文字が多すぎないか（溢れた文字は切れて見える）
+1. Whether a shape intrudes into the footer area (below DY1)
+   -> intruding overlaps the master's logo, copyright notice, and key-point line
+2. Whether a shape extends past the left/right edge of the slide
+3. Whether the title fits on one line
+   -> wrapping to two lines lets the title encroach on the figure area
+4. Whether drawing raises an exception (catches coordinate-calculation mistakes here)
+5. Whether the layout name resolves via the template and its placeholders exist
+6. Whether connector (arrow/line) endpoints touch a shape
+   -> detects endpoints that are detached from every shape, or buried inside one
+7. Whether shapes with text partially overlap each other (nesting is allowed)
+8. Whether there's too much text for the frame (overflowing text gets clipped)
 
-API を叩かないので無料・即時。生成する前に必ず通すこと。
-終了コードは問題があれば 1、なければ 0。
+Doesn't hit the API, so it's free and instant. Always run this before
+generating. Exit code is 1 if there are problems, 0 otherwise.
 """
 from __future__ import annotations
 
@@ -74,20 +74,20 @@ register({
         "OK: はみ出し・タイトル折返し・レイアウト不整合なし",
 })
 
-# ラベルは中央寄せの都合で枠から僅かにはみ出すことがあるため、左右は少し緩める
+# Centered labels can slightly overflow the frame, so relax the left/right bounds a bit
 LEFT_SLACK, RIGHT_SLACK = 0.25, 0.25
 
-# コネクタの判定しきい値は diagrams.Canvas.CONN_* にある
+# The connector-detection thresholds live in diagrams.Canvas.CONN_*
 
 FILLABLE = {"TITLE", "SUBTITLE", "BODY"}
 
 
 def load_deck_module(path: str):
-    """デッキモジュールを読み込み、SLIDES を返す。"""
+    """Load a deck module and return its SLIDES."""
     path = os.path.abspath(path)
     if not os.path.exists(path):
         raise SystemExit(t("deck module not found: {path}", path=path))
-    # デッキ側が `from deckkit import *` できるよう、モジュールのディレクトリも通す
+    # Add the module's directory to the path too, so the deck can `from deckkit import *`
     sys.path.insert(0, os.path.dirname(path))
     deckkit.reset()
     spec = importlib.util.spec_from_file_location("_deck", path)
@@ -101,14 +101,14 @@ def load_deck_module(path: str):
 
 
 class FakeDeck:
-    """API を持たないダミー。Canvas が積むリクエストを捨てる。"""
+    """A stand-in with no API. Discards whatever requests Canvas queues up."""
 
     def __init__(self):
         self.requests = []
 
 
 class TrackedCanvas(Canvas):
-    """描画された図形の外接範囲を記録する Canvas。"""
+    """A Canvas that records the bounding box of the shapes it draws."""
 
     def __init__(self, template):
         super().__init__(FakeDeck(), "offline", template)
@@ -117,7 +117,7 @@ class TrackedCanvas(Canvas):
         self.left = 99.0
 
     def _elem_props(self, x, y, w, h, *args, **kwargs):
-        # 下部の固定要素（要点行・エディション行）は意図した位置なので除外する
+        # Fixed elements at the bottom (key-point line, edition line) are intentionally placed, so exclude them
         if not deckkit.FOOT_MODE[0]:
             self.bottom = max(self.bottom, y + h)
             self.right = max(self.right, x + w)
@@ -141,12 +141,12 @@ def check(template: dict, slides: list[dict]) -> list[str]:
         key = s.get("layout")
         resolved, layout = resolve_layout(template, key)
 
-        # --- レイアウトとプレースホルダ ---
+        # --- Layout and placeholders ---
         if layout is None:
             problems.append(t("{i:2d} layout '{key}' cannot be resolved by "
                               "the template", i=i, key=key))
         else:
-            # drawText で座標指定描画されるものも、指定可能な枠として扱う
+            # Treat shapes drawn at explicit coordinates via drawText as assignable slots too
             declared = list(layout.get("placeholders", []))
             for dk in layout.get("drawText", {}):
                 name = dk.upper().replace("X", "#") if dk[-1].isdigit() else dk.upper()
@@ -168,14 +168,14 @@ def check(template: dict, slides: list[dict]) -> list[str]:
                     "{given} were given", i=i, key=key, slots=len(slots),
                     given=len(bodies)))
 
-        # --- タイトルの折り返し ---
+        # --- Title wrapping ---
         if s.get("draw") and title and not deckkit.fits_one_line(title):
             problems.append(t(
                 "{i:2d} the title wraps to two lines and overlaps the figure "
                 "(em={em:.1f} > {max}): {title}", i=i, em=deckkit.em(title),
                 max=deckkit.TITLE_EM_MAX, title=title))
 
-        # --- 描画とはみ出し ---
+        # --- Drawing and overflow ---
         if not s.get("draw"):
             continue
         c = TrackedCanvas(template)
@@ -198,7 +198,7 @@ def check(template: dict, slides: list[dict]) -> list[str]:
                 "(left={left:.2f} right={right:.2f}): {title}", i=i,
                 left=c.left, right=c.right, title=title))
         for msg in (c.audit_connectors() + c.audit_overlaps()
-                    + c.audit_text_fit()):     # 実装は diagrams.Canvas 側
+                    + c.audit_text_fit()):     # implemented in diagrams.Canvas
             problems.append(f"{i:2d} {msg}: {title}")
     return problems
 

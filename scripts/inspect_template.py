@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
-"""Google Slides のテンプレート（マスタースライド）を解析して template.json を生成する。
+"""Analyzes a Google Slides template (master slides) and generates template.json.
 
-    # 解析して人間可読なレポートを表示
-    python scripts/inspect_template.py <URL または ID>
+    # Analyze and print a human-readable report
+    python scripts/inspect_template.py <URL or ID>
 
-    # template.json を書き出す
+    # Write out template.json
     python scripts/inspect_template.py <URL> --emit templates/my-brand.json --name my-brand
 
-    # レイアウトのサムネイルも取得する（視覚確認用）
+    # Also fetch layout thumbnails (for visual verification)
     python scripts/inspect_template.py <URL> --thumbnails out/thumbs
 
-生成された template.json の `roles` は表示名とプレースホルダ構成からの**推測**なので、
-サムネイルを見て必ず人間が確認・修正すること。既存ファイルへ上書きするときは、
-確認済みの `roles` を引き継ぐ（推測で上書きしたいときだけ `--reset-roles`）。
+The generated template.json's `roles` are only a **guess** based on display
+names and placeholder composition, so always verify and fix them by looking
+at the thumbnails. When overwriting an existing file, the verified `roles`
+are carried over (pass `--reset-roles` only if you want to overwrite with
+fresh guesses).
 
-`layouts.*.imageSlots` は「テンプレートが画像を置きたい場所」。デッキ仕様では
-x/y/w/h を省略するとここへ収まる（`references/images.md`）。
+`layouts.*.imageSlots` marks "where the template wants to place an image."
+In a deck spec, omitting x/y/w/h fits into this slot (see
+`references/images.md`).
 """
 from __future__ import annotations
 
@@ -70,7 +73,7 @@ register({
         "  ⚠ 引き継いだ roles のうち、存在しないレイアウトを指しているもの: {stale}",
 })
 
-# レイアウト表示名からセマンティックロールを推測するためのキーワード
+# Keywords used to guess a semantic role from a layout's display name
 ROLE_KEYWORDS = {
     "COVER": ["title slide", "cover", "表紙", "hyoshi"],
     "SECTION": ["section", "divider", "chapter", "中扉", "sub section", "agenda"],
@@ -80,7 +83,7 @@ ROLE_KEYWORDS = {
 
 
 def slugify(name: str, used: set[str]) -> str:
-    """表示名を UPPER_SNAKE のキーに変換する。衝突時は連番を付ける。"""
+    """Converts a display name into an UPPER_SNAKE key. Appends a number on collision."""
     key = re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_").upper() or "LAYOUT"
     if key[0].isdigit():
         key = "L_" + key
@@ -92,7 +95,7 @@ def slugify(name: str, used: set[str]) -> str:
 
 
 def geometry(el: dict) -> dict:
-    """pageElement の位置とサイズをインチで返す。"""
+    """Returns a pageElement's position and size in inches."""
     t = el.get("transform", {}) or {}
     sz = el.get("size", {}) or {}
     w = sz.get("width", {}).get("magnitude", 0) * t.get("scaleX", 1)
@@ -106,12 +109,12 @@ def geometry(el: dict) -> dict:
 
 
 def opaque_hex(color_container: dict | None) -> str | None:
-    """色を hex か `theme:XXX` に解決する。
+    """Resolves a color to hex or `theme:XXX`.
 
-    Slides API は入れ子の形が場所ごとに違う:
+    The Slides API nests this differently depending on where it appears:
       solidFill      -> {"color": {"rgbColor"|"themeColor": …}, "alpha": 1}
       foregroundColor-> {"opaqueColor": {"rgbColor"|"themeColor": …}}
-    どちらでも受けられるように順に剥がす。
+    Unwraps each layer in turn so both forms are handled.
     """
     if not color_container:
         return None
@@ -129,12 +132,12 @@ def opaque_hex(color_container: dict | None) -> str | None:
 
 
 def placeholder_text_style(shape: dict) -> dict | None:
-    """プレースホルダの既定テキストスタイル（第1階層）を取り出す。"""
+    """Extracts a placeholder's default text style (first nesting level)."""
     lists = (shape.get("text") or {}).get("lists") or {}
     for lst in lists.values():
         lvl0 = (lst.get("nestingLevel") or {}).get("0")
         if lvl0 is None:
-            # nestingLevel のキーは "0" ではなく 0 相当の順序で来ることがある
+            # nestingLevel's key can arrive in an ordering equivalent to 0 rather than the string "0"
             levels = lst.get("nestingLevel") or {}
             lvl0 = levels.get(0) or (list(levels.values())[0] if levels else None)
         bs = (lvl0 or {}).get("bulletStyle") or {}
@@ -169,19 +172,21 @@ PLACEHOLDER_ELEMENT_KEY = {
     "SLIDE_NUMBER": "slideNumber",
 }
 
-# 「ここに画像を置く」ことを表すプレースホルダの型。
-# Slides の UI で図・画像の枠として作られるものをまとめて拾う。
+# Placeholder types that mean "place an image here."
+# Collectively covers what Slides' UI creates as figure/image frames.
 IMAGE_PLACEHOLDER_TYPES = {
     "PICTURE", "CLIP_ART", "DIAGRAM", "MEDIA", "OBJECT", "SLIDE_IMAGE",
 }
 
 
 def is_empty_image(el: dict) -> bool:
-    """中身の無い image 要素か（＝画像を差し込むための空枠か）。
+    """Is this an image element with no content (i.e. an empty frame meant
+    for inserting an image)?
 
-    レイアウトに置かれた image のうち、`contentUrl` が空のものは実際には
-    何も描画されない。テンプレートの作者が「ここに絵を入れる」意図で
-    残した枠であり、装飾ではなく差し込み位置として扱う。
+    Among the image elements placed on a layout, ones where `contentUrl` is
+    empty don't actually render anything. They're frames the template's
+    author left with the intent "put a picture here," so they're treated as
+    an insertion point rather than decoration.
     """
     img = el.get("image")
     if img is None:
@@ -190,7 +195,7 @@ def is_empty_image(el: dict) -> bool:
 
 
 def analyze_page(page: dict) -> dict:
-    """レイアウト/マスター1ページ分の構造を抽出する。"""
+    """Extracts the structure of one layout/master page."""
     placeholders: list[str] = []
     elements: dict = {}
     text_styles: dict = {}
@@ -203,8 +208,9 @@ def analyze_page(page: dict) -> dict:
             ph = shape["placeholder"]
             ptype = ph.get("type")
             idx = ph.get("index", 0)
-            # 2カラム/3カラムのレイアウトは BODY を index 0,1,2 と複数持つ。
-            # index 0 は "BODY"、それ以降は "BODY#1" のように区別して全て記録する。
+            # 2-column/3-column layouts have multiple BODY placeholders at
+            # index 0, 1, 2. Index 0 is recorded as "BODY", the rest are
+            # distinguished as "BODY#1" etc., and all are recorded.
             name = ptype if idx == 0 else f"{ptype}#{idx}"
             if ptype in IMAGE_PLACEHOLDER_TYPES:
                 image_slots.append({
@@ -227,7 +233,7 @@ def analyze_page(page: dict) -> dict:
                     text_styles[key] = st
             continue
 
-        # 中身の無い image は装飾ではなく「画像の差し込み枠」
+        # An image with no content isn't decoration — it's an "image insertion frame"
         if is_empty_image(el):
             image_slots.append({
                 **geometry(el), "source": "layout",
@@ -235,9 +241,10 @@ def analyze_page(page: dict) -> dict:
             })
             continue
 
-        # プレースホルダ以外＝レイアウトが持つ装飾要素。
-        # 要素型は shape / image / line のほか table / video / line / wordArt /
-        # sheetsChart / elementGroup があるので、決め打ちせず実際のキーから判定する。
+        # Anything that isn't a placeholder = a decorative element the
+        # layout carries. Besides shape / image / line, element types
+        # include table / video / wordArt / sheetsChart / elementGroup, so
+        # rather than hardcoding one, determine it from the actual key present.
         kind = next(
             (k for k in ("shape", "image", "line", "table", "video",
                          "wordArt", "sheetsChart", "elementGroup") if k in el),
@@ -274,10 +281,10 @@ def analyze_page(page: dict) -> dict:
     }
 
 
-# ---------- 画像の差し込み枠（imageSlots） ----------
+# ---------- Image insertion frames (imageSlots) ----------
 
 def _overlap_ratio(a: dict, b: dict) -> float:
-    """2つの枠の重なりを、小さいほうの面積に対する比で返す。"""
+    """Returns the overlap of two frames as a ratio of the smaller area."""
     ix = max(0.0, min(a["x"] + a["w"], b["x"] + b["w"]) - max(a["x"], b["x"]))
     iy = max(0.0, min(a["y"] + a["h"], b["y"] + b["h"]) - max(a["y"], b["y"]))
     small = min(a["w"] * a["h"], b["w"] * b["h"])
@@ -285,10 +292,12 @@ def _overlap_ratio(a: dict, b: dict) -> float:
 
 
 def collect_sample_image_boxes(pres: dict) -> dict[str, list[dict]]:
-    """同梱スライドに実際に置かれている画像の枠を、レイアウトごとに集める。
+    """Collects the actual image frames placed in bundled slides, grouped
+    by layout.
 
-    レイアウト側の空枠は「だいたいこの辺」しか示していないことがあり、
-    実際の使われ方（同梱スライドの絵）のほうが設計意図に近い。
+    The layout's empty frame sometimes only indicates "roughly around
+    here"; the actual usage (the pictures in the bundled slides) is closer
+    to the intended design.
     """
     out: dict[str, list[dict]] = {}
     for s in pres.get("slides", []):
@@ -302,14 +311,16 @@ def collect_sample_image_boxes(pres: dict) -> dict[str, list[dict]]:
     return out
 
 
-# 実例だけを根拠に枠とみなすには、同じ場所に何回置かれていれば十分か。
-# 1 回だけの画像は「たまたま貼られたスクリーンショット」のことが多い。
+# How many times must an image appear in the same spot before it's treated
+# as an established frame, based on samples alone? A single occurrence is
+# often just "a screenshot that happened to be pasted there."
 SAMPLE_SLOT_MIN = 2
 MAX_SLOTS_PER_LAYOUT = 4
 
 
 def _consensus_box(boxes: list[dict]) -> dict:
-    """同じ枠に集まった実例から、代表的な大きさを1つ選ぶ（最頻・同数なら大）。"""
+    """Picks one representative size from samples gathered at the same
+    frame (most frequent; ties broken by larger size)."""
     counts: dict[tuple, int] = {}
     for b in boxes:
         key = tuple(round(b[k], 2) for k in ("x", "y", "w", "h"))
@@ -320,16 +331,19 @@ def _consensus_box(boxes: list[dict]) -> dict:
 
 def merge_image_slots(layout_slots: list[dict],
                       samples: list[dict]) -> list[dict]:
-    """レイアウトの枠と同梱スライドの実例を突き合わせて差し込み枠を確定する。
+    """Cross-references the layout's frames with samples from the bundled
+    slides to finalize the insertion frames.
 
-    - プレースホルダがあれば、その座標をそのまま採用する（最も確かな根拠）
-    - レイアウトに空の image があれば枠とみなし、実例があれば大きさをそちらに
-      合わせる（空枠は「だいたいこの辺」しか示していないことがある）
-    - レイアウトに枠が無くても、同じ場所に {min} 回以上置かれている実例があれば
-      事実上の枠として拾う
+    - If a placeholder exists, its coordinates are used as-is (the most
+      reliable evidence)
+    - If the layout has an empty image, it's treated as a frame; if samples
+      exist, their size takes precedence (an empty frame sometimes only
+      indicates "roughly around here")
+    - Even without a frame in the layout, samples placed in the same spot
+      {min}+ times are picked up as a de facto frame
     """
     slots = [dict(s) for s in layout_slots]
-    # レイアウト側の枠に紐づかない実例を、位置ごとにまとめる
+    # Group samples not tied to any layout frame, by position
     leftovers: list[list[dict]] = []
     for box in samples:
         if any(_overlap_ratio(box, s) >= 0.5 for s in slots):
@@ -353,7 +367,7 @@ def merge_image_slots(layout_slots: list[dict],
             entry["placeholder"] = slot["placeholder"]
         near = [b for b in samples if _overlap_ratio(b, slot) >= 0.5]
         if near and slot.get("source") == "layout":
-            # 空枠の大きさより、実際に使われている大きさを優先する
+            # Prefer the actually-used size over the empty frame's declared size
             chosen = _consensus_box(near)
             if any(abs(chosen[k] - entry[k]) > 0.02 for k in ("x", "y", "w", "h")):
                 entry["declared"] = {k: slot[k] for k in ("x", "y", "w", "h")}
@@ -362,12 +376,12 @@ def merge_image_slots(layout_slots: list[dict],
         if near:
             entry["samples"] = len(near)
         entry["aspect"] = round(entry["w"] / entry["h"], 3) if entry["h"] else None
-        # 代表値をとった結果、既存の枠と同じ場所に重なったものは捨てる
+        # After taking the representative value, discard anything that overlaps an existing frame at the same spot
         if any(_overlap_ratio(entry, m) >= 0.6 for m in merged):
             continue
         merged.append(entry)
 
-    # 大きい枠から順に（本文用の絵が先、小さな飾りが後）
+    # Largest frame first (body images first, small decorations after)
     merged.sort(key=lambda s: -(s["w"] * s["h"]))
     return merged[:MAX_SLOTS_PER_LAYOUT]
 
@@ -390,10 +404,11 @@ def guess_role(display_name: str, placeholders: list[str]) -> str | None:
 
 
 def extract_colors(master: dict) -> dict:
-    """マスターの colorScheme を hex 辞書にする。
+    """Turns a master's colorScheme into a hex dict.
 
-    注意: colorScheme の各要素は `{"type": "...", "color": {"red":..,...}}` であり、
-    `color.rgbColor` ではなく `color` 直下に RGB が入る（他の API 応答と構造が違う）。
+    Note: each colorScheme entry is `{"type": "...", "color": {"red":..,...}}`,
+    with RGB directly under `color` rather than `color.rgbColor` (this
+    differs from the structure of other API responses).
     """
     scheme = (master.get("pageProperties") or {}).get("colorScheme") or {}
     out = {}
@@ -412,8 +427,9 @@ def build_template(pres: dict, name: str) -> dict:
     colors = extract_colors(master)
     master_info = analyze_page(master) if master else {"decorations": [], "textStyles": {}}
 
-    # マスターが複数あるプレゼンテーションもある（他ファイルからスライドを貼り付けると増える）。
-    # 既定は 1 つ目だが、レイアウトごとにどのマスターに属するかを記録しておく。
+    # Some presentations have multiple masters (pasting slides from another
+    # file adds them). The first one is used by default, but which master
+    # each layout belongs to is recorded too.
     master_list = []
     for m in masters:
         mp = m.get("masterProperties", {})
@@ -454,7 +470,7 @@ def build_template(pres: dict, name: str) -> dict:
 
     roles = {role: keys[0] for role, keys in role_candidates.items()}
 
-    # ページ番号の既定スタイル。マスターの SLIDE_NUMBER プレースホルダから拾えれば使う。
+    # Default page-number style. Used if it can be picked up from the master's SLIDE_NUMBER placeholder.
     pn_style = master_info.get("textStyles", {}).get("slideNumber") or {}
     page_number = {
         "font": pn_style.get("fontFamily", "Arial"),
@@ -469,8 +485,9 @@ def build_template(pres: dict, name: str) -> dict:
     return {
         "name": name,
         "displayName": pres.get("title", name),
-        # --source には URL でも ID でも渡せるが、記録するのは常に開ける URL。
-        # 受け取った文字列をそのまま入れると、再解析のたびに形が変わる
+        # --source accepts either a URL or an ID, but what's recorded is
+        # always an openable URL. Storing the input string verbatim would
+        # make the shape change on every re-analysis
         "sourceUrl": _auth.presentation_url(pres["presentationId"]),
         "presentationId": pres["presentationId"],
         "generationMode": "copy",
@@ -604,8 +621,9 @@ def main() -> int:
     print_report(template)
 
     if args.emit:
-        # 既存ファイルに上書きするときは、人が確認して直した項目を残す。
-        # roles は推測値なので、再解析のたびに人の確認結果を消してはいけない。
+        # When overwriting an existing file, keep the fields a human
+        # verified and corrected. Since roles are only a guess, a
+        # re-analysis must never erase a human's verification.
         keep = {}
         if os.path.exists(args.emit) and not args.reset_roles:
             try:

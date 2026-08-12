@@ -9,6 +9,7 @@ description: >-
   "create Google Slides", "generate slides", "create infographic", or when a Google Slides
   URL is included.
 ---
+*[日本語](SKILL.ja.md)*
 
 # Google Slides Generation (from scratch)
 

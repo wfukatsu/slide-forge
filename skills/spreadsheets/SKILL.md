@@ -17,6 +17,8 @@ description: >-
   inside slides (the deck skills' table figure).
 ---
 
+*[日本語](SKILL.ja.md)*
+
 # Line-item Spreadsheets (Excel + Google Spreadsheet)
 
 ## Important
@@ -24,10 +26,11 @@ description: >-
 - **One spec, two outputs.** The JSON spec builds the `.xlsx` with openpyxl;
   `--gsheet` converts that same file into a Google Spreadsheet via Drive.
   Never author the two outputs separately — they must stay identical.
-- **Amounts are formulas, not pasted numbers.** 金額 = 数量 × 単価 as a real
-  formula (`=D{row}*F{row}`), totals as `SUM`. The user will edit quantities
-  in the delivered file and the totals must follow. Only put literal numbers
-  in cells the user should treat as input (単価, 数量).
+- **Amounts are formulas, not pasted numbers.** Amount = quantity × unit price
+  as a real formula (`=D{row}*F{row}`), totals as `SUM`. The user will edit
+  quantities in the delivered file and the totals must follow. Only put
+  literal numbers in cells the user should treat as input (unit price,
+  quantity).
 - **Fixes happen in the spec.** Regenerate on any change; with the same title
   and folder, the Google Spreadsheet is updated **in place** (URL preserved),
   so the user always holds one link.
@@ -40,7 +43,7 @@ description: >-
 - **Companion to a deck**: when the spreadsheet backs a proposal's cost slide
   (`scalar-proposal-slides` BOM, etc.), put it in the **deck's Drive folder**
   and keep slide summary and sheet totals consistent — the slide shows the
-  合計, the sheet carries the 明細.
+  total, the sheet carries the line items.
 
 ## Quick Reference
 
@@ -48,7 +51,7 @@ description: >-
 |------|---------|
 | Validate the spec (offline, free) | `.venv/bin/python scripts/build_sheet.py spec.json --dry-run` |
 | Build xlsx (→ `out/sheets/<title>.xlsx`) | `.venv/bin/python scripts/build_sheet.py spec.json [--out path.xlsx]` |
-| Also create the Google Spreadsheet | `--gsheet [--folder <Drive フォルダ URL/ID>]` |
+| Also create the Google Spreadsheet | `--gsheet [--folder <Drive folder URL/ID>]` |
 | Archive the spec next to it | `.venv/bin/python scripts/drive_folder.py upload <FOLDER> spec.json` |
 | Worked example (estimate with tax summary) | `examples/estimate-sample.json` |
 
@@ -78,31 +81,31 @@ Full reference in the `build_sheet.py` docstring; the shape:
 }
 ```
 
-- `type`: `text`（既定）/ `int` / `currency`（¥#,##0）/ `percent` / `date`
+- `type`: `text` (default) / `int` / `currency` (¥#,##0) / `percent` / `date`
 - Placeholders: `{row}` (that data row), `{first}`/`{last}` (data range),
   `{s1}`, `{s2}`… (summary rows, forward references only)
-- Multiple sheets per book: put 明細 first, then 前提条件 / 内訳 sheets —
-  estimates without stated assumptions get disputed later, so include a
-  前提条件 sheet whenever the numbers depend on region, exchange rate,
-  contract term, or excluded work.
+- Multiple sheets per book: put the line-item sheet first, then
+  assumptions / breakdown sheets — estimates without stated assumptions get
+  disputed later, so include an assumptions sheet whenever the numbers depend
+  on region, exchange rate, contract term, or excluded work.
 
 ## Workflow
 
 1. **Settle the shape before authoring** (AskUserQuestion, one round,
    following `references/interactive-intake.md` §0/§5 manners): line-item
-   granularity and source material; tax handling (税抜/税込/rate); output —
-   xlsx のみ / Google Spreadsheet も（既定: 両方。納品先が Google Workspace
-   なら Spreadsheet 主体）; Drive folder (the deck's folder when this backs
-   a deck). Skip anything already specified.
+   granularity and source material; tax handling (excl./incl. tax/rate);
+   output — xlsx only / Google Spreadsheet too (default: both; lead with the
+   Spreadsheet when the recipient is on Google Workspace); Drive folder (the
+   deck's folder when this backs a deck). Skip anything already specified.
 2. **Author the spec** and validate offline: `--dry-run` catches column-count
    mismatches, unknown types, and bad placeholder references before any
    API call.
 3. **Build**: add `--gsheet --folder <FOLDER>` when a Google Spreadsheet was
    requested. Upload the spec JSON to the same folder (Drive folder rule).
 4. **Verify the numbers** — formulas compute in the file, not in the spec, so
-   check them once: export the converted sheet as CSV and confirm 小計/合計
-   (`drive.files().export(fileId=…, mimeType="text/csv")` returns computed
-   values), or recompute the expected totals and compare. A wrong column
-   letter in a formula is silent otherwise.
+   check them once: export the converted sheet as CSV and confirm the
+   subtotal/total (`drive.files().export(fileId=…, mimeType="text/csv")`
+   returns computed values), or recompute the expected totals and compare. A
+   wrong column letter in a formula is silent otherwise.
 5. **Report**: local xlsx path, Google Spreadsheet URL (when created), the
    Drive folder, and any `○○` placeholders still to be filled by the user.

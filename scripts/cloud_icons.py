@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""クラウドベンダー（AWS / Google Cloud / Azure）の公式アイコンを引く。
+"""Look up official cloud vendor icons (AWS / Google Cloud / Azure).
 
-素材は `assets/cloud-icons/`。取り込みは `scripts/fetch_cloud_icons.py` で行う
-（gitignore 対象。リポジトリ取得後に 1 回実行して復元する）。
+Assets live in `assets/cloud-icons/`. Fetch them with `scripts/fetch_cloud_icons.py`
+(the directory is gitignored; run this once after checking out the repo to restore it).
 
     python scripts/cloud_icons.py --search s3
     python scripts/cloud_icons.py --list --vendor aws --category groups
     python scripts/cloud_icons.py --render aws:ec2 --px 512 --out out/ec2.png
 
-名前は `aws:ec2` / `ec2` / `s3`（別名）/ `Cloud SQL`（表示名）のどれでも引ける。
+Names can be looked up as `aws:ec2` / `ec2` / `s3` (alias) / `Cloud SQL` (display name).
 
-**ライセンス上、色を変えたり回したりしてはならない**ので、Scalar アイコンの
-`icons.py` と違って `color` の引数は無い。`render()` は指定した画素数で焼くだけ。
+**Licensing prohibits recoloring or rotating these icons**, so unlike the Scalar
+icons in `icons.py`, there is no `color` argument here. `render()` just rasterizes
+at the requested pixel size.
 """
 from __future__ import annotations
 
@@ -79,7 +80,7 @@ DEFAULT_CACHE = os.path.join(SKILL_DIR, "cache", "cloud-icons")
 DEFAULT_PX = 512
 VENDORS = ("aws", "gcp", "azure")
 VENDOR_LABEL = {"aws": "AWS", "gcp": "Google Cloud", "azure": "Microsoft Azure"}
-# ゾーン枠の線・見出しに使うベンダー色（アイコン自体は染めない）
+# Vendor colors used for zone frame lines/headings (the icons themselves are never tinted)
 VENDOR_COLOR = {"aws": "#FF9900", "gcp": "#4285F4", "azure": "#0078D4"}
 
 _MANIFEST: dict | None = None
@@ -89,7 +90,7 @@ class CloudIconError(RuntimeError):
     pass
 
 
-# ---------- マニフェスト ----------
+# ---------- Manifest ----------
 
 def manifest() -> dict:
     global _MANIFEST
@@ -116,7 +117,7 @@ def _norm(s: str) -> str:
 
 
 def resolve(name: str, *, vendor: str | None = None) -> str:
-    """`aws:ec2` / `ec2` / `s3` / 表示名 から `<vendor>:<slug>` を返す。"""
+    """Return `<vendor>:<slug>` from `aws:ec2` / `ec2` / `s3` / a display name."""
     table = icons()
     if name in table:
         return name
@@ -130,8 +131,8 @@ def resolve(name: str, *, vendor: str | None = None) -> str:
              if key in (_norm(m["slug"]), _norm(m["name"]))
              or any(key == _norm(a) for a in m["aliases"])]
     if len(exact) > 1:
-        # 「ec2」「vpc」はサービスとグループ枠の両方に当たる。サービスを優先し、
-        # さらに slug そのものが一致するものを優先する
+        # "ec2" and "vpc" match both a service and a group frame. Prefer the
+        # service, and among those prefer the one whose slug matches exactly.
         services = [k for k in exact if table[k]["kind"] == "service"]
         if services:
             exact = services
@@ -186,10 +187,10 @@ def describe(key: str) -> str:
     return f"{key:44} {m['name']}{kind}{alias}"
 
 
-# ---------- ラスタライズ ----------
+# ---------- Rasterize ----------
 
 def _svg_aspect(svg: str) -> float:
-    """SVG の縦横比（幅 / 高さ）を返す。読めなければ 1.0。"""
+    """Return the SVG's aspect ratio (width / height); 1.0 if it can't be read."""
     try:
         with open(svg, encoding="utf-8", errors="replace") as f:
             head = f.read(2000)
@@ -208,10 +209,11 @@ def _svg_aspect(svg: str) -> float:
 
 
 def _rasterize(svg: str, out: str, px: int) -> bool:
-    """長辺を px に合わせて焼く。**縦横比は必ず保つ**（改変禁止のため）。
+    """Rasterize so the longer side matches `px`. **Always preserves the aspect
+    ratio** (modification is not allowed by license).
 
-    幅と高さを両方指定すると非正方形のアイコン（Azure に数点ある）が
-    引き伸ばされ、ベンダーの利用条件に反する。
+    Specifying both width and height would stretch the few non-square icons
+    (Azure has a handful), which would violate the vendor's usage terms.
     """
     ar = _svg_aspect(svg)
     w = px if ar >= 1 else max(1, round(px * ar))
@@ -238,7 +240,8 @@ def _rasterize(svg: str, out: str, px: int) -> bool:
 
 def render(name: str, *, px: int = DEFAULT_PX, vendor: str | None = None,
            cache_dir: str | None = None, force: bool = False) -> str:
-    """アイコンを PNG にしてパスを返す。**色は変えない**（改変禁止のため）。"""
+    """Render the icon to PNG and return its path. **Color is never changed**
+    (modification is not allowed by license)."""
     key = resolve(name, vendor=vendor)
     m = icons()[key]
     cache_dir = cache_dir or os.environ.get("GSLIDES_CLOUD_ICON_CACHE", DEFAULT_CACHE)
@@ -266,20 +269,22 @@ def render(name: str, *, px: int = DEFAULT_PX, vendor: str | None = None,
     return out
 
 
-# ---------- Canvas に生やすメソッド ----------
+# ---------- Methods added to Canvas ----------
 
 class CloudIconMixin:
-    """`Canvas` にクラウドアイコンの配置を足すミックスイン。
+    """Mixin that adds cloud-icon placement to `Canvas`.
 
-    座標の規約は `illustrations` / `icons` と同じ。size×size の正方形に貼り、
-    **戻り値はラベルを含めた下端 y**。
+    Coordinate conventions match `illustrations` / `icons`. Icons are placed in
+    a size×size square, and **the return value is the bottom y, including the
+    label**.
 
-    **回転・反転・色変更の引数は用意していない。** ベンダーの利用条件で禁止
-    されているため、API として出さないことで事故を防いでいる。ラベルは既定で
-    正式名称を表示する（各社が「アイコンの近くに製品名を」と求めているため）。
+    **There are deliberately no rotate/flip/recolor arguments.** The vendor
+    usage terms prohibit these, so leaving them out of the API prevents
+    accidental misuse. Labels show the official product name by default
+    (vendors require the product name to appear near the icon).
     """
 
-    #: アイコンを焼く画素数
+    #: Pixel size to rasterize the icon at
     cloud_icon_px = DEFAULT_PX
 
     def cloud_icon(self, name: str, x: float, y: float, size: float = 0.6, *,
@@ -287,14 +292,14 @@ class CloudIconMixin:
                    label_w: float | None = None, label_gap: float = 0.05,
                    label_color=None, vendor: str | None = None,
                    px: int | None = None) -> float:
-        """クラウドアイコンを size×size の正方形に貼る。戻り値は下端 y。
+        """Place a cloud icon in a size×size square. Returns the bottom y.
 
-        `label` を省略すると正式名称（例「Amazon EC2」）を下に置く。ラベルを
-        出したくないときだけ `label=""` を渡す。
+        If `label` is omitted, the official product name (e.g. "Amazon EC2")
+        is placed below it. Pass `label=""` only when you want no label.
         """
         m = meta(name, vendor=vendor)
         if getattr(self.deck, "dry", False):
-            # --dry-run: 画像は取りに行けないので同じ大きさの矩形で座標だけ確かめる
+            # --dry-run: can't fetch the image, so just verify the coordinates with a same-size rectangle
             self.shape(x, y, size, size, kind="RECTANGLE",
                        fill=self.P.surfaceAlt, stroke=self.P.border)
         else:
@@ -317,7 +322,7 @@ class CloudIconMixin:
                        size: float = 0.6, label_size: float = 8.5,
                        gap: float | None = None, vendor: str | None = None,
                        px: int | None = None) -> float:
-        """横一列に等間隔で並べる。items は名前か (名前, ラベル)。"""
+        """Lay out evenly spaced in a horizontal row. `items` are names or (name, label) tuples."""
         n = len(items)
         cell = w / n
         bottom = y
@@ -333,7 +338,7 @@ class CloudIconMixin:
                         size: float = 0.6, label_size: float = 8.5,
                         arrow_color=None, vendor: str | None = None,
                         px: int | None = None) -> float:
-        """矢印でつないだ流れ図。矢印はアイコンの間の隙間にだけ引く。"""
+        """A flow diagram connected by arrows. Arrows are drawn only in the gaps between icons."""
         n = len(items)
         cell = w / n
         bottom = y
@@ -354,7 +359,7 @@ class CloudIconMixin:
                         size: float = 0.6, row_gap: float = 0.28,
                         label_size: float = 8.5, vendor: str | None = None,
                         px: int | None = None) -> float:
-        """格子状に並べる。items は名前か (名前, ラベル)。"""
+        """Lay out in a grid. `items` are names or (name, label) tuples."""
         cell = w / cols
         bottom = y
         row_top = y
@@ -372,10 +377,10 @@ class CloudIconMixin:
                    vendor: str | None = None, title: str | None = None,
                    color: str | None = None, fill=None, dash: str = "DASH",
                    title_size: float = 9) -> float:
-        """ゾーン（クラウド・リージョン・VPC 等）の枠と左上の見出しを描く。
+        """Draw a zone frame (cloud, region, VPC, etc.) with a heading in the top-left.
 
-        **枠を先に描いてから中身を重ねること。** 後から描くと中身が隠れる。
-        戻り値は枠の下端 y。
+        **Draw the frame first, then layer content on top.** Drawing it later
+        would hide the content. Returns the bottom y of the frame.
         """
         c = color or (VENDOR_COLOR.get(vendor) if vendor else self.P.muted)
         self.shape(x, y, w, h, kind="RECTANGLE", fill=fill, stroke=c,

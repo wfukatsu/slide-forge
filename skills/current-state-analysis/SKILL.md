@@ -1,131 +1,153 @@
 ---
 name: current-state-analysis
 description: >-
-  Run current-state analysis and problem-identification frameworks (現状分析・
-  課題の特定) on user-supplied material and render the results as slides from
-  the analysis template pack. Covers PEST, Five Forces, business-process
-  pain-point mapping, logic tree, KPI tree, why-why (5 Whys), fishbone,
-  Pareto, As-Is/To-Be gap analysis and an impact-effort priority matrix, plus
-  SWOT / 3C from the marketing-analysis pack. Use when asked to 現状分析,
-  課題を特定・構造化, 真因分析, As-Is/To-Be 整理, 課題の優先順位付け, or to
-  turn hearing notes / data into analysis slides. Route new-template authoring
-  to analysis-template-creator, deck generation mechanics to google-slides,
-  and visual QA to slide-qa.
+  Run current-state analysis and problem-identification frameworks
+  (current-state analysis, problem identification) on user-supplied material
+  and render the results as slides from the analysis template pack. Covers
+  PEST, Five Forces, business-process pain-point mapping, logic tree, KPI
+  tree, why-why (5 Whys), fishbone, Pareto, As-Is/To-Be gap analysis and an
+  impact-effort priority matrix, plus SWOT / 3C from the marketing-analysis
+  pack. Use when asked to 現状分析, 課題を特定・構造化, 真因分析, As-Is/To-Be
+  整理, 課題の優先順位付け, or to turn hearing notes / data into analysis
+  slides. Route new-template authoring to analysis-template-creator, deck
+  generation mechanics to google-slides, and visual QA to slide-qa.
 ---
+*[日本語](SKILL.ja.md)*
 
-# Current-State Analysis（現状分析・課題の特定）
+# Current-State Analysis (Current-State Analysis & Problem Identification)
 
-ユーザーが持ち込む材料（ヒアリングメモ・業務資料・データ）に分析フレーム
-ワークを適用し、その結果を `slide-templates/analysis` パック（+ 一部
-`marketing-analysis` パック）のスライドに落とす。
+Applies an analysis framework to material the user brings in (hearing notes,
+business documents, data) and renders the result as slides from the
+`slide-templates/analysis` pack (plus, in some cases, the
+`marketing-analysis` pack).
 
-作業ディレクトリは slide-forge ルート。コマンドは `.venv/bin/python`。
+The working directory is the slide-forge root. The command is
+`.venv/bin/python`.
 
 ## Boundaries
 
-| 依頼 | 行き先 |
+| Request | Route |
 |---|---|
-| 現状分析・課題特定を実行し、スライドにする | このスキル |
-| 分析フレームワークのテンプレートを新設・変更する | `analysis-template-creator` |
-| SWOT / 3C / ポジショニングマップ等の市場分析 1 枚だけ | `google-slides-template` + marketing-analysis パック |
-| デッキ生成そのものの仕組み・マスター選択 | `google-slides` / `google-slides-template` |
-| 生成したデッキの目視検査 | `slide-qa` |
-| 商談・アカウント固有の課題整理（台帳あり） | `scalar-account-plan` 系 |
+| Perform a current-state analysis / problem identification and turn it into slides | this skill |
+| Create or change a template for an analysis framework | `analysis-template-creator` |
+| A single market-analysis slide such as SWOT / 3C / positioning map | `google-slides-template` + the marketing-analysis pack |
+| The mechanics of deck generation itself / master selection | `google-slides` / `google-slides-template` |
+| Visual inspection of a generated deck | `slide-qa` |
+| Deal- or account-specific problem organization (with an account ledger) | the `scalar-account-plan` family |
 
-## 手法とテンプレートの対応
+## Mapping methods to templates
 
-分析は「環境 → 業務 → 構造化 → 課題定義 → 優先順位」の順に深くなる。
-**全部やらない。** 問いに答えるのに必要な段だけ選ぶ。
+Analysis deepens in the order "environment → business process → structuring
+→ problem definition → prioritization." **Do not do all of it.** Choose only
+the stages needed to answer the question at hand.
 
-| 段 | 答える問い | 手法 | テンプレート |
+| Stage | Question answered | Method | Template |
 |---|---|---|---|
-| 1. 環境 | 外部要因は何か | PEST | `pest-analysis` |
-| 1. 環境 | 業界の競争圧力はどこから | 5フォース | `five-forces` |
-| 1. 環境 | 強み・弱み × 機会・脅威 | SWOT | `swot-analysis`（marketing-analysis） |
-| 1. 環境 | 顧客・競合・自社 | 3C | `three-c-analysis`（marketing-analysis） |
-| 2. 業務 | どの工程に問題が集中しているか | 業務フロー + ペイン | `process-painpoints` |
-| 3. 構造化 | 問題は何に分解できるか | ロジックツリー | `logic-tree` |
-| 3. 構造化 | 未達はどの指標のせいか | KPI ツリー | `kpi-tree` |
-| 3. 構造化 | 真因は何か（単線） | なぜなぜ分析 | `why-why` |
-| 3. 構造化 | 原因の仮説はどの系統か | 特性要因図 | `fishbone-diagram` |
-| 3. 構造化 | どの要因が大半を占めるか | パレート分析 | `pareto-analysis` |
-| 4. 課題定義 | 現状と理想の差は何か | ギャップ分析 | `gap-analysis` |
-| 5. 優先順位 | どれから着手するか | 優先順位マトリクス | `priority-matrix` |
+| 1. Environment | What are the external factors? | PEST | `pest-analysis` |
+| 1. Environment | Where does industry competitive pressure come from? | Five Forces | `five-forces` |
+| 1. Environment | Strengths/weaknesses × opportunities/threats | SWOT | `swot-analysis` (marketing-analysis) |
+| 1. Environment | Customer, competitor, company | 3C | `three-c-analysis` (marketing-analysis) |
+| 2. Business process | Which process steps concentrate the problems? | Business flow + pain points | `process-painpoints` |
+| 3. Structuring | What can the problem be broken down into? | Logic tree | `logic-tree` |
+| 3. Structuring | Which metric is responsible for the shortfall? | KPI tree | `kpi-tree` |
+| 3. Structuring | What is the root cause (single chain)? | Why-why analysis | `why-why` |
+| 3. Structuring | Which family does the causal hypothesis belong to? | Fishbone diagram | `fishbone-diagram` |
+| 3. Structuring | Which factor accounts for the majority? | Pareto analysis | `pareto-analysis` |
+| 4. Problem definition | What is the gap between current and ideal state? | Gap analysis | `gap-analysis` |
+| 5. Prioritization | Which should be tackled first? | Priority matrix | `priority-matrix` |
 
-定番の組み合わせ（業務・IT 改革系）:
-`process-painpoints` →（`pareto-analysis` か `logic-tree`）→ `why-why` →
-`gap-analysis` → `priority-matrix`。戦略系は 1 段目（PEST / 5F / 3C / SWOT）
-から `gap-analysis` へ。
+A standard combination (for business/IT transformation work):
+`process-painpoints` → (`pareto-analysis` or `logic-tree`) → `why-why` →
+`gap-analysis` → `priority-matrix`. For strategy-oriented work, go from
+stage 1 (PEST / 5F / 3C / SWOT) straight to `gap-analysis`.
 
-各テンプレートの入力スロットと制約は
-`slide-templates/analysis/<id>/template.json` が正で、
-`.venv/bin/python scripts/list_slide_templates.py --tag analysis` で一覧できる。
-このスキルでスロット定義を再掲しない。
+The input slots and constraints for each template are authoritatively
+defined in `slide-templates/analysis/<id>/template.json`, and can be listed
+with `.venv/bin/python scripts/list_slide_templates.py --tag analysis`. This
+skill does not restate the slot definitions.
 
 ## Workflow
 
 ### 1. Intake
 
-一度にまとめて確認する:
+Confirm all of the following in one pass:
 
-- 答えるべき問い（何を決めるための分析か。決裁・稟議・改善企画…）;
-- 材料（ヒアリングメモ・データ・公開資料）と、その**出典・鮮度**;
-- 分析の深さ（環境〜優先順位のどの段まで要るか）;
-- 出力形態（単スライド / 分析章まるごと / 既存デッキへの追加）。
+- the question to be answered (what is this analysis for — a decision, an
+  approval, an improvement proposal…);
+- the material (hearing notes, data, public documents) and its **source and
+  freshness**;
+- the depth of analysis (which stage, from environment to prioritization, is
+  actually needed);
+- the output form (a single slide / a whole analysis chapter / an addition
+  to an existing deck).
 
-材料が無い分析は**引き受けない**。不足があれば、埋めるためのヒアリング
-項目・調査項目のリストを先に返す（それ自体が成果物になる）。
+**Do not take on** an analysis with no material. If something is missing,
+first return a list of hearing items / research items needed to fill the
+gap — that list is itself a deliverable.
 
-### 2. 分析の実行
+### 2. Running the analysis
 
-フレームワークは思考の型であって、埋め草の型ではない:
+A framework is a thinking template, not a filler template:
 
-- **事実と解釈を分ける。** 図の中身（工程・件数・環境要因・原因）は材料に
-  ある事実だけ。解釈は `insight`（so_what）と `title` に置く。
-- 材料に無いことを推測で埋めるときは（仮説）と明示し、検証方法を添える。
-- 数値はすべて出典・期間・母数を `source` スロットに書く。書けない数値は
-  載せない。
-- 各テンプレートの `guardrails` は手法の誤用パターン（相関を因果と読む、
-  「人の不注意」で止める等）を列挙している。**分析中に読み、従う。**
+- **Separate fact from interpretation.** The content of the diagram (process
+  steps, counts, environmental factors, causes) must be facts drawn from the
+  material only. Interpretation goes into `insight` (so_what) and `title`.
+- When filling a gap not covered by the material with an inference, mark it
+  explicitly as (hypothesis) and attach a verification method.
+- Every figure must state its source, period, and base in the `source` slot.
+  Do not include a figure that cannot be sourced this way.
+- Each template's `guardrails` enumerate misuse patterns for the method
+  (reading correlation as causation, stopping at "human carelessness," etc).
+  **Read them during the analysis, and follow them.**
 
-### 3. スロット JSON の作成と検証
+### 3. Authoring and validating the slot JSON
 
-手法ごとに `example.json` と同じ形の入力 JSON を作り、1 枚ずつ検証する:
+For each method, build an input JSON in the same shape as `example.json`,
+and validate it one page at a time:
 
 ```bash
 .venv/bin/python scripts/render_slide_template.py \
   --template <id> --data <data.json> --out out/<n>_<id>.json
 ```
 
-複数枚は `assemble_spec.py` で 1 つのデッキ仕様に束ね、オフラインで監査する:
+For multiple pages, bundle them into a single deck spec with
+`assemble_spec.py` and audit it offline:
 
 ```bash
-.venv/bin/python scripts/assemble_spec.py out/*_*.json --out out/analysis-deck.json --title <題名>
+.venv/bin/python scripts/assemble_spec.py out/*_*.json --out out/analysis-deck.json --title <title>
 .venv/bin/python scripts/build_deck.py --template templates/<master>.json \
   --spec out/analysis-deck.json --dry-run --strict
 ```
 
-監査指摘（はみ出し・重なり・折り返し）は**データ側を短く**して直す。
-テンプレートやプリミティブを変えたくなったら `analysis-template-creator` へ。
+Fix audit findings (overflow, overlap, wrapping) by **shortening the data
+side**. If you find yourself wanting to change the template or a primitive,
+go to `analysis-template-creator`.
 
-### 4. 生成と QA
+### 4. Generation and QA
 
-生成の実行・保存先・タイトルの流儀は `google-slides` / `google-slides-template`
-に従う。生成後は `slide-qa` で目視検査し、QA サムネイルを後始末する。
+Follow `google-slides` / `google-slides-template` for the conventions on how
+to run generation, where to save, and titling. After generation, do a visual
+inspection with `slide-qa` and clean up the QA thumbnails afterward.
 
 ### 5. Report
 
-- 使った手法と、その選定理由（どの問いに答えるためか）;
-- 各スライドの主張（title）と、根拠の出典;
-- 材料不足で（仮説）扱いにした箇所と、その検証方法;
-- デッキ URL と QA 結果（生成まで実行した場合）。
+- The methods used and the rationale for choosing them (which question each
+  answers);
+- Each slide's claim (title) and the source it is based on;
+- Where material was insufficient and treated as (hypothesis), and how it
+  would be verified;
+- The deck URL and QA result (if generation was carried through).
 
 ## Safety and quality rules
 
-- **分析結果を捏造しない。** インタビュー発言・件数・工数は実データのみ。
-  デモ用は example.json の流儀に合わせ、source に「サンプル」と明記する。
-- 記述（descriptive）・診断（diagnostic）・因果（causal）の主張を混ぜない。
-  パレート図は「集中している」までで、「これが原因」は why-why / 検証の仕事。
-- 顧客・個人が特定できる分析（体制・ペインの発言者等）は社内資料。顧客に
-  渡す版は `scalar-ae-materials` の露出チェックの考え方に従って別に作る。
-- 生成物・QA ファイルは `out/` 以下に置く（コミットしない）。
+- **Never fabricate analysis results.** Interview statements, counts, and
+  effort figures must be real data only. For demo purposes, follow the
+  example.json convention and mark the source explicitly as "sample."
+- Do not mix descriptive, diagnostic, and causal claims. A Pareto chart
+  supports "this is concentrated" — "this is the cause" is the job of
+  why-why / verification.
+- An analysis that can identify a customer or an individual (organizational
+  structure, who said what about a pain point) is internal material. A
+  version handed to the customer must be produced separately, following the
+  exposure-check approach used in `scalar-ae-materials`.
+- Keep generated artifacts and QA files under `out/` (do not commit them).
