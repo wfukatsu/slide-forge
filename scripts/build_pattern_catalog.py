@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
-"""Build references/slide-pattern-catalog.md from examples/slide-pattern-index.json.
+"""Build the bilingual slide-pattern catalog from examples/slide-pattern-index.json.
+
+One run writes both languages:
+
+  - references/slide-pattern-catalog.md     (English)
+  - references/slide-pattern-catalog.ja.md  (Japanese)
 
 Sections and pattern pages are derived from the spec itself, so adding a page to
 the spec and re-running this is all it takes to extend the catalog. Slide numbers
 are never hard-coded; the slug for a page is matched on a stable title fragment.
+
+Japanese text comes from the spec (titles, lead_in) and the dicts below.
+English text comes from references/i18n/slide-pattern-catalog.en.json; a
+pattern or section with no entry there falls back to Japanese with a warning.
 
     .venv/bin/python scripts/build_deck.py \
         --template templates/scalar-2026.json --spec examples/slide-pattern-index.json
@@ -21,9 +30,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = ROOT / "examples/slide-pattern-index.json"
-DOC = ROOT / "references/slide-pattern-catalog.md"
+DOC_EN = ROOT / "references/slide-pattern-catalog.md"
+DOC_JA = ROOT / "references/slide-pattern-catalog.ja.md"
+I18N = ROOT / "references/i18n/slide-pattern-catalog.en.json"
 IMG_DIR = ROOT / "references/images/slide-patterns"
 IMG_REL = "images/slide-patterns"
+
+# Links in the Japanese output are retargeted to the .ja.md siblings of these
+# in-repo documents (the English output keeps the original .md targets).
+JA_LINK_SIBLINGS = ["slide-patterns", "patterns", "charts", "diagrams"]
 
 # stable word found in the heading -> image file name. Matched by word rather
 # than by number, so inserting a page doesn't change existing image names.
@@ -172,9 +187,182 @@ def sections(slides: list) -> list[dict]:
     return out
 
 
-def anchor(i: int, name: str) -> str:
+def anchor_ja(i: int, name: str) -> str:
     a = re.sub(r"[（）・\s]", "", name)
     return f"#{i}-{a}"
+
+
+def anchor_en(i: int, name: str) -> str:
+    # GitHub's algorithm: lowercase, drop punctuation, then space -> '-'
+    a = re.sub(r"[^\w\s-]", "", f"{i} {name}".lower())
+    return "#" + a.replace(" ", "-")
+
+
+def load_i18n() -> dict:
+    if not I18N.exists():
+        print(f"  warn: {I18N.relative_to(ROOT)} not found; English output will "
+              "fall back to Japanese text", file=sys.stderr)
+        return {"sections": {}, "patterns": {}}
+    return json.loads(I18N.read_text(encoding="utf-8"))
+
+
+def pattern_ja(s: dict, slug: str) -> dict:
+    """head / desc / sample for one pattern page, from the spec + dicts."""
+    title = s.get("title") or fig_text(s, "governing_message")
+    if slug in NAME:
+        head = NAME[slug]
+        sample = title.split(":", 1)[1].strip() if ":" in title else ""
+    else:
+        head = (title.split("｜")[0].strip() + "｜"
+                + title.split("｜")[1].split("—")[0].strip()
+                if "｜" in title else title)
+        sample = ""
+    desc = fig_text(s, "lead_in") or USE.get(slug, "")
+    return {"head": head, "desc": desc, "sample": sample}
+
+
+def render(lang: str, S: list, secs: list[dict], i18n: dict) -> str:
+    total = sum(len(s["items"]) for s in secs)
+    en_secs = i18n.get("sections", {})
+    en_pats = i18n.get("patterns", {})
+
+    L: list[str] = []
+    w = L.append
+
+    if lang == "ja":
+        w("*[English](slide-pattern-catalog.md)*")
+        w(f"# スライドパターン カタログ（実物 {total} 種）")
+        w("")
+        w("`examples/slide-pattern-index.json` を実際に生成して 1 枚ずつ書き出した画像カタログ。")
+        w("**どのページが作れるかを見て選ぶ**ためのもので、組み方の規則そのものは")
+        w("[slide-patterns.md](slide-patterns.md)、図表部品の詳細は")
+        w("[patterns.md](patterns.md) / [charts.md](charts.md) / [diagrams.md](diagrams.md) にある。")
+        w("")
+        w("各パターンの **figures** 行が、デッキ仕様（JSON）の `figures` にそのまま書く `type` 名。")
+        w("")
+        w("> 画像はリポジトリにコミットしてある。パターンを追加・変更したときは、")
+        w("> 下のコマンドで作り直して画像ごとコミットし直すこと。")
+        w("")
+        w("```bash")
+        w("# このカタログを作る（パターンを足したときも同じ手順）")
+        w(".venv/bin/python scripts/build_deck.py \\")
+        w("    --template templates/scalar-2026.json --spec examples/slide-pattern-index.json")
+        w(".venv/bin/python scripts/fetch_thumbnails.py <生成された URL> --out out/patterns --size MEDIUM")
+        w(".venv/bin/python scripts/build_pattern_catalog.py --thumbs out/patterns")
+        w("```")
+        w("")
+        w("| 分類 | 数 | 何を選ぶための章か |")
+        w("|---|---|---|")
+        for i, sec in enumerate(secs, 1):
+            w(f"| [{i}. {sec['name']}]({anchor_ja(i, sec['name'])}) | {len(sec['items'])} "
+              f"| {SHORT.get(sec['name'], '')} |")
+        w("")
+        w("> 「システム構成」だけはクラウドベンダーの公式アイコンを描くため、")
+        w("> 事前に `.venv/bin/python scripts/fetch_cloud_icons.py` が必要。")
+        w("> アイコンは再配布が許されないためリポジトリには含めていない")
+        w("> （[assets/cloud-icons/README.md](../assets/cloud-icons/README.md)）。")
+        w("")
+    else:
+        w("*[日本語](slide-pattern-catalog.ja.md)*")
+        w(f"# Slide Pattern Catalog ({total} real examples)")
+        w("")
+        w("An image catalog built by actually rendering `examples/slide-pattern-index.json` and exporting it one slide at a time.")
+        w("It's meant for **choosing a page by looking at what can be built**; the layout rules themselves live in")
+        w("[slide-patterns.md](slide-patterns.md), and the details of figure components live in")
+        w("[patterns.md](patterns.md) / [charts.md](charts.md) / [diagrams.md](diagrams.md).")
+        w("")
+        w("Each pattern's **figures** line is the exact `type` name you write into `figures` in the deck spec (JSON).")
+        w("")
+        w("> The images are committed to the repository. When you add or change a pattern,")
+        w("> rebuild with the commands below and commit the images along with it.")
+        w("")
+        w("```bash")
+        w("# Build this catalog (same steps when you add a pattern)")
+        w(".venv/bin/python scripts/build_deck.py \\")
+        w("    --template templates/scalar-2026.json --spec examples/slide-pattern-index.json")
+        w(".venv/bin/python scripts/fetch_thumbnails.py <generated URL> --out out/patterns --size MEDIUM")
+        w(".venv/bin/python scripts/build_pattern_catalog.py --thumbs out/patterns")
+        w("```")
+        w("")
+        w("| Category | Count | What this chapter helps you choose |")
+        w("|---|---|---|")
+        for i, sec in enumerate(secs, 1):
+            e = en_secs.get(sec["name"], {})
+            name = e.get("name") or sec["name"]
+            short = e.get("short") or SHORT.get(sec["name"], "")
+            w(f"| [{i}. {name}]({anchor_en(i, name)}) | {len(sec['items'])} | {short} |")
+        w("")
+        w('> Only "System Architecture" draws official cloud vendor icons, so it requires')
+        w("> running `.venv/bin/python scripts/fetch_cloud_icons.py` beforehand.")
+        w("> The icons aren't included in the repository because redistribution isn't permitted")
+        w("> (see [assets/cloud-icons/README.md](../assets/cloud-icons/README.md)).")
+        w("")
+
+    for i, sec in enumerate(secs, 1):
+        if lang == "ja":
+            w(f"## {i}. {sec['name']}")
+            w("")
+            w(SECTION_INTRO.get(sec["name"], ""))
+            w("")
+        else:
+            e = en_secs.get(sec["name"], {})
+            if not e:
+                print(f"  warn: no English strings for section {sec['name']!r}; "
+                      "falling back to Japanese", file=sys.stderr)
+            w(f"## {i}. {e.get('name') or sec['name']}")
+            w("")
+            w(e.get("intro") or SECTION_INTRO.get(sec["name"], ""))
+            w("")
+        for idx in sec["items"]:
+            s = S[idx]
+            title = s.get("title") or fig_text(s, "governing_message")
+            slug = slug_for(title)
+            if slug is None:
+                continue
+            ja = pattern_ja(s, slug)
+            show_sample = bool(ja["sample"]) and ja["sample"][:12] not in ja["desc"]
+            if lang == "ja":
+                head, desc, sample = ja["head"], ja["desc"], ja["sample"]
+                sample_line = f"見出しの例: 「{sample}」"
+            else:
+                e = en_pats.get(slug, {})
+                if not e:
+                    print(f"  warn: no English strings for pattern {slug!r}; "
+                          "falling back to Japanese", file=sys.stderr)
+                head = e.get("head") or ja["head"]
+                desc = e.get("desc") or ja["desc"]
+                sample = e.get("sample") or ja["sample"]
+                sample_line = f'Example heading: "{sample}"'
+            w(f"### {head}")
+            w("")
+            w(f"![{head}]({IMG_REL}/{slug}.png)")
+            w("")
+            if desc:
+                w(desc)
+                w("")
+            if show_sample:
+                w(sample_line)
+                w("")
+            w("**figures**: " + " / ".join(f"`{t}`" for t in fig_types(s)))
+            w("")
+
+    w("---")
+    w("")
+    if lang == "ja":
+        w("画像は `examples/slide-pattern-index.json` の生成結果"
+          "（`scalar-2026` テンプレート、MEDIUM サムネイル）。")
+        w("パターンを足すときは、そのスペックにページを 1 枚足してから上のコマンドで作り直す。")
+    else:
+        w("The images are the rendered output of `examples/slide-pattern-index.json` (the `scalar-2026` template, MEDIUM thumbnails).")
+        w("When adding a pattern, add one page to that spec first, then rebuild with the commands above.")
+    w("")
+
+    text = "\n".join(L)
+    if lang == "ja":
+        # Retarget in-repo doc links (text and target) to their Japanese siblings.
+        for stem in JA_LINK_SIBLINGS:
+            text = text.replace(f"[{stem}.md]({stem}.md)", f"[{stem}.ja.md]({stem}.ja.md)")
+    return text
 
 
 def main() -> int:
@@ -206,84 +394,12 @@ def main() -> int:
                 n += 1
         print(f"  imported {n} thumbnails -> {IMG_DIR.relative_to(ROOT)}")
 
-    L: list[str] = []
-    w = L.append
+    i18n = load_i18n()
     total = sum(len(s["items"]) for s in secs)
-
-    w(f"# スライドパターン カタログ（実物 {total} 種）")
-    w("")
-    w("`examples/slide-pattern-index.json` を実際に生成して 1 枚ずつ書き出した画像カタログ。")
-    w("**どのページが作れるかを見て選ぶ**ためのもので、組み方の規則そのものは")
-    w("[slide-patterns.md](slide-patterns.md)、図表部品の詳細は")
-    w("[patterns.md](patterns.md) / [charts.md](charts.md) / [diagrams.md](diagrams.md) にある。")
-    w("")
-    w("各パターンの **figures** 行が、デッキ仕様（JSON）の `figures` にそのまま書く `type` 名。")
-    w("")
-    w("> 画像はリポジトリにコミットしてある。パターンを追加・変更したときは、")
-    w("> 下のコマンドで作り直して画像ごとコミットし直すこと。")
-    w("")
-    w("```bash")
-    w("# このカタログを作る（パターンを足したときも同じ手順）")
-    w(".venv/bin/python scripts/build_deck.py \\")
-    w("    --template templates/scalar-2026.json --spec examples/slide-pattern-index.json")
-    w(".venv/bin/python scripts/fetch_thumbnails.py <生成された URL> --out out/patterns --size MEDIUM")
-    w(".venv/bin/python scripts/build_pattern_catalog.py --thumbs out/patterns")
-    w("```")
-    w("")
-    w("| 分類 | 数 | 何を選ぶための章か |")
-    w("|---|---|---|")
-    for i, sec in enumerate(secs, 1):
-        w(f"| [{i}. {sec['name']}]({anchor(i, sec['name'])}) | {len(sec['items'])} "
-          f"| {SHORT.get(sec['name'], '')} |")
-    w("")
-    w("> 「システム構成」だけはクラウドベンダーの公式アイコンを描くため、")
-    w("> 事前に `.venv/bin/python scripts/fetch_cloud_icons.py` が必要。")
-    w("> アイコンは再配布が許されないためリポジトリには含めていない")
-    w("> （[assets/cloud-icons/README.md](../assets/cloud-icons/README.md)）。")
-    w("")
-
-    for i, sec in enumerate(secs, 1):
-        w(f"## {i}. {sec['name']}")
-        w("")
-        w(SECTION_INTRO.get(sec["name"], ""))
-        w("")
-        for idx in sec["items"]:
-            s = S[idx]
-            title = s.get("title") or fig_text(s, "governing_message")
-            slug = slug_for(title)
-            if slug is None:
-                continue
-            if slug in NAME:
-                head = NAME[slug]
-                sample = title.split(":", 1)[1].strip() if ":" in title else ""
-            else:
-                head = (title.split("｜")[0].strip() + "｜"
-                        + title.split("｜")[1].split("—")[0].strip()
-                        if "｜" in title else title)
-                sample = ""
-            w(f"### {head}")
-            w("")
-            w(f"![{head}]({IMG_REL}/{slug}.png)")
-            w("")
-            desc = fig_text(s, "lead_in") or USE.get(slug, "")
-            if desc:
-                w(desc)
-                w("")
-            if sample and sample[:12] not in desc:
-                w(f"見出しの例: 「{sample}」")
-                w("")
-            w("**figures**: " + " / ".join(f"`{t}`" for t in fig_types(s)))
-            w("")
-
-    w("---")
-    w("")
-    w("画像は `examples/slide-pattern-index.json` の生成結果"
-      "（`scalar-2026` テンプレート、MEDIUM サムネイル）。")
-    w("パターンを足すときは、そのスペックにページを 1 枚足してから上のコマンドで作り直す。")
-    w("")
-
-    DOC.write_text("\n".join(L), encoding="utf-8")
-    print(f"  wrote {DOC.relative_to(ROOT)} ({total} patterns, {len(secs)} sections)")
+    DOC_EN.write_text(render("en", S, secs, i18n), encoding="utf-8")
+    DOC_JA.write_text(render("ja", S, secs, i18n), encoding="utf-8")
+    print(f"  wrote {DOC_EN.relative_to(ROOT)} + {DOC_JA.relative_to(ROOT)} "
+          f"({total} patterns, {len(secs)} sections)")
     return 0
 
 

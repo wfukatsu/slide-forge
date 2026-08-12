@@ -12,13 +12,13 @@ Each template's **figures** line lists the `type` names of the drawing component
 Templates are used via `render_slide_template.py` or the `$template` field in a deck spec.
 
 ```bash
-# このカタログを作り直す（テンプレートを追加したときも同じ手順）
+# Rebuild this catalog (same steps when adding a template)
 for pack in marketing-analysis b2b-sales scalar-ae planning analysis; do
   .venv/bin/python scripts/build_slide_template_catalog.py \
       --pack $pack --out out/template-catalog/$pack.json
 done
-# 5 つの spec の slides を 1 つに結合して build_deck.py で生成し、
-# fetch_thumbnails.py の PNG を references/images/slide-templates/<id>.png に配置
+# Merge the 5 specs' slides into one deck, generate with build_deck.py,
+# then place the fetch_thumbnails.py PNGs at references/images/slide-templates/<id>.png
 .venv/bin/python scripts/build_template_catalog_doc.py
 ```
 
