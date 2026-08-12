@@ -11,66 +11,66 @@ description: >-
 ---
 *[English](SKILL.md)*
 
-# Google Slides Generation (from scratch)
+# Google Slides 生成（ゼロから）
 
-## Important
+## 重要事項
 
-- **Scope**: building decks WITHOUT a registered corporate master. Two paths, both on the shared engine in this repo:
-  - **Spec path** — `templates/blank-16x9.json` + `scripts/build_deck.py --spec deck.json` for typical text/figure decks
-  - **Code-first path** — write the deck as a Python module (`deckkit.py`), validate coordinates offline, render with `scripts/render_deck.py`
-- **Routing**:
-  - User has a template/master URL, or wants text flowed into an existing corporate layout → `google-slides-template` skill
-  - Scalar company/product/use-case decks → `scalar-product-slides` skill
-  - Dense cloud architecture / data-flow / network diagrams (nested containers, 10+ nodes) → author them with the `drawio-diagrams` skill (draw.io → PNG → insert); simple concept figures stay on `diagrams.py`
-  - Authoring PPTX files from scratch → `document-skills:pptx` (exporting a deck generated here to `.pptx` → `pptx-export` skill)
-  - A bare "make slides" request uses this skill only when a Google Drive / Google Slides context is explicit
-- **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/path/to/slide-forge` on a local clone. All commands below run from there (literal paths assume the local clone).
-- **Auth** is centralized in `scripts/_auth.py`. It finds `credentials.json` / `token.json` in: `$GSLIDES_CONFIG_DIR` → `config/` at the repo root (canonical) → the old skill layout (transitional fallback). Never write per-script inline auth.
-- **Visual QA is a separate skill (`slide-qa`), chosen at generation time** (Phase 5). Default: run — recommend it when asking (Phase 1); a clean API response cannot show overflow or misattached arrows. If the user opts out, skip Phase 5, state in the report that the deck is unverified, and offer `slide-qa` as a follow-up. When QA runs, it ends by deleting the local QA files (`scripts/cleanup_qa.py`).
-- On QA failure, **delete the broken presentation and regenerate** from the fixed spec/module. Never patch a live deck with incremental API edits.
-- The delete-and-regenerate rule applies only to decks generated in the current session. **When updating an existing deck the user already has** (inserting or fixing slides in place, keeping the same URL), first run `scripts/snapshot_version.py <URL>` to record the pre-edit revision (keepForever pin attempt + local PPTX backup), report the revision ID to the user, and only then edit. Rollback is via the Slides UI "File → Version history".
+- **スコープ**: 登録済みコーポレートマスターを使わずにデッキを構築する。パスは 2 つあり、どちらも本リポジトリの共有エンジン上で動く:
+  - **仕様パス** — `templates/blank-16x9.json` + `scripts/build_deck.py --spec deck.json`。テキスト・図表中心の典型的なデッキ向け
+  - **コードファーストパス** — デッキを Python モジュール（`deckkit.py`）として書き、座標をオフラインで検証してから `scripts/render_deck.py` でレンダリングする。図の多い素材向け
+- **ルーティング**:
+  - ユーザーがテンプレート/マスターの URL を持っている、または既存のコーポレートレイアウトにテキストを流し込みたい → `google-slides-template` スキル
+  - Scalar の会社・製品・ユースケースデッキ → `scalar-product-slides` スキル
+  - 高密度なクラウドアーキテクチャ / データフロー / ネットワーク図（入れ子コンテナ、10 ノード以上）→ `drawio-diagrams` スキルで作図する（draw.io → PNG → 挿入）。単純な概念図は `diagrams.py` のままでよい
+  - PPTX ファイルをゼロから作る → `document-skills:pptx`（ここで生成したデッキの `.pptx` への書き出し → `pptx-export` スキル）
+  - 単なる「スライドを作って」という依頼にこのスキルを使うのは、Google Drive / Google Slides の文脈が明示されているときだけ
+- **作業ディレクトリ**: slide-forge のルート — インストール済みプラグインから実行する場合は `${CLAUDE_PLUGIN_ROOT}`、ローカルクローンでは `/path/to/slide-forge`。以下のコマンドはすべてそこから実行する（リテラルのパスはローカルクローンを前提とする）。
+- **認証**は `scripts/_auth.py` に集約されている。`credentials.json` / `token.json` は `$GSLIDES_CONFIG_DIR` → リポジトリルートの `config/`（正規の場所）→ 旧スキルレイアウト（移行期のフォールバック）の順で探索される。スクリプトごとのインライン認証は決して書かない。
+- **ビジュアル QA は独立したスキル（`slide-qa`）であり、生成時に実行するかどうかを選ぶ**（Phase 5）。既定は実行 — 尋ねる際（Phase 1）には実行を推奨する。API レスポンスが正常でも、はみ出しや外れた矢印は分からないからだ。ユーザーが実行しないことを選んだ場合は Phase 5 をスキップし、レポートにデッキが未検証である旨を明記し、フォローアップとして `slide-qa` を提案する。QA を実行した場合は、最後にローカルの QA ファイルを削除して終える（`scripts/cleanup_qa.py`）。
+- QA で不合格になったら、**壊れたプレゼンテーションを削除し、修正した仕様/モジュールから再生成する**。生成済みの実物デッキを API の差分編集でパッチしてはならない。
+- 削除して再生成する規則が適用されるのは、現在のセッションで生成したデッキだけである。**ユーザーが既に持っている既存デッキを更新する場合**（同じ URL を保ったままスライドをその場で挿入・修正する場合）は、先に `scripts/snapshot_version.py <URL>` を実行して編集前のリビジョンを記録し（keepForever ピンの試行 + ローカル PPTX バックアップ）、リビジョン ID をユーザーに報告してから編集に入る。ロールバックは Slides UI の「ファイル → 変更履歴」から行う。
 
-## Quick Reference
+## クイックリファレンス
 
-| Task | Where |
+| タスク | 場所 |
 |------|-------|
-| Build from a JSON spec | `scripts/build_deck.py` + `templates/blank-16x9.json` |
-| Write a deck as Python | `scripts/deckkit.py` (+ `examples/pattern-gallery/deck.py`, `examples/scalardb-scalardl/deck.py`) |
-| Validate layout offline (no API) | `scripts/validate_layout.py` + `references/layout-contract.md` |
-| Render a Python deck | `scripts/render_deck.py` |
-| Visual QA (optional, default: run) | `slide-qa` skill (`scripts/fetch_thumbnails.py` + checklist + cleanup) |
-| Delete local QA files after verification | `scripts/cleanup_qa.py` |
-| Snapshot a version before editing an existing deck | `scripts/snapshot_version.py` |
-| Diagrams (flows, architecture) | `scripts/diagrams.py` (Canvas) + `references/diagrams.md`, `references/diagram-cookbook.md` |
-| Dense cloud/data-flow diagrams (draw.io → PNG) | `drawio-diagrams` skill + `scripts/drawio_export.py` + `references/drawio.md` |
-| Drive folder per deck (create / collect files) | `scripts/drive_folder.py` |
-| Charts and tables | `scripts/charts.py` + `references/charts.md` |
-| Shape-drawn pictograms and metaphor figures | `scripts/illustrations.py` + `references/pictogram-catalog.md` |
-| Business-framework figures (posmap, gantt, orgchart…) | `scripts/patterns.py` + `references/patterns.md` |
-| Page scaffolding and analysis figures | `scripts/pages.py` + `references/slide-patterns.md` |
-| Scalar brand pictograms | `scripts/icons.py` + `assets/scalar/pictograms` + `references/icons.md` |
-| Cloud vendor icons (AWS/GCP/Azure) | `scripts/cloud_icons.py` + `assets/cloud-icons` + `references/cloud-icons.md` |
-| Restore cloud icons (first use) | `scripts/fetch_cloud_icons.py` |
-| AI-generated images (covers, section art) | `scripts/images.py` (needs `GEMINI_API_KEY`) + `references/images.md` |
-| API pitfalls | `references/google-slides-api.md`, `references/api-notes.md` |
-| Deck composition recipes | `references/composers/{basic,content,product,usecase,enterprise,db-middleware}.md` |
+| JSON 仕様からビルド | `scripts/build_deck.py` + `templates/blank-16x9.json` |
+| デッキを Python で書く | `scripts/deckkit.py`（+ `examples/pattern-gallery/deck.py`、`examples/scalardb-scalardl/deck.py`） |
+| レイアウトをオフラインで検証（API 不要） | `scripts/validate_layout.py` + `references/layout-contract.md` |
+| Python デッキをレンダリング | `scripts/render_deck.py` |
+| ビジュアル QA（任意、既定: 実行） | `slide-qa` スキル（`scripts/fetch_thumbnails.py` + チェックリスト + クリーンアップ） |
+| 検証完了後にローカル QA ファイルを削除 | `scripts/cleanup_qa.py` |
+| 既存デッキ編集前のバージョンスナップショット | `scripts/snapshot_version.py` |
+| 図（フロー、アーキテクチャ） | `scripts/diagrams.py`（Canvas）+ `references/diagrams.md`、`references/diagram-cookbook.md` |
+| 高密度なクラウド/データフロー図（draw.io → PNG） | `drawio-diagrams` スキル + `scripts/drawio_export.py` + `references/drawio.md` |
+| デッキごとの Drive フォルダ（作成 / ファイル収集） | `scripts/drive_folder.py` |
+| チャートと表 | `scripts/charts.py` + `references/charts.md` |
+| 図形描画のピクトグラムとメタファー図 | `scripts/illustrations.py` + `references/pictogram-catalog.md` |
+| ビジネスフレームワーク図（posmap、gantt、orgchart…） | `scripts/patterns.py` + `references/patterns.md` |
+| ページ骨格と分析図 | `scripts/pages.py` + `references/slide-patterns.md` |
+| Scalar ブランドピクトグラム | `scripts/icons.py` + `assets/scalar/pictograms` + `references/icons.md` |
+| クラウドベンダーアイコン（AWS/GCP/Azure） | `scripts/cloud_icons.py` + `assets/cloud-icons` + `references/cloud-icons.md` |
+| クラウドアイコンの復元（初回） | `scripts/fetch_cloud_icons.py` |
+| AI 生成画像（表紙、セクションアート） | `scripts/images.py`（`GEMINI_API_KEY` が必要）+ `references/images.md` |
+| API の落とし穴 | `references/google-slides-api.md`、`references/api-notes.md` |
+| デッキ構成のレシピ | `references/composers/{basic,content,product,usecase,enterprise,db-middleware}.md` |
 
 ---
 
-## Phase 0: Environment check
+## Phase 0: 環境確認
 
-1. **venv** — `.venv` at the repo root is a symlink to the shared venv `~/.claude/venvs/gslides`. Verify:
+1. **venv** — リポジトリルートの `.venv` は共有 venv `~/.claude/venvs/gslides` へのシンボリックリンクである。次で確認する:
 
    ```bash
    cd /path/to/slide-forge
    .venv/bin/python -c "import googleapiclient; print('ok')"
    ```
 
-   If broken or missing, rebuild the shared venv and re-link. If
-   `~/.claude/venvs/gslides-requirements.txt` does not exist, seed it from the
-   repo's `requirements.txt` first (the repo file is a record, not the actual
-   install source — to add a dependency, edit
-   `~/.claude/venvs/gslides-requirements.txt`):
+   壊れている・存在しない場合は、共有 venv を再構築してリンクし直す。
+   `~/.claude/venvs/gslides-requirements.txt` が存在しない場合は、先にリポジトリの
+   `requirements.txt` から種を作る（リポジトリ側のファイルは記録であって実際の
+   インストール元ではない — 依存を追加するときは
+   `~/.claude/venvs/gslides-requirements.txt` を編集する）:
 
    ```bash
    [ -f ~/.claude/venvs/gslides-requirements.txt ] || \
@@ -81,96 +81,96 @@ description: >-
    ln -s ~/.claude/venvs/gslides /path/to/slide-forge/.venv
    ```
 
-   Create the symlink with an **absolute path** — where the directory itself is
-   a symlink, relative links fail to resolve.
+   シンボリックリンクは**絶対パス**で作ること — ディレクトリ自体がシンボリックリンクの
+   環境では、相対リンクは解決に失敗する。
 
-2. **Credentials** — confirm `config/credentials.json` exists (OAuth 2.0 Desktop client; Slides API and Drive API enabled in the GCP project). `config/token.json` is created on first run via a browser auth flow. If `credentials.json` is missing, stop and ask the user to place it — do not generate or run anything until it is confirmed.
+2. **認証情報** — `config/credentials.json` が存在することを確認する（OAuth 2.0 デスクトップクライアント。GCP プロジェクトで Slides API と Drive API が有効化済みであること）。`config/token.json` は初回実行時にブラウザ認証フローで作成される。`credentials.json` がない場合は停止してユーザーに配置を依頼する — 確認できるまでは何も生成・実行しない。
 
-3. **Optional capabilities** (check only if the deck needs them):
-   - Cloud icons: they are not bundled (vendor license terms forbid redistribution). Verify with `.venv/bin/python scripts/cloud_icons.py --list --vendor aws | head`; if missing, run `.venv/bin/python scripts/fetch_cloud_icons.py` once (~1–2 min).
-   - AI images: `images.py` needs `GEMINI_API_KEY` (env var, or a `config/gemini_api_key` file — gitignored). If unset and the deck wants generated imagery, fall back to `illustrations.py` or ask the user.
+3. **任意の機能**（デッキが必要とする場合のみ確認する）:
+   - クラウドアイコン: 同梱されていない（ベンダーのライセンス条項が再配布を禁じている）。`.venv/bin/python scripts/cloud_icons.py --list --vendor aws | head` で確認し、なければ `.venv/bin/python scripts/fetch_cloud_icons.py` を一度実行する（約 1〜2 分）。
+   - AI 画像: `images.py` には `GEMINI_API_KEY` が必要（環境変数、または gitignore 済みの `config/gemini_api_key` ファイル）。未設定なのにデッキが生成画像を求める場合は、`illustrations.py` にフォールバックするかユーザーに確認する。
 
 ---
 
-## Phase 1: Choose a path
+## Phase 1: パスの選択
 
-| | Spec path | Code-first path |
+| | 仕様パス | コードファーストパス |
 |---|---|---|
-| Author | `deck.json` (JSON spec) | `deck.py` (Python module) |
-| Best for | Typical decks: text pages, standard figures, charts, page patterns | Connector-heavy architecture diagrams, dense custom drawings, anything where endpoint/overlap precision matters |
-| Validation | `build_deck.py --dry-run --strict` | `validate_layout.py` (offline geometry checks) |
-| Generate | `build_deck.py` | `render_deck.py` |
+| 記述するもの | `deck.json`（JSON 仕様） | `deck.py`（Python モジュール） |
+| 向いているもの | 典型的なデッキ: テキストページ、標準的な図、チャート、ページパターン | コネクタの多いアーキテクチャ図、高密度なカスタム描画、端点や重なりの精度が問われるすべて |
+| 検証 | `build_deck.py --dry-run --strict` | `validate_layout.py`（オフラインの形状チェック） |
+| 生成 | `build_deck.py` | `render_deck.py` |
 
-Guidance: default to the **spec path**. Switch to **code-first** when the deck centers on architecture/flow diagrams with many connectors — the offline validator checks connector endpoints, overlaps, and overflow that a spec dry-run cannot see.
+指針: 既定は**仕様パス**。コネクタの多いアーキテクチャ/フロー図が中心のデッキでは**コードファースト**に切り替える — オフラインバリデータは、仕様の dry-run では見えないコネクタ端点・重なり・はみ出しを検査できる。
 
-Also settle with the user (1–2 questions max): audience and purpose, approximate page count, output Drive folder (URL/ID, optional), copyright/footer text if any, and whether to run visual QA after generation (default and recommended: run; see Phase 5). For structuring help see `references/deck-outlines.md` and `references/composers/`.
-
----
-
-## Phase 2: Author
-
-### Spec path
-
-Write `deck.json` against `templates/blank-16x9.json`. All figure capabilities are available from the spec: diagrams (`diagrams.py` Canvas), charts/tables (`charts.py`), shape-drawn pictograms and metaphor figures (`illustrations.py`), business-framework figures (`patterns.py`), page scaffolding and analysis figures (`pages.py`), Scalar pictograms (`icons.py`), cloud icons (`cloud_icons.py`), AI images (`images.py`). See `references/template-schema.md` for the spec format and each module's reference for its parts.
-
-### Code-first path
-
-Write a deck module: 1 module = 1 deck, one function per slide, registered with `slide()` / `plain()` from `deckkit`. Coordinates are inches, origin top-left; `d` is a `diagrams.Canvas`. Start from the working examples:
-
-- `examples/pattern-gallery/deck.py` — one slide per available part
-- `examples/scalardb-scalardl/deck.py` — a real product/architecture deck
-
-Contract rules (footer safe area, title height, connector attachment) are in `references/layout-contract.md`; drawing recipes in `references/diagram-cookbook.md`.
-
-### Design principles (both paths)
-
-- **Action titles**: every content slide title is a conclusion sentence, not a label
-- **Connectors attach to shapes**, never drawn as free coordinates — the API does not validate line endpoints, so a detached arrow is invisible until QA
-- Body >= 12pt, title >= 20pt; WCAG AA contrast (4.5:1); max ~6 bullets, 1 slide = 1 message; 60-30-10 color rule
-- Do not guess cloud icon names — search with `scripts/cloud_icons.py --search <term>`; recoloring/rotating/flipping vendor icons is prohibited by their license terms
-- Full principles and per-slide-type guidance: `references/google-slides-api.md`, `references/composers/`, `references/slide-patterns.md`
+あわせてユーザーと決める（質問は最大 1〜2 個）: 想定読者と目的、おおよそのページ数、出力先の Drive フォルダ（URL/ID、任意）、著作権表記・フッター文言（あれば）、生成後にビジュアル QA を実行するか（既定かつ推奨: 実行。Phase 5 参照）。構成の検討には `references/deck-outlines.md` と `references/composers/` が使える。
 
 ---
 
-## Phase 3: Validate (before any API call)
+## Phase 2: 作成
 
-Spec path:
+### 仕様パス
+
+`templates/blank-16x9.json` に対して `deck.json` を書く。図表の機能はすべて仕様から使える: 図（`diagrams.py` の Canvas）、チャート/表（`charts.py`）、図形描画のピクトグラムとメタファー図（`illustrations.py`）、ビジネスフレームワーク図（`patterns.py`）、ページ骨格と分析図（`pages.py`）、Scalar ピクトグラム（`icons.py`）、クラウドアイコン（`cloud_icons.py`）、AI 画像（`images.py`）。仕様の書式は `references/template-schema.md` を、各部品は各モジュールのリファレンスを参照する。
+
+### コードファーストパス
+
+デッキモジュールを書く: 1 モジュール = 1 デッキ、1 スライド 1 関数とし、`deckkit` の `slide()` / `plain()` で登録する。座標はインチ単位で原点は左上。`d` は `diagrams.Canvas` である。動く実例から始めること:
+
+- `examples/pattern-gallery/deck.py` — 利用可能な部品ごとに 1 スライド
+- `examples/scalardb-scalardl/deck.py` — 実際の製品/アーキテクチャデッキ
+
+コントラクトの規則（フッターセーフエリア、タイトル高さ、コネクタの接続）は `references/layout-contract.md`、作図レシピは `references/diagram-cookbook.md` にある。
+
+### 設計原則（両パス共通）
+
+- **アクションタイトル**: すべてのコンテンツスライドのタイトルは、ラベルではなく結論の文にする
+- **コネクタは図形に接続する**。自由座標の線として描かない — API は線の端点を検証しないため、外れた矢印は QA まで見えない
+- 本文 12pt 以上、タイトル 20pt 以上。WCAG AA コントラスト（4.5:1）。箇条書きは最大 6 個程度、1 スライド 1 メッセージ、60-30-10 の配色規則
+- クラウドアイコン名を推測しない — `scripts/cloud_icons.py --search <term>` で検索する。ベンダーアイコンの再着色・回転・反転はライセンス条項で禁止されている
+- 原則の全体とスライド種別ごとの指針: `references/google-slides-api.md`、`references/composers/`、`references/slide-patterns.md`
+
+---
+
+## Phase 3: 検証（あらゆる API 呼び出しの前に）
+
+仕様パス:
 
 ```bash
 .venv/bin/python scripts/build_deck.py --template templates/blank-16x9.json \
     --spec deck.json --dry-run --strict
 ```
 
-Code-first path:
+コードファーストパス:
 
 ```bash
 .venv/bin/python scripts/validate_layout.py path/to/deck.py \
     --template templates/blank-16x9.json
 ```
 
-`validate_layout.py` is offline and free — it checks footer intrusion, off-slide geometry, title wrapping, connector endpoints (detached or buried), partial overlap of text-bearing shapes, and text overflow. Exit code 1 means fix and re-run. Never skip validation (`--skip-validate` exists on `render_deck.py` but do not use it).
+`validate_layout.py` はオフラインで無料である — フッターへの侵入、スライド外にはみ出た形状、タイトルの折り返し、コネクタ端点（外れ・埋没）、テキストを持つ図形どうしの部分的な重なり、テキストのあふれを検査する。終了コード 1 は「修正して再実行」の意味である。検証は決してスキップしない（`render_deck.py` には `--skip-validate` があるが使わないこと）。
 
 ---
 
-## Phase 4: Generate
+## Phase 4: 生成
 
-Spec path:
+仕様パス:
 
 ```bash
 .venv/bin/python scripts/build_deck.py --template templates/blank-16x9.json \
     --spec deck.json --title "Deck title" [--folder <DRIVE_FOLDER_URL_OR_ID>]
 ```
 
-Code-first path:
+コードファーストパス:
 
 ```bash
 .venv/bin/python scripts/render_deck.py path/to/deck.py --title "Deck title" \
     [--folder <URL/ID>] [--only 1-5]
 ```
 
-`--only` renders a page range for cheap prototyping. First run opens a browser for OAuth and writes `config/token.json`. The script prints the presentation URL — relay it to the user.
+`--only` はページ範囲だけをレンダリングし、安価な試作に使える。初回実行時はブラウザが開いて OAuth を行い、`config/token.json` が書き出される。スクリプトはプレゼンテーションの URL を表示する — ユーザーに伝えること。
 
-**Drive folder rule**: every generated deck gets its own Drive folder, and all related files live under it. Create the folder first, generate into it, then collect the sources:
+**Drive フォルダの規則**: 生成したデッキごとに専用の Drive フォルダを作り、関連ファイルはすべてその下に置く。先にフォルダを作成し、その中へ生成し、最後にソース類を収集する:
 
 ```bash
 .venv/bin/python scripts/drive_folder.py create "<Deck title>" [--parent <URL/ID>]
@@ -178,19 +178,19 @@ Code-first path:
 .venv/bin/python scripts/drive_folder.py upload <FOLDER_ID> deck.json figures/*.drawio out/diagrams/*.png
 ```
 
-Upload whatever lets the user regenerate or edit later: the spec (`deck.json`) or deck module (`deck.py`), `.drawio` sources, and exported figure PNGs. QA thumbnails stay local. Report the folder URL together with the presentation URL.
+ユーザーが後で再生成・編集できるものをアップロードする: 仕様（`deck.json`）またはデッキモジュール（`deck.py`）、`.drawio` ソース、書き出した図の PNG。QA サムネイルはローカルに留める。フォルダ URL はプレゼンテーション URL とあわせて報告する。
 
-For large decks, page-level fan-out to subagents is possible; see `references/parallel-generation.md` for what may and may not be split.
+大規模なデッキでは、ページ単位でサブエージェントにファンアウトできる。分割してよいもの・いけないものは `references/parallel-generation.md` を参照。
 
 ---
 
-## Phase 5: Visual QA (optional — `slide-qa` skill)
+## Phase 5: ビジュアル QA（任意 — `slide-qa` スキル）
 
-Run when the user chose QA in Phase 1 (the default). When they opted out, skip
-this phase, state in the report that no visual verification was done, and offer
-the `slide-qa` skill as a follow-up.
+Phase 1 でユーザーが QA を選んだ場合（既定）に実行する。実行しないことを選んだ場合は
+このフェーズをスキップし、レポートにビジュアル検証を行っていない旨を明記し、
+フォローアップとして `slide-qa` スキルを提案する。
 
-The procedure is owned by the **`slide-qa` skill** — follow it. In short:
+手順は **`slide-qa` スキル**が所管する — それに従うこと。要点:
 
 ```bash
 .venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa --size LARGE
@@ -198,6 +198,6 @@ The procedure is owned by the **`slide-qa` skill** — follow it. In short:
 .venv/bin/python scripts/cleanup_qa.py   # always delete the local QA files when done
 ```
 
-Check: text clipped or overflowing its frame, elements overlapping decorations, detached connector arrows, unreadable contrast, awkward line wraps. These are invisible in API responses.
+チェック項目: テキストの切れや枠からのあふれ、装飾要素との重なり、外れたコネクタ矢印、読めないコントラスト、不自然な改行位置。これらは API レスポンスからは見えない。
 
-On any failure: fix the spec/module, re-run Phase 3 validation, **delete the broken presentation, and regenerate**. Repeat until the thumbnails are clean, clean up the QA files, then report the final URL.
+不合格が出た場合: 仕様/モジュールを修正し、Phase 3 の検証を再実行し、**壊れたプレゼンテーションを削除して再生成する**。サムネイルがきれいになるまで繰り返し、QA ファイルを片付けてから最終 URL を報告する。

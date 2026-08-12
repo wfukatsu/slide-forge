@@ -19,44 +19,47 @@ description: >-
 
 *[English](SKILL.md)*
 
-# Line-item Spreadsheets (Excel + Google Spreadsheet)
+# 明細スプレッドシート（Excel + Google スプレッドシート）
 
-## Important
+## 重要事項
 
-- **One spec, two outputs.** The JSON spec builds the `.xlsx` with openpyxl;
-  `--gsheet` converts that same file into a Google Spreadsheet via Drive.
-  Never author the two outputs separately — they must stay identical.
-- **Amounts are formulas, not pasted numbers.** 金額 = 数量 × 単価 as a real
-  formula (`=D{row}*F{row}`), totals as `SUM`. The user will edit quantities
-  in the delivered file and the totals must follow. Only put literal numbers
-  in cells the user should treat as input (単価, 数量).
-- **Fixes happen in the spec.** Regenerate on any change; with the same title
-  and folder, the Google Spreadsheet is updated **in place** (URL preserved),
-  so the user always holds one link.
-- **Run every command from the slide-forge root as cwd** — `${CLAUDE_PLUGIN_ROOT}`
-  when running from an installed plugin, `/path/to/slide-forge` on a
-  local clone. Auth and the venv are shared at the repo root (`config/`, `.venv`).
-- **Never invent prices.** Unit prices, tax rates, and discount terms come
-  from the user or their material. Anything unsourced stays a `○○` placeholder
-  flagged in the note row and the report — same rule as deck content.
-- **Companion to a deck**: when the spreadsheet backs a proposal's cost slide
-  (`scalar-proposal-slides` BOM, etc.), put it in the **deck's Drive folder**
-  and keep slide summary and sheet totals consistent — the slide shows the
-  合計, the sheet carries the 明細.
+- **仕様は 1 つ、出力は 2 つ。** JSON 仕様から openpyxl で `.xlsx` を
+  ビルドし、`--gsheet` はその同じファイルを Drive 経由で Google
+  スプレッドシートに変換する。2 つの出力を別々に作ってはならない —
+  常に同一でなければならない。
+- **金額は貼り付けた数値ではなく数式にする。** 金額 = 数量 × 単価 を実際の
+  数式（`=D{row}*F{row}`）として書き、合計は `SUM` にする。ユーザーは納品
+  されたファイルで数量を編集するので、合計はそれに追随しなければならない。
+  リテラルの数値を入れるのは、ユーザーが入力として扱うべきセル
+  （単価、数量）だけである。
+- **修正は仕様に対して行う。** 変更があれば再生成する; タイトルとフォルダが
+  同じなら Google スプレッドシートは**その場で**更新される（URL 維持）ため、
+  ユーザーが持つリンクは常に 1 つで済む。
+- **すべてのコマンドは slide-forge ルートを cwd として実行する** —
+  インストール済みプラグインから実行する場合は `${CLAUDE_PLUGIN_ROOT}`、
+  ローカルクローンでは `/path/to/slide-forge`。認証と venv はリポジトリ
+  ルートで共有される（`config/`、`.venv`）。
+- **価格をでっち上げない。** 単価・税率・割引条件はユーザーまたはその資料
+  から得る。出典のないものは `○○` プレースホルダのまま残し、注記行と報告で
+  明示する — デッキ本文と同じルール。
+- **デッキの随伴納品物として**: スプレッドシートが提案書のコストスライド
+  （`scalar-proposal-slides` の BOM など）を裏付ける場合は、**デッキの
+  Drive フォルダ**に置き、スライドのサマリーとシートの合計を一致させる —
+  スライドには 合計 を載せ、シートに 明細 を持たせる。
 
-## Quick Reference
+## クイックリファレンス
 
-| Task | Command |
+| タスク | コマンド |
 |------|---------|
-| Validate the spec (offline, free) | `.venv/bin/python scripts/build_sheet.py spec.json --dry-run` |
-| Build xlsx (→ `out/sheets/<title>.xlsx`) | `.venv/bin/python scripts/build_sheet.py spec.json [--out path.xlsx]` |
-| Also create the Google Spreadsheet | `--gsheet [--folder <Drive フォルダ URL/ID>]` |
-| Archive the spec next to it | `.venv/bin/python scripts/drive_folder.py upload <FOLDER> spec.json` |
-| Worked example (estimate with tax summary) | `examples/estimate-sample.json` |
+| 仕様の検証（オフライン・無料） | `.venv/bin/python scripts/build_sheet.py spec.json --dry-run` |
+| xlsx のビルド（→ `out/sheets/<title>.xlsx`） | `.venv/bin/python scripts/build_sheet.py spec.json [--out path.xlsx]` |
+| Google スプレッドシートも作成 | `--gsheet [--folder <Drive フォルダ URL/ID>]` |
+| 仕様を隣にアーカイブ | `.venv/bin/python scripts/drive_folder.py upload <FOLDER> spec.json` |
+| 実例（税サマリーつき見積もり） | `examples/estimate-sample.json` |
 
-## Spec format
+## 仕様フォーマット
 
-Full reference in the `build_sheet.py` docstring; the shape:
+完全なリファレンスは `build_sheet.py` の docstring にある; 形は次のとおり:
 
 ```json
 {
@@ -81,30 +84,31 @@ Full reference in the `build_sheet.py` docstring; the shape:
 ```
 
 - `type`: `text`（既定）/ `int` / `currency`（¥#,##0）/ `percent` / `date`
-- Placeholders: `{row}` (that data row), `{first}`/`{last}` (data range),
-  `{s1}`, `{s2}`… (summary rows, forward references only)
-- Multiple sheets per book: put 明細 first, then 前提条件 / 内訳 sheets —
-  estimates without stated assumptions get disputed later, so include a
-  前提条件 sheet whenever the numbers depend on region, exchange rate,
-  contract term, or excluded work.
+- プレースホルダ: `{row}`（そのデータ行）、`{first}`/`{last}`（データ範囲）、
+  `{s1}`, `{s2}`…（サマリー行、前方参照のみ）
+- 1 ブックに複数シートを置ける: 明細 を先頭に、その後に 前提条件 / 内訳
+  シートを置く — 前提を明記しない見積もりは後で揉めるので、数字が地域・
+  為替レート・契約期間・対象外作業に依存する場合は必ず 前提条件 シートを
+  含める。
 
-## Workflow
+## ワークフロー
 
-1. **Settle the shape before authoring** (AskUserQuestion, one round,
-   following `references/interactive-intake.md` §0/§5 manners): line-item
-   granularity and source material; tax handling (税抜/税込/rate); output —
+1. **作成前に形を確定する**（AskUserQuestion、1 ラウンド、
+   `references/interactive-intake.md` §0/§5 の作法に従う）: 明細の粒度と
+   元資料; 税の扱い（税抜/税込/税率）; 出力 —
    xlsx のみ / Google Spreadsheet も（既定: 両方。納品先が Google Workspace
-   なら Spreadsheet 主体）; Drive folder (the deck's folder when this backs
-   a deck). Skip anything already specified.
-2. **Author the spec** and validate offline: `--dry-run` catches column-count
-   mismatches, unknown types, and bad placeholder references before any
-   API call.
-3. **Build**: add `--gsheet --folder <FOLDER>` when a Google Spreadsheet was
-   requested. Upload the spec JSON to the same folder (Drive folder rule).
-4. **Verify the numbers** — formulas compute in the file, not in the spec, so
-   check them once: export the converted sheet as CSV and confirm 小計/合計
-   (`drive.files().export(fileId=…, mimeType="text/csv")` returns computed
-   values), or recompute the expected totals and compare. A wrong column
-   letter in a formula is silent otherwise.
-5. **Report**: local xlsx path, Google Spreadsheet URL (when created), the
-   Drive folder, and any `○○` placeholders still to be filled by the user.
+   なら Spreadsheet 主体）; Drive フォルダ（デッキの裏付けの場合はデッキの
+   フォルダ）。指定済みの項目は飛ばす。
+2. **仕様を作成し**、オフラインで検証する: `--dry-run` は列数の不一致、
+   未知の type、不正なプレースホルダ参照を API 呼び出しの前に検出する。
+3. **ビルド**: Google スプレッドシートが要求された場合は
+   `--gsheet --folder <FOLDER>` を付ける。仕様 JSON を同じフォルダに
+   アップロードする（Drive フォルダのルール）。
+4. **数値を検証する** — 数式は仕様の中ではなくファイル内で計算されるため、
+   一度は確認する: 変換後のシートを CSV でエクスポートして 小計/合計 を
+   確かめる（`drive.files().export(fileId=…, mimeType="text/csv")` は
+   計算済みの値を返す）か、期待される合計を再計算して比較する。数式内の
+   列レターの誤りは、これをしない限り静かに見過ごされる。
+5. **報告**: ローカルの xlsx パス、Google スプレッドシート URL
+   （作成した場合）、Drive フォルダ、そしてユーザーが埋めるべき残りの
+   `○○` プレースホルダ。

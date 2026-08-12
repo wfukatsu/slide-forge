@@ -2,255 +2,257 @@
 
 # slide-forge
 
-Agent-driven Google Slides deck generation for Codex and Claude Code: seventeen
-generation/support skills plus one end-to-end workflow on a shared Python
-engine. It covers corporate-template decks, from-scratch architecture
-diagrams, template creation from a design spec, validation before generation,
-optional thumbnail-based visual QA (on by default), PowerPoint (`.pptx`)
-export, and line-item spreadsheets (Excel / Google Spreadsheet) for estimates
-and BOMs.
+Codex と Claude Code のためのエージェント駆動 Google Slides デッキ生成。共有
+Python エンジンの上に、17 の生成/支援スキルと 1 つのエンドツーエンドワークフローを
+載せる。コーポレートテンプレートのデッキ、ゼロからのアーキテクチャ図、デザイン
+仕様からのテンプレート作成、生成前の検証、任意のサムネイルベース視覚 QA
+（既定で有効）、PowerPoint（`.pptx`）エクスポート、見積もり・BOM 向けの
+明細スプレッドシート（Excel / Google Spreadsheet）までをカバーする。
 
 ```
 intake → author (spec JSON or Python) → validate (offline, free) → generate → visual QA (opt-in, default on) → cleanup → PPTX export (opt-in)
                                             ↑____________fix_____________________|
 ```
 
-## Skills
+## スキル
 
-| Skill | What it does |
+| スキル | 何をするか |
 |---|---|
-| `google-slides-template` | Generate a deck from a registered Google Slides master template: interactive intake, template analysis/registration (`template.json`), spec authoring with `--dry-run` validation, page-fragment authoring for large decks (parallel when permitted, sequential otherwise), generation. The main workflow. |
-| `google-slides` | From-scratch decks without a corporate master. Spec path (`templates/blank-16x9.json` + the same engine) or code-first path (`deckkit.py` + offline layout validation for connector-heavy diagrams). |
-| `template-forge` | Create and register a **new template (master)** from a design spec — brand colors, fonts, logo, footer (`scripts/build_template.py`). The Slides API cannot create masters, so a base (Google default or a registered template) is copied and its layouts restyled via batchUpdate; roles are assigned deterministically and the result lands in `templates/<id>.json`, ready for `google-slides-template`. Ships 3 design presets (`templates/presets/`). |
-| `slide-template-creator` | Create and register reusable **single-slide content templates** with semantic input slots, examples, offline validation, and catalog previews. These live under `slide-templates/` and are independent of Google Slides masters. |
-| `current-state-analysis` | Run **current-state analysis / problem-identification frameworks** (現状分析・課題の特定) on user-supplied material and render the results with the `analysis` pack: PEST, Five Forces, process pain-points, logic tree, KPI tree, why-why, fishbone, Pareto, As-Is/To-Be gap analysis and an impact-effort priority matrix (SWOT / 3C reuse the `marketing-analysis` pack). Facts go in the figures, interpretation in the insight, sources are mandatory, and each template's guardrails encode the method's misuse patterns. |
-| `analysis-template-creator` | Create and maintain the **analysis-framework slide templates** themselves (the `slide-templates/analysis/` pack) and their drawing primitives (`fishbone`, `pareto` are the precedents): encodes the framework-specific design rules — one question per template, fact/interpretation slot split, required sources, misuse guardrails — and follows `slide-template-creator`'s schema/validation/registration rules for everything else. |
-| `b2b-account-maps` | Build the two account maps a B2B software deal turns on: an **influence map** of the buying committee (影響力 × 賛否, champion highlighted) and a **discovery map** colouring each MEDDPICC item confirmed / partly known / still assumed, plus the committee table, approval path, pain chain, and the gaps with who to ask by when. Eight page templates ship as the `b2b-sales` pack under `slide-templates/`. Internal working artifacts, not customer-facing pages. |
-| `scalar-account-plan` | Keep one **sales ledger per customer** (`accounts/<AE>/<customer>/account.json`) — facts labelled said / observed / assumed, the buying committee, MEDDPICC status, the pain chain, BANT risk, the current stage's exit criteria with the customer-side evidence for each, and the open actions — and render it as a nine-page **activity plan whose URL never changes** (`build_deck.py --into` replaces the pages of the existing deck). What the ledger cannot answer becomes the deliverable: `account_ledger.py gaps` checks the playbook's ten review questions and turns every unanswered one into an action with a person to ask, a deadline and a completion condition, carried over between runs and written as both a slide and Markdown for the CRM. Internal only. |
-| `scalar-account-planning-session` | Build the annual **Account Planning Session** decks for an account the ledger already covers — a full Plan Document for the account team and a nine-page executive review deck — from one `aps.json` that adds the customer's published material to the ledger. Ties each proposal to a sentence of the customer's own mid-term management plan, gives every deal its own chapter, and works out **who to meet next** per legal entity from published officer lists and org charts, each name carrying the person we would go through. The builder holds only the layout; every string lives in `aps.json` under the ignored `accounts/` tree. Internal only. |
-| `scalar-ae-materials` | Build **one visit's materials**, routed by deal phase (0–6) × audience × purpose, so the customer-facing one-pager, the internal visit plan, the WPS win plan and the Deal Desk / 稟議 packet are never the same file. Includes a pre-generation check that no judgement about a named individual, competitor weakness or unconfirmed figure reaches anything a customer will read, and files each artifact under `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` in Drive. Eight page templates ship as the `scalar-ae` pack. Rules come from `references/scalar/sales-playbook.md`. |
-| `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
-| `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
-| `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
-| `image-slots` | Fill the empty picture frames of an **existing** deck with AI-generated images (`scripts/fill_image_slots.py`): finds the frames the same three ways template registration does (PICTURE placeholders, empty image elements left in a layout, frames the deck reuses), draws each picture for that frame's shape, and places it filling the frame. Standalone on any deck URL — including decks slide-forge did not generate — and needs no registered template. For decks still driven by a spec, put `aiImage` in the spec instead and regenerate. |
-| `slide-qa` | Thumbnail-based visual QA of a generated deck: fetch every page as PNG, inspect against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files (`scripts/cleanup_qa.py`). Invoked by the generation skills when the user opts in at intake (the default), or standalone on any deck URL. |
-| `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (出力形式) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
-| `spreadsheets` | Line-item spreadsheets — estimates, BOMs, cost breakdowns — as Excel and/or Google Spreadsheet from one JSON spec (`scripts/build_sheet.py`): typed columns, real formulas for amounts and subtotal/tax/total, `--dry-run` validation, and in-place updates that keep the Spreadsheet URL stable. Companion to a proposal deck's cost slide (same Drive folder), or standalone. Worked example: `examples/estimate-sample.json`. |
+| `google-slides-template` | 登録済みの Google Slides マスターテンプレートからデッキを生成する: 対話的インテイク、テンプレート解析・登録（`template.json`）、`--dry-run` 検証つきの仕様作成、大規模デッキ向けのページ分割執筆（許可されていれば並列、そうでなければ逐次）、生成。メインのワークフロー。 |
+| `google-slides` | コーポレートマスターを使わないゼロからのデッキ生成。仕様パス（`templates/blank-16x9.json` + 同一エンジン）と、コードファーストパス（`deckkit.py` + コネクタの多い図向けのオフラインレイアウト検証）。 |
+| `template-forge` | デザイン仕様 — ブランドカラー、フォント、ロゴ、フッター — から**新しいテンプレート（マスター）**を作成・登録する（`scripts/build_template.py`）。Slides API はマスターを作れないため、ベース（Google デフォルトまたは登録済みテンプレート）をコピーしてそのレイアウトを batchUpdate で再スタイルする。ロールは決定的に割り当てられ、結果は `templates/<id>.json` に登録されて、そのまま `google-slides-template` で使える。3 つのデザインプリセット（`templates/presets/`）を同梱。 |
+| `slide-template-creator` | 意味づけされた入力スロット・作例・オフライン検証・カタログプレビューを備えた、再利用可能な**1 枚ものコンテンツテンプレート**を作成・登録する。`slide-templates/` 配下に置かれ、Google Slides のマスターからは独立している。 |
+| `current-state-analysis` | ユーザー提供の材料に対して**現状分析・課題の特定フレームワーク**を実行し、結果を `analysis` パックで描画する: PEST、Five Forces、業務プロセスのペインポイント、ロジックツリー、KPI ツリー、なぜなぜ分析、フィッシュボーン、パレート、As-Is/To-Be ギャップ分析、インパクト×工数の優先度マトリクス（SWOT / 3C は `marketing-analysis` パックを再利用）。事実は図に、解釈は示唆に置き、出典は必須。各テンプレートのガードレールには手法ごとの誤用パターンを織り込んである。 |
+| `analysis-template-creator` | **分析フレームワークのスライドテンプレート**そのもの（`slide-templates/analysis/` パック）とその描画プリミティブ（先例は `fishbone`、`pareto`）を作成・保守する: フレームワーク固有のデザインルール — 1 テンプレート 1 問い、事実/解釈のスロット分離、出典必須、誤用ガードレール — をここで定め、それ以外はすべて `slide-template-creator` のスキーマ・検証・登録ルールに従う。 |
+| `b2b-account-maps` | B2B ソフトウェア商談の帰趨を左右する 2 つのアカウントマップを作る: 購買委員会の**インフルエンスマップ**（影響力 × 賛否、チャンピオンを強調表示）と、MEDDPICC の各項目を確認済み / 一部把握 / 推測のままで塗り分ける**ディスカバリーマップ**。加えて委員会テーブル、承認経路、ペインチェーン、そして「誰にいつまでに聞くか」つきのギャップ一覧。8 つのページテンプレートを `b2b-sales` パックとして `slide-templates/` に同梱。顧客提示用ではなく社内の作業成果物。 |
+| `scalar-account-plan` | 顧客ごとに 1 つの**営業台帳**（`accounts/<AE>/<customer>/account.json`）を維持する — 発言 / 観察 / 推測のラベルつき事実、購買委員会、MEDDPICC の状況、ペインチェーン、BANT リスク、現在のステージの Exit 条件とその顧客側エビデンス、未完了アクション — そしてそれを **URL の変わらない** 9 ページの活動計画としてレンダリングする（`build_deck.py --into` が既存デッキのページを差し替える）。台帳が答えられないことがそのまま成果物になる: `account_ledger.py gaps` がプレイブックの 10 のレビュー質問を照合し、未回答の質問をすべて「誰に聞くか・期限・完了条件」つきのアクションに変換して実行間で引き継ぎ、スライドと CRM 向け Markdown の両方に書き出す。社内専用。 |
+| `scalar-account-planning-session` | 台帳が既にカバーしているアカウントについて、年次の **Account Planning Session** デッキ — アカウントチーム向けのフル Plan Document と 9 ページのエグゼクティブレビューデッキ — を、顧客の公開資料を台帳に加えた 1 つの `aps.json` から作る。各提案を顧客自身の中期経営計画の一文に結びつけ、商談ごとに独立した章を与え、公開されている役員一覧と組織図から法人ごとに**次に誰と会うべきか**を導き、各人名には経由すべき人物を添える。ビルダーが持つのはレイアウトだけで、文字列はすべて gitignore された `accounts/` ツリー配下の `aps.json` にある。社内専用。 |
+| `scalar-ae-materials` | 商談フェーズ（0–6）× 相手 × 目的でルーティングして**1 回の訪問の資料**を作り、顧客提示のワンページャー、社内向け訪問計画、WPS ウィンプラン、Deal Desk / 稟議パケットが決して同じファイルにならないようにする。特定個人への評価・競合の弱点・未確認の数字が顧客の目に触れるものへ紛れ込まないことを生成前に確認するチェックを含み、各成果物を Drive の `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` に格納する。8 つのページテンプレートを `scalar-ae` パックとして同梱。ルールは `references/scalar/sales-playbook.ja.md` に従う。 |
+| `scalar-product-slides` | `scalar-2026` テンプレートによる Scalar Inc. の会社・製品・機能デッキのワークフロー。 |
+| `scalar-proposal-slides` | 顧客の課題を起点とする顧客別 Scalar ソリューション提案: ヒアリングチェックリスト、課題→製品マッピング（`references/scalar/proposal-map.ja.md`）、書き換え可能な実例つきの課題解決型提案構成（`scripts/scalar/build_scalar_proposal.py`）。 |
+| `drawio-diagrams` | 密度の高いクラウドアーキテクチャ / データフロー / ネットワーク図を draw.io ファイルとして作成し、ヘッドレスで PNG に書き出し（`drawio` CLI）、視覚的に QA してデッキに挿入する。編集可能な `.drawio` はデッキの Drive フォルダにアーカイブされる。 |
+| `image-slots` | **既存**デッキの空の画像フレームを AI 生成画像で埋める（`scripts/fill_image_slots.py`）: テンプレート登録と同じ 3 通りの方法でフレームを見つけ（PICTURE プレースホルダー、レイアウトに残された空の画像要素、デッキが使い回しているフレーム）、フレームの形状に合わせて各画像を描き、フレームいっぱいに配置する。任意のデッキ URL に対して単体で動作し — slide-forge が生成していないデッキも含む — 登録済みテンプレートも不要。仕様で管理しているデッキでは、代わりに仕様に `aiImage` を書いて再生成すること。 |
+| `slide-qa` | 生成済みデッキのサムネイルベース視覚 QA: 全ページを PNG で取得し、欠陥チェックリストに照らして点検し、修正と再生成のループを回し、最後にローカルの QA ファイルを削除する（`scripts/cleanup_qa.py`）。インテイクでユーザーが選択した場合（既定で有効）に生成スキルから呼ばれるほか、任意のデッキ URL に対して単体でも実行できる。 |
+| `pptx-export` | 生成済みデッキを納品形式として PowerPoint（`.pptx`）にエクスポートする（`scripts/export_pptx.py`）: 10MB 制限を自動フォールバックで回避する Drive API エクスポート。ローカルに保存し、任意でデッキの Drive フォルダにもアーカイブする。PPTX 納品が想定される場合はインテイク（出力形式）で選択するか、任意のデッキ URL に対して単体で実行する。ゼロからの PPTX 作成は引き続き `document-skills:pptx` の担当。 |
+| `spreadsheets` | 見積もり、BOM、コスト内訳といった明細スプレッドシートを、1 つの JSON 仕様から Excel および/または Google Spreadsheet として生成する（`scripts/build_sheet.py`）: 型付きカラム、金額と小計/税/合計の実数式、`--dry-run` 検証、Spreadsheet の URL を保ったままのインプレース更新。提案デッキのコストスライドの伴走成果物（同じ Drive フォルダ）としても、単体でも使える。実例: `examples/estimate-sample.json`。 |
 
-## End-to-end workflow
+## エンドツーエンドワークフロー
 
-The `forge` workflow runs the whole pipeline as one continuous flow: route to
-the right generation skill → interactive intake (including visual-QA and
-output-format choices) → outline approval → spec + offline validation →
-generation → visual QA via `slide-qa` (when chosen) → QA-file cleanup → PPTX
-export via `pptx-export` (when chosen) → final report.
+`forge` ワークフローはパイプライン全体を 1 つの連続した流れとして実行する:
+適切な生成スキルへのルーティング → 対話的インテイク（視覚 QA と出力形式の
+選択を含む）→ アウトライン承認 → 仕様 + オフライン検証 → 生成 →
+`slide-qa` による視覚 QA（選択時）→ QA ファイルの後片付け → `pptx-export` に
+よる PPTX エクスポート（選択時）→ 最終報告。
 
-- Codex: invoke the `forge` skill by name.
-- Claude Code: use `/forge` or `/slide-forge:forge`.
+- Codex: `forge` スキルを名前で呼び出す。
+- Claude Code: `/forge` または `/slide-forge:forge` を使う。
 
-### Account Executive workflow
+### Account Executive ワークフロー
 
-Two more commands cover the sales side, where the deliverable is not a deck but
-the AE's next action:
+成果物がデッキではなく AE の次のアクションになる営業側は、さらに 2 つの
+コマンドがカバーする:
 
-- `/account <顧客名>` — create or update a customer's activity plan. Reads the
-  ledger, records what came out of the last meeting, checks the playbook's ten
-  review questions, turns the unanswered ones into dated actions, and replaces
-  the contents of the same activity-plan deck (the shared link keeps working).
-- `/visit <顧客名>` — prepare one visit. Routes phase × audience to the right
-  material type, keeps customer-facing and internal artifacts in separate
-  files and folders, generates and files them, then writes the visit back to
-  the ledger and refreshes the activity plan.
+- `/account <顧客名>` — 顧客の活動計画を作成・更新する。台帳を読み、直近の
+  ミーティングで分かったことを記録し、プレイブックの 10 のレビュー質問を
+  照合し、未回答のものを期限つきアクションに変換して、同じ活動計画デッキの
+  中身を差し替える（共有リンクはそのまま使い続けられる）。
+- `/visit <顧客名>` — 1 回の訪問を準備する。フェーズ × 相手から適切な資料
+  タイプへルーティングし、顧客提示物と社内資料をファイルもフォルダも分けた
+  まま生成・格納し、訪問結果を台帳へ書き戻して活動計画を更新する。
 
-Both keep the source of truth in `accounts/<AE 名>/<顧客名>/account.json`
-(git-ignored) and file the output under `<Drive ルート>/<AE 名>/<顧客名>/`.
-The Drive root is asked once and remembered in `config/sales.json`. The phases,
-gate IDs, five material types and ten checkpoints all live in
-`references/scalar/sales-playbook.md`.
+どちらも情報源は `accounts/<AE 名>/<顧客名>/account.json`（git-ignored）に
+一本化し、出力は `<Drive ルート>/<AE 名>/<顧客名>/` 配下に格納する。
+Drive ルートは最初に一度だけ聞かれ、`config/sales.json` に記憶される。
+フェーズ、ゲート ID、5 つの資料タイプ、10 のチェックポイントはすべて
+`references/scalar/sales-playbook.ja.md` にある。
 
-## Repository layout
+## リポジトリ構成
 
 ```
-.agents/      Codex skill discovery links and the Codex-native forge skill
-AGENTS.md     Codex project rules and host-tool compatibility mappings
-skills/       shared SKILL.md definitions used by Codex and Claude Code
-commands/     Claude Code slash commands (/forge, /account, /visit)
-accounts/     per-customer sales ledgers (git-ignored; never committed)
-scripts/      shared engine — one importable package
-  _auth.py        OAuth helper (Slides + Drive)
-  build_deck.py   template-driven generator (TemplateDeck); --dry-run validation
-  diagrams.py     Canvas drawing hub (aggregates the mixins below)
-  charts.py illustrations.py patterns.py pages.py events.py   figure libraries
-  icons.py cloud_icons.py images.py                 pictograms, vendor icons, AI images
+.agents/      Codex のスキル発見用リンクと Codex ネイティブの forge スキル
+AGENTS.md     Codex 向けプロジェクトルールとホストツール互換マッピング
+skills/       Codex と Claude Code が共用する SKILL.md 定義
+commands/     Claude Code スラッシュコマンド (/forge, /account, /visit)
+accounts/     顧客ごとの営業台帳 (git-ignored。コミット禁止)
+scripts/      共有エンジン — 1 つのインポート可能なパッケージ
+  _auth.py        OAuth ヘルパー (Slides + Drive)
+  build_deck.py   テンプレート駆動ジェネレーター (TemplateDeck)。--dry-run 検証
+  diagrams.py     Canvas 描画ハブ (下記の mixin を集約)
+  charts.py illustrations.py patterns.py pages.py events.py   図表ライブラリ
+  icons.py cloud_icons.py images.py                 ピクトグラム、ベンダーアイコン、AI 画像
   inspect_template.py assemble_spec.py layout_sample.py list_templates.py
-  account_graph.py build_account_graph.py   influence / discovery graphs -> .drawio
-  scalar/account_ledger.py       per-customer sales ledger: validate, gaps, slot data
-  scalar/account_workspace.py    Drive tree <root>/<AE>/<customer>/… (idempotent)
-  scalar/build_account_plan.py   ledger -> activity-plan deck (same URL on update)
-  export_template_master.py import_template_master.py   bundled masters <-> Drive
+  account_graph.py build_account_graph.py   インフルエンス / ディスカバリーグラフ -> .drawio
+  scalar/account_ledger.py       顧客ごとの営業台帳: 検証、gaps、スロットデータ
+  scalar/account_workspace.py    Drive ツリー <root>/<AE>/<customer>/… (冪等)
+  scalar/build_account_plan.py   台帳 -> 活動計画デッキ (更新後も同じ URL)
+  export_template_master.py import_template_master.py   同梱マスター <-> Drive
   fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
-  build_sheet.py  line-item spreadsheets (xlsx + Google Spreadsheet)
-  deckkit.py render_deck.py validate_layout.py      code-first path (offline checks)
-  drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
-  scalar/         Scalar deck builders
-templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
-  masters/        drop a master .pptx here and import it (gitignored; see its README)
-slide-templates/ reusable single-slide content templates + registry
-assets/       scalar/ (brand: pictograms, logos, product-logos), cloud-icons/ (gitignored)
-references/   engine, workflow, and host compatibility documentation
-  images/slide-patterns/  pattern catalog images (committed; regenerate via Setup 6)
-  i18n/           English sidecar strings for the two generated catalogs
-examples/     runnable spec catalogs and code-first example decks
+  build_sheet.py  明細スプレッドシート (xlsx + Google Spreadsheet)
+  deckkit.py render_deck.py validate_layout.py      コードファーストパス (オフライン検証)
+  drawio_export.py drive_folder.py snapshot_version.py   draw.io 書き出し、Drive フォルダ、バージョンスナップショット
+  scalar/         Scalar デッキビルダー
+templates/    登録済みマスター (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge のデザインプリセット)
+  masters/        マスター .pptx をここに置いてインポートする (gitignored。同ディレクトリの README 参照)
+slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ
+assets/       scalar/ (ブランド: ピクトグラム、ロゴ、製品ロゴ), cloud-icons/ (gitignored)
+references/   エンジン・ワークフロー・ホスト互換のドキュメント
+  images/slide-patterns/  パターンカタログ画像 (コミット済み。セットアップ 6 で再生成)
+  i18n/           生成される 2 つのカタログ用の英語サイドカー文字列
+examples/     実行可能な仕様カタログとコードファーストのサンプルデッキ
 config/       credentials.json + token.json (gitignored, 0600)
-cache/ out/   transient render cache and QA output (gitignored)
+cache/ out/   一時レンダーキャッシュと QA 出力 (gitignored)
 ```
 
-## Install as a Claude Code plugin
+## Claude Code プラグインとしてのインストール
 
-The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all seventeen skills):
+このリポジトリはプラグインマーケットプレイスを兼ねる
+（`.claude-plugin/marketplace.json`、17 スキルすべてを束ねた 1 プラグイン）:
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
 /plugin install slide-forge@slide-forge
 ```
 
-Skills become available as `slide-forge:<skill-name>`, and the pipeline
-command as `/slide-forge:forge`. After installing,
-run the Setup below inside the plugin root (`${CLAUDE_PLUGIN_ROOT}`) — the
-venv, OAuth credentials, and cloud icons are machine-local and not bundled.
-Alternatively, clone the repo and symlink `skills/*` into `~/.claude/skills/`
-(the layout used during development); pick one of the two, not both, or the
-skills will be listed twice.
+スキルは `slide-forge:<skill-name>` として、パイプラインコマンドは
+`/slide-forge:forge` として使えるようになる。インストール後、プラグイン
+ルート（`${CLAUDE_PLUGIN_ROOT}`）の中で後述のセットアップを実行すること —
+venv、OAuth 認証情報、クラウドアイコンはマシンローカルであり、同梱されない。
+別の方法として、リポジトリをクローンして `skills/*` を `~/.claude/skills/`
+にシンボリックリンクしてもよい（開発中に使っている構成）。ただし 2 つの
+方法はどちらか一方だけを選ぶこと。両方使うとスキルが二重に列挙される。
 
-## Use with Codex
+## Codex での利用
 
-Codex uses the same skills and Python engine. In a repository clone, the
-`.agents/skills/` entries expose all seventeen generation/support skills plus the
-end-to-end `forge` skill. Start Codex from the repository root and invoke
-`forge` by name; the Claude-specific `/slide-forge:forge` command and plugin
-marketplace manifest are not required.
+Codex も同じスキルと Python エンジンを使う。リポジトリのクローンでは、
+`.agents/skills/` のエントリが 17 の生成/支援スキルすべてと、エンドツー
+エンドの `forge` スキルを公開する。リポジトリルートから Codex を起動し、
+`forge` を名前で呼び出せばよい。Claude 固有の `/slide-forge:forge`
+コマンドやプラグインマーケットプレイスのマニフェストは不要。
 
-Project-wide Codex instructions live in `AGENTS.md`. Host-tool mappings,
-sequential fallback for environments where agent delegation is unavailable,
-and setup details are documented in
-[`references/codex-compatibility.md`](references/codex-compatibility.md).
+プロジェクト全体の Codex 向け指示は `AGENTS.md` にある。ホストツールの
+マッピング、エージェント委譲が使えない環境向けの逐次フォールバック、
+セットアップの詳細は
+[`references/codex-compatibility.md`](references/codex-compatibility.md)
+に記載している。
 
-The `.agents/skills/*` symlinks point back to `skills/*`, so Codex and Claude
-Code read the same skill definitions rather than maintaining two copies.
+`.agents/skills/*` のシンボリックリンクは `skills/*` を指しているため、
+Codex と Claude Code はコピーを二重管理せず、同じスキル定義を読む。
 
-Verify discovery from the repository root by asking Codex to list or use the
-`forge`, `google-slides`, and `slide-qa` skills. No Claude plugin installation
-is needed for Codex.
+リポジトリルートから、Codex に `forge`・`google-slides`・`slide-qa`
+スキルの列挙や利用を頼んで、スキル発見を確認するとよい。Codex に
+Claude プラグインのインストールは不要。
 
-## Requirements
+## 動作要件
 
-- **Python 3.10+** (macOS / Linux)
-- A Google account that can create Google Slides / Drive files
-- **draw.io desktop** — only for the `drawio-diagrams` skill:
-  `brew install --cask drawio` (the export script also finds the app-bundle
-  binary at `/Applications/draw.io.app`)
-- A Gemini API key — only for optional AI image generation
+- **Python 3.10+**（macOS / Linux）
+- Google Slides / Drive のファイルを作成できる Google アカウント
+- **draw.io desktop** — `drawio-diagrams` スキルでのみ必要:
+  `brew install --cask drawio`（エクスポートスクリプトは
+  `/Applications/draw.io.app` のアプリバンドル内バイナリも見つける）
+- Gemini API キー — 任意の AI 画像生成でのみ必要
 
-## Setup
+## セットアップ
 
-All commands run from the slide-forge root: the clone directory for Codex or a
-local Claude setup, and `${CLAUDE_PLUGIN_ROOT}` for a Claude plugin install.
+コマンドはすべて slide-forge のルートから実行する: Codex やローカルの
+Claude 構成ではクローンしたディレクトリ、Claude プラグインとしての
+インストールでは `${CLAUDE_PLUGIN_ROOT}`。
 
-**Some things are generated on your machine rather than committed** — the
-vendor cloud icons and the slide masters. They are large (a master is 6–8MB),
-machine-specific, or not ours to redistribute, so the repository ships the
-means to produce them instead of the files. A clone is not fully usable until
-you have run the steps below that you need.
+**一部のものはコミットされておらず、各自のマシン上で生成する** — クラウド
+ベンダーアイコンとスライドマスターがそれにあたる。サイズが大きい（マスターは
+1 つ 6–8MB）、マシン固有、あるいは当方に再配布権がないため、リポジトリは
+ファイルそのものではなく生成する手段を同梱している。クローンは、必要な
+下記の手順を実行して初めてフルに使える状態になる。
 
-| Generated here | Why not committed | Step |
+| ここで生成されるもの | コミットしない理由 | 手順 |
 |---|---|---|
-| `assets/cloud-icons/` | AWS / Google Cloud / Azure do not permit redistribution | [4](#4-cloud-vendor-icons-only-for-cloud-architecture-figures) |
-| `templates/masters/*.pptx` | 6–8MB each; the master has to live in *your* Drive to be copied | [5](#5-slide-masters-for-the-copy-mode-templates) |
+| `assets/cloud-icons/` | AWS / Google Cloud / Azure が再配布を許可していない | [4](#4-クラウドベンダーアイコンクラウドアーキテクチャ図を描く場合のみ) |
+| `templates/masters/*.pptx` | 1 つ 6–8MB。マスターは*自分の* Drive にあって初めてコピーできる | [5](#5-スライドマスターcopy-モードのテンプレート用) |
 
-### 1. Python environment
+### 1. Python 環境
 
-The repo expects `.venv` at its root. A local environment is the simplest
-cross-host setup:
+リポジトリはルート直下の `.venv` を前提とする。ローカル環境が最も簡単な
+クロスホスト構成になる:
 
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
 ```
 
-For Claude plugin installations that can be replaced during upgrades, keeping
-the real environment outside the plugin root is useful. Create a shared venv
-and point `.venv` at it with an absolute symlink. The historical
-`~/.claude/venvs/gslides` location remains supported but is not required by
-Codex or by the engine.
+アップグレード時に置き換えられうる Claude プラグインインストールでは、
+実体の環境をプラグインルートの外に置くと都合がよい。共有の venv を作り、
+絶対パスのシンボリックリンクで `.venv` からそこを指す。歴史的な
+`~/.claude/venvs/gslides` の場所も引き続きサポートされるが、Codex にも
+エンジンにも必須ではない。
 
-### 2. Google Cloud OAuth client (one-time)
+### 2. Google Cloud OAuth クライアント（初回のみ）
 
-The engine calls the Slides + Drive APIs as **you**, via an OAuth desktop
-client (scopes: `auth/presentations`, `auth/drive`). In
-[Google Cloud Console](https://console.cloud.google.com/):
+エンジンは OAuth デスクトップクライアント経由で、**あなた自身として**
+Slides + Drive API を呼び出す（スコープ: `auth/presentations`、
+`auth/drive`）。[Google Cloud Console](https://console.cloud.google.com/) で:
 
-1. Create (or pick) a project.
-2. **APIs & Services → Library** — enable **Google Slides API** and
-   **Google Drive API**.
-3. **APIs & Services → OAuth consent screen** — configure the app
-   (Internal for a Workspace org; External works too — add yourself as a
-   test user while the app is in Testing).
+1. プロジェクトを作成する（または既存のものを選ぶ）。
+2. **APIs & Services → Library** — **Google Slides API** と
+   **Google Drive API** を有効化する。
+3. **APIs & Services → OAuth consent screen** — アプリを設定する
+   （Workspace 組織なら Internal。External でも動作する — アプリが
+   Testing の間は自分をテストユーザーに追加すること）。
 4. **APIs & Services → Credentials → Create credentials → OAuth client ID →
-   Desktop app** — download the JSON and save it as `config/credentials.json`
-   (`chmod 600`). Override the directory with `$GSLIDES_CONFIG_DIR` if you
-   keep credentials elsewhere.
+   Desktop app** — JSON をダウンロードして `config/credentials.json` として
+   保存する（`chmod 600`）。認証情報を別の場所に置く場合は
+   `$GSLIDES_CONFIG_DIR` でディレクトリを上書きできる。
 
-### 3. First run / verify
+### 3. 初回実行と確認
 
 ```bash
 .venv/bin/python scripts/list_templates.py
 ```
 
-CLI messages are English by default; set `GSLIDES_LANG=ja` for Japanese
-(`export GSLIDES_LANG=ja`, or per command). This affects only the scripts'
-terminal output — never the generated deck or spreadsheet content.
+CLI メッセージは既定で英語。日本語にするには `GSLIDES_LANG=ja` を設定する
+（`export GSLIDES_LANG=ja`、またはコマンドごとに指定）。これはスクリプトの
+端末出力にだけ効き、生成されるデッキやスプレッドシートの内容には決して
+影響しない。
 
-The first call opens a browser consent screen and writes `config/token.json`
-(refreshed automatically afterwards). If a template list prints, auth works.
+初回の呼び出しではブラウザに同意画面が開き、`config/token.json` が書き
+出される（以後は自動更新）。テンプレート一覧が表示されれば認証は成功。
 
-### 4. Cloud vendor icons (only for cloud architecture figures)
+### 4. クラウドベンダーアイコン（クラウドアーキテクチャ図を描く場合のみ）
 
-AWS / Google Cloud / Azure icon sets are vendor assets and are **not
-committed**; fetch them once:
+AWS / Google Cloud / Azure のアイコンセットはベンダーの資産であり、
+**コミットされていない**。一度だけ取得する:
 
 ```bash
 .venv/bin/python scripts/fetch_cloud_icons.py
 ```
 
-### 5. Slide masters (for the `copy`-mode templates)
+### 5. スライドマスター（`copy` モードのテンプレート用）
 
-`scalar-2026`, `scalar-2026-boilerplate`, `corporate` and `aixdevops` are
-`generationMode: copy` templates: generating duplicates a real Google Slides
-presentation. `templates/<id>.json` only *points* at one, so on a fresh clone
-those templates cannot work until the master exists in your own Drive.
+`scalar-2026`、`scalar-2026-boilerplate`、`corporate`、`aixdevops` は
+`generationMode: copy` のテンプレートで、生成は実在する Google Slides
+プレゼンテーションの複製として行われる。`templates/<id>.json` はそれを
+*指している*だけなので、フレッシュなクローンでは、マスターが自分の
+Drive に存在するまでこれらのテンプレートは動かない。
 
-The masters themselves are **not committed** — 6–8MB each, and a master is only
-useful once it lives in your own Drive. Pick whichever applies:
+マスター自体は**コミットされていない** — 1 つ 6–8MB あり、マスターは
+自分の Drive にあって初めて意味を持つ。以下から該当するものを選ぶ:
 
-**a. Build your own.** The `template-forge` skill creates a new master from a
-design spec — brand colours, fonts, logo, footer — and registers it, ready for
-`google-slides-template`. Nothing else is needed; this is the path if you are
-not working with an existing corporate deck.
+**a. 自分で作る。** `template-forge` スキルがデザイン仕様 — ブランド
+カラー、フォント、ロゴ、フッター — から新しいマスターを作成・登録し、
+そのまま `google-slides-template` で使える。他には何も要らない。既存の
+コーポレートデッキを使わないならこの道。
 
 ```bash
 .venv/bin/python scripts/build_template.py --help
 ```
 
-**b. Register a master you already have in Drive.** Analyse it once and review
-the guessed roles by hand:
+**b. Drive に既にあるマスターを登録する。** 一度解析し、推測された
+ロールを手で確認する:
 
 ```bash
 .venv/bin/python scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>
 ```
 
-**c. Import a `.pptx` of a master.** Save it as `templates/masters/<id>.pptx`,
-then upload and re-register it in one step:
+**c. マスターの `.pptx` をインポートする。** `templates/masters/<id>.pptx`
+として保存し、アップロードと再登録を一度に行う:
 
 ```bash
 .venv/bin/python scripts/import_template_master.py --all
@@ -258,32 +260,36 @@ then upload and re-register it in one step:
 .venv/bin/python scripts/import_template_master.py --id scalar-2026
 ```
 
-Importing a `.pptx` makes Slides mint new object IDs for every layout, master
-and decoration, so the script re-runs `inspect_template.py` over the imported
-presentation and writes the result over `templates/<id>.json`. The
-human-verified **role assignment is preserved** — only the identifiers move.
-Expect `templates/*.json` to show as locally modified afterwards; that is your
-machine's copy of the registration and is not meant to be committed back.
+`.pptx` をインポートすると Slides はすべてのレイアウト・マスター・装飾に
+新しいオブジェクト ID を発行するため、スクリプトはインポートされた
+プレゼンテーションに対して `inspect_template.py` を再実行し、その結果で
+`templates/<id>.json` を上書きする。人手で確認済みの**ロール割り当ては
+保持され**、識別子だけが移る。以後 `templates/*.json` はローカル変更
+ありと表示されるはずだが、それはあなたのマシン上の登録情報であり、
+コミットして戻すものではない。
 
-If you have edit access to a master already, write it out for a teammate with
-`scripts/export_template_master.py --all`. Drive refuses to export a
-Docs-editors file over 10MB (`exportSizeLimitExceeded`), so larger masters have
-to be downloaded by hand from the Slides UI (File > Download > Microsoft
-PowerPoint). Do **not** delete slides to get under the limit: Slides drops any
-layout that no slide uses — `aixdevops` loses three registered layouts that way
-— and the bundled slides listed in `existingSlideIds` are part of what those
-templates offer. See [`templates/masters/README.md`](templates/masters/README.md).
+既にマスターへの編集権限があるなら、
+`scripts/export_template_master.py --all` でチームメイト向けに書き出せる。Drive は 10MB を超える
+Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimitExceeded`）
+ため、それより大きいマスターは Slides の UI から手動でダウンロードする
+（File > Download > Microsoft PowerPoint）。制限内に収めるために
+スライドを削除しては**いけない**: Slides はどのスライドからも使われて
+いないレイアウトを落とすため — `aixdevops` はこれで登録済みレイアウトを
+3 つ失う — また `existingSlideIds` に列挙された同梱スライドはこれらの
+テンプレートが提供する価値の一部でもある。
+[`templates/masters/README.md`](templates/masters/README.md) を参照。
 
-`blank-16x9` is `generationMode: create` and needs no master, so the
-`google-slides` spec path and every `--dry-run` validation work on a bare clone.
+`blank-16x9` は `generationMode: create` でマスターを必要としないため、
+`google-slides` の仕様パスとすべての `--dry-run` 検証は素のクローンでも
+動く。
 
-### 6. Slide pattern catalog images
+### 6. スライドパターンカタログ画像
 
 [`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.ja.md)
-shows all 43 page patterns as rendered images. Both the text and the images
-(~2MB, under `references/images/slide-patterns/`) are committed, so a bare
-clone reads with pictures. When a pattern is added or its rendering changes,
-regenerate the catalog and commit the images with it:
+は全 43 ページパターンをレンダリング済み画像つきで見せる。テキストも画像
+（約 2MB、`references/images/slide-patterns/` 配下）もコミット済みなので、
+素のクローンでも図入りで読める。パターンを追加したり描画が変わったりした
+ときは、カタログを再生成して画像ごとコミットする:
 
 ```bash
 .venv/bin/python scripts/build_deck.py \
@@ -292,53 +298,54 @@ regenerate the catalog and commit the images with it:
 .venv/bin/python scripts/build_pattern_catalog.py --thumbs out/patterns
 ```
 
-Regeneration needs a working `scalar-2026` master (step 5) and, for the three
-cloud-architecture patterns, the vendor icons (step 4).
+再生成には動作する `scalar-2026` マスター（手順 5）と、3 つのクラウド
+アーキテクチャパターンについてはベンダーアイコン（手順 4）が必要。
 
-Both catalog generators are bilingual: one run writes the English document at
-the original path and the Japanese one at its `.ja.md` sibling. Japanese text
-comes from the source data (the pattern spec / each `template.json`); English
-text comes from the sidecars under `references/i18n/`. A new pattern or
-template with no sidecar entry falls back to Japanese with a warning, so add
-its English strings there when you add one.
+どちらのカタログ生成器もバイリンガルで、1 回の実行で英語版を元のパスに、
+日本語版をその `.ja.md` の隣ファイルに書き出す。日本語テキストはソース
+データ（パターン仕様 / 各 `template.json`）から、英語テキストは
+`references/i18n/` 配下のサイドカーから来る。サイドカーにエントリのない
+新しいパターンやテンプレートは警告つきで日本語にフォールバックするので、
+追加時には英語文字列もそこへ足すこと。
 
-The slide-template catalog
-([`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md),
-images under `references/images/slide-templates/`, also committed) works the
-same way: build each pack's catalog spec with
-`scripts/build_slide_template_catalog.py`, generate the deck, fetch
-thumbnails, and run `scripts/build_template_catalog_doc.py` — the regeneration
-commands are at the top of that document.
+スライドテンプレートカタログ
+（[`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md)、
+画像は `references/images/slide-templates/` 配下、こちらもコミット済み）も
+同じ仕組みで動く: `scripts/build_slide_template_catalog.py` で各パックの
+カタログ仕様を組み、デッキを生成し、サムネイルを取得し、
+`scripts/build_template_catalog_doc.py` を実行する — 再生成コマンドは
+その文書の冒頭にある。
 
-### 7. Optional: AI image generation
+### 7. 任意: AI 画像生成
 
-For `scripts/images.py`, set `GEMINI_API_KEY` or save the key to
-`config/gemini_api_key` (gitignored, like the OAuth files). The key must
-belong to a **billed** project — the image model has zero free-tier quota.
+`scripts/images.py` を使うには、`GEMINI_API_KEY` を設定するか、キーを
+`config/gemini_api_key` に保存する（OAuth ファイル同様 gitignored）。
+キーは**課金設定済み**プロジェクトのものであること — 画像モデルには
+無料枠のクォータがない。
 
-### What each skill needs
+### 各スキルに必要なもの
 
-| Skill | venv + OAuth | Slide master | Cloud icons | draw.io CLI | Gemini key |
+| スキル | venv + OAuth | スライドマスター | クラウドアイコン | draw.io CLI | Gemini キー |
 |---|---|---|---|---|---|
-| `google-slides-template` | ✔ | ✔ for the copy-mode templates | when drawing cloud diagrams | — | optional |
-| `google-slides` | ✔ | — (blank-16x9 needs none) | when drawing cloud diagrams | — | optional |
-| `scalar-product-slides` | ✔ | ✔ scalar-2026 | when drawing cloud diagrams | — | — |
-| `scalar-proposal-slides` | ✔ | ✔ scalar-2026 | — | to edit the bundled environment diagram | — |
-| `drawio-diagrams` | ✔ (for deck insertion) | — | — | ✔ | — |
+| `google-slides-template` | ✔ | ✔ copy モードのテンプレートで必要 | クラウド図を描くとき | — | 任意 |
+| `google-slides` | ✔ | —（blank-16x9 は不要） | クラウド図を描くとき | — | 任意 |
+| `scalar-product-slides` | ✔ | ✔ scalar-2026 | クラウド図を描くとき | — | — |
+| `scalar-proposal-slides` | ✔ | ✔ scalar-2026 | — | 同梱の環境図を編集するとき | — |
+| `drawio-diagrams` | ✔（デッキ挿入時） | — | — | ✔ | — |
 | `slide-qa` | ✔ | — | — | — | — |
 | `pptx-export` | ✔ | — | — | — | — |
-| `spreadsheets` | ✔ (OAuth only for Google Spreadsheet output) | — | — | — | — |
-| `template-forge` | ✔ | base master, if copying one | — | — | — |
+| `spreadsheets` | ✔（OAuth は Google Spreadsheet 出力時のみ） | — | — | — | — |
+| `template-forge` | ✔ | コピーする場合はベースのマスター | — | — | — |
 
-Secrets hygiene: `config/` (credentials, tokens, API keys), `out/`, `cache/`,
-and `assets/cloud-icons/` are gitignored — nothing machine-local is ever
-committed. Keep Drive sharing on your master decks restricted; their file IDs appear in
-`templates/*.json`. Masters are not committed either: `templates/masters/` is gitignored, so a
-master .pptx you drop there stays local. Review what a master contains before
-sharing one — `scalar-2026-boilerplate` carries company and customer-facing
-slides.
+秘密情報の衛生: `config/`（認証情報、トークン、API キー）、`out/`、
+`cache/`、`assets/cloud-icons/` は gitignored — マシンローカルなものが
+コミットされることはない。マスターデッキの Drive 共有は制限したままに
+すること。それらのファイル ID は `templates/*.json` に現れる。マスターも
+コミットされない: `templates/masters/` は gitignored なので、そこに置いた
+マスター .pptx はローカルに留まる。マスターを共有する前には中身を確認する
+こと — `scalar-2026-boilerplate` は会社紹介や顧客提示用のスライドを含む。
 
-## Quick start (template-driven)
+## クイックスタート（テンプレート駆動）
 
 ```bash
 .venv/bin/python scripts/list_templates.py                 # registered templates
@@ -351,99 +358,103 @@ slides.
 .venv/bin/python scripts/export_pptx.py <URL> --folder <FOLDER>   # optional PPTX delivery (pptx-export skill)
 ```
 
-Register a new master: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`,
-then review the guessed roles by hand (see the google-slides-template skill).
+新しいマスターの登録: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`
+を実行し、推測されたロールを手で確認する（google-slides-template スキル参照）。
 
-## Quick start (code-first)
+## クイックスタート（コードファースト）
 
-A deck is one Python module; a function is one slide. See
-`examples/pattern-gallery/deck.py` and `references/diagram-cookbook.md`.
+デッキは 1 つの Python モジュール、関数は 1 枚のスライド。
+`examples/pattern-gallery/deck.py` と `references/diagram-cookbook.ja.md`
+を参照。
 
 ```bash
 .venv/bin/python scripts/validate_layout.py mydeck.py   # offline checks, no API calls
 .venv/bin/python scripts/render_deck.py     mydeck.py   # validates, then generates
 ```
 
-`validate_layout.py` catches footer intrusion, off-slide geometry, title
-wrapping, floating/buried connector endpoints, text hidden behind
-later-drawn shapes, and text overflow — before any API call. What it cannot
-judge (arrow routing, contrast, whether the figure communicates) is what the
-thumbnail QA of the `slide-qa` skill is for: see `references/validation.md`.
+`validate_layout.py` は、フッターへの侵入、スライド外のジオメトリ、
+タイトルの折り返し、浮いた/埋もれたコネクタ端点、後から描かれた図形の
+背後に隠れたテキスト、テキストのあふれを — API 呼び出しの前に — 検出する。
+これが判定できないこと（矢印の経路、コントラスト、図が伝わるかどうか）を
+担うのが `slide-qa` スキルのサムネイル QA:
+`references/validation.ja.md` を参照。
 
-## Slide pattern catalog
+## スライドパターンカタログ
 
-Which page shapes can this build? See
-[`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.ja.md) —
-43 patterns in 8 groups, each with a rendered image, when to use it, and the
-`figures` type names to write in the spec. The layout rules behind them are in
-[`references/slide-patterns.md`](references/slide-patterns.ja.md).
+どんな形のページが作れるか?
+[`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.ja.md)
+を参照 — 43 パターンを 8 分類で、それぞれレンダリング済み画像・使いどころ・
+仕様に書く `figures` の type 名つきで並べてある。背後のレイアウトルールは
+[`references/slide-patterns.md`](references/slide-patterns.ja.md) にある。
 
-| Group | Patterns | Picks |
+| 分類 | パターン数 | 選びどころ |
 |---|---|---|
-| 骨格 6 種 | 6 | How the page itself is laid out |
-| 構成ページ | 4 | Deck scaffolding — summary, agenda, storyline, ghost |
-| 定量ページ | 7 | Arguing with numbers |
-| 比較・評価ページ | 6 | Putting options side by side |
-| 構造・論理ページ | 7 | Making a relationship visible |
-| 計画・体制ページ | 5 | Time and people |
-| 定性・技術ページ | 5 | Everything that isn't a number |
-| 締め・付録ページ | 3 | The decision and what follows |
+| 骨格 6 種 | 6 | ページそのものの組み方 |
+| 構成ページ | 4 | デッキの足場 — サマリー、アジェンダ、ストーリーライン、ゴースト |
+| 定量ページ | 7 | 数字で論じる |
+| 比較・評価ページ | 6 | 選択肢を並べて比べる |
+| 構造・論理ページ | 7 | 関係を見えるようにする |
+| 計画・体制ページ | 5 | 時間と体制 |
+| 定性・技術ページ | 5 | 数字でないものすべて |
+| 締め・付録ページ | 3 | 決定とその後 |
 
-Beyond these page patterns, `slide-templates/` registers 37 ready-made
-one-page templates in five packs (marketing-analysis, b2b-sales, scalar-ae,
-planning, analysis). Each is catalogued with a rendered image, the question it
-answers, and its guardrails in
-[`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md).
+これらのページパターンに加えて、`slide-templates/` には 5 つのパック
+（marketing-analysis、b2b-sales、scalar-ae、planning、analysis）で 37 の
+既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
+答える問い、ガードレールつきで
+[`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md)
+にカタログ化されている。
 
-## Examples
+## サンプル
 
-Every spec under `examples/` is authored against **`templates/scalar-2026.json`**
-and validates cleanly against it. They are not portable to
-`templates/blank-16x9.json` — that template has no TITLE placeholder and
-declares no `CLOSING` role, so the same spec reports dozens of findings.
-`corporate` and `aixdevops` accept some of them; `scalar-2026` accepts all.
+`examples/` 配下の仕様はすべて **`templates/scalar-2026.json`** に対して
+書かれており、それに対してはクリーンに検証を通る。
+`templates/blank-16x9.json` には移植できない — そのテンプレートには TITLE
+プレースホルダーがなく、`CLOSING` ロールも宣言していないため、同じ仕様が
+数十件の指摘を報告する。`corporate` と `aixdevops` は一部を受け付け、
+`scalar-2026` はすべてを受け付ける。
 
 ```bash
 .venv/bin/python scripts/build_deck.py \
     --template templates/scalar-2026.json --spec examples/<name>.json --dry-run --strict
 ```
 
-| Example | Slides | Shows |
+| サンプル | 枚数 | 見せるもの |
 |---|---|---|
-| `charts-demo.json` | 5 | Tables and graphs — the `charts.py` catalog |
-| `patterns-demo.json` | 7 | Layout patterns from `patterns.py` |
-| `illustration-gallery.json` | 13 | Concept figures from `illustrations.py` |
-| `icon-gallery.json` | 10 | The pictogram library (`icons.py`) |
-| `code-blocks-demo.json` | 2 | Syntax-highlighted code blocks |
-| `event-announcement.json` | 4 | Seminar / conference announcement parts |
-| `read-alone-guide.json` | 30 | Density patterns for print / read-alone decks |
-| `design-catalog.json` | 49 | The full design-pattern catalog †|
-| `slide-pattern-index.json` | 60 | One page per pattern — 1 slide = 1 pattern †|
-| `cloud-architecture.json` | 6 | Cloud architecture figures †|
-| `b2b-account-review.json` | 13 | A worked account review built from all eight `b2b-sales` templates — cover, exec summary, both maps in their two-axis/MEDDPICC and structural forms, and their supporting pages |
-| `estimate-sample.json` | 2 sheets | Line-item estimate for the `spreadsheets` skill ‡|
+| `charts-demo.json` | 5 | 表とグラフ — `charts.py` のカタログ |
+| `patterns-demo.json` | 7 | `patterns.py` のレイアウトパターン |
+| `illustration-gallery.json` | 13 | `illustrations.py` のコンセプト図 |
+| `icon-gallery.json` | 10 | ピクトグラムライブラリ（`icons.py`） |
+| `code-blocks-demo.json` | 2 | シンタックスハイライトつきコードブロック |
+| `event-announcement.json` | 4 | セミナー / カンファレンス告知の部品 |
+| `read-alone-guide.json` | 30 | 配布・読み切り資料向けの密度パターン |
+| `design-catalog.json` | 49 | デザインパターンのフルカタログ †|
+| `slide-pattern-index.json` | 60 | 1 パターン 1 ページの索引 — 1 枚 = 1 パターン †|
+| `cloud-architecture.json` | 6 | クラウドアーキテクチャ図 †|
+| `b2b-account-review.json` | 13 | `b2b-sales` の 8 テンプレートすべてで組んだアカウントレビューの実例 — 表紙、エグゼクティブサマリー、2 軸/MEDDPICC 形式と構造形式の両マップ、それらを支えるページ |
+| `estimate-sample.json` | 2 シート | `spreadsheets` スキル用の明細見積もり ‡|
 
-† Draws `cloud_icon*` / `cloud_zone` figures, so it needs the vendor icons
-first — they are excluded from the repository because AWS, Google Cloud and
-Azure do not permit redistribution. Without them `--dry-run` reports
-`Cloud icons have not been fetched yet`; run
-`.venv/bin/python scripts/fetch_cloud_icons.py` once (see
-[`assets/cloud-icons/README.md`](assets/cloud-icons/README.md)). Every other
-example above validates on a bare clone.
+† `cloud_icon*` / `cloud_zone` の図を描くため、先にベンダーアイコンが必要 —
+AWS、Google Cloud、Azure が再配布を許可していないためリポジトリには
+含まれない。ない状態で `--dry-run` を実行すると
+`Cloud icons have not been fetched yet` と報告される。
+`.venv/bin/python scripts/fetch_cloud_icons.py` を一度実行すること
+（[`assets/cloud-icons/README.md`](assets/cloud-icons/README.md) 参照）。
+上記の他のサンプルはすべて素のクローンで検証を通る。
 
-‡ A spreadsheet, not a deck — run it through `build_sheet.py` instead:
+‡ デッキではなくスプレッドシート — 代わりに `build_sheet.py` に通す:
 `.venv/bin/python scripts/build_sheet.py --dry-run examples/estimate-sample.json`
 
-Code-first decks are Python modules rather than specs, and generate against
-`scalar-2026` directly:
+コードファーストのデッキは仕様ではなく Python モジュールで、`scalar-2026`
+に対して直接生成する:
 
-| Example | Shows |
+| サンプル | 見せるもの |
 |---|---|
-| `examples/scalardb-architecture.py` | ScalarDB architecture — cloud icons, pictograms, brand logos and connectors on one slide † |
-| `examples/scalardl-architecture.py` | ScalarDL architecture, same mix † |
-| `examples/pattern-gallery/deck.py` | The `deckkit.py` code-first path |
+| `examples/scalardb-architecture.py` | ScalarDB アーキテクチャ — クラウドアイコン、ピクトグラム、ブランドロゴ、コネクタを 1 枚に † |
+| `examples/scalardl-architecture.py` | ScalarDL アーキテクチャ、同じ組み合わせ † |
+| `examples/pattern-gallery/deck.py` | `deckkit.py` のコードファーストパス |
 
-## License
+## ライセンス
 
-MIT. Cloud vendor icons remain the property of their vendors and are fetched
-locally under their respective terms (see `references/cloud-icons.md`).
+MIT。クラウドベンダーアイコンは各ベンダーの資産のままであり、それぞれの
+利用条件の下でローカルに取得される（`references/cloud-icons.ja.md` 参照）。

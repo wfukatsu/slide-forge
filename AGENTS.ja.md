@@ -1,78 +1,78 @@
 *[English](AGENTS.md)*
 
-# slide-forge agent instructions
+# slide-forge エージェント向け指示
 
-This repository supports both Codex and Claude Code. Use the shared Python
-engine and the skills under `.agents/skills/`; do not duplicate their logic in
-host-specific prompts.
+このリポジトリは Codex と Claude Code の両方をサポートする。共有の Python
+エンジンと `.agents/skills/` 配下のスキルを使うこと。それらのロジックを
+ホスト固有のプロンプトに複製してはならない。
 
-## Runtime
+## 実行環境
 
-- Run Python commands from the repository root with `.venv/bin/python`.
-- Keep OAuth credentials, tokens, generated files, and caches out of Git.
-- Use `GSLIDES_LANG=ja` only when Japanese CLI output is useful; it does not
-  affect generated content.
-- Before changing an existing user-owned deck, follow the relevant skill's
-  snapshot/version rule.
+- Python コマンドはリポジトリルートから `.venv/bin/python` で実行する。
+- OAuth 認証情報・トークン・生成ファイル・キャッシュは Git に含めない。
+- `GSLIDES_LANG=ja` は日本語の CLI 出力が有用な場合にのみ使う。生成される
+  コンテンツには影響しない。
+- ユーザー所有の既存デッキを変更する前に、該当スキルの
+  スナップショット / バージョン記録ルールに従う。
 
-## Skill routing
+## スキルルーティング
 
-Use the matching skill and read its complete `SKILL.md` before acting:
+該当するスキルを使い、作業前に必ずその `SKILL.md` を最後まで読むこと:
 
-| Request | Skill |
+| 依頼内容 | スキル |
 |---|---|
-| End-to-end deck workflow | `forge` |
-| Registered template/master | `google-slides-template` |
-| Deck without a corporate master | `google-slides` |
-| Create/register a template | `template-forge` |
-| Create/register a reusable single-slide content template | `slide-template-creator` |
+| デッキ生成をエンドツーエンドで一括実行 | `forge` |
+| 登録済みテンプレート / マスターを使う | `google-slides-template` |
+| コーポレートマスターなしのデッキ | `google-slides` |
+| テンプレートの作成・登録 | `template-forge` |
+| 再利用可能な 1 枚ものコンテンツテンプレートの作成・登録 | `slide-template-creator` |
 | B2B の関与者マップ / ディスカバリー整理 | `b2b-account-maps` |
 | 顧客ごとの活動計画・商談台帳（AE の行動計画） | `scalar-account-plan` |
 | Account Planning Session（年次・半期の棚卸しと役員レビュー） | `scalar-account-planning-session` |
 | 訪問 1 回分の資料 / 社内承認資料（WPS・Deal Desk） | `scalar-ae-materials` |
-| Scalar product/company deck | `scalar-product-slides` |
-| Scalar customer proposal | `scalar-proposal-slides` |
-| Dense draw.io diagram | `drawio-diagrams` |
-| Fill existing image frames | `image-slots` |
-| Thumbnail visual QA | `slide-qa` |
-| Export Google Slides to PPTX | `pptx-export` |
-| Estimate/BOM spreadsheet | `spreadsheets` |
+| Scalar の製品・会社紹介デッキ | `scalar-product-slides` |
+| Scalar の顧客向け提案書 | `scalar-proposal-slides` |
+| 密な draw.io 図 | `drawio-diagrams` |
+| 既存の画像枠への埋め込み | `image-slots` |
+| サムネイルによるビジュアル QA | `slide-qa` |
+| Google Slides の PPTX エクスポート | `pptx-export` |
+| 見積もり / BOM スプレッドシート | `spreadsheets` |
 
-## Host-tool compatibility
+## ホストツール互換性
 
-Some shared skill documents retain Claude Code terminology. In Codex, apply
-these mappings:
+共有スキルドキュメントの一部には Claude Code の用語が残っている。Codex では
+次の対応を適用する:
 
-- `Read` for text: use `rg`, `sed`, or another read-only shell command.
-- `Read` for PNG/JPEG: use the local image-viewing tool and inspect the actual
-  pixels; filenames and API success are not visual QA.
-- `Write` / `Edit`: use `apply_patch` for repository files.
-- `Bash`: use the shell execution tool with the repository root as `cwd`.
-- `Grep` / `Glob`: use `rg` / `rg --files` first.
-- `WebFetch` / `WebSearch`: use the available web tool. Prefer official,
-  primary sources for product facts and technical documentation.
-- `AskUserQuestion` / `ask_question`: ask in chat. Present mutually exclusive
-  choices as a numbered list and wait for the user's number; accept
-  comma-separated numbers for multi-select. Do not silently choose when the
-  skill requires an approval gate.
-- `Task` / `Subagent` / `Parallel`: use parallel agents only when the current
-  host and session instructions explicitly permit them. Otherwise follow the
-  sequential fallback in `references/parallel-generation.md`.
-- `${CLAUDE_PLUGIN_ROOT}`: resolve to this repository root. Never depend on the
-  variable being set under Codex.
+- テキストに対する `Read`: `rg`、`sed` などの読み取り専用シェルコマンドを使う。
+- PNG/JPEG に対する `Read`: ローカルの画像表示ツールで実際のピクセルを確認する。
+  ファイル名や API の成功はビジュアル QA ではない。
+- `Write` / `Edit`: リポジトリ内のファイルには `apply_patch` を使う。
+- `Bash`: リポジトリルートを `cwd` としてシェル実行ツールを使う。
+- `Grep` / `Glob`: まず `rg` / `rg --files` を使う。
+- `WebFetch` / `WebSearch`: 利用可能な Web ツールを使う。製品に関する事実や
+  技術ドキュメントには公式の一次情報源を優先する。
+- `AskUserQuestion` / `ask_question`: チャットで質問する。相互排他的な選択肢は
+  番号付きリストで提示し、ユーザーの番号入力を待つ。複数選択はカンマ区切りの
+  番号を受け付ける。スキルが承認ゲートを要求している箇所で無断に選択しない。
+- `Task` / `Subagent` / `Parallel`: 並列エージェントは、現在のホストと
+  セッション指示が明示的に許可している場合にのみ使う。それ以外は
+  `references/parallel-generation.md` の逐次フォールバックに従う。
+- `${CLAUDE_PLUGIN_ROOT}`: このリポジトリルートとして解決する。Codex では
+  この変数が設定されている前提を置かない。
 
-Detailed Codex setup and known differences are in
-`references/codex-compatibility.md`.
+Codex の詳細なセットアップと既知の差異は
+`references/codex-compatibility.md` にある。
 
-## Safety and validation
+## 安全性と検証
 
-- Run the documented offline `--dry-run`/layout validation before API writes.
-- Never expose the contents of `config/credentials.json`, `config/token.json`,
-  or API-key files.
-- `accounts/` holds per-customer sales ledgers — named individuals and
-  judgements about them. It is ignored by Git; never commit it, never paste it
-  into a customer-facing artifact, and never share the `00_活動計画` /
-  `90_社内` Drive folders with a customer or partner.
-- Keep generated page fragments and QA thumbnails under ignored `out/` paths.
-- A successful API response is not visual QA. When QA is selected, inspect the
-  thumbnails and run `scripts/cleanup_qa.py` before reporting completion.
+- API 書き込みの前に、ドキュメント化されたオフラインの
+  `--dry-run` / レイアウト検証を実行する。
+- `config/credentials.json`・`config/token.json`・API キーファイルの内容を
+  決して公開しない。
+- `accounts/` には顧客ごとの営業台帳がある — 実在する個人の名前と、その人物に
+  関する判断が含まれる。Git では無視対象であり、決してコミットせず、顧客向け
+  成果物に貼り付けず、`00_活動計画` / `90_社内` の Drive フォルダを顧客や
+  パートナーと共有しない。
+- 生成したページフラグメントと QA サムネイルは、無視対象の `out/` パス配下に置く。
+- API 応答の成功はビジュアル QA ではない。QA を選択した場合はサムネイルを
+  確認し、完了報告の前に `scripts/cleanup_qa.py` を実行する。

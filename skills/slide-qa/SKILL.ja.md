@@ -18,125 +18,126 @@ description: >-
 
 *[English](SKILL.md)*
 
-# Visual QA for Generated Slides (thumbnail-based)
+# 生成済みスライドのビジュアル QA（サムネイルベース）
 
-## Important
+## 重要事項
 
-- **Scope**: post-generation visual verification only. The offline coordinate
-  gate (Gate 1: `build_deck.py --dry-run` / `validate_layout.py`) belongs to
-  the generation skills and runs **before** generation; this skill is Gate 2
-  (`references/validation.md` has the full two-gate rationale).
-- **Run every command from the slide-forge root as cwd** — `${CLAUDE_PLUGIN_ROOT}`
-  when running from an installed plugin, `/path/to/slide-forge` on a
-  local clone. Auth and the venv are shared at the repo root (`config/`, `.venv`).
-- **Whether to run QA is settled at generation time.** The generation skills ask
-  during intake (default: **run** — recommend it; a clean API response cannot
-  show overflowing text or a misattached arrow). When the user skipped QA, the
-  generation skill says so in its report and offers this skill as a follow-up.
-- **Fixes happen in the source, not the artifact.** On any defect, fix the spec
-  / deck module in the originating skill's flow and regenerate. Never patch a
-  generated deck in place.
-- **Always clean up when done.** The thumbnails exist only for this
-  verification and are re-fetchable at any time. Delete them with
-  `scripts/cleanup_qa.py` before reporting — even when QA is aborted midway.
-  Superseded decks created during the fix loop are deleted from Drive too.
+- **スコープ**: 生成後の視覚的検証のみ。オフラインの座標ゲート
+  （Gate 1: `build_deck.py --dry-run` / `validate_layout.py`）は生成スキル側に
+  属し、生成の**前**に実行される。本スキルは Gate 2 である
+  （2 ゲート構成の理由の全体は `references/validation.md` にある）。
+- **すべてのコマンドは slide-forge ルートを cwd として実行する** —
+  インストール済みプラグインから実行する場合は `${CLAUDE_PLUGIN_ROOT}`、
+  ローカルクローンでは `/path/to/slide-forge`。認証と venv はリポジトリルートで
+  共有される（`config/`、`.venv`）。
+- **QA を実行するかどうかは生成時に確定する。** 生成スキルはインテイクで確認する
+  （既定は**実行** — 推奨すること。API 応答が正常でも、テキストのはみ出しや
+  矢印の誤接続は分からない）。ユーザーが QA をスキップした場合、生成スキルは
+  報告にその旨を明記し、フォローアップとして本スキルを提案する。
+- **修正は成果物ではなくソースに対して行う。** 欠陥を見つけたら、元スキルの
+  フローで仕様 / デッキモジュールを修正して再生成する。生成済みデッキを
+  その場でパッチしてはならない。
+- **終了時は必ずクリーンアップする。** サムネイルはこの検証のためだけに存在し、
+  いつでも再取得できる。報告の前に `scripts/cleanup_qa.py` で削除する —
+  QA を途中で中断した場合も同様。修正ループ中に作られた旧版デッキも
+  Drive から削除する。
 
-## Quick Reference
+## クイックリファレンス
 
-| Task | Command |
+| タスク | コマンド |
 |------|---------|
-| Fetch thumbnails | `.venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa --size LARGE` |
-| Restrict pages (split QA) | `--pages 3,8,12,20` / `--pages 9-16` |
-| Delete local QA files (always, at the end) | `.venv/bin/python scripts/cleanup_qa.py` (`--dry-run` to preview) |
-| Full checklist, fix loop, reporting rules | `references/validation.md` (Gate 2) |
-| Splitting QA across sub-agents (>15 slides) | `references/parallel-generation.md` §6 |
-| Delete a superseded deck from Drive | `drive.files().delete(fileId=…)` (or move to trash) |
+| サムネイル取得 | `.venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa --size LARGE` |
+| ページの限定（分割 QA） | `--pages 3,8,12,20` / `--pages 9-16` |
+| ローカル QA ファイルの削除（最後に必ず） | `.venv/bin/python scripts/cleanup_qa.py`（`--dry-run` でプレビュー） |
+| チェックリスト全体・修正ループ・報告ルール | `references/validation.md`（Gate 2） |
+| サブエージェントへの QA 分割（15 枚超） | `references/parallel-generation.md` §6 |
+| 旧版デッキの Drive からの削除 | `drive.files().delete(fileId=…)`（またはゴミ箱へ移動） |
 
 ---
 
-## Phase 1: Fetch thumbnails
+## Phase 1: サムネイル取得
 
 ```bash
 .venv/bin/python scripts/fetch_thumbnails.py "<deck URL>" --out out/qa --size LARGE
 ```
 
-- Judge with `--size LARGE`. SMALL is only for the squint test.
-- **If the deck exceeds 15 slides, split the QA into 6–8-slide ranges.** When
-  the host and session permit sub-agents, delegate those ranges and have them
-  **return only findings as text**. Otherwise inspect the same ranges
-  sequentially using the Codex fallback in `references/parallel-generation.md`.
-- When several decks are QA'd in one session, keep them apart with
-  `--out out/<deck>/qa` — `cleanup_qa.py` sweeps both conventions.
+- 判定は `--size LARGE` で行う。SMALL はスクイントテスト専用。
+- **デッキが 15 枚を超える場合は、QA を 6〜8 枚のレンジに分割する。** ホストと
+  セッションがサブエージェントを許可している場合はレンジを委譲し、
+  **所見のみをテキストで返させる**。それ以外の場合は
+  `references/parallel-generation.md` の Codex フォールバックに従い、同じ
+  レンジを順番に検査する。
+- 1 セッションで複数のデッキを QA する場合は `--out out/<deck>/qa` で分離する —
+  `cleanup_qa.py` はどちらの慣例も掃除する。
 
-## Phase 2: Inspect
+## Phase 2: 検査
 
-Open the PNGs with the Read tool. Seeing every page is the ideal; with many
-slides, prioritize:
+PNG を Read ツールで開く。全ページを見るのが理想だが、枚数が多い場合は
+次を優先する:
 
-1. **The page with the most elements** (overlaps show up there first)
-2. **The page with the most complex figure** (swimlanes, branching flows, multi-panel)
-3. **Pages with tables** (rows grow and overflow downward)
-4. **The first page of each section** (how the structure reads)
-5. Cover, section dividers, closing (master decorations vs. your own drawing)
+1. **要素数が最も多いページ**（重なりはここに最初に現れる）
+2. **図が最も複雑なページ**（スイムレーン、分岐フロー、マルチパネル）
+3. **表があるページ**（行は増えて下方向にはみ出す）
+4. **各セクションの先頭ページ**（構成がどう読めるか）
+5. 表紙・セクション区切り・クロージング（マスターの装飾と自前の描画の関係）
 
-Minimum checklist (the full table with fixes is in `references/validation.md`):
+最小チェックリスト（修正方法つきの完全な表は `references/validation.md` にある）:
 
-- [ ] No text overflows or is truncated in any placeholder or box
-- [ ] No text overlaps the template's decorations (bands, shapes, logos)
-- [ ] Page numbers appear, not clipped even at 2 digits
-- [ ] Logos and footers are not drawn twice
-- [ ] The intended layouts were used (no Proposal/Presentation family mix-up)
-- [ ] No single trailing character wraps to its own line ("〜へ", "〜出")
-- [ ] Arrows do not cross unrelated shapes and each attaches to the
-      *semantically* correct shape — coordinate audits cannot judge meaning
-- [ ] Labels do not overlap arrows or rules; body-text contrast ≥ 4.5:1
-- [ ] Labels next to markers (●, ◆, bar ends) have visible breathing room —
-      cramped vertical spacing is invisible to the coordinate audits
-- [ ] Table column alignment matches the content: short uniform values (年,
-      年月, ID) centered, numbers right, sentences left
-- [ ] **Squint test**: the first thing that draws the eye is the page's main
-      message; otherwise the emphasis (fill, bold, color) is wrong
+- [ ] どのプレースホルダー・ボックスでもテキストがはみ出したり切れたりしていない
+- [ ] テキストがテンプレートの装飾（帯、図形、ロゴ）に重なっていない
+- [ ] ページ番号が表示され、2 桁でも切れていない
+- [ ] ロゴとフッターが二重に描かれていない
+- [ ] 意図したレイアウトが使われている（Proposal / Presentation ファミリーの取り違えがない）
+- [ ] 末尾 1 文字だけが単独で折り返された行がない（「〜へ」「〜出」）
+- [ ] 矢印が無関係な図形を横切らず、それぞれが*意味的に*正しい図形に接続している —
+      座標監査では意味は判定できない
+- [ ] ラベルが矢印や罫線に重なっていない。本文テキストのコントラスト比 ≥ 4.5:1
+- [ ] マーカー（●、◆、バーの端）に隣接するラベルに目に見える余白がある —
+      詰まった垂直間隔は座標監査には見えない
+- [ ] 表の列揃えが内容に合っている: 短く均一な値（年、年月、ID）は中央、
+      数値は右、文は左
+- [ ] **スクイントテスト**: 最初に目を引くものがそのページの主メッセージであること。
+      そうでなければ強調（塗り、太字、色）が誤っている
 
-## Phase 3: The fix loop
+## Phase 3: 修正ループ
 
 ```
 identify defects → fix the spec / deck module (originating skill)
   → offline check (free) → regenerate → re-fetch only the affected pages → confirm
 ```
 
-- For decks generated as **new presentations**, regeneration creates a new
-  presentation and URL. **Delete the superseded version from Drive first** —
-  the user holds exactly one URL, the latest.
-- **Exception — in-place (`--into`) decks.** Decks whose contract is a stable
-  URL — the `scalar-account-plan` activity plan, the two
-  `scalar-account-planning-session` decks, and Spreadsheets updated via the
-  `spreadsheets` skill — are fixed by regenerating **into the same deck**
-  (`build_deck.py --into` / the builder's in-place update), after
-  `scripts/snapshot_version.py` records the pre-edit revision.
-  **Never delete a deck whose URL has been shared** — the URL *is* the
-  deliverable, and deleting it breaks every link the user has handed out.
-- Never patch the artifact; fix the source and rebuild (faster, reproducible).
-- Delete intermediate decks created during verification from Drive as well
-  (this too applies only to new-presentation decks, never to `--into` targets).
+- **新規プレゼンテーションとして生成された**デッキでは、再生成のたびに新しい
+  プレゼンテーションと URL が作られる。**先に旧版を Drive から削除する** —
+  ユーザーが持つ URL は最新の 1 つだけにする。
+- **例外 — インプレース（`--into`）デッキ。** URL の不変が契約であるデッキ —
+  `scalar-account-plan` の活動計画、`scalar-account-planning-session` の
+  2 つのデッキ、`spreadsheets` スキルで更新するスプレッドシート — は、
+  `scripts/snapshot_version.py` で編集前リビジョンを記録した上で、
+  **同じデッキへの再生成**（`build_deck.py --into` / ビルダーのインプレース更新）
+  で修正する。**共有済み URL のデッキは決して削除しない** — URL そのものが
+  納品物であり、削除すればユーザーが配ったリンクがすべて壊れる。
+- 成果物をパッチせず、ソースを直して再ビルドする（速く、再現可能）。
+- 検証中に作られた中間デッキも Drive から削除する
+  （これも新規プレゼンテーションのデッキにのみ適用し、`--into` 対象には決して適用しない）。
 
-## Phase 4: Clean up and report
+## Phase 4: クリーンアップと報告
 
-**This phase is not optional.** Before presenting results:
+**このフェーズは省略できない。** 結果を提示する前に:
 
 ```bash
 .venv/bin/python scripts/cleanup_qa.py            # removes out/qa, out/qa-*, out/*/qa
 .venv/bin/python scripts/cleanup_qa.py --dry-run  # preview first if unsure
 ```
 
-The script only touches directories under `out/` (all gitignored, all
-re-fetchable), so it is safe to run unconditionally. Pass explicit paths for a
-non-standard `--out` location.
+このスクリプトが触るのは `out/` 配下のディレクトリのみ（すべて gitignore 済みで
+再取得可能）なので、無条件に実行して安全である。標準外の `--out` を使った場合は
+明示的にパスを渡す。
 
-Then report, following `references/validation.md`:
+その後、`references/validation.md` に従って報告する:
 
-- For anything fixed: **what was wrong and how it was fixed** ("fixed" alone
-  cannot be verified). For anything not fixed: say so explicitly.
-- State that QA passed, which pages were inspected (all, or the ranges), and
-  that local QA files were cleaned up.
-- Hand back to the generation skill's post-generation confirmation
-  (`references/interactive-intake.md` §4) when invoked from one.
+- 修正したものについては、**何が悪くてどう直したか**を述べる（「直した」だけでは
+  検証できない）。直していないものについては、その旨を明示する。
+- QA が合格したこと、どのページを検査したか（全ページ、またはレンジ）、
+  ローカル QA ファイルをクリーンアップしたことを述べる。
+- 生成スキルから呼び出された場合は、そのスキルの生成後確認
+  （`references/interactive-intake.md` §4）に処理を戻す。

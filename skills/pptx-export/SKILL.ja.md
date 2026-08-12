@@ -16,66 +16,69 @@ description: >-
 
 *[English](SKILL.md)*
 
-# PPTX Export for Generated Decks
+# 生成済みデッキの PPTX エクスポート
 
-## Important
+## 重要事項
 
-- **The export is a snapshot, not a linked copy.** It captures the deck as it
-  is at export time. Always export **after** visual QA and any fix loop are
-  finished — and re-export whenever the deck is regenerated, deleting the
-  stale `.pptx` from the Drive folder first (same rule as superseded decks).
-- **Fixes happen in the spec, never in the .pptx.** On any defect, return to
-  the originating generation skill, fix the spec, regenerate, re-run QA if it
-  was chosen, then export again. Editing the exported file forks it from the
-  source of truth.
-- **Run every command from the slide-forge root as cwd** — `${CLAUDE_PLUGIN_ROOT}`
-  when running from an installed plugin, `/path/to/slide-forge` on a
-  local clone. Auth and the venv are shared at the repo root (`config/`, `.venv`).
-- **Whether to export PPTX is settled at generation time** via the 出力形式
-  question in intake (`references/interactive-intake.md` §2); the default is
-  Google Slides only. Standalone runs on an existing deck URL need no intake.
-- **From-scratch PPTX authoring is a different job.** When the user wants a
-  PPTX built or edited directly (no Google Slides involved), hand off to
-  `document-skills:pptx` instead of this skill.
+- **エクスポートはスナップショットであり、リンクされたコピーではない。**
+  エクスポート時点のデッキをそのまま写し取る。必ずビジュアル QA と修正ループが
+  **終わった後**にエクスポートし、デッキを再生成したら毎回再エクスポートする。
+  その際は古い `.pptx` を先に Drive フォルダから削除する（旧版デッキと同じルール）。
+- **修正は仕様に対して行い、.pptx には決して行わない。** 欠陥を見つけたら元の
+  生成スキルに戻り、仕様を修正して再生成し、QA を選択していたなら再実行してから、
+  改めてエクスポートする。エクスポート済みファイルを編集すると、正本から
+  分岐してしまう。
+- **すべてのコマンドは slide-forge ルートを cwd として実行する** —
+  インストール済みプラグインから実行する場合は `${CLAUDE_PLUGIN_ROOT}`、
+  ローカルクローンでは `/path/to/slide-forge`。認証と venv はリポジトリルートで
+  共有される（`config/`、`.venv`）。
+- **PPTX をエクスポートするかどうかは生成時に確定する。** インテイクの出力形式の
+  質問（`references/interactive-intake.md` §2）で決まり、既定は Google Slides
+  のみ。既存デッキ URL に対するスタンドアロン実行ではインテイクは不要。
+- **ゼロからの PPTX 作成は別の仕事である。** ユーザーが（Google Slides を介さず）
+  PPTX を直接作成・編集したい場合は、本スキルではなく `document-skills:pptx` に
+  引き継ぐ。
 
-## Quick Reference
+## クイックリファレンス
 
-| Task | Command |
+| タスク | コマンド |
 |------|---------|
-| Export (saves to `out/pptx/<デッキ名>.pptx`) | `.venv/bin/python scripts/export_pptx.py <URL or ID>` |
-| Export to an explicit path | `--out path/to/deck.pptx` |
-| Also archive in the deck's Drive folder | `--folder <Drive フォルダ URL/ID>` |
+| エクスポート（`out/pptx/<デッキ名>.pptx` に保存） | `.venv/bin/python scripts/export_pptx.py <URL or ID>` |
+| 明示したパスへのエクスポート | `--out path/to/deck.pptx` |
+| デッキの Drive フォルダにも保管 | `--folder <Drive フォルダ URL/ID>` |
 
-Decks over the 10MB `files.export` limit fall back to `exportLinks`
-automatically — no flag needed.
+`files.export` の 10MB 制限を超えるデッキは自動的に `exportLinks` に
+フォールバックする — フラグは不要。
 
-## Workflow
+## ワークフロー
 
-1. **Confirm the deck is final.** When invoked from a generation skill,
-   this means generation succeeded and — if QA was chosen — the `slide-qa`
-   loop is done and clean. Standalone, ask nothing; export what the URL holds.
-2. **Export**, passing the deck's Drive folder when one exists so the
-   `.pptx` sits next to the spec and figure sources (Drive folder rule):
+1. **デッキが最終版であることを確認する。** 生成スキルから呼ばれた場合、これは
+   生成が成功し、QA を選択していたなら `slide-qa` のループが完了して
+   クリーンアップ済みであることを意味する。スタンドアロンでは何も聞かず、
+   URL が指す内容をそのままエクスポートする。
+2. **エクスポートする。** デッキの Drive フォルダがある場合はそれを渡し、
+   `.pptx` を仕様や図のソースの隣に置く（Drive フォルダルール）:
 
    ```bash
    .venv/bin/python scripts/export_pptx.py "<deck URL>" --folder "<folder URL>"
    ```
 
-3. **Report** the local path, the file size, and (when uploaded) the Drive
-   folder URL, alongside the deck URL in the generation report.
+3. **報告する。** ローカルパス、ファイルサイズ、（アップロードした場合は）
+   Drive フォルダ URL を、生成報告のデッキ URL と併せて伝える。
 
-## Fidelity caveats (state them in the report when relevant)
+## 再現性の注意点（該当する場合は報告に明記する）
 
-The export is Google's own converter, so layout and geometry carry over
-exactly — but the file opens in PowerPoint, a different rendering engine:
+エクスポートは Google 自身のコンバーターによるため、レイアウトと座標は正確に
+引き継がれる — ただしファイルは PowerPoint という別のレンダリングエンジンで
+開かれる:
 
-- **Fonts must exist on the viewer's machine.** Decks styled with Google
-  Fonts (Noto Sans JP など) fall back to a substitute font if not installed
-  locally, which can shift line breaks. Mention the deck's font when it is
-  not a system font.
-- **Google-specific features degrade**: linked Sheets charts become static
-  images; speaker-notes formatting may simplify; animations do not transfer
-  (slide-forge decks don't use them, so this rarely matters).
-- The exported file is not re-inspected — QA already ran on the Slides deck,
-  and the converter is deterministic. If the user reports a rendering issue
-  in PowerPoint, treat the font substitution above as the first suspect.
+- **フォントは閲覧者のマシンに存在する必要がある。** Google Fonts（Noto Sans JP
+  など）でスタイルされたデッキは、ローカルにインストールされていなければ代替
+  フォントにフォールバックし、改行位置がずれることがある。デッキのフォントが
+  システムフォントでない場合はその旨を伝える。
+- **Google 固有の機能は劣化する**: リンクされた Sheets のグラフは静止画像になり、
+  スピーカーノートの書式は簡略化されることがあり、アニメーションは引き継がれない
+  （slide-forge のデッキはアニメーションを使わないため、問題になることはまずない）。
+- エクスポートしたファイルは再検査しない — QA はすでに Slides デッキ上で実施
+  済みで、コンバーターは決定的である。ユーザーから PowerPoint での表示問題の
+  報告があった場合は、まず上記のフォント代替を疑う。

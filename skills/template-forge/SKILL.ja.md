@@ -20,46 +20,48 @@ description: >-
 
 *[English](SKILL.md)*
 
-# Template Forge — Create a New Slide Template (Master)
+# Template Forge — 新しいスライドテンプレート（マスター）の作成
 
-## Important
+## 重要事項
 
-- **The Slides API cannot create or rename masters/layouts**
-  (`references/api-notes.md` §1). This skill therefore *derives*: it copies a
-  base and restyles the base's existing layout pages. Unused base layouts
-  remain in the file — unregistered and harmless. Role names live only in
-  `templates/<id>.json`'s alias table.
-- **The base's colorScheme is immutable** — every color is written as
-  explicit RGB. The Slides UI color picker will still show the base's theme
-  palette; that is expected (same as `templates/corporate.json`).
-- **Run every command from the slide-forge root as cwd** — `${CLAUDE_PLUGIN_ROOT}`
-  when running from an installed plugin, `/path/to/slide-forge` on a
-  local clone. Auth and the venv are shared at the repo root (`config/`, `.venv`).
-- **Never hand the template over without visual verification.** Role
-  assignment is deterministic, but band/placeholder overlap, font rendering,
-  and contrast are judged only by eye: always run the layout catalog + the
-  `slide-qa` skill (Phase 5) before reporting done.
-- **Fixes happen in the design spec.** On any defect, edit the spec and
-  rebuild with `--replace` (deletes the superseded master from Drive after a
-  successful rebuild). Never patch the generated master in the Slides UI —
-  that forks it from the spec.
-- **Fonts must exist in the Slides font menu** (Google Fonts). Unknown names
-  fall back silently. Known-safe: Noto Sans JP, Noto Serif JP, M PLUS 1p,
-  Zen Maru Gothic, BIZ UDPGothic (Japanese); Montserrat, Roboto, Open Sans,
-  Lato, Source Sans Pro (Latin). Anything else: verify in the catalog deck.
+- **Slides API はマスター/レイアウトの作成・改名ができない**
+  （`references/api-notes.md` §1）。したがって本スキルは*派生*で作る:
+  ベースをコピーし、ベースが持つ既存のレイアウトページを再スタイルする。
+  使わないベースレイアウトはファイル内に残るが、未登録なので無害である。
+  ロール名は `templates/<id>.json` のエイリアス表にのみ存在する。
+- **ベースの colorScheme は不変** — すべての色は明示 RGB として書き込む。
+  Slides UI のカラーピッカーにはベースのテーマパレットが表示され続けるが、
+  それは想定どおりの挙動である（`templates/corporate.json` と同じ）。
+- **すべてのコマンドは slide-forge ルートを cwd として実行する** —
+  インストール済みプラグインから実行する場合は `${CLAUDE_PLUGIN_ROOT}`、
+  ローカルクローンでは `/path/to/slide-forge`。認証と venv はリポジトリ
+  ルートで共有される（`config/`、`.venv`）。
+- **目視検証なしにテンプレートを引き渡さない。** ロール割り当ては決定的だが、
+  帯とプレースホルダの重なり、フォントのレンダリング、コントラストは目で
+  しか判断できない: 完了報告の前に、必ずレイアウトカタログ + `slide-qa`
+  スキル（Phase 5）を実行する。
+- **修正はデザイン仕様に対して行う。** 欠陥を見つけたら仕様を編集し、
+  `--replace` で再ビルドする（再ビルド成功後、置き換えられた旧マスターを
+  Drive から削除する）。生成済みマスターを Slides UI で直接直してはならない
+  — 仕様からフォークしてしまう。
+- **フォントは Slides のフォントメニューに存在するものに限る**（Google
+  Fonts）。未知の名前は黙ってフォールバックする。既知の安全なフォント:
+  Noto Sans JP, Noto Serif JP, M PLUS 1p, Zen Maru Gothic, BIZ UDPGothic
+  （日本語）; Montserrat, Roboto, Open Sans, Lato, Source Sans Pro（欧文）。
+  それ以外はカタログデッキで確認する。
 
-## Quick Reference
+## クイックリファレンス
 
-| Task | Command |
+| タスク | コマンド |
 |------|---------|
-| Validate the design spec (offline, free) | `.venv/bin/python scripts/build_template.py --spec design.json --dry-run` |
-| Build + auto-register | `.venv/bin/python scripts/build_template.py --spec design.json [--folder <URL/ID>]` |
-| Rebuild after spec fixes (URL of json stays, old master deleted) | add `--replace` |
-| Derive from a registered template instead of blank | `--base <template-id>` (or `"base"` in the spec) |
-| Layout catalog for visual check | `.venv/bin/python scripts/layout_sample.py --template templates/<id>.json` |
-| Presets (complete specs minus name/logo/footer) | `templates/presets/{navy-consulting,tech-dark,warm-minimal}.json` |
+| デザイン仕様の検証（オフライン・無料） | `.venv/bin/python scripts/build_template.py --spec design.json --dry-run` |
+| ビルド + 自動登録 | `.venv/bin/python scripts/build_template.py --spec design.json [--folder <URL/ID>]` |
+| 仕様修正後の再ビルド（json の URL は維持、旧マスターは削除） | `--replace` を付ける |
+| blank ではなく登録済みテンプレートから派生 | `--base <template-id>`（または仕様内の `"base"`） |
+| 目視確認用のレイアウトカタログ | `.venv/bin/python scripts/layout_sample.py --template templates/<id>.json` |
+| プリセット（name/logo/footer 以外が揃った完全仕様） | `templates/presets/{navy-consulting,tech-dark,warm-minimal}.json` |
 
-## Design-spec format
+## デザイン仕様のフォーマット
 
 ```jsonc
 {
@@ -89,102 +91,106 @@ description: >-
 }
 ```
 
-Standard 6 roles are always produced: COVER / SECTION / CONTENT /
-TITLE_ONLY / BLANK / CLOSING (on a blank base, CLOSING restyles the
-MAIN_POINT layout).
+標準の 6 ロールは常に生成される: COVER / SECTION / CONTENT /
+TITLE_ONLY / BLANK / CLOSING（blank ベースでは、CLOSING は MAIN_POINT
+レイアウトを再スタイルしたもの）。
 
-## Workflow
+## ワークフロー
 
-### Phase 1: Intake (AskUserQuestion, interactive-intake.md manners)
+### Phase 1: インテイク（AskUserQuestion、interactive-intake.md の作法に従う）
 
-Batch into one round; skip anything already specified:
+1 ラウンドにまとめて聞く。既に指定済みの項目は飛ばす:
 
-| # | header | question | options |
+| # | header | 質問 | 選択肢 |
 |---|---|---|---|
 | 1 | デザイン入力 | デザインは何から決めますか? | 対話で指定(色・フォントを聞く)/ 既存資料から抽出(サイト URL・ロゴ・既存デッキ)/ プリセット(3 種を配色の一言つきで提示) |
 | 2 | ベース | どのマスターをベースにしますか? | blank — Google 既定(推奨・既定)/ `list_templates.py` の登録テンプレートから派生 |
 | 3 | ロゴ | ロゴ画像はありますか? | ある(パスをもらう。濃色背景用があればそれも)/ ない(文字のみ) |
 | 4 | フッター | フッター表記は? | © 表記を入れる(文言をもらう)/ 入れない |
 
-Template name (`[a-z0-9-]`) is derived from the brand/company name; confirm
-it in the outline, not as a separate question.
+テンプレート名（`[a-z0-9-]`）はブランド/会社名から導出する; 独立した質問
+にはせず、アウトラインの中で確認する。
 
-### Phase 2: Author the design spec
+### Phase 2: デザイン仕様の作成
 
-- **Interactive**: put the answers into the schema above. Check contrast as
-  you go: textBody on background and textOnDark on primary must be ≥ 4.5:1
-  (`colors.py` has helpers; eyeball via the catalog otherwise).
-- **Extraction is agent judgment, not code**: for a site URL, WebFetch it and
-  read the brand colors from CSS variables / the logo; for a logo file, Read
-  the image and pick the dominant color (primary) plus a supporting accent;
-  for an existing deck, run `inspect_template.py <URL>` and lift its color
-  report. Merge onto the closest preset skeleton.
-- **Preset**: copy `templates/presets/<preset>.json`, fill `name` /
-  `displayName` / `logo` / `footer.text`.
-- Present the palette (hex + role), fonts, and style choices in one summary
-  block and get approval before building.
+- **対話の場合**: 回答を上記スキーマに当てはめる。作成しながらコントラストを
+  確認する: background 上の textBody と primary 上の textOnDark は、いずれも
+  ≥ 4.5:1 でなければならない（`colors.py` にヘルパーがある; なければ
+  カタログで目視確認する）。
+- **抽出はコードではなくエージェントの判断で行う**: サイト URL なら
+  WebFetch して CSS 変数やロゴからブランドカラーを読み取る; ロゴファイル
+  なら画像を Read して支配的な色（primary）と補助のアクセントを選ぶ;
+  既存デッキなら `inspect_template.py <URL>` を実行してカラーレポートを
+  取り込む。最も近いプリセットの骨格にマージする。
+- **プリセットの場合**: `templates/presets/<preset>.json` をコピーし、
+  `name` / `displayName` / `logo` / `footer.text` を埋める。
+- パレット（hex + 役割）、フォント、スタイルの選択を 1 つのサマリー
+  ブロックにまとめて提示し、ビルド前に承認を得る。
 
-### Phase 3: Offline validation
+### Phase 3: オフライン検証
 
 ```bash
 .venv/bin/python scripts/build_template.py --spec out/<name>-design.json --dry-run
 ```
 
-Fix any errors (missing colors, bad hex, missing logo file, unknown enums).
+エラー（色の不足、不正な hex、ロゴファイルの欠落、未知の enum）を修正する。
 
-### Phase 4: Build and register
+### Phase 4: ビルドと登録
 
 ```bash
 .venv/bin/python scripts/drive_folder.py create "<displayName>"   # Drive folder rule
 .venv/bin/python scripts/build_template.py --spec out/<name>-design.json --folder <FOLDER_ID>
 ```
 
-This creates the styled master, registers `templates/<name>.json` with
-deterministic roles + provenance (`derivedFrom`, dated notes), injects
-page-number geometry, and prints the next steps. Upload the design spec to
-the same folder (`drive_folder.py upload <FOLDER> out/<name>-design.json`).
+これによりスタイル済みマスターが作成され、決定的なロールと来歴
+（`derivedFrom`、日付つきノート）を持つ `templates/<name>.json` が登録され、
+ページ番号のジオメトリが注入され、次のステップが表示される。デザイン仕様も
+同じフォルダにアップロードする
+（`drive_folder.py upload <FOLDER> out/<name>-design.json`）。
 
-### Phase 5: Catalog and visual QA (not optional)
+### Phase 5: カタログと目視 QA（省略不可）
 
 ```bash
 .venv/bin/python scripts/layout_sample.py --template templates/<name>.json --folder <FOLDER_ID>
 ```
 
-Then run the **slide-qa** skill on the catalog deck. Template-specific
-checklist on top of the standard one:
+その後、カタログデッキに対して **slide-qa** スキルを実行する。標準
+チェックリストに加えるテンプレート固有の確認項目:
 
-- [ ] Bands/bars do not overlap any placeholder text
-- [ ] Cover: title/subtitle legible, logo not stretched (aspect preserved)
-- [ ] Section: title contrast on its background ≥ 4.5:1; accent rule sits under the title
-- [ ] Content: body text is the body font (a silent font fallback means the name was wrong)
-- [ ] Footer + page number both visible, not doubled, not clipped
-- [ ] Closing: text and onDark logo legible on the dark background
+- [ ] 帯やバーがプレースホルダのテキストに重なっていない
+- [ ] 表紙: タイトル/サブタイトルが判読でき、ロゴが引き伸ばされていない（アスペクト比維持）
+- [ ] セクション: 背景に対するタイトルのコントラストが ≥ 4.5:1; アクセントの罫線がタイトルの下にある
+- [ ] コンテンツ: 本文テキストが本文フォントで表示されている（黙ってフォールバックしていたらフォント名が間違っていた証拠）
+- [ ] フッターとページ番号が両方見えていて、二重になっておらず、切れてもいない
+- [ ] クロージング: 暗い背景の上でテキストと onDark ロゴが判読できる
 
-### Phase 6: Fix loop
+### Phase 6: 修正ループ
 
-Edit the design spec → `--dry-run` → rebuild with `--replace` (the old
-master is deleted from Drive after success; `templates/<name>.json` is
-overwritten in place) → re-run Phase 5 on the affected layouts. Delete
-superseded catalog decks from Drive.
+デザイン仕様を編集 → `--dry-run` → `--replace` で再ビルド（成功後、旧
+マスターは Drive から削除され、`templates/<name>.json` はその場で上書き
+される）→ 影響のあったレイアウトについて Phase 5 を再実行する。置き換え
+られたカタログデッキは Drive から削除する。
 
-### Phase 7: Report and hand off
+### Phase 7: 報告と引き継ぎ
 
-Report: master URL, catalog deck URL, Drive folder URL, `templates/<name>.json`
-path, and the palette summary. State that decks are generated with the
-**google-slides-template** skill: the new id now appears in
-`list_templates.py` and works with `build_deck.py --template templates/<name>.json`.
-Run `cleanup_qa.py` for local thumbnails. If the logo could not be inserted
-(org sharing policy), say so and point at the Slides UI for manual placement.
+報告内容: マスター URL、カタログデッキ URL、Drive フォルダ URL、
+`templates/<name>.json` のパス、パレットのサマリー。デッキの生成は
+**google-slides-template** スキルで行うことを明記する: 新しい id は
+`list_templates.py` に表示され、`build_deck.py --template templates/<name>.json`
+で利用できる。ローカルのサムネイルは `cleanup_qa.py` で削除する。ロゴを
+挿入できなかった場合（組織の共有ポリシー）はその旨を伝え、Slides UI での
+手動配置を案内する。
 
-## Limitations (state them when relevant)
+## 制約（関係する場面で明示する）
 
-- Layout set is fixed to the base's — no adding, deleting, or renaming
-  layouts. Need more layout variety? Derive from a richer registered
-  template instead of blank.
-- The theme color picker in the Slides UI keeps the base's palette
-  (colorScheme is API-immutable); all styling is explicit RGB.
-- SLIDE_NUMBER placeholders cannot be created — page numbers are drawn by
-  `build_deck.py` at generation time using the geometry this skill injects.
-- Logo insertion needs the image to be anonymously fetchable for a moment
-  (AssetStore uploads/shares/cleans up); org policies may block it — the
-  build then warns and continues without the logo.
+- レイアウトの構成はベースのものに固定される — レイアウトの追加・削除・
+  改名はできない。レイアウトの種類を増やしたい場合は、blank ではなく
+  より豊富な登録済みテンプレートから派生させる。
+- Slides UI のテーマカラーピッカーはベースのパレットのまま
+  （colorScheme は API から変更不可）; スタイルはすべて明示 RGB。
+- SLIDE_NUMBER プレースホルダは作成できない — ページ番号は本スキルが
+  注入するジオメトリを使い、生成時に `build_deck.py` が描画する。
+- ロゴの挿入には、画像が一時的に匿名取得可能である必要がある
+  （AssetStore がアップロード/共有/クリーンアップを行う）; 組織ポリシー
+  によりブロックされることがあり、その場合ビルドは警告を出してロゴなしで
+  続行する。

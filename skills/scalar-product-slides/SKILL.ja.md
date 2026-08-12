@@ -19,167 +19,152 @@ description: >-
 
 *[English](SKILL.md)*
 
-# Scalar Product Introduction Slides
+# Scalar 製品紹介スライド
 
-Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running
-from an installed plugin, `/path/to/slide-forge` on a local clone
-(literal `cd` paths below assume the local clone).
+作業ディレクトリ: slide-forge ルート — インストール済みプラグインから実行する場合は
+`${CLAUDE_PLUGIN_ROOT}`、ローカルクローンでは `/path/to/slide-forge`
+（以下に書く `cd` のパスはローカルクローンを前提とする）。
 
-## Important
+## 重要事項
 
-- **Prerequisite skill**: `google-slides-template` (same repo) — auth, the shared
-  venv, the `scalar-2026` / `scalar-2026-boilerplate` templates, and cloud icons.
-  Follow that SKILL.md for setup, API constraints, and the drawing API. This
-  skill owns only what is Scalar-specific: deck structures, build scripts, and
-  research findings. Auth and the venv are shared at the repo root
-  (`config/`, `.venv`).
-- **Research facts before writing them.** Company info, versions, and case
-  studies start from `references/scalar/research-2026-08.md`, but **re-research
-  if more than 3 months have passed since the research date** (Phase 2 below).
-  Never fill gaps with guesses. Omit items you cannot confirm (e.g. capital
-  stock).
-- **Visual QA is a separate skill (`slide-qa`), chosen at generation time**
-  (Phase 1 asks; default and recommended: run). When it runs, follow that
-  skill — fetch every page with `scripts/fetch_thumbnails.py`, inspect, then
-  delete the local QA files with `scripts/cleanup_qa.py`. When skipped, say
-  so in the report and offer `slide-qa` as a follow-up.
-- **Drive folder rule** (shared with `google-slides-template`): create a Drive
-  folder for the deck first (`scripts/drive_folder.py create "<title>"`), pass
-  its ID as the output folder, and collect the spec / figure sources there
-  with `drive_folder.py upload`. Report the folder URL with the deck URL.
-- **When updating an existing deck the user already has** (same URL, in-place
-  edits — not the normal copy-the-boilerplate flow), run
-  `.venv/bin/python scripts/snapshot_version.py <URL>` first to record the
-  pre-edit revision and take a local PPTX backup, and report the revision ID
-  before editing (rule shared with `google-slides-template`).
-- **If the premises are unspecified, settle them with `AskUserQuestion` before
-  researching** (Phase 1). Follow the interaction conventions in
-  `references/interactive-intake.md` (sections 0, 3, 4, 5). Only the question
-  set itself is specific to this skill.
+- **前提スキル**: `google-slides-template`（同一リポジトリ） — 認証、共有 venv、
+  `scalar-2026` / `scalar-2026-boilerplate` テンプレート、クラウドアイコンを提供する。
+  セットアップ・API 制約・描画 API はそちらの SKILL.md に従う。本スキルが持つのは
+  Scalar 固有の部分 — デッキ構成、ビルドスクリプト、調査結果 — のみである。
+  認証と venv はリポジトリルート（`config/`, `.venv`）で共有する。
+- **事実は調査してから書く。** 会社情報・バージョン・導入事例は
+  `references/scalar/research-2026-08.md` を起点とするが、**調査日から 3 か月以上
+  経過している場合は再調査する**（下記 Phase 2）。推測で穴を埋めてはならない。
+  確認できない項目（資本金など）は載せない。
+- **ビジュアル QA は独立スキル（`slide-qa`）であり、生成時に実行有無を選ぶ**
+  （Phase 1 で確認する。既定かつ推奨は実行）。実行する場合はそのスキルに従う —
+  `scripts/fetch_thumbnails.py` で全ページを取得して検査し、終了後に
+  `scripts/cleanup_qa.py` でローカルの QA ファイルを削除する。スキップした場合は
+  報告にその旨を明記し、後続として `slide-qa` を提案する。
+- **Drive フォルダのルール**（`google-slides-template` と共通）: まずデッキ用の
+  Drive フォルダを作成し（`scripts/drive_folder.py create "<title>"`）、その ID を
+  出力先フォルダとして渡し、仕様書や図の元データを `drive_folder.py upload` で
+  同じフォルダに集約する。フォルダ URL はデッキ URL と併せて報告する。
+- **ユーザーが既に持っている既存デッキを更新する場合**（同一 URL のままの
+  インプレース編集 — 通常のボイラープレート複製フローではない）は、先に
+  `.venv/bin/python scripts/snapshot_version.py <URL>` を実行して編集前の
+  リビジョンを記録し、ローカルに PPTX バックアップを取り、編集前にリビジョン ID を
+  報告する（`google-slides-template` と共通のルール）。
+- **前提が未指定なら、調査より先に `AskUserQuestion` で確定させる**（Phase 1）。
+  対話の作法は `references/interactive-intake.md`（セクション 0, 3, 4, 5）に従う。
+  本スキル固有なのは質問セットのみである。
 
-## Quick Reference
+## クイックリファレンス
 
-| Task | Use |
+| やること | 使うもの |
 |------|-----|
-| Conventions for settling premises interactively | `references/interactive-intake.md` (sections 0, 3, 4, 5) |
-| Company intro + product overview + use-case deck | `scripts/scalar/build_scalar_intro.py` |
-| Feature catalog deck (1 feature = 1 slide, with diagrams) | `scripts/scalar/build_scalar_features.py` |
-| Researched facts and pitfalls | `references/scalar/research-2026-08.md` |
-| Run | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/<script>.py [--folder <Drive URL>]` |
+| 前提を対話で確定させる際の作法 | `references/interactive-intake.md`（セクション 0, 3, 4, 5） |
+| 会社紹介 + 製品概要 + ユースケースデッキ | `scripts/scalar/build_scalar_intro.py` |
+| 機能カタログデッキ（1 機能 = 1 スライド、図解つき） | `scripts/scalar/build_scalar_features.py` |
+| 調査済みの事実と落とし穴 | `references/scalar/research-2026-08.md` |
+| 実行 | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/<script>.py [--folder <Drive URL>]` |
 
-Both scripts accept two CLI flags: `--folder <Drive folder URL>` (optional;
-when omitted the deck is created directly in My Drive) and `--dry-run`
-(validate offline without calling the API).
+両スクリプトは 2 つの CLI フラグを受け付ける: `--folder <Drive フォルダ URL>`
+（省略可。省略時はマイドライブ直下にデッキを作成する）と `--dry-run`
+（API を呼ばずにオフラインで検証する）。
 
-## Phase 1: Settle the deck type and premises interactively
+## Phase 1: デッキ種別と前提を対話で確定させる
 
-Decide **before** researching. Picking the wrong deck type means redoing the
-research (a company intro and a feature catalog need different facts). Follow
-`references/interactive-intake.md` — sections 0 (when to ask), 3 (outline
-approval gate), 4 (post-generation confirmation), and 5 (how not to ask).
-**Ask everything in one batch; do not go back and forth one question at a time.**
+調査の**前に**決める。デッキ種別を誤ると調査のやり直しになる（会社紹介と
+機能カタログでは必要な事実が異なる）。`references/interactive-intake.md` の
+セクション 0（いつ聞くか）、3（アウトライン承認ゲート）、4（生成後の確認）、
+5（聞き方の禁止事項）に従う。
+**質問は 1 バッチでまとめて聞く。1 問ずつの往復はしない。**
 
-Question set (specific to this skill; ask all 4 questions of Q1 in one round):
+質問セット（本スキル固有。ラウンド 1 の 4 問は一度に聞く）:
 
-| # | header | Question | Options |
+| # | header | 質問 | 選択肢 |
 |---|---|---|---|
-| 1 | Deck type | Which deck type? | Company intro + product overview (`build_scalar_intro.py`, reuses the official boilerplate slides) / Feature catalog (`build_scalar_features.py`, 1 feature = 1 slide) / Use-case focused (feature catalog narrowed by industry) |
-| 2 | Target product | Which product? | ScalarDB / ScalarDL / both |
-| 3 | Audience | Who will see it? | Customers (first meeting, sales) / Engineers (evaluation, PoC) / Executives (investment decision) / Partners (sales enablement) |
-| 4 | Research | How fresh must the facts be? | Use `references/scalar/research-2026-08.md` as is / Re-research (run Phase 2) |
+| 1 | デッキ種別 | どのデッキ種別か? | 会社紹介 + 製品概要（`build_scalar_intro.py`、公式ボイラープレートのスライドを再利用） / 機能カタログ（`build_scalar_features.py`、1 機能 = 1 スライド） / ユースケース特化（機能カタログを業種で絞り込み） |
+| 2 | 対象製品 | どの製品か? | ScalarDB / ScalarDL / 両方 |
+| 3 | 想定読者 | 誰が見るか? | 顧客（初回商談・営業） / エンジニア（評価・PoC） / 経営層（投資判断） / パートナー（販売支援） |
+| 4 | 調査 | 事実の鮮度はどこまで必要か? | `references/scalar/research-2026-08.md` をそのまま使う / 再調査する（Phase 2 を実行） |
 
-- **Never decide Q4 on your own.** If more than 3 months have passed since the
-  research date, put "Re-research" first as the recommended option and state the
-  reason (research date and months elapsed) in the `description`.
-- These 4 questions fill one round. If unspecified, ask for the output Drive
-  folder, the cover date, the language (Japanese / English), and whether to
-  run visual QA after generation (default and recommended: run; skipping means
-  the deck ships unverified) together in a second round (without `--folder`,
-  the deck goes directly to My Drive).
-- **Do not ask about**: how diagrams are composed, coordinates, colors, or
-  which diagram each feature gets. Those are fixed by `FEATURES_DB` /
-  `FEATURES_DL` and the design conventions.
+- **Q4 を勝手に決めてはならない。** 調査日から 3 か月以上経過している場合は
+  「再調査する」を推奨として先頭に置き、`description` に理由（調査日と経過月数）を
+  明記する。
+- この 4 問で 1 ラウンドとする。未指定なら、出力先 Drive フォルダ、表紙の日付、
+  言語（日本語 / 英語）、生成後にビジュアル QA を実行するか（既定かつ推奨は実行。
+  スキップするとデッキは未検証のまま納品される）を 2 ラウンド目でまとめて聞く
+  （`--folder` なしの場合、デッキはマイドライブ直下に作成される）。
+- **聞いてはならないこと**: 図の構成方法、座標、色、どの機能にどの図を使うか。
+  これらは `FEATURES_DB` / `FEATURES_DL` とデザイン規約で固定されている。
 
-Once the type and target are settled, **present the slide outline (page count
-and each slide's heading) and get approval before generating**. Pass this gate
-before rewriting `build_plan()`.
+種別と対象が確定したら、**スライドアウトライン（ページ数と各スライドの見出し）を
+提示し、生成前に承認を得る**。`build_plan()` を書き換える前にこのゲートを通す。
 
-## Phase 2: Research
+## Phase 2: 調査
 
-Read `references/scalar/research-2026-08.md`; if it is fresh enough, use it as
-is. If it is stale or new information is needed, dispatch research agents **in
-parallel**:
+`references/scalar/research-2026-08.md` を読み、十分新しければそのまま使う。
+古い場合や新しい情報が必要な場合は、調査エージェントを**並列で**起動する:
 
-1. Company info and news: https://scalar-labs.com/ja/ (company / news), press
-   release searches
-2. Product technology: https://developers.scalar-labs.com/ → the actual docs
-   live at https://scalardb.scalar-labs.com/docs/latest/ and
-   https://scalardl.scalar-labs.com/docs/latest/
-   (start from features / overview / design / releases, then follow individual
-   feature pages)
-3. Use cases and case studies: the case-study category of the news feed plus
-   web search (there is no dedicated case-study page)
+1. 会社情報・ニュース: https://scalar-labs.com/ja/（会社情報 / ニュース）、
+   プレスリリース検索
+2. 製品技術: https://developers.scalar-labs.com/ → 実際のドキュメントは
+   https://scalardb.scalar-labs.com/docs/latest/ と
+   https://scalardl.scalar-labs.com/docs/latest/ にある
+   （features / overview / design / releases から入り、個別の機能ページを辿る）
+3. ユースケース・導入事例: ニュースフィードの事例カテゴリ + Web 検索
+   （専用の事例ページは存在しない）
 
-Always instruct the agents: cite source URLs, mark unknowns explicitly as
-unknown, no guessing. Update `references/scalar/` with the results and rewrite
-the research date.
-**Check the pitfall list (at the end of the references file) before turning
-anything into slides, every time.**
+エージェントには必ず指示する: 出典 URL を明記する、不明な点は不明と明示する、
+推測しない。結果で `references/scalar/` を更新し、調査日を書き換える。
+**スライド化する前に、落とし穴リスト（references ファイルの末尾）を毎回確認する。**
 
-## Phase 3: How to build each deck type
+## Phase 3: デッキ種別ごとの作り方
 
-The type was settled in Phase 1. These are implementation notes for building it.
+種別は Phase 1 で確定済み。以下はそれを作るための実装メモである。
 
-### A. Company intro deck (`scripts/scalar/build_scalar_intro.py`)
+### A. 会社紹介デッキ（`scripts/scalar/build_scalar_intro.py`）
 
-Copies `templates/scalar-2026-boilerplate.json` with `keep_existing=True` and
-**keeps the official boilerplate slides** (company overview VISION, executive
-team, product overview, customer logos, the Toyota / broadcaster case studies,
-closing), inserting research-based generated slides among them. Executive photos
-and customer logos cannot be reproduced, so always use this approach.
+`templates/scalar-2026-boilerplate.json` を `keep_existing=True` で複製し、
+**公式ボイラープレートのスライドを残したまま**（会社概要 VISION、経営陣、製品概要、
+顧客ロゴ、トヨタ / 放送局の導入事例、クロージング）、調査に基づく生成スライドを
+その間に挿入する。経営陣の写真や顧客ロゴは再現できないため、必ずこの方式を取る。
 
-- Of the 12 bundled slides, delete the placeholder cover (position 1) and the
-  sub-section heading (position 10)
-- Replace the cover wording via `replaceAllText` ("<Presentation Title>" etc.)
-- Insert generated slides with `add_slide(..., index=final position)`.
-  **Declare the final page order in a single list (`build_plan()`) and insert
-  in ascending order — that keeps the insertionIndex arithmetic trivial**
-- Page numbers: SLIDE_NUMBER on the bundled slides tracks automatically.
-  For generated slides, draw the final-position number with
-  `draw_page_number()` (the single-slide variant). Do not use
-  `add_page_numbers()` — it assumes consecutive numbering and does not mix
-  well with the insertion approach
+- 同梱 12 スライドのうち、プレースホルダーの表紙（位置 1）とサブセクション見出し
+  （位置 10）を削除する
+- 表紙の文言は `replaceAllText` で置換する（"<Presentation Title>" など）
+- 生成スライドは `add_slide(..., index=最終位置)` で挿入する。
+  **最終的なページ順を 1 つのリスト（`build_plan()`）で宣言し、昇順に挿入する —
+  これで insertionIndex の計算が単純になる**
+- ページ番号: 同梱スライドの SLIDE_NUMBER は自動で追従する。生成スライドは
+  `draw_page_number()`（1 スライド用）で最終位置の番号を描く。
+  `add_page_numbers()` は使わない — 連番を前提としており、挿入方式とは
+  相性が悪い
 
-### B. Feature catalog deck (`scripts/scalar/build_scalar_features.py`)
+### B. 機能カタログデッキ（`scripts/scalar/build_scalar_features.py`）
 
-A "1 feature = 1 slide" catalog generated from `templates/scalar-2026.json`.
-All feature slides share one layout:
+`templates/scalar-2026.json` から生成する「1 機能 = 1 スライド」のカタログ。
+機能スライドはすべて同一レイアウトを共有する:
 
-- Left (x 0.5–5.75): **diagram** (a per-feature `fig_*` function) plus a
-  one-line caption at the bottom edge
-- Right (x 6.0–9.5): **feature overview** card (≤ 200 chars as a guideline)
-- Bottom: **use cases** row (bullets in 2 columns, each ≤ 28 chars as a
-  guideline) plus a **key strengths** band (≤ 100 chars as a guideline)
-- Top right: edition, introduced-in version, preview status
-- Speaker notes: source URLs and limitations
+- 左（x 0.5–5.75）: **図解**（機能ごとの `fig_*` 関数）+ 下端に 1 行キャプション
+- 右（x 6.0–9.5）: **機能概要**カード（目安 200 字以内）
+- 下部: **ユースケース**行（2 列の箇条書き、各項目は目安 28 字以内）+
+  **強み**帯（目安 100 字以内）
+- 右上: エディション、導入バージョン、プレビュー状態
+- スピーカーノート: 出典 URL と制限事項
 
-Feature data lives in the `FEATURES_DB` / `FEATURES_DL` lists of dicts
-(`title` / `figure` / `overview` / `usecases` / `value` / `edition` / `notes`).
-Edit these to add, remove, or reword features. Each section opens with a 2×2
-feature map.
+機能データは dict のリスト `FEATURES_DB` / `FEATURES_DL`
+（`title` / `figure` / `overview` / `usecases` / `value` / `edition` / `notes`）にある。
+機能の追加・削除・文言変更はここを編集する。各セクションの冒頭には 2×2 の
+機能マップを置く。
 
-### Design conventions (both approaches)
+### デザイン規約（両方式共通）
 
-- **Rectangles that carry a straight accent bar must not have rounded corners**
-  (`RECTANGLE`). Chips and bands without a bar may be rounded (same rule as the
-  google-slides-template SKILL.md)
-- Titles are action titles ("what can we claim"). The form
-  "Feature name — one-line value" fits well
-- Compose diagrams from the `illustrations` pictograms, `_pill` (rounded
-  chips), `cloud_zone`, and `_anchored` arrows. Official cloud icons must not
-  be modified
+- **直線のアクセントバーを持つ矩形は角丸にしない**（`RECTANGLE`）。バーのない
+  チップや帯は角丸でよい（google-slides-template の SKILL.md と同じルール）
+- タイトルはアクションタイトル（「何を主張できるか」）。
+  「機能名 — 一言の価値」の形が収まりがよい
+- 図解は `illustrations` のピクトグラム、`_pill`（角丸チップ）、`cloud_zone`、
+  `_anchored` 矢印で構成する。公式クラウドアイコンは改変してはならない
 
-## Phase 4: Generate and QA
+## Phase 4: 生成と QA
 
 ```bash
 cd /path/to/slide-forge
@@ -187,34 +172,33 @@ cd /path/to/slide-forge
 .venv/bin/python scripts/scalar/build_scalar_features.py [--folder <URL>]
 ```
 
-1. Before committing, the scripts run `audit_bounds / audit_connectors /
-   audit_overlaps / audit_text_fit` on every slide and print "audit:" lines ("検査:" with GSLIDES_LANG=ja).
-   **If any audit fires, fix the spec and rebuild** (faster than patching).
-   Delete the old deck from Drive before rebuilding
-2. **If the user chose visual QA (the default)**, run the `slide-qa` skill:
-   fetch every page with `scripts/fetch_thumbnails.py`, inspect with Read
-   (overflow, overlaps, wrong layout picked), and when done delete the local
-   QA files with `scripts/cleanup_qa.py`. If QA was skipped, state so in the
-   report and offer `slide-qa` as a follow-up
-3. **Rebuilding changes the URL.** Tell the user the new URL and be explicit
-   about what happens to the old deck (deletion)
-4. Pass QA yourself before presenting results. If there is room to improve,
-   offer via `AskUserQuestion`: "finalize / adjust wording / change a diagram /
-   add or remove features" (`interactive-intake.md` section 4)
+1. スクリプトはコミット前に全スライドで `audit_bounds / audit_connectors /
+   audit_overlaps / audit_text_fit` を実行し、"audit:" 行を出力する（GSLIDES_LANG=ja では "検査:"）。
+   **いずれかの検査が発火したら、仕様を直して再ビルドする**（パッチ修正より速い）。
+   再ビルドの前に旧デッキを Drive から削除する
+2. **ユーザーがビジュアル QA を選んだ場合（既定）**、`slide-qa` スキルを実行する:
+   `scripts/fetch_thumbnails.py` で全ページを取得し、Read で検査し（はみ出し、
+   重なり、レイアウト選択ミス）、終了後に `scripts/cleanup_qa.py` でローカルの
+   QA ファイルを削除する。QA をスキップした場合は報告にその旨を明記し、後続として
+   `slide-qa` を提案する
+3. **再ビルドすると URL が変わる。** 新しい URL をユーザーに伝え、旧デッキの扱い
+   （削除）を明示する
+4. 結果を提示する前に自分で QA を通す。改善の余地があれば `AskUserQuestion` で
+   提案する: 「確定 / 文言調整 / 図の変更 / 機能の追加・削除」
+   （`interactive-intake.md` セクション 4）
 
-## File layout
+## ファイル構成
 
-| Path | Role |
+| パス | 役割 |
 |------|------|
-| `scripts/scalar/build_scalar_intro.py` | Company intro deck builder (boilerplate + insertion approach; a worked 27-slide example) |
-| `scripts/scalar/build_scalar_features.py` | Feature catalog deck builder (24 features with diagrams; a worked 31-slide example) |
-| `templates/scalar-2026.json` | Scalar 2026 template (generated decks) |
-| `templates/scalar-2026-boilerplate.json` | Scalar 2026 boilerplate template (official bundled slides) |
-| `assets/scalar/{logos,product-logos,pictograms}` | Brand assets (company/product logos, pictograms) |
-| `references/scalar/research-2026-08.md` | Researched facts (company, products, case studies) and 6 slide-making pitfalls |
+| `scripts/scalar/build_scalar_intro.py` | 会社紹介デッキビルダー（ボイラープレート + 挿入方式。27 スライドの実例） |
+| `scripts/scalar/build_scalar_features.py` | 機能カタログデッキビルダー（図解つき 24 機能。31 スライドの実例） |
+| `templates/scalar-2026.json` | Scalar 2026 テンプレート（生成デッキ用） |
+| `templates/scalar-2026-boilerplate.json` | Scalar 2026 ボイラープレートテンプレート（公式同梱スライド） |
+| `assets/scalar/{logos,product-logos,pictograms}` | ブランド素材（会社・製品ロゴ、ピクトグラム） |
+| `references/scalar/research-2026-08.md` | 調査済みの事実（会社・製品・事例）とスライド作成の落とし穴 6 件 |
 
-The scripts are "worked examples you can re-run as is"; when changing the
-structure, editing these two scripts is the shortest path. The architecture
-diagram examples `examples/scalardb-architecture.py` /
-`examples/scalardl-architecture.py` (from google-slides-template) can be used
-alongside them.
+スクリプトは「そのまま再実行できる実例」であり、構成を変えるときはこの
+2 スクリプトを編集するのが最短経路である。google-slides-template 由来の
+アーキテクチャ図の実例 `examples/scalardb-architecture.py` /
+`examples/scalardl-architecture.py` も併用できる。

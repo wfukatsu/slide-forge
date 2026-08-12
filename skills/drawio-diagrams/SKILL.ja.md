@@ -12,107 +12,105 @@ description: >-
 ---
 *[English](SKILL.md)*
 
-# draw.io Diagrams for Google Slides
+# Google Slides のための draw.io 図
 
-## Important
+## 重要
 
-- **Scope**: diagrams too dense for `diagrams.py` native shapes — nested
-  containers (VPC/subnet) 2+ levels deep, 10+ nodes, 15+ edges, or when
-  official-style cloud vendor icons with group frames are wanted. For simple
-  concept/flow figures, stay with `diagrams.py` in the `google-slides` skill.
-  The routing table is at the top of `references/drawio.md`.
-- **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/path/to/slide-forge` on a local clone (literal paths assume the local clone).
-- **Requires the drawio desktop CLI** (`brew install --cask drawio`;
-  `drawio` on PATH or the app bundle). Verified headless on macOS.
-- **Visual QA of the exported PNG is mandatory.** A wrong shape name
-  (`resIcon` / `prIcon` / azure2 SVG path) renders as a plain colored square
-  with no error — never guess names; look them up
-  (`references/drawio.md` § シェイプ名の調べ方).
-- **Deliverables are three**: the slide with the PNG inserted, the exported
-  PNG, and the editable `.drawio` source. Upload the `.drawio` and PNG into
-  the deck's Drive folder (`scripts/drive_folder.py upload`) so the user can
-  edit the diagram later — a PNG alone is a dead end.
-- When inserting into **an existing deck the user already has**, run
-  `scripts/snapshot_version.py <URL>` first (version-before-edit rule shared
-  with the other slide-forge skills).
+- **スコープ**: `diagrams.py` のネイティブシェイプでは密度が足りない図 —
+  2 階層以上ネストしたコンテナ（VPC/サブネット）、10 ノード以上、15 エッジ以上、
+  あるいはグループ枠つきの公式スタイルのクラウドベンダーアイコンが欲しい場合。
+  単純な概念図・フロー図なら `google-slides` スキルの `diagrams.py` に留まる。
+  振り分け表は `references/drawio.md` の冒頭にある。
+- **作業ディレクトリ**: slide-forge のルート — インストール済みプラグインから実行する場合は `${CLAUDE_PLUGIN_ROOT}`、ローカルクローンなら `/path/to/slide-forge`（本文中のリテラルパスはローカルクローンを前提とする）。
+- **drawio デスクトップ CLI が必要**（`brew install --cask drawio`;
+  PATH 上の `drawio` またはアプリバンドル）。macOS でのヘッドレス動作を検証済み。
+- **書き出した PNG のビジュアル QA は必須。** シェイプ名の誤り
+  （`resIcon` / `prIcon` / azure2 の SVG パス）はエラーにならず、
+  ただの色つき四角として描画される — 名前は決して推測せず、必ず調べる
+  （`references/drawio.md` § シェイプ名の調べ方）。
+- **納品物は 3 点**: PNG を挿入したスライド、書き出した PNG、編集可能な
+  `.drawio` ソース。`.drawio` と PNG はデッキの Drive フォルダにアップロードし
+  （`scripts/drive_folder.py upload`）、ユーザーが後から図を編集できるようにする
+  — PNG だけでは行き止まりになる。
+- **ユーザーが既に持っている既存デッキ**に挿入するときは、先に
+  `scripts/snapshot_version.py <URL>` を実行する（他の slide-forge スキルと
+  共通の「編集前にバージョンを記録する」ルール）。
 
-## Quick Reference
+## クイックリファレンス
 
-| Task | Where |
+| タスク | 場所 |
 |------|-------|
-| Authoring guide + verified style recipes (AWS/GCP/Azure, groups, edges) | `references/drawio.md` |
-| Export .drawio to PNG | `.venv/bin/python scripts/drawio_export.py <in.drawio> [--out out/diagrams/x.png] [--scale 2]` |
-| Look up shape names (never guess) | `grep -ao 'mxgraph\.aws4\.[a-z0-9_]*' /Applications/draw.io.app/Contents/Resources/app.asar \| sort -u` |
-| Insert PNG into a deck spec | `{ "type": "image", "x": …, "y": …, "w": …, "h": …, "source": "out/diagrams/x.png", "fit": "contain" }` |
-| Archive sources to the deck's Drive folder | `.venv/bin/python scripts/drive_folder.py upload <FOLDER> x.drawio out/diagrams/x.png` |
-| Version snapshot before editing an existing deck | `.venv/bin/python scripts/snapshot_version.py <URL>` |
+| 作図ガイド + 検証済みスタイルレシピ（AWS/GCP/Azure、グループ、エッジ） | `references/drawio.md` |
+| .drawio を PNG へ書き出す | `.venv/bin/python scripts/drawio_export.py <in.drawio> [--out out/diagrams/x.png] [--scale 2]` |
+| シェイプ名を調べる（決して推測しない） | `grep -ao 'mxgraph\.aws4\.[a-z0-9_]*' /Applications/draw.io.app/Contents/Resources/app.asar \| sort -u` |
+| デッキ仕様へ PNG を挿入する | `{ "type": "image", "x": …, "y": …, "w": …, "h": …, "source": "out/diagrams/x.png", "fit": "contain" }` |
+| ソースをデッキの Drive フォルダへアーカイブする | `.venv/bin/python scripts/drive_folder.py upload <FOLDER> x.drawio out/diagrams/x.png` |
+| 既存デッキ編集前のバージョンスナップショット | `.venv/bin/python scripts/snapshot_version.py <URL>` |
 
-## Phase 0: Environment check
+## Phase 0: 環境チェック
 
 ```bash
 which drawio || ls /Applications/draw.io.app/Contents/MacOS/draw.io
 ```
 
-If neither exists, ask the user to run `brew install --cask drawio`. The
-Python side uses the shared slide-forge venv (`.venv`), same as the other
-skills.
+どちらも存在しなければ、ユーザーに `brew install --cask drawio` の実行を依頼する。
+Python 側は他のスキルと同じく、slide-forge 共有の venv（`.venv`）を使う。
 
-## Phase 1: Author the .drawio
+## Phase 1: .drawio を書く
 
-Write the mxGraph XML directly, following `references/drawio.md`:
+`references/drawio.md` に従い、mxGraph XML を直接書く:
 
-- File skeleton with the mandatory `id="0"` / `id="1"` root cells
-- Coordinates in px; children of a container use parent-relative coordinates
-- Vendor icons: AWS `resourceIcon` + `resIcon`, GCP `hexIcon` + `prIcon`,
-  Azure `image=img/lib/azure2/…` — copy the verified recipes, look up any
-  name you have not used before
-- Edges always attach via `source`/`target` (never free coordinates), with
-  `edgeLabel` child vertices for labels
-- Aim the drawing bounds at the slide region's aspect ratio (16:9 to 2:1 for
-  a full-body figure); PNG export crops to content, page size is irrelevant
+- 必須の `id="0"` / `id="1"` ルートセルを持つファイル骨格
+- 座標は px。コンテナの子は親相対座標を使う
+- ベンダーアイコン: AWS は `resourceIcon` + `resIcon`、GCP は `hexIcon` + `prIcon`、
+  Azure は `image=img/lib/azure2/…` — 検証済みレシピをコピーし、
+  使ったことのない名前は必ず調べる
+- エッジは常に `source`/`target` で接続し（自由座標は使わない）、
+  ラベルは `edgeLabel` の子頂点で付ける
+- 描画範囲はスライド上の挿入領域のアスペクト比に合わせる（全面図なら
+  16:9〜2:1）。PNG 書き出しはコンテンツでクロップされるため、ページサイズは無関係
 
-Save the file next to the deck's spec (e.g. `<deck-dir>/figures/arch.drawio`).
+ファイルはデッキ仕様の隣に保存する（例: `<deck-dir>/figures/arch.drawio`）。
 
-## Phase 2: Export to PNG
+## Phase 2: PNG へ書き出す
 
 ```bash
 .venv/bin/python scripts/drawio_export.py <deck-dir>/figures/arch.drawio \
     --out out/diagrams/arch.png --scale 2
 ```
 
-`--scale 2` is the minimum for full-slide figures (target ≥ 1600px width for
-an 8in insertion). `--transparent` for decks with tinted backgrounds;
-`--page N` for multi-page files.
+全面図では `--scale 2` が最低ライン（8in で挿入するなら幅 1600px 以上を目標）。
+背景に色が敷かれたデッキには `--transparent`、複数ページのファイルには
+`--page N` を使う。
 
-## Phase 3: Visual QA (mandatory)
+## Phase 3: ビジュアル QA（必須）
 
-Open the PNG with the Read tool and run the checklist at the bottom of
-`references/drawio.md`: plain-square icons (wrong shape names), overlapping
-labels, edges crossing unrelated shapes, children escaping containers,
-legibility at insertion size. Fix the XML and re-export until clean.
+Read ツールで PNG を開き、`references/drawio.md` 末尾のチェックリストを回す:
+ただの四角になったアイコン（シェイプ名の誤り）、ラベルの重なり、無関係な
+シェイプを横切るエッジ、コンテナからはみ出す子、挿入サイズでの可読性。
+問題がなくなるまで XML を修正して再書き出しする。
 
-## Phase 4: Insert into the deck
+## Phase 4: デッキへ挿入する
 
-- **Spec path** (`build_deck.py`): add an `image` part pointing at the local
-  PNG; use `fit: "contain"` and size the box to the PNG's aspect ratio.
-- **Code-first path** (`deckkit`): `image(x, y, w, h, "out/diagrams/arch.png")`.
-- **Existing deck**: snapshot the version first (`snapshot_version.py`), then
-  insert with the API and renumber pages if needed
-  (`references/code-blocks.md` shows the insertion pattern).
+- **仕様パス**（`build_deck.py`）: ローカル PNG を指す `image` パートを追加する。
+  `fit: "contain"` を使い、ボックスは PNG のアスペクト比に合わせてサイズを決める。
+- **コードファーストパス**（`deckkit`）: `image(x, y, w, h, "out/diagrams/arch.png")`。
+- **既存デッキ**: まずバージョンをスナップショットし（`snapshot_version.py`）、
+  API で挿入して、必要ならページ番号を振り直す
+  （挿入パターンは `references/code-blocks.md` にある）。
 
-The generator uploads the PNG to Drive temporarily and cleans it up — the
-slide keeps its own copy of the image.
+ジェネレータは PNG を一時的に Drive へアップロードし、後で削除する —
+スライドは画像のコピーを自分で保持する。
 
-## Phase 5: Archive sources in the deck's Drive folder
+## Phase 5: ソースをデッキの Drive フォルダへアーカイブする
 
-Every deck lives in its own Drive folder (see the Drive folder rule in the
-generating skill). Put the diagram sources there too:
+すべてのデッキは専用の Drive フォルダを持つ（生成スキル側の Drive フォルダ
+ルールを参照）。図のソースもそこへ置く:
 
 ```bash
 .venv/bin/python scripts/drive_folder.py upload <FOLDER_URL_OR_ID> \
     <deck-dir>/figures/arch.drawio out/diagrams/arch.png
 ```
 
-Report the folder URL together with the deck URL, and mention that the
-`.drawio` can be opened at app.diagrams.net or in the draw.io desktop app
-for later edits.
+デッキ URL と併せてフォルダ URL も報告し、`.drawio` は app.diagrams.net または
+draw.io デスクトップアプリで開いて後から編集できることを添える。
