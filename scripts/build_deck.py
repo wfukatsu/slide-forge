@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""template.json とデッキ仕様からプレゼンテーションを生成する。
+"""Generate a presentation from template.json and a deck spec.
 
-テンプレートを Drive API で複製 → 同梱スライドを削除 → `createSlide(layoutId)` で
-スライドを積む。テンプレートのマスターが定義する装飾・ロゴ・フッターは自動継承される。
+Duplicate the template via the Drive API -> delete the bundled slides -> stack
+slides with `createSlide(layoutId)`. Decoration, logo, and footer defined by
+the template's master are inherited automatically.
 
-    # 仕様の検証だけ（API 呼び出しなし）
+    # validate the spec only (no API calls)
     python scripts/build_deck.py --template templates/x.json --spec deck.json --dry-run
 
-    # 生成
+    # generate
     python scripts/build_deck.py --template templates/x.json --spec deck.json \
-        --title "資料タイトル" [--folder <DRIVE_FOLDER_URL_OR_ID>]
+        --title "Document Title" [--folder <DRIVE_FOLDER_URL_OR_ID>]
 
-ライブラリとして:
+As a library:
     deck = TemplateDeck.create(template, title="…")
     deck.add_slide("CONTENT", title="…", body=["…"])
     print(deck.commit())
@@ -214,36 +215,40 @@ register({
         "x/y/w/h を省略すると枠に収まります",
 })
 
-# CENTERED_TITLE は Google 既定マスター(template-forge の blank ベース)の
-# 表紙タイトル。spec 上は 'title' で受け、TITLE が無いレイアウトではこちらに流す
+# CENTERED_TITLE is the cover title of the Google default master
+# (template-forge's blank base). Received on the spec as 'title', and used as
+# the fallback for layouts that have no TITLE
 FILLABLE = ("TITLE", "CENTERED_TITLE", "SUBTITLE", "BODY")
 
-# ---------- 本文の強調（役割つきの行と、行内の **強調**） ----------
+# ---------- Body emphasis (role-tagged lines and inline **emphasis**) ----------
 
-# テンプレートが bodyRoles を持たないときの既定。
-# サイズは変えない（変えると行数の見積もりが崩れるため。spaceAbove までに留める）
+# Default used when the template has no bodyRoles.
+# Don't change the size (doing so would throw off the line-count estimate;
+# limit adjustments to spaceAbove)
 DEFAULT_BODY_ROLES = {
     "heading": {"bold": True, "spaceAbove": 6},
     "strong": {"bold": True},
     "note": {"color": "theme:DARK2"},
-    # リンクは色と下線でそれと分かるようにする（API はリンクを付けても
-    # 見た目を変えないため、こちらで付けないとクリックできると気づけない）
+    # Mark links with color and underline so they're recognizable (the API
+    # doesn't change the appearance just because a link is attached, so without
+    # this styling there's no way to tell it's clickable)
     "link": {"color": "theme:ACCENT5", "underline": True},
 }
-# 役割に書けるキー。文字スタイルと段落スタイルに振り分ける
+# Keys that can be set in a role. Sorted into text style vs. paragraph style
 _TEXT_STYLE_KEYS = ("bold", "italic", "underline", "color", "fontSize")
 _PARA_STYLE_KEYS = ("spaceAbove", "spaceBelow")
 
-# `**強調**` と `[表示テキスト](リンク先)` の 2 つだけ。Markdown 全体には
-# 対応しない（`#` や `-` まで効くと誤解されると、かえって崩れるため）
+# Only `**emphasis**` and `[display text](link target)` are supported. Full
+# Markdown is not supported (if `#` or `-` were also honored, the resulting
+# confusion would cause more breakage than it prevents)
 _INLINE = re.compile(r"\*\*(?P<b>.+?)\*\*"
                      r"|\[(?P<t>[^\]]+)\]\((?P<u>[^)]+)\)", re.S)
 
 
 def parse_inline(text: str) -> tuple[str, list[tuple]]:
-    """記法を剥がし、剥がしたあとの文字列と (開始, 終了, 種類, リンク先) を返す。
+    """Strip the markup and return the stripped string plus (start, end, kind, link target).
 
-    種類は "strong" か "link"。範囲は剥がしたあとの文字列の先頭からの位置。
+    kind is "strong" or "link". Ranges are positions from the start of the stripped string.
     """
     out, spans, pos, cursor = [], [], 0, 0
     for m in _INLINE.finditer(text):
@@ -262,9 +267,9 @@ def parse_inline(text: str) -> tuple[str, list[tuple]]:
 
 
 def link_target(value: str) -> dict | None:
-    """リンク先を Slides API の link に変換する。
+    """Convert a link target into the Slides API's link representation.
 
-    "https://…" は URL、"#12" は同じデッキの 12 枚目（1 始まり）。
+    "https://…" is a URL; "#12" is slide 12 (1-based) of the same deck.
     """
     if not value:
         return None
@@ -279,9 +284,9 @@ def link_target(value: str) -> dict | None:
 
 
 def normalize_body_lines(value) -> list[tuple[str, str | None]]:
-    """body の各行を (本文, 役割) に正規化する。
+    """Normalize each body line to (text, role).
 
-    行は文字列でも {"text": "…", "role": "heading"} でもよい。
+    A line may be either a plain string or {"text": "…", "role": "heading"}.
     """
     items = value if isinstance(value, list) else [value]
     lines: list[tuple[str, str | None]] = []
@@ -292,24 +297,29 @@ def normalize_body_lines(value) -> list[tuple[str, str | None]]:
             lines.append((str(item), None))
     return lines
 
-# オブジェクト ID をプロセス間で衝突させないためのランダムトークン。
-# 連番だけだと、既存デッキへ別プロセスから追記したとき slide_001 等が衝突する
+# Random token so object IDs don't collide across processes.
+# Sequential numbering alone would collide (e.g. slide_001) when a separate
+# process appends to an existing deck
 _RUN_TOKEN = uuid.uuid4().hex[:4]
 
 
 def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0,
            idempotent: bool = True, url: str | None = None):
-    """一時的な 5xx / 429 を吸収して API 呼び出しを繰り返す。
+    """Retry an API call to absorb transient 5xx / 429 errors.
 
-    枚数の多いテンプレートの `files.copy` は、混んでいるときに 500 Internal Error を
-    返すことが実際にある。1 回で諦めると生成が丸ごと落ちるので指数バックオフで粘る。
-    HttpError 以外に、socket timeout 等のネットワーク例外（OSError）も再試行する。
+    A template with many slides can genuinely get a 500 Internal Error from
+    `files.copy` when the service is under load. Giving up after one try would
+    fail the whole generation, so this backs off exponentially and keeps
+    trying. Besides HttpError, network exceptions such as socket timeouts
+    (OSError) are also retried.
 
-    ただし **非冪等な書き込み（batchUpdate）は idempotent=False で呼ぶこと**。
-    タイムアウト（OSError）はサーバー側では適用済みで応答だけが失われた可能性が
-    あり、無条件に再送すると二重適用や 400 でデッキが半壊する。その場合は
-    再試行せず、確認を促す明確なエラーで止める（url にデッキ URL を渡す）。
-    HTTP 5xx / 429 は「適用されていない」ことが分かるので従来どおり再試行する。
+    However, **non-idempotent writes (batchUpdate) must be called with
+    idempotent=False**. A timeout (OSError) may mean the server already
+    applied the write and only the response was lost; blindly resending it
+    risks a double-apply or a 400 that leaves the deck half-built. In that
+    case, stop without retrying and raise a clear error prompting the user to
+    check (pass the deck URL via `url`). HTTP 5xx / 429 are still safe to
+    retry as before, since those indicate the write was not applied.
     """
     import time
     from googleapiclient.errors import HttpError
@@ -337,29 +347,32 @@ def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0,
             time.sleep(wait)
 
 
-# batchUpdate は 1 回にまとめるほど速い。分割すると 1 リクエストあたりの実測コストが
-# 跳ね上がるため（実測: 8000 リクエストを 500 ずつ 16 回 = 18.2s、1 回 = 6.3s）、
-# 上限いっぱいまで積む。並列化は逆効果（同一プレゼンへの同時書き込みが競合し、
-# 4 並列 x 2000 で 20.1s / 逐次 2000 で 12.2s）なので**やってはいけない**。
+# batchUpdate is faster the more it's batched into a single call. Splitting it
+# spikes the measured cost per request (measured: 8000 requests as 16 batches
+# of 500 = 18.2s vs. one batch = 6.3s), so pack it right up to the limit.
+# Parallelizing is counterproductive (concurrent writes to the same
+# presentation contend with each other: 4 parallel x 2000 = 20.1s vs.
+# sequential 2000 = 12.2s), so **do not do it**.
 #
-# 上限は Google API のリクエストボディ 10MB。図のリクエストは実測 288 bytes 程度
-# なので、安全率を見て 5MB / 10000 件で切る（実測 30305 件 / 7.5MB は 20s で通る）。
+# The limit comes from the Google API's 10MB request body cap. A figure
+# request measures around 288 bytes, so with a safety margin this cuts at
+# 5MB / 10000 items (measured: 30305 items / 7.5MB completes in 20s).
 MAX_REQUESTS_PER_BATCH = 10000
 MAX_BATCH_BYTES = 5_000_000
 
 
 def _batches(requests: list[dict], max_requests: int = MAX_REQUESTS_PER_BATCH,
              max_bytes: int = MAX_BATCH_BYTES):
-    """リクエスト列を、件数とバイト数の両方が上限に収まる塊に切って返す。
+    """Split the request list into chunks that fit both the count and byte-size limits.
 
-    順序は保つ。batchUpdate は塊ごとに逐次実行されるので、塊の境界が
-    スライドや図形をまたいでも結果は変わらない。
+    Order is preserved. Since batchUpdate runs each chunk sequentially, the
+    result is unchanged even if a chunk boundary crosses a slide or figure.
     """
     batch: list[dict] = []
     size = 0
     for req in requests:
         n = len(json.dumps(req, ensure_ascii=False).encode())
-        # 1 件で上限を超える場合でも、その 1 件だけの塊として必ず送る
+        # Even if a single item exceeds the limit on its own, always send it as its own chunk
         if batch and (len(batch) >= max_requests or size + n > max_bytes):
             yield batch
             batch, size = [], 0
@@ -375,7 +388,7 @@ def load_template(path: str) -> dict:
 
 
 class TemplateDeck:
-    """テンプレートを複製した上にスライドを積んでいくビルダー。"""
+    """Builder that stacks slides on top of a duplicated template."""
 
     def __init__(self, slides_service, drive_service, presentation_id: str, template: dict):
         self.slides = slides_service
@@ -387,22 +400,23 @@ class TemplateDeck:
         self._added: list[dict] = []
         self._notes: list[tuple[str, str]] = []  # (slideId, notes)
         self._counter = 0
-        # keep_existing で残したテンプレート同梱スライドの枚数。
-        # add_page_numbers() が新規スライドの番号をこの分だけずらす
+        # Number of bundled template slides kept via keep_existing.
+        # add_page_numbers() offsets new-slide numbering by this amount
         self.kept_slides = 0
-        # 画像を挿入したときに images.AssetStore が入る。commit() の後で後始末する
+        # Set to an images.AssetStore when an image is inserted; cleaned up after commit()
         self.assets = None
-        # (objectId, x, y, w, h)。createImage は比率を保つため、枠ぴったりに
-        # 敷きたい画像は commit 後に transform を上書きして直す
+        # (objectId, x, y, w, h). Since createImage preserves the aspect
+        # ratio, images meant to fill a frame exactly are fixed up by
+        # overwriting their transform after commit
         self.image_fixups: list[tuple] = []
-        # --into のタイトル変更は commit 成功後まで遅延する（open() 参照）
+        # --into's title change is deferred until after a successful commit (see open())
         self.pending_title: str | None = None
 
     @property
     def url(self) -> str:
         return f"https://docs.google.com/presentation/d/{self.presentation_id}/edit"
 
-    # ---------- 生成 ----------
+    # ---------- Creation ----------
 
     @classmethod
     def create(
@@ -431,8 +445,9 @@ class TemplateDeck:
         if not keep_existing:
             deck._delete_existing_slides()
         else:
-            # 残したスライドの実枚数を数え、ページ番号の起点をずらす。
-            # template.json の existingSlideIds はテンプレート更新で古くなり得るため実物を見る
+            # Count the actual number of kept slides to offset the page-number
+            # starting point. template.json's existingSlideIds can go stale
+            # after a template update, so check the real thing instead
             pres = _retry(
                 lambda: deck.slides.presentations().get(
                     presentationId=deck.presentation_id, fields="slides.objectId"
@@ -451,24 +466,26 @@ class TemplateDeck:
         title: str | None = None,
         creds=None,
     ) -> "TemplateDeck":
-        """既存デッキを開き、中身を総入れ替えできる状態にする。
+        """Open an existing deck and put it in a state where its contents can be fully replaced.
 
-        `create()` がテンプレートを複製して**新しい URL** を作るのに対し、
-        こちらは既にある URL の中身だけを差し替える。顧客ごとの活動計画の
-        ように、共有リンクを配ったまま最新化し続ける資料のためにある。
+        Where `create()` duplicates the template into a **new URL**, this
+        replaces the contents of an already-existing URL in place. It exists
+        for material like a per-customer activity plan, where a shared link
+        needs to be kept up to date without ever changing.
 
-        **破壊的**。今あるページはすべて消える。呼ぶ前に
-        `scripts/snapshot_version.py` で版を確保すること（編集前リビジョンは
-        ここでも記録して表示する）。
+        **Destructive**. Every current page is deleted. Before calling this,
+        capture a version with `scripts/snapshot_version.py` (the pre-edit
+        revision is also recorded and printed here).
 
-        `layouts` にはこれから積むスライドのレイアウトキーを渡す。デッキが
-        このテンプレートのマスターを持っているかを、API を叩き始める前に
-        確かめるために使う。
+        Pass `layouts` the layout keys of the slides about to be stacked. This
+        is used to confirm the deck actually has this template's master
+        before any API calls start hitting it.
         """
         slides, drive = _auth.services(creds)
         pid = _auth.presentation_id(source)
-        # テンプレートの原本を差し替えると、そのテンプレートで作った全デッキの
-        # 元が壊れる。生成物と原本は取り違えやすいので、ここで必ず止める
+        # Replacing the template's own master would corrupt the source that
+        # every deck built from that template depends on. Since the generated
+        # deck and the master original are easy to mix up, always stop here
         if pid == template.get("presentationId"):
             raise ValueError(
                 t("{pid} is template '{tpl}' itself, not a deck generated from "
@@ -481,9 +498,10 @@ class TemplateDeck:
         print(t("  replacing an existing deck: {n} slides will be removed",
                 n=removed))
         if title:
-            # ここで files.update すると、生成が失敗したとき「中身は旧のまま
-            # タイトルだけ新しい」デッキが残る。リネームは記憶だけして、
-            # commit() が中身の差し替えに成功してから投げる
+            # Calling files.update here would leave a deck with "old contents
+            # but a new title" if generation fails. So the rename is only
+            # remembered here, and issued once commit() has successfully
+            # replaced the contents
             deck.pending_title = title
         return deck
 
@@ -501,11 +519,13 @@ class TemplateDeck:
         return len(slide_ids)
 
     def _require_layouts(self, layout_keys=None) -> None:
-        """デッキがこのテンプレートのマスターを持っているかを先に確かめる。
+        """Confirm up front that the deck has this template's master.
 
-        レイアウトの objectId は Drive の複製で保たれるので、テンプレート由来の
-        デッキなら一致する。別のマスターから作られたデッキを差し替えようとした
-        ときに、commit 時の不親切な API エラーではなくここで止める。
+        Layout objectIds are preserved by Drive's duplication, so they match
+        for a deck that originated from this template. This stops the process
+        here, with a clear error, when someone tries to replace a deck built
+        from a different master — rather than surfacing an unhelpful API
+        error at commit time.
         """
         keys = list(layout_keys) if layout_keys else list(self.template.get("layouts", {}))
         needed: dict[str, str] = {}
@@ -518,9 +538,10 @@ class TemplateDeck:
             else:
                 without_id.append(resolved)
         if without_id:
-            # generationMode: "create" のテンプレート（blank-16x9 等）は
-            # レイアウトを持たず predefinedLayout で作る。差し替え先の
-            # マスターと噛み合う保証がないので使わせない
+            # A generationMode: "create" template (e.g. blank-16x9) has no
+            # real layouts and is built with predefinedLayout instead. There's
+            # no guarantee it matches the replacement target's master, so
+            # this case is disallowed
             raise ValueError(
                 t("template '{tpl}' declares no layoutId for {layouts}; "
                   "--into needs a template with real layouts",
@@ -543,10 +564,11 @@ class TemplateDeck:
                   missing=", ".join(missing)))
 
     def _print_pre_edit_revision(self) -> None:
-        """差し戻せるように、編集前のリビジョンを表示する。取れなければ警告だけ。"""
+        """Print the pre-edit revision so it can be rolled back to. Just warns if it can't be read."""
         try:
-            # 1000 リビジョンを超えるデッキでも最新を取り逃さないよう、
-            # snapshot_version.py と同じ方式で全ページたどる
+            # Page through every result the same way snapshot_version.py does,
+            # so the latest revision isn't missed even for decks with over
+            # 1000 revisions
             revisions: list[dict] = []
             token = None
             while True:
@@ -559,7 +581,7 @@ class TemplateDeck:
                 token = res.get("nextPageToken")
                 if not token:
                     break
-        except Exception as exc:                       # noqa: BLE001 — 情報表示のみ
+        except Exception as exc:                       # noqa: BLE001 — informational only
             print(t("  warn: could not read the revision history ({err}); "
                     "snapshot the deck before replacing it", err=exc),
                   file=sys.stderr)
@@ -571,7 +593,7 @@ class TemplateDeck:
                     rev=last.get("id"), time=last.get("modifiedTime")))
 
     def _delete_existing_slides(self) -> None:
-        """複製直後に残っているテンプレート同梱スライドを削除する。"""
+        """Delete the template's bundled slides that remain right after duplication."""
         present = self._present_slide_ids()
         expected = set(self.template.get("existingSlideIds", []))
         stale = expected - set(present)
@@ -583,13 +605,14 @@ class TemplateDeck:
                   ids=sorted(stale)),
                 file=sys.stderr,
             )
-        # 実在するスライドは全て削除する（テンプレート側でスライドが増えていても取りこぼさない）
+        # Delete every slide that actually exists (so none are missed even if
+        # the template side gained more slides)
         self._queue_slide_deletes(present)
 
-    # ---------- レイアウト解決 ----------
+    # ---------- Layout resolution ----------
 
     def resolve_layout(self, key: str) -> tuple[str, dict]:
-        """ロール名（CONTENT 等）またはレイアウトキーからレイアウト定義を引く。"""
+        """Look up a layout definition by role name (e.g. CONTENT) or layout key."""
         layouts = self.template["layouts"]
         resolved = self.template.get("roles", {}).get(key, key)
         if resolved not in layouts:
@@ -601,11 +624,11 @@ class TemplateDeck:
             )
         return resolved, layouts[resolved]
 
-    # ---------- スライド追加 ----------
+    # ---------- Adding slides ----------
 
     def _next_id(self, prefix: str) -> str:
         self._counter += 1
-        # objectId は 50 文字まで。長いレイアウト名でも収まるよう prefix を丸める
+        # objectId is capped at 50 characters; truncate the prefix so long layout names still fit
         return f"{prefix[:40]}_{_RUN_TOKEN}_{self._counter:03d}"
 
     def add_slide(
@@ -624,13 +647,13 @@ class TemplateDeck:
         body_space_above: float | None = None,
         body_space_below: float | None = None,
     ) -> dict:
-        """レイアウトを指定してスライドを追加し、プレースホルダを埋める。
+        """Add a slide with the given layout and fill in its placeholders.
 
-        `bodies` は 2カラム/3カラムのレイアウト用。BODY プレースホルダの index 0,1,2… に
-        順番に流し込む。`body` は `bodies=[body]` と等価。
+        `bodies` is for 2-column/3-column layouts. It's poured in order into
+        BODY placeholder indices 0, 1, 2, …. `body` is equivalent to `bodies=[body]`.
 
-        戻り値は {"slideId", "placeholders", "layout", "layoutKey"}。
-        追加の図形を描きたい場合はこの slideId を pageObjectId に使う。
+        Returns {"slideId", "placeholders", "layout", "layoutKey"}. Use this
+        slideId as pageObjectId if you want to draw additional figures.
         """
         resolved_key, layout = self.resolve_layout(layout_key)
         declared = layout.get("placeholders", [])
@@ -640,7 +663,7 @@ class TemplateDeck:
         if body is not None:
             bodies = [body]
 
-        # リクエストを積む前に検証する。失敗しても中途半端な状態を残さないため。
+        # Validate before queuing any requests, so a failure doesn't leave anything half-done.
         title_slot = ("TITLE" if "TITLE" in declared
                       else "CENTERED_TITLE" if "CENTERED_TITLE" in declared
                       else None)
@@ -665,7 +688,8 @@ class TemplateDeck:
         slide_id = self._next_id("slide")
         ph_ids: dict[str, str] = {}
         mappings = []
-        # SLIDE_NUMBER はマッピングしても API に無視されるため対象外（add_page_numbers で描画）
+        # SLIDE_NUMBER is excluded because the API silently ignores it even if
+        # mapped (drawn instead by add_page_numbers)
         for name in [t for t in declared if t.split("#")[0] in FILLABLE]:
             ph_type, _, idx = name.partition("#")
             idx = int(idx) if idx else 0
@@ -699,8 +723,9 @@ class TemplateDeck:
                 {"insertText": {"objectId": ph_ids[name], "text": text}}
             )
 
-        # タイトルの既定サイズはテンプレートによっては 1 行 20 文字程度しか
-        # 入らない。長いアクションタイトルは titleFontSize で縮めて 1 行に収める
+        # Depending on the template, the title's default size may only fit
+        # about 20 characters per line. Shrink long action titles with
+        # titleFontSize to fit them on one line
         if title_font_size is not None and title is not None:
             slot = title_slot or "TITLE"
             if slot in ph_ids:
@@ -712,7 +737,7 @@ class TemplateDeck:
                     "fields": "fontSize",
                 }})
 
-        # 本文は行ごとに役割・行内強調を持ちうるので、範囲を数えながら組み立てる
+        # Each body line can have its own role and inline emphasis, so build it while tracking ranges
         body_spans: dict[str, list[dict]] = {}
         for name, value in filled_bodies:
             if value is None:
@@ -723,8 +748,9 @@ class TemplateDeck:
                 {"insertText": {"objectId": ph_ids[name], "text": text}}
             )
 
-        # 本文の見た目調整。プレースホルダの既定サイズは手書き向けに大きめなことが多く、
-        # 日本語の本文は行間を広げないと詰まって見える（既定 100〜115%）。
+        # Adjust the body's appearance. A placeholder's default size is often
+        # generous, meant for hand-typed text, and Japanese body text looks
+        # cramped unless the line spacing is widened (default 100-115%).
         for name, value in filled_bodies:
             if value is None:
                 continue
@@ -735,8 +761,9 @@ class TemplateDeck:
                     "textRange": {"type": "ALL"},
                     "fields": "fontSize",
                 }})
-            # プレースホルダの既定は段落前後にも余白を持つことがあり、行数の
-            # 見積もりから大きくずれる。spaceAbove / spaceBelow も明示できる
+            # A placeholder's default may also carry space before/after
+            # paragraphs, throwing off the line-count estimate significantly.
+            # spaceAbove / spaceBelow can be set explicitly too
             para_style: dict = {}
             if body_line_spacing is not None:
                 para_style["lineSpacing"] = body_line_spacing
@@ -754,8 +781,9 @@ class TemplateDeck:
                     "fields": ",".join(para_style),
                 }})
 
-        # 役割つきの行と行内強調。**ALL レンジのあとに積むこと**（先に積むと
-        # 一括指定に上書きされて効かない）
+        # Role-tagged lines and inline emphasis. **Must be queued after the
+        # ALL-range styles** (queuing them first gets overwritten by the
+        # blanket style and has no effect)
         for name, spans in body_spans.items():
             self._apply_body_spans(ph_ids[name], spans)
 
@@ -769,14 +797,14 @@ class TemplateDeck:
             "layoutKey": resolved_key,
         }
 
-    # ---------- 本文の強調 ----------
+    # ---------- Body emphasis ----------
 
     def body_roles(self) -> dict:
-        """テンプレートが定義する役割ごとの見た目（無ければ既定）。"""
+        """The per-role appearance defined by the template (or the default if none)."""
         return {**DEFAULT_BODY_ROLES, **(self.template.get("bodyRoles") or {})}
 
     def _resolve_color(self, value: str) -> dict | None:
-        """"#RRGGBB" または "theme:DARK1" を rgbColor に解決する。"""
+        """Resolve "#RRGGBB" or "theme:DARK1" to an rgbColor."""
         if not isinstance(value, str):
             return None
         if value.startswith("theme:"):
@@ -787,9 +815,9 @@ class TemplateDeck:
         return _auth.hex_to_rgb(value)
 
     def _compose_body(self, value) -> tuple[str, list[dict]]:
-        """本文を1本の文字列に組み立て、範囲つきのスタイル指定を返す。
+        """Assemble the body into a single string and return range-tagged style specs.
 
-        インデックスは Slides API と同じ UTF-16 単位で数える。
+        Indices are counted in UTF-16 units, same as the Slides API.
         """
         roles = self.body_roles()
         parts, spans, cursor = [], [], 0
@@ -821,13 +849,13 @@ class TemplateDeck:
                     span["link"] = link
                 spans.append(span)
             parts.append(plain)
-            cursor = end + 1        # 改行ぶん
+            cursor = end + 1        # for the newline
         return "\n".join(parts), spans
 
     def _apply_body_spans(self, object_id: str, spans: list[dict]) -> None:
         for span in spans:
             if span["end"] <= span["start"]:
-                continue          # 空行に役割を付けても意味が無い
+                continue          # attaching a role to an empty line is meaningless
             style, fields = {}, []
             for key in _TEXT_STYLE_KEYS:
                 if key not in span["style"]:
@@ -866,20 +894,23 @@ class TemplateDeck:
                     "objectId": object_id, "style": para,
                     "textRange": rng, "fields": ",".join(pfields)}})
 
-    # ---------- ページ番号 ----------
+    # ---------- Page numbers ----------
 
     def add_page_numbers(self, start: int | None = None) -> int:
-        """ページ番号をテキストボックスで描画し、描画枚数を返す。
+        """Draw page numbers as text boxes and return the count drawn.
 
-        Slides API は SLIDE_NUMBER プレースホルダを生成できない（createSlide の
-        placeholderIdMappings に指定してもエラーにならず黙って無視される）ため、
-        レイアウトの slideNumber 座標に合わせて自前で描画する。
+        The Slides API cannot create a SLIDE_NUMBER placeholder (specifying it
+        in createSlide's placeholderIdMappings doesn't error, it's just
+        silently ignored), so this draws it manually at the layout's
+        slideNumber coordinates.
 
-        注意: 番号は add_slide() の呼び出し順に振る。add_slide(index=...) で
-        挿入位置を指定したデッキでは実際の並び順と一致しない。
+        Note: numbers are assigned in add_slide() call order. For a deck where
+        add_slide(index=...) was used to insert at a specific position, this
+        won't match the actual on-page order.
         """
         cfg = self.template.get("pageNumber", {})
-        # keep_existing で残したスライドの後に積む場合は、その枚数分だけ番号を進める
+        # When stacking after slides kept via keep_existing, advance the
+        # numbering start by that many slides
         start = cfg.get("startAt", 1) + self.kept_slides if start is None else start
         font = cfg.get("font", "Arial")
         size = cfg.get("fontSize", 7)
@@ -892,7 +923,8 @@ class TemplateDeck:
             geo = layout.get("elements", {}).get("slideNumber")
             if not layout.get("hasPageNumber") or not geo:
                 continue
-            # 元の枠は数 mm 幅しかなく 2 桁で切れるため、右端を保ったまま最小 0.5in に広げる
+            # The original frame is only a few mm wide and truncates at 2
+            # digits, so widen it to a minimum of 0.5in while keeping the right edge fixed
             right = geo["x"] + geo["w"]
             w = max(geo["w"], 0.5)
             x = right - w if align == "END" else geo["x"]
@@ -944,19 +976,19 @@ class TemplateDeck:
             drawn += 1
         return drawn
 
-    # ---------- 実行 ----------
+    # ---------- Execution ----------
 
     def commit(self, chunk_size: int = MAX_REQUESTS_PER_BATCH) -> str:
-        """溜めたリクエストを batchUpdate で実行し、プレゼンテーション URL を返す。"""
+        """Run the accumulated requests via batchUpdate and return the presentation URL."""
         try:
-            # ローカル画像のアップロードは描画中に裏で走っている。
-            # createImage の url を埋めてからでないと batchUpdate に出せない
+            # Local image uploads run in the background while drawing.
+            # createImage's url must be filled in before the request goes out via batchUpdate
             if self.assets is not None:
                 n_img = self.assets.flush()
                 if n_img:
                     print(f"  images uploaded: {n_img}")
             for n, chunk in enumerate(_batches(self.requests, chunk_size), 1):
-                # batchUpdate は非冪等。応答消失時の再送は半壊の元なので止める
+                # batchUpdate is non-idempotent; resending after a lost response risks a half-built deck, so stop instead
                 _retry(
                     lambda: self.slides.presentations().batchUpdate(
                         presentationId=self.presentation_id, body={"requests": chunk}
@@ -967,7 +999,7 @@ class TemplateDeck:
             self.requests = []
             if self._notes or self.image_fixups:
                 self._post_pass()
-            # --into のリネームは中身の差し替えが成功してから行う（open() 参照）
+            # --into's rename happens only after the content replacement has succeeded (see open())
             if self.pending_title:
                 _retry(
                     lambda: self.drive.files().update(
@@ -977,20 +1009,22 @@ class TemplateDeck:
                     what=t("rename"))
                 self.pending_title = None
         finally:
-            # Slides は挿入時に画像を中へコピーする。batchUpdate が失敗した場合も、
-            # 「リンクを知る全員が閲覧可」で共有した一時アップロードを残さないよう
-            # 必ずここで畳む
+            # Slides copies images in at insertion time. Even if batchUpdate
+            # fails, always clean up here so no temporary upload — shared as
+            # "anyone with the link can view" — gets left behind
             if self.assets is not None:
                 self.assets.cleanup()
         return self.url
 
     def _post_pass(self) -> None:
-        """スライド作成後にしか分からない情報を使う 2 回目の batchUpdate。
+        """A second batchUpdate that uses information only known after slide creation.
 
-        - スピーカーノート … ノート枠の objectId は createSlide のレスポンスに無い
-        - 画像の寸法補正 … createImage は**指定サイズに関係なく元の縦横比を保つ**ため、
-          枠を埋める配置（fit="cover" / "stretch"）は作成時には実現できない。
-          生成された要素の素の大きさを読み、transform を絶対値で置き換えて直す。
+        - Speaker notes: the notes frame's objectId isn't in createSlide's response
+        - Image dimension fixup: since createImage **always preserves the
+          original aspect ratio regardless of the requested size**,
+          frame-filling placement (fit="cover" / "stretch") can't be achieved
+          at creation time. This reads the raw size of the created element and
+          fixes it by overwriting its transform with absolute values.
         """
         pres = _retry(
             lambda: self.slides.presentations().get(
@@ -1049,7 +1083,7 @@ class TemplateDeck:
             n_img += 1
 
         if reqs:
-            # batchUpdate は非冪等。応答消失時の再送は半壊の元なので止める
+            # batchUpdate is non-idempotent; resending after a lost response risks a half-built deck, so stop instead
             _retry(
                 lambda: self.slides.presentations().batchUpdate(
                     presentationId=self.presentation_id, body={"requests": reqs}
@@ -1064,12 +1098,12 @@ class TemplateDeck:
         self.image_fixups = []
 
 
-# ---------- 図・画像のブロック ----------
+# ---------- Figure / image block ----------
 
-# spec の "figures" で使える type と、位置引数として渡すキーの並び。
-# ここに無いキーは snake_case に直してキーワード引数として渡す。
+# The types usable in a spec's "figures", and the order of keys passed as positional arguments.
+# Keys not listed here are converted to snake_case and passed as keyword arguments.
 FIGURES: dict[str, tuple[str, list[str]]] = {
-    # イメージ図（illustrations.py・図形だけで描く。ネットワーク不要）
+    # Illustrative figures (illustrations.py; drawn purely from shapes, no network needed)
     "icon":         ("icon",         ["name", "x", "y", "size"]),
     "icon_row":     ("icon_row",     ["x", "y", "w", "items"]),
     "icon_flow":    ("icon_flow",    ["x", "y", "w", "items"]),
@@ -1089,30 +1123,31 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "outcome_tree":    ("outcome_tree",    ["x", "y", "w", "h", "nodes"]),
     "journey":      ("journey",      ["x", "y", "w", "h", "items"]),
     "timeline":     ("timeline",     ["x", "y", "w", "items"]),
-    # ブランドのアイコン素材（icons.py・Drive 経由で貼るので通信が要る。
-    # --dry-run では同じ大きさの矩形に置き換えて座標だけ検査する）
+    # Brand icon assets (icons.py; pasted via Drive, so network access is
+    # needed. --dry-run substitutes a same-sized rectangle and checks only the coordinates)
     "asset_icon":       ("asset_icon",       ["name", "x", "y", "size"]),
     "asset_icon_row":   ("asset_icon_row",   ["x", "y", "w", "items"]),
     "asset_icon_flow":  ("asset_icon_flow",  ["x", "y", "w", "items"]),
     "asset_icon_grid":  ("asset_icon_grid",  ["x", "y", "w", "items"]),
     "asset_icon_cards": ("asset_icon_cards", ["x", "y", "w", "h", "items"]),
-    # クラウドベンダーの公式アイコン（cloud_icons.py）。asset_icon と同じく
-    # --dry-run では矩形に置き換えて座標だけ検査する
+    # Official cloud-vendor icons (cloud_icons.py). Same as asset_icon:
+    # --dry-run substitutes a rectangle and checks only the coordinates
     "cloud_icon":      ("cloud_icon",      ["name", "x", "y", "size"]),
     "cloud_icon_row":  ("cloud_icon_row",  ["x", "y", "w", "items"]),
     "cloud_icon_flow": ("cloud_icon_flow", ["x", "y", "w", "items"]),
     "cloud_icon_grid": ("cloud_icon_grid", ["x", "y", "w", "items"]),
     "cloud_zone":      ("cloud_zone",      ["x", "y", "w", "h"]),
-    # 構造図（diagrams.py の既存パーツ）
-    # band は塗りだけの角丸矩形。図の下地（表紙・章扉の白カード等）に使う。
-    # 中身より先に書くこと（後ろに書くと中身を覆う）
+    # Structural diagrams (existing parts from diagrams.py)
+    # band is a filled-only rounded rectangle, used as a figure's backdrop
+    # (e.g. the white card behind a cover / section-divider). Draw it before
+    # the content (drawing it after would cover the content)
     "band":         ("band",         ["x", "y", "w", "h"]),
     "cards":        ("cards",        ["x", "y", "w", "h", "items"]),
     "flow":         ("flow",         ["x", "y", "w", "h", "items"]),
     "hbars":        ("hbars",        ["x", "y", "w", "items"]),
     "metric":       ("metric",       ["x", "y", "w", "h", "value", "caption"]),
-    # 表・グラフ（charts.py）。pie は画像で貼るが、--dry-run では
-    # プレースホルダに置き換えて自分で座標検査を通す
+    # Tables / charts (charts.py). pie is pasted as an image, but --dry-run
+    # substitutes a placeholder and runs the coordinate check itself
     "table":         ("table",         ["x", "y", "w", "headers", "rows"]),
     "vbars":         ("vbars",         ["x", "y", "w", "h", "items"]),
     "vbars_grouped": ("vbars_grouped", ["x", "y", "w", "h", "categories", "series"]),
@@ -1120,7 +1155,7 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "linechart":     ("linechart",     ["x", "y", "w", "h", "labels", "series"]),
     "pie":           ("pie",           ["x", "y", "size", "items"]),
     "pareto":        ("pareto",        ["x", "y", "w", "h", "items"]),
-    # ビジネスフレームワーク図（patterns.py・図形だけで描く。ネットワーク不要）
+    # Business-framework diagrams (patterns.py; drawn purely from shapes, no network needed)
     "posmap":         ("posmap",         ["x", "y", "w", "h", "points"]),
     "gantt":          ("gantt",          ["x", "y", "w", "h", "columns", "rows"]),
     "orgchart":       ("orgchart",       ["x", "y", "w", "h", "tree"]),
@@ -1129,19 +1164,20 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "testimonial":    ("testimonial",    ["x", "y", "w", "h", "quote", "name"]),
     "fishbone":       ("fishbone",       ["x", "y", "w", "h", "problem",
                                           "categories"]),
-    # イベント案内図（events.py・図形だけで描く。ネットワーク不要）
+    # Event-information diagrams (events.py; drawn purely from shapes, no network needed)
     "event_mode_badge": ("event_mode_badge", ["x", "y", "mode"]),
     "event_overview":   ("event_overview",   ["x", "y", "w", "rows"]),
     "event_timetable":  ("event_timetable",  ["x", "y", "w", "rows"]),
     "event_speakers":   ("event_speakers",   ["x", "y", "w", "speakers"]),
     "event_access":     ("event_access",     ["x", "y", "w", "h"]),
-    # ページ部品と分析図（pages.py・図形だけで描く。ネットワーク不要）
+    # Page components and analysis diagrams (pages.py; drawn purely from shapes, no network needed)
     "governing_message": ("governing_message", ["x", "y", "w", "text"]),
     "lead_in":           ("lead_in",           ["x", "y", "w", "text"]),
     "so_what":           ("so_what",           ["x", "y", "w", "h", "text"]),
     "source_note":       ("source_note",       ["x", "y", "w", "source"]),
-    # exhibit_frame の戻り値（内側領域）は JSON からは受け取れない。枠を描き、
-    # 中身は内側座標（x+0.2 / ヘッダー下 +0.45 目安）を手で合わせて別の図で描く
+    # exhibit_frame's return value (the inner area) can't be received from
+    # JSON. Draw the frame, then draw the contents as a separate figure with
+    # its inner coordinates matched by hand (roughly x+0.2 / header bottom +0.45)
     "exhibit_frame":     ("exhibit_frame",     ["x", "y", "w", "h", "number", "title"]),
     "mece_tree":         ("mece_tree",         ["x", "y", "w", "h", "tree"]),
     "waterfall":         ("waterfall",         ["x", "y", "w", "h", "items"]),
@@ -1150,22 +1186,22 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
                                                 "complication", "resolution"]),
     "storyline":         ("storyline",         ["x", "y", "w", "titles"]),
     "ghost":             ("ghost",             ["x", "y", "w", "h", "slides"]),
-    # コードサンプル（diagrams.py。等幅 + シンタックスハイライト。ネットワーク不要）
+    # Code samples (diagrams.py; monospace + syntax highlighting, no network needed)
     "code_block":   ("code_block",   ["x", "y", "w", "h", "code"]),
-    # 画像（images.py）
+    # Images (images.py)
     "image":        ("image",        ["x", "y", "w", "h", "source"]),
     "aiImage":      ("ai_image",     ["x", "y", "w", "h", "prompt"]),
 }
 
-# API を呼ぶ（＝ --dry-run では実行できない）type
+# Types that call the API (i.e. cannot be run with --dry-run)
 NETWORK_FIGURES = {"image", "aiImage"}
 
 def min_table_row_h(size: float) -> float:
-    """Slides のテーブル行が実際に取る最小の高さ（インチ）。
+    """The minimum height (in inches) a Slides table row actually takes.
 
-    `minRowHeight` をこれより小さくしても行は縮まない。文字の行高にセルの
-    余白が乗った値で、実測（size 9 で約 0.34in、size 8.5 で約 0.32in）に
-    合わせてある。高さの見積もりはこの値で下から抑える。
+    Setting `minRowHeight` below this value doesn't shrink the row. This is
+    the text line height plus cell padding, calibrated to measurements (about
+    0.34in at size 9, 0.32in at size 8.5). Use this as a lower bound when estimating height.
     """
     return max(0.28, size * 1.45 / 72 + 0.16)
 
@@ -1182,7 +1218,7 @@ def _snake(key: str) -> str:
 
 
 def _figure_args(fig: dict) -> tuple[list, dict]:
-    """図のブロックを (位置引数, キーワード引数) に振り分ける。"""
+    """Sort a figure block into (positional args, keyword args)."""
     _, order = FIGURES[fig["type"]]
     args = [fig[k] for k in order if k in fig]
     kwargs = {_snake(k): v for k, v in fig.items()
@@ -1191,7 +1227,7 @@ def _figure_args(fig: dict) -> tuple[list, dict]:
 
 
 def draw_figures(canvas, figures: list, *, skip_network: bool = False) -> None:
-    """figures ブロックを Canvas に描く。"""
+    """Draw a figures block onto the Canvas."""
     for fig in figures:
         kind = fig["type"]
         if skip_network and kind in NETWORK_FIGURES:
@@ -1202,11 +1238,12 @@ def draw_figures(canvas, figures: list, *, skip_network: bool = False) -> None:
 
 
 def validate_figures(spec: dict, page: dict, template: dict | None = None) -> list[str]:
-    """figures ブロックを、API を呼ばずに検証する。
+    """Validate a figures block without calling the API.
 
-    `template` を渡すと、マスターのロゴ・フッター帯への重なりも検査する。
-    ページ内に収まっていても帯に重なれば読めなくなるので、座標だけで分かる
-    不具合としてここで止める。
+    When `template` is passed, this also checks overlap with the master's
+    logo/footer band. Even content that fits within the page becomes
+    unreadable if it overlaps that band, so this catches it here as a defect
+    detectable from coordinates alone.
     """
     problems = []
     pw = page.get("widthInches", 10.0)
@@ -1218,7 +1255,7 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
         figs = s.get("figures")
         if figs is None:
             continue
-        # 全面の矩形を持つレイアウトはマスターの装飾を覆い隠すので、帯の検査から外す
+        # A layout with a full-page rectangle covers the master's decoration, so exclude it from the band check
         layout = layouts.get(roles.get(s.get("layout"), s.get("layout")), {})
         covers_footer = any(
             d.get("w", 0) > pw * 0.95 and d.get("h", 0) > ph * 0.9
@@ -1249,16 +1286,18 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
                     problems.append(t(
                         "{where}: '{k}' must be a number (inches)",
                         where=where, k=k))
-            # "size" が空間量（インチ）なのは位置引数に size を持つ type
-            # （icon 系・pie）だけ。table 等ではフォントサイズ（pt）なので、
-            # 高さの代わりに使うと 8.5pt を 8.5in と誤読してしまう
+            # "size" is a spatial quantity (inches) only for types that take
+            # size as a positional argument (icon-family, pie). For others
+            # like table it's a font size (pt), so using it in place of the
+            # height would misread e.g. 8.5pt as 8.5in
             spatial_size = fig.get("size", 0) if "size" in order else 0
             x, y = fig.get("x", 0), fig.get("y", 0)
             w = fig.get("w", spatial_size)
             h = fig.get("h", spatial_size)
-            # 表は h を宣言しない。行数から見積もる。Slides のテーブル行には
-            # フォントに応じた最小内寸があり、row_h をそれ未満にしても縮まない
-            # （実測 ≒ 0.28in）。折り返せばさらに伸びるので、これは下限の見積もり
+            # A table doesn't declare h; estimate it from the row count. A
+            # Slides table row has a font-dependent minimum inner height, and
+            # setting row_h below it doesn't shrink the row (measured ≈
+            # 0.28in). Wrapping stretches it further, so this is a lower-bound estimate
             if kind == "table" and isinstance(fig.get("rows"), list):
                 floor = min_table_row_h(fig.get("size", 10))
                 rh = max(fig.get("rowH", fig.get("row_h", 0.34)), floor)
@@ -1276,11 +1315,13 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
                         "{where}: extends vertically past the page ({ph}in) "
                         "(y={y} h={h} → bottom edge {bottom:.2f}in)",
                         where=where, ph=ph, y=y, h=h, bottom=y + h))
-                # 帯への重なりは **表だけ** 検査する。表は h を宣言せず、行数から
-                # 出した高さがほぼそのまま実寸になるので判定が当たる。図形の図は
-                # 宣言した枠の下端に余白があること（posmap の軸ラベル領域など）が
-                # 多く、宣言値で判定すると誤検出になる。図形側は audit_bounds が
-                # 実際に描いた座標で見ている
+                # Overlap with the band is checked for **tables only**. A
+                # table doesn't declare h, so the height derived from its row
+                # count is nearly the actual size, making this check accurate.
+                # Shape-based figures often have padding below their declared
+                # frame's bottom edge (e.g. posmap's axis-label area), so
+                # judging by the declared value would produce false positives.
+                # For those, audit_bounds looks at the coordinates actually drawn
                 elif (kind == "table" and band and not covers_footer
                       and y + h > band[0] + 0.01
                       and isinstance(x, (int, float)) and isinstance(w, (int, float))
@@ -1294,10 +1335,11 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
 
 
 class _StubDeck:
-    """--dry-run で Canvas を動かすためのダミー。API は一切呼ばない。"""
+    """A dummy for driving Canvas under --dry-run. Never calls the API."""
 
-    # ブランドアイコンは画像なので実物を取りに行けない。Canvas 側はこの旗を見て
-    # 同じ大きさの矩形に置き換え、座標の検査だけ通す
+    # Brand icons are images, so the real thing can't be fetched. The Canvas
+    # side checks this flag and substitutes a same-sized rectangle, running
+    # only the coordinate check
     dry = True
 
     def __init__(self):
@@ -1307,14 +1349,14 @@ class _StubDeck:
 
 
 class DryRunDeck(_StubDeck):
-    """TemplateDeck の代わりに置ける --dry-run 用のデッキ。
+    """A --dry-run stand-in for TemplateDeck.
 
-    add_slide / add_page_numbers / commit を API 抜きで受け流すので、コードで
-    デッキを組み立てるスクリプト（scripts/scalar/*.py）は deck をこれに差し替える
-    だけで、座標・文字量の検査だけを走らせられる。
+    Since it passes add_slide / add_page_numbers / commit through without the
+    API, a script that assembles a deck in code (scripts/scalar/*.py) can run
+    only the coordinate/text-volume checks just by swapping in this deck.
 
-    template は TemplateDeck と同じく `.template` として読めるようにしておく。
-    ページ番号を自前で描くスクリプトがここを見に来るため。
+    Like TemplateDeck, the template stays readable as `.template`, since
+    scripts that draw their own page numbers look here for it.
     """
 
     def __init__(self, template: dict | None = None):
@@ -1328,10 +1370,9 @@ class DryRunDeck(_StubDeck):
         return f"{prefix[:40]}_dry_{self._counter:03d}"
 
     def add_slide(self, layout_key, **kw):
-        """TemplateDeck.add_slide と同じ形の戻り値を返す。
+        """Return a value shaped the same as TemplateDeck.add_slide.
 
-        呼び手が ref["layout"] からページ番号の位置を読むことがあるので、
-        slideId だけでは足りない。
+        The caller may read the page-number position from ref["layout"], so slideId alone isn't enough.
         """
         self._n += 1
         self.last = dict(kw, layout=layout_key)
@@ -1351,12 +1392,13 @@ class DryRunDeck(_StubDeck):
 
 
 def audit_figures(template: dict, spec: dict) -> list[str]:
-    """figures を実際に座標へ展開し、重なり・文字溢れを API 抜きで検査する。
+    """Expand figures into actual coordinates and check overlap/text overflow without the API.
 
-    生成してサムネイルを見るまで気づけない不具合を、仕様の段階で拾う。
-    画像は実物を取りに行く必要があるためこの検査からは外れる。
+    Catches at the spec stage defects that would otherwise go unnoticed until
+    the deck is generated and its thumbnail is inspected. Images are excluded
+    from this check because they require fetching the real file.
     """
-    from diagrams import Canvas  # 遅延 import（--dry-run 以外では毎回は要らない）
+    from diagrams import Canvas  # deferred import (not needed on every run outside --dry-run)
 
     out = []
     for i, s in enumerate(spec.get("slides", [])):
@@ -1366,7 +1408,7 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
         canvas = Canvas(_StubDeck(), f"dry_{i}", template)
         try:
             draw_figures(canvas, figs, skip_network=True)
-        except Exception as e:  # 引数の不整合はここで初めて分かることがある
+        except Exception as e:  # an argument mismatch may only surface here
             out.append(t("slides[{i}]: failed to draw figures: {etype}: {e}",
                          i=i, etype=type(e).__name__, e=e))
             continue
@@ -1378,14 +1420,16 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
     return out
 
 
-# ---------- 仕様の検証と組み立て ----------
+# ---------- Spec validation and assembly ----------
 
 def footer_band(template: dict) -> tuple[float, float, float] | None:
-    """マスターが下端に敷く帯（ロゴ・著作権表記）の上端 y と x 範囲を返す。
+    """Return the top y and x range of the band (logo, copyright notice) the master places at the bottom edge.
 
-    ページの下端まで使えると思って図を置くと、ロゴやフッターに重なる。
-    ページサイズだけを見る検査ではこれを拾えないので、装飾の実座標から
-    「ここより下には置けない」線を出す。該当が無ければ None。
+    Placing a figure under the assumption that the whole page down to the
+    bottom edge is usable makes it overlap the logo or footer. A check that
+    only looks at the page size can't catch this, so this derives a "nothing
+    can be placed below here" line from the decoration's actual coordinates.
+    Returns None if there's nothing to derive it from.
     """
     page_h = template.get("pageSize", {}).get("heightInches", 5.625)
     decs = [d for d in template.get("masterDecorations", []) or []
@@ -1403,20 +1447,22 @@ _SLOT_KEYS = ("x", "y", "w", "h")
 
 
 def layout_image_slots(template: dict, layout_key: str) -> list[dict]:
-    """スライドのレイアウトが持つ画像の差し込み枠を返す。"""
+    """Return the image insertion slots a slide layout has."""
     resolved = template.get("roles", {}).get(layout_key, layout_key)
     return (template.get("layouts", {}).get(resolved, {}) or {}).get("imageSlots") or []
 
 
 def resolve_image_slots(template: dict, spec: dict) -> list[str]:
-    """image / aiImage の座標を、レイアウトの差し込み枠から埋める。
+    """Fill in image / aiImage coordinates from the layout's insertion slots.
 
-    テンプレートが「ここに絵を置く」と決めている場所があるなら、そこに置く
-    のが正しい。仕様では x/y/w/h を省略する（枠が複数あるときは "slot": N で
-    選ぶ）。spec をその場で書き換え、補った内容を説明文のリストで返す。
+    If the template has already decided "put the picture here", that's the
+    correct place to put it. In the spec, x/y/w/h are omitted (when there are
+    multiple slots, "slot": N picks one). Rewrites the spec in place and
+    returns a list of explanatory notes about what was filled in.
 
-    fit は省略時 "cover" にする。枠は縦横比まで含めてデザインなので、
-    余白付き（contain）ではなく枠を埋めるのが既定として自然。
+    fit defaults to "cover" when omitted. Since a slot's aspect ratio is part
+    of the design, filling the slot is the more natural default than
+    letterboxing with padding (contain).
     """
     notes: list[str] = []
     for i, s in enumerate(spec.get("slides", [])):
@@ -1459,14 +1505,15 @@ def resolve_image_slots(template: dict, spec: dict) -> list[str]:
 
 
 def audit_body_fit(template: dict, spec: dict) -> list[str]:
-    """本文がプレースホルダの高さに収まるかを、API を呼ばずに見積もる。
+    """Estimate whether the body fits the placeholder's height, without calling the API.
 
-    役割つきの行（見出しなど）は spaceAbove を足すので、素の行数だけで数えると
-    溢れる。溢れは API がエラーにせず、サムネイルを見るまで気づけないため、
-    ここで拾う。
+    A role-tagged line (e.g. a heading) adds spaceAbove, so counting only the
+    raw line count would overflow. The API doesn't error on overflow, and it
+    wouldn't be noticed until the thumbnail is viewed, so this catches it here.
 
-    段落間隔をテンプレート既定のままにしている場合は実際の余白が分からないので、
-    **少なめに見積もる**（見落とすことはあっても、誤検出はしない側に倒す）。
+    When paragraph spacing is left at the template default, the actual margin
+    is unknown, so this **estimates on the low side** (biased toward missing
+    a real overflow rather than raising a false positive).
     """
     out = []
     defaults = spec.get("defaults", {})
@@ -1521,9 +1568,9 @@ def audit_body_fit(template: dict, spec: dict) -> list[str]:
 
 
 def audit_image_slots(template: dict, spec: dict) -> list[str]:
-    """テンプレートに枠があるのに、そこから外れた場所へ画像を置いていないか。
+    """Check whether an image is placed off-slot even though the template has a slot for it.
 
-    枠があること自体に気づかないまま別の場所に置く、という取り違えを拾う。
+    Catches the mistake of placing an image elsewhere without ever noticing the slot exists.
     """
     out = []
     for i, s in enumerate(spec.get("slides", [])):
@@ -1555,7 +1602,7 @@ def _boxes_overlap(a: dict, b: dict) -> float:
 
 
 def validate_spec(template: dict, spec: dict) -> list[str]:
-    """デッキ仕様をテンプレートと突き合わせ、問題点のリストを返す（空なら OK）。"""
+    """Check the deck spec against the template and return a list of problems (empty means OK)."""
     problems = []
     slides = spec.get("slides")
     if not isinstance(slides, list) or not slides:
@@ -1628,7 +1675,7 @@ def validate_spec(template: dict, spec: dict) -> list[str]:
 
 
 def build_from_spec(deck: TemplateDeck, spec: dict) -> list[str]:
-    """spec からスライドを積む。図を描いた場合は検査結果を返す。"""
+    """Stack slides from the spec. Returns audit findings if any figures were drawn."""
     defaults = spec.get("defaults", {})
     warnings: list[str] = []
     for i, s in enumerate(spec.get("slides", [])):
@@ -1648,7 +1695,7 @@ def build_from_spec(deck: TemplateDeck, spec: dict) -> list[str]:
         figs = s.get("figures")
         if not figs:
             continue
-        from diagrams import Canvas  # 図を使う spec のときだけ読み込む
+        from diagrams import Canvas  # only loaded for a spec that uses figures
         canvas = Canvas(deck, ref["slideId"], deck.template)
         draw_figures(canvas, figs)
         for msg in (canvas.audit_bounds() + canvas.audit_connectors()
@@ -1686,8 +1733,8 @@ def main() -> int:
     with open(args.spec, encoding="utf-8") as f:
         spec = json.load(f)
 
-    # 検証より先に、レイアウトが持つ画像枠を座標へ解決しておく
-    # （以降の検証・監査・生成はすべて解決後の座標を見る）
+    # Resolve the layout's image slots to coordinates before validation
+    # (everything downstream — validation, audit, generation — looks at the resolved coordinates)
     slot_notes = resolve_image_slots(template, spec)
     for msg in slot_notes:
         print(f"  {msg}")
@@ -1741,8 +1788,8 @@ def main() -> int:
                 layouts=[s["layout"] for s in spec["slides"]],
             )
         except ValueError as exc:
-            # 差し替え先の取り違えはここで確実に止める。トレースバックを出さず、
-            # 何が起きたかだけを見せる
+            # A wrong replacement target is reliably stopped right here.
+            # No traceback, just a clear message about what happened
             print(f"ERROR: {exc}", file=sys.stderr)
             return 1
     else:
@@ -1757,9 +1804,10 @@ def main() -> int:
             print(f"  page numbers: {n} slides")
         url = deck.commit()
     except Exception:
-        # files.copy 済みのデッキを黙って孤児化させない。自動削除はしない
-        # （削除事故の教訓から、破壊的操作をこちらから増やさない方針）。
-        # --into は既存デッキの差し替えなので案内不要
+        # Don't silently orphan a deck that files.copy already created. It's
+        # not auto-deleted (a lesson learned from a past deletion incident:
+        # the policy is not to add more destructive operations on our side).
+        # --into replaces an existing deck, so no guidance is needed there
         if not args.into:
             print(t("Generation failed; a partially built deck remains: "
                     "{url} — delete it manually if it is not needed",

@@ -1,29 +1,31 @@
-# コンポーザー仕様: enterprise カテゴリ
+*[日本語](enterprise.ja.md)*
 
-enterprise カテゴリ 4 タイプのレンダリング仕様。セキュリティ・エコシステム・SLA・料金のエンタープライズ訴求スライドを構築する。
+# Composer Specification: enterprise Category
 
-> **規約**: `C` = 色定数, `L` = レイアウト定数, `sb` = SlideBuilder インスタンス。
-> 座標単位はインチ。ページサイズ: 10.0" x 5.625"。
+Rendering specification for the 4 types in the enterprise category. Builds enterprise-appeal slides for security, ecosystem, SLA, and pricing.
+
+> **Convention**: `C` = color constants, `L` = layout constants, `sb` = SlideBuilder instance.
+> Coordinate units are inches. Page size: 10.0" x 5.625".
 
 ---
 
 ## 1. compose_security_compliance
 
-セキュリティ認証・コンプライアンス機能を一覧表示するスライド。
+A slide that lists security certifications and compliance features.
 
-- **マスター**: CONTENT
-- **パターン**: Pattern 7 (Icon+Text Row)
-- **レイアウト**: 認証バッジ行 + 機能アイコングリッド
+- **Master**: CONTENT
+- **Pattern**: Pattern 7 (Icon+Text Row)
+- **Layout**: Certification badge row + feature icon grid
 
-### コンテンツ領域
+### Content Area
 
-| 要素 | X | Y | W | H | 備考 |
+| Element | X | Y | W | H | Note |
 |------|----:|----:|----:|----:|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT 標準 |
-| 認証バッジ行 | 0.500 | 0.900 | 9.000 | 0.700 | 認証名を横並び |
-| 機能グリッド | 0.500 | 1.800 | 9.000 | 3.200 | 2列 x N行 or 3列 x N行 |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT standard |
+| Certification badge row | 0.500 | 0.900 | 9.000 | 0.700 | Certification names arranged horizontally |
+| Feature grid | 0.500 | 1.800 | 9.000 | 3.200 | 2 columns x N rows or 3 columns x N rows |
 
-### Python コードテンプレート
+### Python Code Template
 
 ```python
 def compose_security_compliance(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -106,31 +108,31 @@ def compose_security_compliance(sb, slide_id, content, theme, page_num, total_pa
                     valign="TOP")
 ```
 
-### デザインノート
+### Design Notes
 
-- 認証バッジは最大 5 個を想定。6 個以上の場合はフォントサイズを 10pt に縮小
-- 上部アクセントバー `0.025"` で統一感を確保（design-principles.md 準拠）
-- 機能アイコンは `C["primary"]` に統一（60-30-10 ルール）
+- Assumes up to 5 certification badges. For 6 or more, reduce the font size to 10pt
+- The top accent bar `0.025"` maintains visual consistency (per design-principles.md)
+- Feature icons are unified to `C["primary"]` (60-30-10 rule)
 
 ---
 
 ## 2. compose_ecosystem
 
-製品を中心としたエコシステム・連携パートナーを放射状に表示するスライド。
+A slide that displays the product's ecosystem and integration partners radiating around a central node.
 
-- **マスター**: CONTENT
-- **パターン**: Pattern 12 (Venn) 応用 / 放射レイアウト
-- **レイアウト**: 中央に製品ノード + 周囲にカテゴリ別パートナー
+- **Master**: CONTENT
+- **Pattern**: Pattern 12 (Venn) applied / radial layout
+- **Layout**: Central product node + category-grouped partners surrounding it
 
-### コンテンツ領域
+### Content Area
 
-| 要素 | X | Y | W | H | 備考 |
+| Element | X | Y | W | H | Note |
 |------|----:|----:|----:|----:|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT 標準 |
-| 中央ノード | 4.400 | 2.250 | 1.200 | 1.200 | 製品名 + アイコン |
-| パートナー領域 | 0.500 | 0.900 | 9.000 | 4.100 | 放射配置 |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT standard |
+| Center node | 4.400 | 2.250 | 1.200 | 1.200 | Product name + icon |
+| Partner area | 0.500 | 0.900 | 9.000 | 4.100 | Radial arrangement |
 
-### Python コードテンプレート
+### Python Code Template
 
 ```python
 import math
@@ -215,30 +217,30 @@ def compose_ecosystem(sb, slide_id, content, theme, page_num, total_pages=None):
                         alignment="CENTER", valign="MIDDLE")
 ```
 
-### デザインノート
+### Design Notes
 
-- カテゴリ数は 3-5 を想定。6 以上は配置が密になるため `orbit_r` を拡大するか 2 段構成に変更
-- 中心ノードのフォントサイズは製品名の長さに応じて 12-16pt で調整
-- パートナー項目にクラウドアイコンを使う場合は `add_image_from_asset()` で `shared/cloud-icons/` から読み込む
+- Assumes 3-5 categories. For 6 or more, the layout becomes dense, so either expand `orbit_r` or switch to a 2-tier layout
+- The center node's font size is adjusted between 12-16pt depending on product name length
+- When using cloud icons for partner items, load them via `add_image_from_asset()` from `shared/cloud-icons/`
 
 ---
 
 ## 3. compose_support_sla
 
-サポートプラン・SLA 体系を比較カード形式で表示するスライド。
+A slide that displays support plans / SLA tiers as comparison cards.
 
-- **マスター**: CONTENT
-- **パターン**: Pattern 9 (Comparison) 拡張（3列対応）
-- **レイアウト**: 2-3 列の比較カード。推奨プランはハイライト表示
+- **Master**: CONTENT
+- **Pattern**: Pattern 9 (Comparison) extended (supports 3 columns)
+- **Layout**: 2-3 column comparison cards. The recommended plan is highlighted
 
-### コンテンツ領域
+### Content Area
 
-| 要素 | X | Y | W | H | 備考 |
+| Element | X | Y | W | H | Note |
 |------|----:|----:|----:|----:|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT 標準 |
-| カード領域 | 0.500 | 0.900 | 9.000 | 4.100 | 2-3列均等配置 |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT standard |
+| Card area | 0.500 | 0.900 | 9.000 | 4.100 | 2-3 columns evenly spaced |
 
-### Python コードテンプレート
+### Python Code Template
 
 ```python
 def compose_support_sla(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -338,32 +340,32 @@ def compose_support_sla(sb, slide_id, content, theme, page_num, total_pages=None
                         alignment="CENTER", valign="MIDDLE")
 ```
 
-### デザインノート
+### Design Notes
 
-- プラン数は 2-3 を想定（4 以上はカード幅が狭くなり箇条書きが折り返す）
-- 推奨プランの `highlighted: true` は 1 つのみに設定
-- SLA 数値は 28pt で統計カード風に強調。カード内の視覚的階層: プラン名 > SLA > 応答時間 > 機能
-- 2 列レイアウト時のカード幅: `(9.0 - 0.3) / 2 = 4.35"`、3 列: `(9.0 - 0.6) / 3 = 2.80"`
+- Assumes 2-3 plans (4 or more narrows the card width and causes bullet text to wrap)
+- Set `highlighted: true` on only one recommended plan
+- SLA value is emphasized at 28pt like a stat card. Visual hierarchy within the card: plan name > SLA > response time > features
+- Card width for a 2-column layout: `(9.0 - 0.3) / 2 = 4.35"`; for 3 columns: `(9.0 - 0.6) / 3 = 2.80"`
 
 ---
 
 ## 4. compose_pricing
 
-料金体系を比較カード形式で表示するスライド。
+A slide that displays pricing tiers as comparison cards.
 
-- **マスター**: CONTENT
-- **パターン**: Pattern 9 (Comparison) 拡張（3列対応）
-- **レイアウト**: 2-3 列の料金カード。推奨プランはハイライト表示
+- **Master**: CONTENT
+- **Pattern**: Pattern 9 (Comparison) extended (supports 3 columns)
+- **Layout**: 2-3 column pricing cards. The recommended plan is highlighted
 
-### コンテンツ領域
+### Content Area
 
-| 要素 | X | Y | W | H | 備考 |
+| Element | X | Y | W | H | Note |
 |------|----:|----:|----:|----:|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT 標準 |
-| カード領域 | 0.500 | 0.900 | 9.000 | 3.700 | 2-3列均等配置 |
-| 脚注 | 0.500 | 4.750 | 9.000 | 0.300 | オプション |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 | CONTENT standard |
+| Card area | 0.500 | 0.900 | 9.000 | 3.700 | 2-3 columns evenly spaced |
+| Footnote | 0.500 | 4.750 | 9.000 | 0.300 | Optional |
 
-### Python コードテンプレート
+### Python Code Template
 
 ```python
 def compose_pricing(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -461,18 +463,18 @@ def compose_pricing(sb, slide_id, content, theme, page_num, total_pages=None):
                     alignment="START", valign="MIDDLE")
 ```
 
-### デザインノート
+### Design Notes
 
-- 料金表は support_sla と同じ比較カードパターンだが、価格を最大の視覚要素（28pt Bold）として配置
-- プラン名 > 価格 > 機能一覧の視覚的階層を維持
-- 脚注は税別表示・条件等の注記に使用（10pt、`textMuted`）
-- 3 列超の場合はテーブル形式（`compose_table`）への切替を推奨
+- The pricing table uses the same comparison-card pattern as support_sla, but the price is placed as the largest visual element (28pt bold)
+- Maintains the visual hierarchy of plan name > price > feature list
+- The footnote is used for notes such as tax exclusions or conditions (10pt, `textMuted`)
+- For more than 3 columns, switching to a table layout (`compose_table`) is recommended
 
 ---
 
-## 共通事項
+## Common Notes
 
-### CONTENT マスター座標（全コンポーザー共通）
+### CONTENT Master Coordinates (Common to All Composers)
 
 ```
 タイトル:   (0.323, 0.303) w=9.354 h=0.437
@@ -481,20 +483,20 @@ Body 終了:  y=5.208 (contentBottom)
 フッター:   y=5.208 以下（ロゴ・著作権・ページ番号）
 ```
 
-### テキスト制約
+### Text Constraints
 
-| 要素 | 日本語上限 | 英語上限 |
+| Element | Japanese Limit | English Limit |
 |------|-----------|---------|
-| アクションタイトル | 50文字 | 100文字 |
-| 認証名（security_compliance） | 20文字 | 40文字 |
-| カテゴリ名（ecosystem） | 12文字 | 24文字 |
-| プラン名（support_sla / pricing） | 12文字 | 24文字 |
-| 機能箇条書き | 40文字 | 80文字 |
-| 脚注 | 60文字 | 120文字 |
+| Action title | 50 chars | 100 chars |
+| Certification name (security_compliance) | 20 chars | 40 chars |
+| Category name (ecosystem) | 12 chars | 24 chars |
+| Plan name (support_sla / pricing) | 12 chars | 24 chars |
+| Feature bullet | 40 chars | 80 chars |
+| Footnote | 60 chars | 120 chars |
 
-### パターンマッピング
+### Pattern Mapping
 
-| コンポーザー | 主要パターン | 補助パターン |
+| Composer | Primary Pattern | Secondary Pattern |
 |------------|------------|------------|
 | `compose_security_compliance` | Pattern 7 (Icon+Text) | -- |
 | `compose_ecosystem` | Pattern 12 (Venn) | -- |

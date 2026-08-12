@@ -25,8 +25,8 @@ DOC = ROOT / "references/slide-pattern-catalog.md"
 IMG_DIR = ROOT / "references/images/slide-patterns"
 IMG_REL = "images/slide-patterns"
 
-# 見出しに含まれる安定した語 -> 画像ファイル名。番号ではなく語で対応づけるので、
-# ページを差し込んでも既存の画像名は変わらない。
+# stable word found in the heading -> image file name. Matched by word rather
+# than by number, so inserting a page doesn't change existing image names.
 SLUGS = [
     ("骨格A", "skeleton-a-full-width"), ("骨格B", "skeleton-b-figure-left-kicker-right"),
     ("骨格C", "skeleton-c-two-figures"), ("骨格D", "skeleton-d-two-rows"),
@@ -51,7 +51,7 @@ SLUGS = [
     ("意思決定事項", "decisions"), ("次のステップ", "next-steps"), ("付録:", "appendix-index"),
 ]
 
-# 短い見出しと、lead_in を持たないページの使いどころ
+# Short headings, and the use case for pages without a lead_in
 NAME = {
     "exec-summary": "エグゼクティブサマリー", "agenda": "アジェンダ",
     "storyline": "ストーリーライン", "ghost-deck": "ゴーストデッキ",
@@ -128,8 +128,9 @@ SHORT = {
 
 
 def slug_for(title: str) -> str | None:
-    # 長い語から照合する。"推移:" は "内訳の推移:" にも含まれるので、宣言順に
-    # 前方一致させると 2 ページが同じスラグに潰れる。
+    # Match starting from the longest word. "推移:" is also contained in
+    # "内訳の推移:", so matching by declaration order as a prefix would
+    # collapse the two pages onto the same slug.
     for frag, slug in sorted(SLUGS, key=lambda p: -len(p[0])):
         if frag in title:
             return slug
@@ -154,7 +155,7 @@ def fig_types(slide: dict) -> list[str]:
 
 
 def sections(slides: list) -> list[dict]:
-    """SECTION 見出しで区切り、パターンのページだけを拾う。"""
+    """Split on SECTION headings and pick up only pattern pages."""
     out, cur = [], None
     for i, s in enumerate(slides):
         lay = s.get("layout")
@@ -185,7 +186,7 @@ def main() -> int:
     S = spec["slides"]
     secs = sections(S)
 
-    # 画像の取り込み（--thumbs 指定時のみ）。スライド番号は 1 始まり。
+    # Import images (only when --thumbs is given). Slide numbers are 1-based.
     if args.thumbs:
         src = Path(args.thumbs)
         IMG_DIR.mkdir(parents=True, exist_ok=True)

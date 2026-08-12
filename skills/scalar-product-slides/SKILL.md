@@ -17,6 +17,8 @@ description: >-
   (use scalar-proposal-slides).
 ---
 
+*[日本語](SKILL.ja.md)*
+
 # Scalar Product Introduction Slides
 
 Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running

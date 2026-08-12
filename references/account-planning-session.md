@@ -1,41 +1,49 @@
-# Account Planning Session スライド作成手順
+*[日本語](account-planning-session.ja.md)*
 
-Account Planning Session（以下 APS）用のデッキを、事前準備 → ワークショップ →
-サマリー化 → 生成の順に組み立てるための手順書。
+# Account Planning Session Deck Creation Procedure
 
-## 0. この文書の出典と扱い
+A procedure for building the deck for an Account Planning Session (APS
+below) in the order preparation → workshop → summarization → generation.
 
-- 元資料: `FY17_AP_Template_Training_Public.pptx`（Oracle Key Account PMO、
-  2016-06-29、106 ページ）。
-- 元資料から取ったもの: **成果物の 2 分類、3 フェーズの流れ、22 種類のページ
-  定義、ワークショップの進め方、各ページの情報源と考慮点**。
-- Scalar 向けに読み替えたもの: 製品名・組織名・レビュー体制・金額単位。
-  読み替え表は §12。
-- 関連ドキュメント: `skills/scalar-account-planning-session/SKILL.md`（APS の
-  進め方）、`skills/scalar-account-plan/SKILL.md`（顧客ごとの活動計画台帳）、`references/scalar/sales-playbook.md`（ステージとゲート定義）、
-  `references/account-planning-template-plan.md`（ページテンプレートの実装計画）。
+## 0. Source and Handling of This Document
 
-元資料は「テンプレートの書式に厳密に従う必要はなく、参考にするためのサンプル
-としての使い方でも OK」と明記している。この手順書も同じ立場を取る。**埋める
-ことが目的ではなく、埋まらない欄が「まだ聞けていないこと」を示すことが目的。**
+- Source material: `FY17_AP_Template_Training_Public.pptx` (Oracle Key
+  Account PMO, 2016-06-29, 106 pages).
+- Taken from the source material: **the 2-way classification of
+  deliverables, the 3-phase flow, the 22 page definitions, how to run the
+  workshop, and each page's information sources and considerations**.
+- Adapted for Scalar: product names, organization names, the review
+  structure, and currency units. See the mapping table in §12.
+- Related documents: `skills/scalar-account-planning-session/SKILL.md`
+  (how to run the APS), `skills/scalar-account-plan/SKILL.md` (per-customer
+  activity plan ledger), `references/scalar/sales-playbook.md` (stage and
+  gate definitions), `references/account-planning-template-plan.md` (page
+  template implementation plan).
 
-## 1. 最初に決めること: どちらの成果物を作るのか
+The source material explicitly states that "you don't need to follow the
+template format strictly — using it as a reference sample is fine too."
+This procedure takes the same stance. **The goal isn't to fill in every
+field — an unfilled field is meant to show what you haven't been able to
+ask about yet.**
 
-元資料は Account Plan を 2 つの別物として分けている。この区別を最初に確定しない
-と、ページ数も密度も決まらない。
+## 1. The First Decision: Which Deliverable Are You Building
 
-| | **Plan Document**（アカウントチーム用） | **Session 資料**（レビュー用） |
+The source material treats the Account Plan as two distinct deliverables.
+Unless you settle this distinction first, neither the page count nor the
+density can be decided.
+
+| | **Plan Document** (for the account team) | **Session Materials** (for review) |
 |---|---|---|
-| 目的 | 上流エンゲージメントのための戦略計画 | 30 分レビューでの意思決定 |
-| 読み手 | アカウントチーム、Sales VP、Executive Sponsor | レビュー実施者（役員） |
-| ページ数 | 制約なし。過去資産があると 100 ページ超もある | **1 桁ページ + Appendix** |
-| 更新 | 合宿・APS で大改訂、以降は随時マイナー更新 | APS のたびに作成・改訂 |
-| 密度 | 読み物として成立させる | 1 ページ 1 メッセージ |
+| Purpose | Strategic plan for upstream engagement | Decision-making in a 30-minute review |
+| Audience | Account team, Sales VP, Executive Sponsor | Review conductors (executives) |
+| Page count | No constraint. Can exceed 100 pages with legacy assets | **Single-digit pages + Appendix** |
+| Updates | Major revision at offsites/APS, minor updates as needed afterward | Created/revised at every APS |
+| Density | Written to stand on its own as a document | One message per page |
 
-本手順書は **両方を 1 本のパイプラインで作る**。Phase A〜C で Plan Document を
-組み立て、そこから Session 資料を抜き出す（§7）。
+This procedure **builds both in a single pipeline**. Phases A–C assemble
+the Plan Document, and the Session Materials are extracted from it (§7).
 
-## 2. 全体の流れ
+## 2. Overall Flow
 
 ```
   [事前準備]                    [ワークショップ]           [ワークショップ後]
@@ -65,329 +73,393 @@ Account Planning Session（以下 APS）用のデッキを、事前準備 → �
                         └────────────────────────────┘
 ```
 
-作成主体が Phase ごとに違う。ここを取り違えるとワークショップが資料作成会に
-なる。
+Who produces the material differs by phase. Get this wrong and the
+workshop turns into a document-drafting session.
 
-| Phase | 誰が作るか | いつ |
+| Phase | Who produces it | When |
 |---|---|---|
-| A | AE / SC が事前に用意 | D-14 〜 D-3 |
-| B | アカウントチーム全員でワークショップ形式 | 当日 午前〜午後 |
-| C | ワークショップの結論を AE が整形 | 当日午後 〜 D+3 |
-| Exec Summary | AE（レビュー前日までに） | D+3 〜 D+7 |
+| A | Prepared in advance by the AE / SC | D-14 to D-3 |
+| B | Workshop format with the whole account team | Day of, morning through afternoon |
+| C | AE formalizes the workshop's conclusions | Day of (afternoon) to D+3 |
+| Exec Summary | AE (by the day before the review) | D+3 to D+7 |
 
-## 3. Step 1 — 準備（D-14 〜 D-7）
+## 3. Step 1 — Preparation (D-14 to D-7)
 
-### 3.1 対象と体制を確定する
+### 3.1 Confirm the Target and the Team
 
-- 対象アカウントと対象範囲（グループ全体か、特定の事業会社／事業部か）。
-- 参加者: AE、SC、必要に応じてパートナー担当、経営層（オープニングのみ）。
-- 日程: 元資料の標準は **9:00–15:00 の 1 日**（§5.1）。半日に圧縮する場合は
-  Phase B のブレストを 90 分確保し、Phase C を後日に回す。
-- ゴールの明示: このセッションで何を決めて終わるのか（例: Blueprint テーマの
-  優先順位と、次の 90 日のアクション）。
+- The target account and its scope (the entire group, or a specific
+  operating company/business unit).
+- Participants: AE, SC, partner contacts as needed, and executives (opening
+  only).
+- Schedule: the source material's standard is **a single day from
+  9:00–15:00** (§5.1). If compressing to half a day, secure 90 minutes for
+  the Phase B brainstorm and push Phase C to a later date.
+- State the goal explicitly: what should be decided by the end of this
+  session (e.g., the priority order of Blueprint themes and the next 90
+  days of actions).
 
-### 3.2 既存資産を棚卸しする
+### 3.2 Inventory Existing Assets
 
-新規作成の前に、既に社内にあるものを探す。元資料も「通常は過去の APS・WPS・
-合宿等の資料の中にあるのでそれをベースにする」としている。
+Before creating anything new, look for what already exists internally. The
+source material also states that "this is usually found in materials from
+past APS, WPS, offsites, etc., so use that as the base."
 
-- 過去の Account Plan / WPS / 提案書 / 合宿資料
-- `accounts/<顧客>/account.json`（活動台帳）と生成済み Markdown
-- 直近の議事録・訪問記録・メールスレッド
+- Past Account Plans / WPS / proposals / offsite materials
+- `accounts/<customer>/account.json` (activity ledger) and generated
+  Markdown
+- Recent meeting minutes, visit records, and email threads
 
-### 3.3 情報源をそろえる
+### 3.3 Gather Information Sources
 
-| 情報源 | 主に効くページ |
+| Information source | Pages it mainly feeds |
 |---|---|
-| 有価証券報告書、決算説明資料、アニュアルレポート | Corporate Overview, SWOT |
-| 中期経営計画 | Strategy Map (Step 1), Corporate Overview |
-| 顧客 Web サイト、プレスリリース | Corporate Overview, Strategy Map |
-| 新聞・雑誌記事、アナリストコメント | SWOT, Strategy Map |
-| 社内の製品担当・SC への照会 | Heatmap, TAM & SOW |
-| 訪問記録・議事録・名刺 | Influence Map, Account Health |
-| 過去の受注実績 | Historical Spend |
+| Securities reports, earnings materials, annual reports | Corporate Overview, SWOT |
+| Mid-term management plan | Strategy Map (Step 1), Corporate Overview |
+| Customer website, press releases | Corporate Overview, Strategy Map |
+| Newspaper/magazine articles, analyst commentary | SWOT, Strategy Map |
+| Inquiries to internal product owners / SCs | Heatmap, TAM & SOW |
+| Visit records, meeting minutes, business cards | Influence Map, Account Health |
+| Past deal history | Historical Spend |
 
-### 3.4 事前配布（D-3）
+### 3.4 Pre-Distribution (D-3)
 
-- Phase A の資料一式を参加者に配布する。
-- 当日の進め方、アジェンダ、役割分担を先に決めて共有する。
-- 参加者側の宿題: 配布資料を読む／同業種の国内外事例を調べる／これまでの顧客
-  訪問の相手と議事録を確認する。
+- Distribute the full set of Phase A materials to participants.
+- Decide and share the day's flow, agenda, and role assignments in
+  advance.
+- Homework for participants: read the distributed materials / research
+  domestic and international examples in the same industry / review who
+  they've met with on past customer visits and the corresponding minutes.
 
-## 4. Step 2 — Phase A: 事前資料を作る
+## 4. Step 2 — Phase A: Build the Preparation Materials
 
-各ページの目的・情報源・つまずきどころ。テンプレート ID は
-`references/account-planning-template-plan.md` で定義するもの。
+The purpose, information sources, and common pitfalls for each page.
+Template IDs are those defined in
+`references/account-planning-template-plan.md`.
 
 ### 4.1 Corporate Overview
 
-対象企業の主要事業、売上・利益の推移、社員数などのプロファイルに加えて、
-**経営レベルの課題・今後の戦略・経営層の発言**を記述する。ここで整理した経営
-ビジョン／目標／戦略／課題／イニシアチブが Strategy Map の入力になる。
+In addition to a profile of the target company's main businesses,
+revenue/profit trends, headcount, and so on, describe **management-level
+challenges, future strategy, and statements from executives**. The
+management vision / goals / strategy / challenges / initiatives organized
+here become the input to the Strategy Map.
 
-- 判断基準: プロファイル欄が埋まっただけの状態は未完成。経営層の発言が
-  1 つも引けていないなら情報収集が足りていない。
+- Judgment criterion: a state where only the profile fields are filled in
+  is incomplete. If you can't cite even one statement from an executive,
+  your information gathering isn't sufficient.
 
 ### 4.2 SWOT Analysis
 
-内部要因（強み・弱み）と外部要因（機会・脅威）に分けて経営環境を整理する。
+Organize the business environment by splitting it into internal factors
+(strengths/weaknesses) and external factors (opportunities/threats).
 
-- 内部要因の例: 製品力・技術力・開発力、ブランド・顧客基盤・地域展開、経営効率
-  （コスト、SCM、スピード）、組織・人材・営業力。
-- 外部要因の例: 景気・為替・規制動向、競合と代替手段、市場ニーズの変化、
-  技術革新によるビジネスモデルの変化。
-- 判断基準: 自社にとっての機会を「顧客にとっての機会」の欄に書かない。
+- Examples of internal factors: product/technical/development capability;
+  brand, customer base, regional footprint; management efficiency (cost,
+  SCM, speed); organization, talent, sales capability.
+- Examples of external factors: economic conditions, exchange rates,
+  regulatory trends; competitors and substitutes; changes in market needs;
+  business-model change driven by technological innovation.
+- Judgment criterion: don't write an opportunity for your own company into
+  the "opportunity for the customer" field.
 
-### 4.3 Strategy Map (Step 1 — 顧客分析まで)
+### 4.3 Strategy Map (Step 1 — Through Customer Analysis)
 
-顧客の Goal（経営層の要求）／ Strategy（役員の要求）／ Tactic（管理層の要求）
-を階層で示し、必要に応じて最上位に経営ビジョン、その下に Objective 層を足す。
-重要アカウントでは **イニシアチブまでブレークダウンする**。
+Show the customer's Goal (what the management level requires) / Strategy
+(what executives require) / Tactic (what management-level staff require)
+as a hierarchy, and, as needed, add the management vision at the top and
+an Objective layer below it. For important accounts, **break it down all
+the way to initiatives**.
 
-- 各項目に「誰の要求か」（Board / CEO / COO / CFO / CIO …）を添える。
-- 想定ベース・仮説ベースの項目を含めてよい。ただし §11 のとおり確度を分ける。
-- 海外拠点のイニシアチブも対象に含める。
-- イニシアチブは、部門最適の改善ではなく Transformation / Innovation を狙う
-  大きなものが望ましい。
+- Attach "whose requirement" (Board / CEO / COO / CFO / CIO …) to each
+  item.
+- Assumption-based / hypothesis-based items may be included, but
+  distinguish their confidence level as described in §11.
+- Include initiatives from overseas locations too.
+- Initiatives should ideally be large ones aimed at Transformation /
+  Innovation, not departmental-optimization improvements.
 
 ### 4.4 Historical Spend
 
-過去 3 年の実績を製品別に示す。サブスクリプション／年額課金の数字は一括の
-売上と足し合わせず、別に集計する。
+Show the past 3 years of results by product. Don't add subscription /
+annual-billing figures together with one-time revenue — tally them
+separately.
 
 ### 4.5 Heatmap
 
-レイヤ別・システム別の導入状況（フットプリント）、近い将来の計画、3 年間で
-狙う領域をまとめる。現状 → 3 年後ポテンシャルを矢印で対比させ、各行に
-**どのイニシアチブに紐づくか**と競合状況を書く。
+Summarize adoption status (footprint) by layer and by system, near-term
+plans, and the areas targeted over the next 3 years. Contrast current
+state → 3-year potential with an arrow, and note in each row **which
+initiative it ties to** and the competitive situation.
 
-- 3 値評価: 全社標準 / 足がかりあり・伸長中 / ほぼ未進出。
-- 最新状況は社内の製品担当・SC に照会して反映する。
+- Three-value rating: company-wide standard / has a foothold and growing /
+  almost no penetration.
+- Confirm the latest status with internal product owners / SCs and reflect
+  it.
 
 ### 4.6 TAM & SOW Analysis
 
-顧客の TAM（自社が取り得る市場規模）と SOW（財布内シェア）のベースラインと
-目標をグラフで示す。顧客の IT 予算の開示を受けるなど実 TAM が分かった場合は
-その数字で置き換えてよい。ベースラインは 3 年計画の直前 3 年平均、目標は計画
-3 年間の平均。
+Show the customer's TAM (the addressable market size for us) and SOW
+(share of wallet) baseline and target as a graph. If the actual TAM
+becomes known — e.g., through a disclosure of the customer's IT budget —
+that figure may replace the estimate. The baseline is the 3-year average
+immediately preceding the 3-year plan; the target is the average over the
+3 plan years.
 
 ### 4.7 Influence Map
 
-対象イニシアチブの意思決定に関与する Executive を中心に、LOB と IT 部門の
-ステークホルダーをマップ化する。
+Map the stakeholders across LOB and IT, centered on the Executives
+involved in decision-making for the target initiative.
 
-- IT 部門だけでなく事業側を必ず含める。
-- 意思決定上の権限・経路・役割、および Inner Circle を明示する。
-- 重要アカウントでは海外のステークホルダーも記載する。
-- 既存の `b2b-sales/influence-map` / `influence-map-org` をそのまま使える。
+- Always include the business side, not just the IT department.
+- Make the decision-making authority, path, role, and Inner Circle
+  explicit.
+- For important accounts, also list overseas stakeholders.
+- The existing `b2b-sales/influence-map` / `influence-map-org` can be used
+  as-is.
 
 ### 4.8 Account Health
 
-アカウントの健全性を 4 側面 × 5 指標で評価し、総合スコアを四半期トレンドで
-示す。
+Rate the account's health across 4 dimensions × 5 metrics each, and show
+the overall score as a quarterly trend.
 
-| 側面 | 指標 |
+| Dimension | Metrics |
 |---|---|
-| Account Team Effectiveness | アカウント戦略 / リード / Exec Sponsor / サポート責任者 / アドバイザー |
-| Relationship Quality | Executive Engagement / 顧客満足 / 関係の広さ / パートナー / 顧客プログラム参加 |
-| Product Adoption | フットプリント / アーキテクチャ / ロードマップ / ライセンス消化 / Blueprint 数 |
-| Revenue Performance | SOW / ライセンス実績 / サービス実績 / パイプライン / 売上 |
+| Account Team Effectiveness | Account strategy / lead / Exec Sponsor / support owner / advisor |
+| Relationship Quality | Executive Engagement / customer satisfaction / breadth of relationship / partners / participation in customer programs |
+| Product Adoption | Footprint / architecture / roadmap / license consumption / number of Blueprints |
+| Revenue Performance | SOW / license results / services results / pipeline / revenue |
 
-- 各指標は 3 段階（要改善 / 標準 / 優良）で、判定基準を別ページに置く。
-- 判断基準: 全部が「標準」で並ぶ評価は評価をしていない。
+- Rate each metric on a 3-point scale (needs improvement / standard /
+  excellent), with the rating criteria on a separate page.
+- Judgment criterion: a rating where everything lines up as "standard"
+  isn't really a rating.
 
 ### 4.9 Vision/Strategy for Growth
 
-このアカウントに対する 3 年間の成長ビジョンと戦略を簡潔に示す。顧客の経営上の
-優先事項の分析と自社ポジションを踏まえ、関係をどう高めるか、入り込むべき事業
-領域、拡張を狙う製品スタックを示す。競合から既存導入を守るアプローチが必要な
-場合はそこにも触れる。
+Concisely present the 3-year growth vision and strategy for this account.
+Based on an analysis of the customer's management priorities and our
+position, show how to deepen the relationship, which business areas to
+move into, and which product stack to expand. If an approach to defend an
+existing deployment against competitors is needed, touch on that too.
 
-元資料の 4 領域構成:
+The source material's 4-area structure:
 
-1. 顧客の変革的な事業目標へのアライン（主要イニシアチブの成熟度と経過期間）
-2. 自社の GTM 重点領域のポジショニング（狙うべき追加領域）
-3. フットプリント拡張（別の事業部門 / 業務プロセス / スタック階層へ）
-4. Executive Engagement のポイント（実施済みの役員間会談、次回予定）
+1. Alignment with the customer's transformative business goals (maturity
+   and elapsed time of key initiatives)
+2. Positioning of our GTM focus areas (additional areas to target)
+3. Footprint expansion (into other business units / business processes /
+   layers of the stack)
+4. Executive Engagement points (executive-to-executive meetings held, next
+   ones planned)
 
-## 5. Step 3 — Phase B: ワークショップ
+## 5. Step 3 — Phase B: The Workshop
 
-### 5.1 アジェンダ（元資料の例、1 日開催）
+### 5.1 Agenda (source material's example, one-day session)
 
-| 時刻 | 時間 | 内容 |
+| Time | Duration | Content |
 |---|---|---|
-| 9:00–9:10 | 10 分 | オープニング（役員挨拶、目的とアウトプットの確認） |
-| 9:10–9:20 | 10 分 | アカウント責任者からのメッセージ |
-| 9:20–10:20 | 60 分 | アカウント状況の確認と現状 Plan の発表 |
-| 10:20–10:30 | 10 分 | 休憩 |
-| 10:30–12:00 | 90 分 | 顧客の課題・戦略構想・CSF に基づくソリューションとポテンシャルのマッピング（Blueprint テーマ案の洗い出し）。製品領域別のチームに分かれる |
-| 12:00–13:00 | 60 分 | 昼食 |
-| 13:00–14:00 | 60 分 | ポテンシャルの見極めとテーマ案の優先順位付け |
-| 14:00–14:45 | 45 分 | 実行計画の作成 |
-| 14:45–15:00 | 15 分 | クロージング |
+| 9:00–9:10 | 10 min | Opening (executive remarks, confirm purpose and outputs) |
+| 9:10–9:20 | 10 min | Message from the account owner |
+| 9:20–10:20 | 60 min | Review the account situation and present the current Plan |
+| 10:20–10:30 | 10 min | Break |
+| 10:30–12:00 | 90 min | Map solutions and potential based on the customer's challenges, strategic vision, and CSFs (surface candidate Blueprint themes). Split into teams by product area |
+| 12:00–13:00 | 60 min | Lunch |
+| 13:00–14:00 | 60 min | Assess potential and prioritize candidate themes |
+| 14:00–14:45 | 45 min | Draft the execution plan |
+| 14:45–15:00 | 15 min | Closing |
 
-### 5.2 進め方
+### 5.2 How to Run It
 
-- 10:30 の枠は付箋（Post-it）を使ったブレスト形式で行う。清書は後工程。
-- 各製品担当は、単体および他製品との組み合わせで提供できる価値を洗い出す。
-  価値の型: 競合にはできない価値／実現コストの削減／TCO の削減／実現期間の
-  短縮／実現リスクの回避。
-- 複数製品領域にまたがり、価値を大きく訴求できるソリューションを優先する。
+- Run the 10:30 slot as a brainstorm using sticky notes (Post-its).
+  Cleaning it up into final form happens in a later step.
+- Each product owner surfaces the value they can deliver, both standalone
+  and in combination with other products. Value types: value competitors
+  can't match / reduced cost to realize / reduced TCO / shorter time to
+  realize / avoided realization risk.
+- Prioritize solutions that span multiple product areas and can make a
+  strong value case.
 
-### 5.3 アウトプット 1: Strategy Map (Step 2 — Blueprint テーマのマッピング)
+### 5.3 Output 1: Strategy Map (Step 2 — Mapping Blueprint Themes)
 
-Phase A で作った Strategy Map の上に、上流アプローチで提案可能と考えられる
-テーマをマップする。**Account Planning で最も重要なプロセス。** 顧客の
-Innovation / Transformation イニシアチブのうち、自社スタックが価値を出せる
-領域を洗い出す。
+On top of the Strategy Map built in Phase A, map the themes considered
+proposable through an upstream approach. **This is the single most
+important process in Account Planning.** Surface, among the customer's
+Innovation / Transformation initiatives, the areas where our stack can
+deliver value.
 
-分析用の Strategy Map をそのまま報告資料に載せると読めないことが多い。報告用
-には「顧客イニシアチブ × 提案テーマ × 提供価値 × 製品」を並べた別フォーマット
-（Customer Initiative Alignment）に整形し直す。
+Putting the analysis-use Strategy Map directly into the report material
+often makes it unreadable. For reporting, reformat it into a separate
+format (Customer Initiative Alignment) that lines up "customer initiative
+× proposed theme × value delivered × product."
 
-### 5.4 アウトプット 2: Blueprint Map
+### 5.4 Output 2: Blueprint Map
 
-マッピングしたテーマを 1 行 1 テーマの表に一覧化する。列は元資料に準拠:
+List the mapped themes in a table with one theme per row. Columns follow
+the source material:
 
-| Blueprint 名 | 顧客課題 | ソリューション案 | 製品 | なぜ自社か（顧客価値・優位性） | 時期 | 金額 |
+| Blueprint name | Customer challenge | Proposed solution | Product | Why us (customer value / advantage) | Timing | Amount |
 
-- 顧客のビジネス課題に対して、自社の価値が解決策として位置づくように書く。
-- 「製品名だけ」の行は課題が特定できていないサイン。
+- Write it so that our value is positioned as the solution to the
+  customer's business challenge.
+- A row that's "just a product name" is a sign the challenge hasn't been
+  identified.
 
-### 5.5 アウトプット 3: Blueprint Summary
+### 5.5 Output 3: Blueprint Summary
 
-重要テーマについて 1 テーマ 1 ページで詳細化する。欄は元資料に準拠:
-顧客の変革課題／ソリューション概要／製品・重点施策／自社の差別化要因／
-ベネフィットとドライバー／関与する社内ロール／パートナー／参照事例／
-開始日・クローズ予定日／事業側スポンサー／IT スポンサー／対象事業部／
-現行パイプライン金額／3 年ポテンシャル／案件 ID／競合／関連コミュニティ。
+Detail important themes one theme per page. Fields follow the source
+material: customer transformation challenge / solution overview / product
+& key initiative / our differentiator / benefit and driver / internal
+roles involved / partner / reference case / start date & expected close
+date / business sponsor / IT sponsor / target business unit / current
+pipeline amount / 3-year potential / deal ID / competitors / related
+community.
 
-- ここでいう Close は**案件の受注ではなく Blueprint（提案テーマ）の合意**を
-  指す。混同しない。
-- テーマが仮説ベース → 顧客提示 → 共同検討とステージが進むにつれて記述の精度
-  を上げる。
+- "Close" here means **agreement on the Blueprint (proposed theme), not
+  winning the deal**. Don't conflate the two.
+- As the theme progresses through the stages hypothesis-based → presented
+  to customer → joint study, increase the precision of the description.
 
-## 6. Step 4 — Phase C: 優先順位と実行計画
+## 6. Step 4 — Phase C: Priorities and Execution Plan
 
 ### 6.1 Prioritization
 
-各イニシアチブを「顧客にとっての価値」と「自社のポジション」で評価し、
-マッピングして優先順位を付ける。
+Rate each initiative on "value to the customer" and "our position," map
+them, and prioritize.
 
-- 顧客価値の軸: 戦略適合、経済的ベネフィット、無形のベネフィット。
-- 自社ポジションの軸: フットプリントのポテンシャル、顧客との関係、パートナー
-  の支援。
-- 表側には、イニシアチブごとに 目的・期待価値／意思決定ステージ／キーパーソン
-  （スポンサー・影響者・決裁者）／自社のアライン状況と実績／3 年ポテンシャル／
-  顧客側の優先度 を並べる。
-- 2 軸マップとスコア表は**両方**あると議論が速い（片方だけだと「なぜその位置
-  なのか」が説明できない）。
+- Customer-value axis: strategic fit, economic benefit, intangible
+  benefit.
+- Our-position axis: footprint potential, customer relationship, partner
+  support.
+- In the table, line up per initiative: purpose & expected value /
+  decision-making stage / key people (sponsor, influencer, decision-maker)
+  / our alignment status and track record / 3-year potential / the
+  customer's priority.
+- Having **both** the 2-axis map and the score table speeds up the
+  discussion (with only one, you can't explain "why that position").
 
 ### 6.2 3 Year Execution Plan
 
-テーマ／プロジェクトごとに 3 年間の実行計画を主要マイルストーンで図示する。
-マイルストーンの型: イベント、役員招聘、インサイト提供、共同検討、ロードマップ
-策定、案件クローズ。重要テーマは 1 ページ 1 テーマで詳細化してよい。
+Diagram the 3-year execution plan per theme/project using key milestones.
+Milestone types: event, executive visit, insight delivery, joint study,
+roadmap development, deal close. Important themes may be detailed one
+theme per page.
 
 ### 6.3 Action Plan
 
-テーマ／プロジェクトごとに、推進のための具体的なアクションを時系列で書く。
-列は 割当日 / アクション / 担当 / 期日 / 成果。
+For each theme/project, write out the concrete actions to drive it forward
+in chronological order. Columns are: assigned date / action / owner / due
+date / outcome.
 
-**S.M.A.R.T. を満たすこと**: Specific（具体的）、Measurable（定量化できる）、
-Attainable（努力で達成できる）、Realistic（達成が合理的）、Time-bound（期限が
-ある）。
+**Must satisfy S.M.A.R.T.**: Specific, Measurable, Attainable, Realistic,
+Time-bound.
 
-- 既存の `scalar-ae/action-plan` をそのまま使える。
-- 「◯◯を検討する」は成果ではない。誰の何がどう変わるかを書く。
+- The existing `scalar-ae/action-plan` can be used as-is.
+- "Consider XX" is not an outcome. Write who's what changes and how.
 
 ### 6.4 Executive Engagement Plan
 
-顧客役員とのエンゲージメント計画を一覧化する。列は
-レベル / 顧客側役員 / 自社側役員 / 頻度・実施日 / 現状とゴール。
+List the engagement plan with customer executives. Columns are: level /
+customer-side executive / our-side executive / frequency & date / current
+state and goal.
 
-- 定例は頻度、単発は予定時期を明示する。
-- アカウントに 1 つ作れば足りる（テーマ別に作らなくてよい）。大型案件のみ
-  個別に切り出す。
+- For recurring engagements, state the frequency; for one-off engagements,
+  state the planned timing.
+- One per account is enough (no need to make one per theme). Only large
+  deals get their own separate one.
 
 ### 6.5 Event Plan
 
-イベント（自社カンファレンス、顧客向けプライベートイベント、役員招聘など）を、
-どの役員・キーパーソンに対して、どんな成果を得る場として使うかをまとめる。
-列は イベント / 時期 / 対象顧客 / 自社側の登壇者・キーパーソン / 得たい成果。
+Summarize which events (our conferences, private customer events,
+executive visits, etc.) are used as an occasion to reach which
+executives/key people and to obtain what outcome. Columns are: event /
+timing / target customer / our speaker/key person / desired outcome.
 
 ### 6.6 Flight Plan
 
-3 年間の活動を 1 枚で可視化する。Blueprint Map の各テーマをバブルで表し、
-バブル内にテーマ名と金額を書く。横軸にクローズ時期、縦軸に金額、色で
-ステータス（テーマ承認済み／案件化済み／新規発生）を示す。
+Visualize 3 years of activity on a single page. Represent each theme from
+the Blueprint Map as a bubble, with the theme name and amount written
+inside it. Close timing on the horizontal axis, amount on the vertical
+axis, and color for status (theme approved / turned into a deal / newly
+emerged).
 
 ### 6.7 3 Year Financial Potential / Projections
 
-テーマ由来と通常商流由来の売上ポテンシャルを 3 年分設定する。サブスクリプション
-の年額換算値は一括売上と足し合わせず、別に合計を示す。
+Set 3 years of revenue potential, broken out by theme-derived and
+regular-pipeline-derived. Don't add subscription annualized values
+together with one-time revenue — show the total separately.
 
-## 7. Step 5 — Executive Summary 化（Session 資料）
+## 7. Step 5 — Building the Executive Summary (Session Materials)
 
-Phase A〜C の成果から、30 分レビュー用に **1 桁ページ + Appendix** に落とす。
+Distill the outputs of Phases A–C down to **single-digit pages +
+Appendix** for the 30-minute review.
 
-推奨構成（9 ページ）:
+Recommended structure (9 pages):
 
-| # | ページ | 出所 |
+| # | Page | Source |
 |---|---|---|
-| 1 | 表紙（アカウント名 / 期 / 作成者 / 日付） | — |
+| 1 | Cover (account name / fiscal year / author / date) | — |
 | 2 | Three Year Account Strategy Summary | §7.1 |
-| 3 | 顧客の経営戦略とイニシアチブ（Strategy Map 報告用） | §5.3 |
-| 4 | Initiative Alignment（イニシアチブ × 提案テーマ × 製品） | §5.3 |
-| 5 | Blueprint Map（テーマ一覧と金額・時期） | §5.4 |
-| 6 | Prioritization（2 軸マップ） | §6.1 |
+| 3 | Customer's management strategy and initiatives (for Strategy Map reporting) | §5.3 |
+| 4 | Initiative Alignment (initiatives × proposed themes × products) | §5.3 |
+| 5 | Blueprint Map (theme list with amount & timing) | §5.4 |
+| 6 | Prioritization (2-axis map) | §6.1 |
 | 7 | 3 Year Execution Plan / Flight Plan | §6.2 / §6.6 |
-| 8 | Action Plan（次の 90 日） | §6.3 |
+| 8 | Action Plan (next 90 days) | §6.3 |
 | 9 | Management Asks | §7.2 |
 
-Appendix に Phase A の分析（Corporate Overview、SWOT、Heatmap、TAM & SOW、
-Influence Map、Account Health）と Blueprint Summary を回す。
+Move the Phase A analysis (Corporate Overview, SWOT, Heatmap, TAM & SOW,
+Influence Map, Account Health) and the Blueprint Summary to the Appendix.
 
 ### 7.1 Three Year Account Strategy Summary
 
-3 年計画全体を 1 枚にまとめる。中央に 3 年戦略のステートメント（1〜2 文）を置き、
-左に「現状」、右に「3 年後の目標」を同じ項目立てで並べる。
+Summarize the entire 3-year plan on a single page. Place the 3-year
+strategy statement (1–2 sentences) in the center, and line up "current
+state" on the left and "3-year target" on the right, using the same set of
+items.
 
-項目立て: 売上（SOW %、当期実績）／顧客満足（ロイヤルティ指標、総合満足、
-推奨意向）／顧客エンゲージメント（役員スポンサーシップ、アクセスできる階層、
-共同計画の有無）／フットプリントの強み。上部に主要な変革テーマを並べる。
+Items: revenue (SOW %, current-period results) / customer satisfaction
+(loyalty metrics, overall satisfaction, willingness to recommend) /
+customer engagement (executive sponsorship, accessible levels, whether
+there's a joint plan) / footprint strength. List the key transformation
+themes at the top.
 
-- **左右で項目が対応していないと比較にならない。** 現状に書いた項目は必ず
-  3 年後にも同じ順で書く。
+- **If the items on the left and right don't correspond, it isn't a
+  comparison.** Any item written under "current state" must appear under
+  "3 years out" in the same order.
 
 ### 7.2 Management Asks
 
-3 年計画を進めるうえで、担当チームだけでは解決が困難で、経営層の支援が必要な
-事項を書く。社内・社外の両方を対象にする。
+Write the items that are difficult for the account team alone to resolve
+while advancing the 3-year plan and that need executive support. Cover
+both internal and external asks.
 
-- 誰から、どんな支援が必要か
-- なぜ必要か
-- それによって期待される具体的な結果・成果
+- From whom, and what support is needed
+- Why it's needed
+- The concrete result/outcome expected from it
 
-「リソースが欲しい」だけでは Ask にならない。期待成果まで書いて初めて判断できる。
+"I want resources" by itself isn't an Ask. Only writing the expected
+outcome as well makes it something that can be judged.
 
 ### 7.3 Account Challenges & Risk Mitigation
 
-列は 課題の内容 / 影響 / 緩和策 / 担当。Management Asks と対になる。Ask に
-つながらないリスクは、誰がいつまでに何をするのかを緩和策の欄に書く。
+Columns are: challenge / impact / mitigation / owner. This pairs with
+Management Asks. For risks that don't lead to an Ask, write who does what
+by when in the mitigation field.
 
-## 8. Step 6 — slide-forge での生成
+## 8. Step 6 — Generation in slide-forge
 
-`scripts/scalar/build_account_planning.py` が台帳から 2 本のデッキ仕様を出す。
-Plan Document と APS レビュー用（本編 9 ページ + Appendix）は同じページ定義を
-共有するので、**1 つ直せば両方に反映される**。枚数は固定ではなく、`deals` の
-件数と `meta.dealExtraPages` / `meta.skipPages` で変わる（§9）。
+`scripts/scalar/build_account_planning.py` produces two deck specs from
+the ledger. The Plan Document and the APS review deck (9 main pages +
+Appendix) share the same page definitions, so **fixing one reflects in
+both**. The page count isn't fixed — it changes with the number of `deals`
+and with `meta.dealExtraPages` / `meta.skipPages` (§9).
 
-**入力は `accounts/<AE>/<顧客>/aps.json`。** スクリプトは図の種類・座標・書式
-（`LAYOUT`）だけを持ち、文字列はすべて aps.json から読む。顧客名も実名も
-スクリプトに書かない。
+**The input is `accounts/<AE>/<customer>/aps.json`.** The script only
+holds the figure types, coordinates, and formatting (`LAYOUT`); every
+string is read from aps.json. Neither the customer name nor any real name
+is written into the script.
 
-`aps.json` の構造:
+`aps.json` structure:
 
 ```jsonc
 {
@@ -406,24 +478,29 @@ Plan Document と APS レビュー用（本編 9 ページ + Appendix）は同�
 }
 ```
 
-`pages.<id>.figures` は `LAYOUT[<id>]` の図の並びと 1 対 1 で対応する
-（`governing_message` / `lead_in` / `source_note` は `title` / `lead` / `source`
-から取るので figures には並べない）。数が合わなければ組み立て時にエラーになる。
+`pages.<id>.figures` corresponds 1:1 with the sequence of figures in
+`LAYOUT[<id>]` (`governing_message` / `lead_in` / `source_note` are taken
+from `title` / `lead` / `source`, so they aren't listed in figures). If the
+count doesn't match, it's an error at assembly time.
 
-- `deals[].id` は**文字列**で書く（数値はエラー）。商談番号は ①〜⑳ の丸数字で
-  表示され、それ以降は `(21)` の形式になる。`amount` / `period` はどちらかが
-  空でもよい（区切り文字だけが残ることはない）。
-- `meta.dealExtraPages`（任意）: 商談 ID → その商談の章に追加するページ ID の列
-  （`objective-ledger` など）。どの商談に付録を足すかは顧客ごとの判断なので
-  aps.json が持つ。
-- `meta.reviewDealPages`（任意）: 役員レビュー Appendix の商談枠（`REVIEW_APPENDIX`
-  の `"@deal-pages"`）に展開するページ ID の列（`deal-<商談番号>` や商談付録
-  ページ）。どの商談を役員レビューに載せるかも aps.json が持つ。
-- `meta.skipPages`（任意）: 顧客に合わないページをデッキから外す。リストなら
-  **両方**のデッキから、`{"plan": […], "review": […]}` なら指定したデッキから
-  だけ外す。知らないページ ID・デッキ名は組み立て時にエラー。`deal-<商談番号>`
-  で商談章にも効き、章の中身が全部 skip されると中扉ごと消える。両方のデッキで
-  skip したページは `pages` からデータを消してよい。
+- `deals[].id` must be written as a **string** (a number is an error).
+  Deal numbers are displayed as circled digits ①–⑳, and beyond that as
+  `(21)`. Either `amount` or `period` may be empty (no stray separator
+  character is left behind).
+- `meta.dealExtraPages` (optional): deal ID → list of page IDs to add to
+  that deal's chapter (e.g., `objective-ledger`). Which deal gets which
+  appendix is a per-customer judgment call, so aps.json holds it.
+- `meta.reviewDealPages` (optional): list of page IDs (`deal-<deal
+  number>` or a deal appendix page) to expand into the deal slot of the
+  executive review Appendix (`REVIEW_APPENDIX`'s `"@deal-pages"`). Which
+  deals make it into the executive review is also held in aps.json.
+- `meta.skipPages` (optional): drop pages that don't fit the customer from
+  the deck. As a plain list, it drops from **both** decks; as `{"plan":
+  […], "review": […]}`, it drops only from the specified deck. An unknown
+  page ID or deck name is an error at assembly time. `deal-<deal number>`
+  also works on deal chapters — if a chapter's contents are entirely
+  skipped, the section divider disappears with it. For pages skipped in
+  both decks, the data may be removed from `pages`.
 
 ```bash
 # 1. aps.json から 2 本の仕様を組む
@@ -454,52 +531,58 @@ done
 .venv/bin/python scripts/cleanup_qa.py
 ```
 
-マスターを差し替える場合は **`--template` を変えるだけ**（`corporate`、
-`aixdevops`、`blank-16x9` など）。ページ定義側は変更しない。この成立条件は
-`references/account-planning-template-plan.md` §2 に定義する。
+To swap the master, **just change `--template`** (`corporate`,
+`aixdevops`, `blank-16x9`, etc.). The page definitions themselves don't
+change. The condition that makes this hold is defined in
+`references/account-planning-template-plan.md` §2.
 
-> **`--dry-run` が通っても API に弾かれる制約が 1 つある。** Slides API は幅
-> 32pt（0.444in）未満の表列を拒否する。`build_account_planning.py` の
-> `_check_columns()` が組み立て時に検査している。商談番号のような細い列を足す
-> ときは 0.45in 以上を確保すること。
+> **There's one constraint that the API rejects even when `--dry-run`
+> passes.** The Slides API rejects table columns narrower than 32pt
+> (0.444in). `build_account_planning.py`'s `_check_columns()` checks for
+> this at assembly time. When adding a narrow column like a deal number,
+> make sure it's at least 0.45in.
 
-> 既存デッキを更新する場合は、`--into` で既存デッキを指定する前に必ず
-> `scripts/snapshot_version.py` でスナップショットを取る。テンプレート原本を
-> `--into` の対象にしない。
+> When updating an existing deck, always take a snapshot with
+> `scripts/snapshot_version.py` before pointing `--into` at the existing
+> deck. Never make the master template itself the target of `--into`.
 
-## 9. ページ一覧（マスター表）
+## 9. Page List (Master Table)
 
-Plan Document の本文 43 ページ（`PLAN_A` 28 / `PLAN_B` 4 / `PLAN_C` 7 /
-`PLAN_E` 4）の一覧。デッキ全体では、これに表紙・章の中扉 4 枚と商談ごとの章
-（§9.3。商談ごとに中扉 + 全体像 1 枚、必要なら `meta.dealExtraPages` のページ）
-が加わるので、**枚数は `deals` の件数と `meta.skipPages` で変わる**。
+A list of the Plan Document's 43 body pages (`PLAN_A` 28 / `PLAN_B` 4 /
+`PLAN_C` 7 / `PLAN_E` 4). The full deck also adds a cover, 4 chapter
+dividers, and a chapter per deal (§9.3 — a divider + 1 overview page per
+deal, plus `meta.dealExtraPages` pages if any), so **the page count
+changes with the number of `deals` and with `meta.skipPages`**.
 
-APS レビュー用は 表紙 + 本編 9 ページ（「レビュー」列の ○ = `REVIEW_MAIN`）+
-Appendix（中扉 + 「Appendix」のページ 22 枚 + `meta.reviewDealPages` の商談
-ページ。3c は本編と Appendix の両方に載る）。
+The APS review deck is: cover + 9 main pages (○ in the "Review" column =
+`REVIEW_MAIN`) + Appendix (divider + 22 "Appendix" pages + the deal pages
+from `meta.reviewDealPages`; 3c appears in both the main body and the
+Appendix).
 
-**表は「登録簿」と「判定基準」だけに残し、それ以外は図で表す**（§9.4）。
-商談ごとの章の本体（中扉と全体像）は下表に含まない。19・20 は商談章の付録
-として `meta.dealExtraPages` で足すページ（`LAYOUT` の `blueprint-ledger` /
-`blueprint-aidd`、`objective-ledger` / `objective-aidd`）で、役員レビューには
-`meta.reviewDealPages` に挙げた場合だけ載る。
+**Tables are kept only for "ledgers" and "rating criteria"; everything
+else is shown as a diagram** (§9.4). The body of each deal's chapter
+(divider and overview) isn't included in the table below. 19 and 20 are
+pages added as a deal chapter's appendix via `meta.dealExtraPages`
+(`blueprint-ledger` / `blueprint-aidd`, `objective-ledger` /
+`objective-aidd` in `LAYOUT`), and they appear in the executive review
+only when listed in `meta.reviewDealPages`.
 
-| # | ページ | 形 | Phase | レビュー | 元資料 |
+| # | Page | Form | Phase | Review | Source |
 |---|---|---|---|---|---|
-| 1 | グループ体制と当社の接点 | orgchart | A | Appendix | S80 |
-| 2a | 事業会社の組織と当社の接点（法人ごとに 1 枚） | orgchart | A | Appendix | S84 |
-| 2b | システム子会社の組織と当社の接点 | orgchart | A | Appendix | S84 |
-| 2c | システム子会社 ↔ 各社の担当マッピング | comparison | A | Appendix | S84 |
-| 2d | グループ会社別の商談ポートフォリオ | mece_tree | A | ○ | S45 |
-| 2e | グループ会社別の関与者 | comparison | A | Appendix | S27 |
+| 1 | Group structure and our touchpoints | orgchart | A | Appendix | S80 |
+| 2a | Operating company org structure and our touchpoints (one page per legal entity) | orgchart | A | Appendix | S84 |
+| 2b | IT subsidiary org structure and our touchpoints | orgchart | A | Appendix | S84 |
+| 2c | IT subsidiary ↔ each company's ownership mapping | comparison | A | Appendix | S84 |
+| 2d | Deal portfolio by group company | mece_tree | A | ○ | S45 |
+| 2e | Stakeholders by group company | comparison | A | Appendix | S27 |
 | 3 | Financial Trends | metric + hbars | A | Appendix | S81 |
-| 3b | 中期経営計画の構造 | mece_tree | A | Appendix | S15 |
-| 3c | 中計と提案の紐付け | mece_tree | A | ○ + Appendix | S43 / S46 |
+| 3b | Structure of the mid-term management plan | mece_tree | A | Appendix | S15 |
+| 3c | Linking the mid-term plan to the proposal | mece_tree | A | ○ + Appendix | S43 / S46 |
 | 4 | SWOT Analysis | matrix | A | Appendix | S13 |
 | 5 | Strategy Map (Step 1) | outcome_tree | A | — | S15 |
 | 6 | Strategy Map (Step 2) | outcome_tree | A/B | — | S38 / S41 |
-| 6b | 法人別の役員層と接触状況 | comparison | A | Appendix | S27 |
-| 6c | 会うべき人と手がかり | 表 | A | Appendix | S27 |
+| 6b | Executive layer and contact status by legal entity | comparison | A | Appendix | S27 |
+| 6c | People to meet and leads | Table | A | Appendix | S27 |
 | 7 | Customer Business Initiatives | cards | A | Appendix | S44 |
 | 8 | Customer Programs / Projects | gantt | A | Appendix | S45 |
 | 9 | Historical Spend | hbars | A | — | S18 |
@@ -507,135 +590,164 @@ Appendix（中扉 + 「Appendix」のページ 22 枚 + `meta.reviewDealPages` �
 | 11 | Heatmap | layers | A | Appendix | S23 / S26 |
 | 12 | TAM & SOW Analysis | nested_circles | A | — | S21 / S22 |
 | 13 | Influence Map | influence_graph | A | Appendix | S27 |
-| 13b | 主要人物の経歴 | cards | A | Appendix | S27 |
-| 13c | 人物の関係性 | influence_graph + links | A | Appendix | S27 |
+| 13b | Key people's backgrounds | cards | A | Appendix | S27 |
+| 13c | Relationships between people | influence_graph + links | A | Appendix | S27 |
 | 14 | Account Health | rating_matrix | A | Appendix | S29 |
-| 15 | Account Health 評価基準 | **表** | A | — | S31 / S32 |
+| 15 | Account Health rating criteria | Table | A | — | S31 / S32 |
 | 16 | Vision / Strategy for Growth | comparison | A | — | S33 |
 | 17 | Initiative Alignment | mece_tree | B | — | S43 / S46 |
-| 18 | Blueprint Map | **表** | B | ○ | S49 |
-| 19 | Blueprint Summary（テーマごと） | cards ×2 段 | B | reviewDealPages 次第 | S51 |
-| 20 | Objective（テーマごと） | cards + journey | B | reviewDealPages 次第 | S60 / S99 |
-| 21 | Prioritization（スコア） | **表** | C | — | S55 |
-| 22 | Prioritization（2 軸） | posmap | C | ○ | S56 |
+| 18 | Blueprint Map | Table | B | ○ | S49 |
+| 19 | Blueprint Summary (per theme) | cards ×2 rows | B | depends on reviewDealPages | S51 |
+| 20 | Objective (per theme) | cards + journey | B | depends on reviewDealPages | S60 / S99 |
+| 21 | Prioritization (score) | Table | C | — | S55 |
+| 22 | Prioritization (2-axis) | posmap | C | ○ | S56 |
 | 23 | 3 Year Execution Plan | gantt | C | ○ | S57 |
-| 24 | Engagement Timeline（8 週） | gantt | C | — | S59 / S98 |
-| 25 | Action Plan | **表** | C | ○ | S61 / S62 |
+| 24 | Engagement Timeline (8 weeks) | gantt | C | — | S59 / S98 |
+| 25 | Action Plan | Table | C | ○ | S61 / S62 |
 | 26 | Executive Engagement Plan | orgchart | C | — | S63 |
 | 27 | Event Plan | timeline | C | — | S65 |
 | 28 | Flight Plan | posmap | C | — | S70 |
-| 29 | 3 Year Projections | **表** | C | — | S67 |
+| 29 | 3 Year Projections | Table | C | — | S67 |
 | 30 | 3 Year Account Strategy Summary | exec_summary + before_after | Exec | ○ | S73 |
-| 31 | Management Asks | **表** | Exec | ○ | S75 |
-| 32 | Challenge & Requirement | **表** | Exec | ○ | S77 / S105 |
-| 33 | Challenges & Risk Mitigation | **表** | Exec | Appendix | S86 |
+| 31 | Management Asks | Table | Exec | ○ | S75 |
+| 32 | Challenge & Requirement | Table | Exec | ○ | S77 / S105 |
+| 33 | Challenges & Risk Mitigation | Table | Exec | Appendix | S86 |
 
-### 9.1 商談番号による相互参照
+### 9.1 Cross-Referencing by Deal Number
 
-商談に番号を振り、Heatmap・Customer Business Initiatives・Blueprint Map・
-Prioritization・Action Plan で**同じ番号を参照**する。番号がないと、各ページが
-独立した表になって束として追えなくなる。
+Assign a number to each deal, and **reference the same number** across
+Heatmap, Customer Business Initiatives, Blueprint Map, Prioritization, and
+Action Plan. Without numbering, each page becomes an isolated table and
+can no longer be tracked as a bundle.
 
-**番号はグループ会社順に振る。** 同じ会社の商談が隣り合うので、会社単位の
-話をするときにページをまたいで拾い直さなくて済む。
+**Assign numbers in group-company order.** Deals from the same company end
+up adjacent, so when discussing a given company you don't need to hunt
+across pages to re-collect them.
 
-番号・会社・担当組織・金額は aps.json の `deals` 配列で一元管理し、全ページと
-商談ごとの章がそこから引く（スクリプトは文字列を持たない。§8）。
+The number, company, owning organization, and amount are centrally
+managed in aps.json's `deals` array, and every page and every deal chapter
+pulls from it (the script holds no strings — §8).
 
-### 9.1.1 中期経営計画への紐付け
+### 9.1.1 Linking to the Mid-Term Management Plan
 
-中計は顧客が公開した優先順位そのもの。**提案をその記述に接続できれば、稟議に
-書く言葉が顧客の言葉になる。**
+The mid-term plan is the customer's own published priorities. **If the
+proposal can be connected to its wording, the language written in the
+internal approval (ringi) becomes the customer's own language.**
 
-- 一次資料（中計のリリース PDF・IR ページ）から**原文**を取る。要約記事で代用しない
-- **柱の構造を見る。** IT が事業戦略の下か並列かで稟議のルートが変わる
-- 紐付けは柱ではなく**記述単位**で行う
-- 紐付かない提案は無理に紐付けない。紐付かないこと自体が判断材料
+- Take the **original text** from primary sources (the mid-term plan's
+  release PDF, IR page). Don't substitute a summary article.
+- **Look at the pillar structure.** Whether IT sits under the business
+  strategy or alongside it changes the internal-approval route.
+- Do the linking at the **level of individual statements**, not pillars.
+- Don't force a link for a proposal that doesn't connect. The absence of a
+  link is itself useful information.
 
-### 9.2 グループ会社ごとの分類
+### 9.2 Classification by Group Company
 
-親会社 1 社ではなく企業グループを相手にする場合、**商談も関与者も会社ごとに
-分類する。** 会社が違えば意思決定者も予算も別なので、まとめると打ち手が決まらない。
+When the counterpart is a corporate group rather than a single parent
+company, **classify both deals and stakeholders by company.** Different
+companies have different decision-makers and budgets, so lumping them
+together makes it impossible to settle on a course of action.
 
-必要な 3 ページ:
+The 3 required pages:
 
-| ページ | 図 | 何を示すか |
+| Page | Figure | What it shows |
 |---|---|---|
-| グループ会社別の商談ポートフォリオ | `mece_tree` | どの会社に何件・いくらの商談があるか |
-| グループ会社別の関与者 | `comparison` | 会社ごとに誰を押さえ、誰が名刺どまりか |
-| システム子会社 ↔ 各社の担当マッピング | `comparison` | 横断組織と会社別実装部隊の区別 |
+| Deal portfolio by group company | `mece_tree` | How many deals, and worth how much, at each company |
+| Stakeholders by group company | `comparison` | Who's secured, and who's still just a business card, per company |
+| IT subsidiary ↔ each company's ownership mapping | `comparison` | The distinction between cross-cutting organizations and per-company implementation teams |
 
-**システム子会社は全社に関係するので、必ず別立てで扱う。** 事業会社を複数
-持つグループの IT 子会社は、会社ごとに担当本部が分かれる一方、技術統括や
-AI 推進のような横断組織を持つことが多い。横断組織を押さえていても会社別の実装部隊に
-入れていなければ案件は動かない。**この区別が見えるように、公式組織図を
-会社別に読み替えたページを置く。**
+**The IT subsidiary touches every company, so always treat it as a
+separate item.** In a group with multiple operating companies, the IT
+subsidiary's departments are often split per company, while it also tends
+to have cross-cutting organizations such as technology oversight or AI
+promotion. Even if you've secured the cross-cutting organization, the deal
+won't move unless you've also gotten into the per-company implementation
+team. **Include a page that re-reads the official org chart per company so
+this distinction is visible.**
 
-### 9.2.1 会うべき人を探す
+### 9.2.1 Finding Who You Should Meet
 
-アカウントプランは会った人の記録ではなく、**次に誰に会うべきかを出す仕組み**
-でもある。台帳だけを見ていると既に会えている人の周りしか出てこない。
+The account plan isn't just a record of who you've met — it's also **a
+mechanism for surfacing who to meet next**. Looking only at the ledger
+only turns up people around whoever you've already met.
 
-**役員名簿は法人単位で取る。** グループは持株会社・事業会社・IT 子会社が
-それぞれ別法人として役員を公開している。まとめてしまうと、実装を持つ役員が
-どの法人にいるのか分からなくなる。
+**Gather the executive roster per legal entity.** In a group, the holding
+company, the operating companies, and the IT subsidiary each publish their
+own executives as separate legal entities. Lumping them together makes it
+impossible to tell which legal entity the executive who owns
+implementation belongs to.
 
-0. **法人ごとに組織図を 1 枚ずつ描く。** グループ全体を 1 枚にまとめると
-   部レベルが潰れ、どの部署に入れていないかが見えない
-1. 法人ごとに公開の役員名簿を取り、当社の接触状況を重ねる
-2. **兼務を拾う。** 持株会社の CxO が子会社の取締役を兼ねていることがあり、
-   それが最短の紹介経路になる
-3. 組織図（どの部署があるか）と役員名簿（誰が役員か）を突き合わせる。
-   **部署と役員の紐付けは公開情報では埋まらないことが多く、そこが確認事項**
-4. **手がかりは接触済みの人を起点にする。** 誰経由かが書けない「会うべき人」は
-   アクションにならない
-5. 役職は公開名簿を正とし、台帳の古い肩書きは直す
-6. **会う相手が決まったら経歴を押さえる。** 肩書きの変遷は、その人が何を根拠に
-   判断するかを示す。前任・後任・兼務・出向元は意思決定の経路そのもの
-7. **個人的な関係（元上司・友人・派閥）は公開情報ではない。** 出典行で分け、
-   その記述が入った資料は社外に出さない
+0. **Draw one org chart per legal entity.** Consolidating the whole group
+   onto one page collapses the department level, so you can't see which
+   departments you haven't gotten into.
+1. Take the public executive roster per legal entity and overlay our
+   contact status.
+2. **Pick up concurrent roles.** A holding company CxO may also serve as a
+   director at a subsidiary, and that can be the shortest path to an
+   introduction.
+3. Cross-reference the org chart (which departments exist) with the
+   executive roster (who the executives are). **The link between
+   department and executive often can't be filled in from public
+   information — that's what needs to be confirmed.**
+4. **Anchor leads on people you've already contacted.** A "person to meet"
+   for whom you can't write "via whom" isn't an actionable item.
+5. Treat the public roster as authoritative for titles, and correct any
+   stale titles in the ledger.
+6. **Once you've decided who to meet, capture their background.** The
+   progression of their titles shows what they base their judgment on.
+   Predecessor, successor, concurrent roles, and secondment origin are the
+   decision-making path itself.
+7. **Personal relationships (former boss, friend, faction) are not public
+   information.** Separate them with a source line, and don't let
+   materials containing such notes go outside the company.
 
-### 9.3 商談ごとの章立て
+### 9.3 Structuring a Chapter per Deal
 
-商談の詳細は、全体の分析に混ぜず**商談ごとに章を切る**。各章は:
+Deal details aren't mixed into the overall analysis — **cut a separate
+chapter per deal**. Each chapter is:
 
-1. 中扉（会社名／商談名／金額・時期・ステージ）
-2. 商談の全体像（`cards` 6 枚: 顧客の課題 / 当社の解 / 差別化要因 /
-   顧客側キーパーソン / **システム子会社の担当組織** / 金額・時期・ステージ）
-3. Objective（主要商談のみ。`cards` + `journey`）
+1. Divider (company name / deal name / amount, timing, stage)
+2. Deal overview (6 `cards`: customer challenge / our solution /
+   differentiator / customer-side key person / **the IT subsidiary's
+   owning organization** / amount, timing, stage)
+3. Objective (main deals only; `cards` + `journey`)
 
-章の中身は商談ごとに同じ型にする。型が同じなら、章をまたいで「どこが埋まって
-いないか」を比べられる。
+Keep the same shape for the chapter contents across every deal. With the
+same shape, you can compare "what's still unfilled" across chapters.
 
-### 9.4 表を使ってよい場所
+### 9.4 Where Tables Are Allowed
 
-表が続くとページの見た目が同じになり、どこが要点か分からなくなる。表は
-次の 2 つに限り、それ以外は図にする。
+A run of tables makes every page look the same and obscures where the
+point is. Limit tables to the following 2 cases; make everything else a
+diagram.
 
-- **登録簿**: 行ごとに担当と期日があり、後から追跡するもの（Blueprint Map /
-  Action Plan / Management Asks / Challenge & Requirement / Risk / Prioritization
-  スコア / Projections）
-- **判定基準**: 段階の定義そのものが内容であるもの（Account Health 評価基準）
+- **Ledger**: something with an owner and a due date per row that gets
+  tracked afterward (Blueprint Map / Action Plan / Management Asks /
+  Challenge & Requirement / Risk / Prioritization score / Projections)
+- **Rating criteria**: something whose content is the definition of the
+  levels itself (Account Health rating criteria)
 
-置き換えの目安:
+Guide for what to replace:
 
-| 表にしがちなもの | 使う図 |
+| What tends to become a table | Diagram to use |
 |---|---|
-| 階層・所属・レポートライン | `orgchart` |
-| 上位目標と下位施策のつながり | `outcome_tree` / `mece_tree` |
-| レイヤごとの状態 | `layers` |
-| 時期のあるプロジェクト群 | `gantt` / `timeline` |
-| 大小の入れ子（市場規模） | `nested_circles` |
-| 金額・件数の比較 | `hbars` / `vbars` |
-| 数項目の並列説明 | `cards` |
-| 年度ごとの到達点 | `journey` |
-| 現在と目標の対比 | `before_after` |
-| 関与者の立場と影響力 | `influence_graph` / `posmap` |
+| Hierarchy, affiliation, reporting line | `orgchart` |
+| Connection between top-level goals and downstream initiatives | `outcome_tree` / `mece_tree` |
+| State per layer | `layers` |
+| Groups of projects with timing | `gantt` / `timeline` |
+| Nested magnitudes (market size) | `nested_circles` |
+| Comparison of amounts / counts | `hbars` / `vbars` |
+| A handful of items explained side by side | `cards` |
+| Milestones per fiscal year | `journey` |
+| Current vs. target contrast | `before_after` |
+| Stakeholders' position and influence | `influence_graph` / `posmap` |
 
-### 9.5 顧客側の 4 層
+### 9.5 The Customer's 4 Layers
 
-イニシアチブとテーマの間に**顧客のプログラム / プロジェクト層**を必ず置く。
-ここを飛ばすと、実在するプロジェクト名と提案テーマが対応しなくなる。
+Always place the **customer's program / project layer** between the
+initiative and the theme. Skip this and real project names stop
+corresponding to proposed themes.
 
 ```
 顧客イニシアチブ（§9.1 の番号）
@@ -644,48 +756,60 @@ AI 推進のような横断組織を持つことが多い。横断組織を押�
           └ 案件
 ```
 
-## 10. 更新運用
+## 10. Ongoing Update Operations
 
-- Session の直後に、決まったことを `accounts/<顧客>/account.json` に反映する。
-  スライドを正とせず、台帳を正とする。
-- Action Plan は次の 90 日分を常に埋まった状態に保つ。期日を過ぎた行は、完了・
-  未完了・中止のいずれかに決着させてから消す。
-- Blueprint のステージが進んだら Blueprint Summary の記述精度を上げる。
-- デッキの URL は変えない。同じリンクが常に最新を指す状態を保つ。
+- Immediately after the Session, reflect what was decided into
+  `accounts/<customer>/account.json`. The ledger is the source of truth,
+  not the slides.
+- Keep the Action Plan filled with the next 90 days at all times. For rows
+  past their due date, resolve them as done / not done / canceled before
+  removing them.
+- As a Blueprint's stage advances, increase the precision of the Blueprint
+  Summary's description.
+- Don't change the deck's URL. Keep the same link always pointing to the
+  latest version.
 
-## 11. 品質チェックリスト
+## 11. Quality Checklist
 
-Session 資料を出す前に。
+Before shipping the Session materials.
 
-- [ ] 1 ページ 1 メッセージになっているか。タイトルが結論になっているか。
-- [ ] 顧客の発言・文書に基づく事実と、こちらの仮説が見分けられるか。仮説は
-      仮説と明示しているか。
-- [ ] Strategy Map のイニシアチブは、顧客の公開情報または顧客の発言に紐づくか。
-- [ ] Blueprint Map の各行に、顧客課題が特定できているか（製品名だけの行がないか）。
-- [ ] Prioritization の位置づけに根拠（スコア表）が対応しているか。
-- [ ] Action Plan の各行が S.M.A.R.T. を満たすか。担当と期日が空欄でないか。
-- [ ] Management Asks に期待成果が書かれているか。
-- [ ] Strategy Summary の「現状」と「3 年後」が同じ項目立てで対応しているか。
-- [ ] 金額の単位・期間・為替前提が明示されているか。
-- [ ] 社内限定情報（個人の影響力評価、社内政治、賛否）が顧客共有版に混ざって
-      いないか。
-- [ ] サムネイルでのビジュアル QA を通したか（文字あふれ、重なり、コントラスト）。
+- [ ] Is it one message per page? Is the title the conclusion?
+- [ ] Can facts based on the customer's statements/documents be
+      distinguished from our own hypotheses? Are hypotheses explicitly
+      labeled as hypotheses?
+- [ ] Are the Strategy Map's initiatives tied to the customer's public
+      information or the customer's own statements?
+- [ ] Is the customer challenge identified for every row of the Blueprint
+      Map (no row that's just a product name)?
+- [ ] Does the Prioritization's positioning have a corresponding basis
+      (the score table)?
+- [ ] Does every row of the Action Plan satisfy S.M.A.R.T.? Are owner and
+      due date never blank?
+- [ ] Is the expected outcome written for the Management Asks?
+- [ ] Do the Strategy Summary's "current state" and "3 years out"
+      correspond under the same set of items?
+- [ ] Are the amount's unit, period, and FX assumption stated explicitly?
+- [ ] Has internal-only information (assessments of an individual's
+      influence, internal politics, for/against positions) leaked into
+      the customer-shared version?
+- [ ] Has it passed visual QA via thumbnails (text overflow, overlap,
+      contrast)?
 
-## 12. 元資料からの読み替え表
+## 12. Terminology Mapping from the Source Material
 
-| 元資料（Oracle） | この手順書での扱い |
+| Source material (Oracle) | Handling in this procedure |
 |---|---|
-| KAD（Key Account Director） | アカウント責任者 / AE |
-| GCA / EA | SC / ソリューションアーキテクト |
-| APS（Account Planning Session） | そのまま。役員レビューを伴う計画セッション |
-| APWS（Account Planning Workshop） | §5 のワークショップ |
-| Blueprint | 上流提案テーマ。案件の前段にある仮説 |
-| Blueprint の Close | テーマの合意成立（受注ではない） |
-| Pillar（Tech / Apps など） | 製品領域 |
-| Sales Play | 重点施策 |
-| CVC（Customer Visit Center） | 本社招聘・役員訪問 |
-| OOW / Insight | 自社カンファレンス / インサイト提供活動 |
-| ULA / ELA Utilization | ライセンス契約の消化状況 |
-| SOW（Share of Wallet） | 顧客 IT 支出内の自社シェア |
-| ARR booking | 年額換算の新規契約額 |
+| KAD (Key Account Director) | Account owner / AE |
+| GCA / EA | SC / solution architect |
+| APS (Account Planning Session) | Unchanged. The planning session that includes an executive review |
+| APWS (Account Planning Workshop) | The workshop in §5 |
+| Blueprint | An upstream proposed theme. A hypothesis that precedes a deal |
+| Blueprint's Close | Agreement on the theme (not winning the deal) |
+| Pillar (Tech / Apps, etc.) | Product area |
+| Sales Play | Key initiative |
+| CVC (Customer Visit Center) | HQ visit / executive visit |
+| OOW / Insight | Our conference / insight-delivery activities |
+| ULA / ELA Utilization | License contract consumption status |
+| SOW (Share of Wallet) | Our share within the customer's IT spend |
+| ARR booking | Annualized new contract value |
 | InfoMentis / Oracle Sales Methodology | `references/scalar/sales-playbook.md` |

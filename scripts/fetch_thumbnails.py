@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""生成したプレゼンテーションのサムネイルを取得する（視覚的 QA 用）。
+"""Fetches thumbnails of a generated presentation (for visual QA).
 
-    python scripts/fetch_thumbnails.py <URL または ID> --out out/qa [--size LARGE]
+    python scripts/fetch_thumbnails.py <URL or ID> --out out/qa [--size LARGE]
     python scripts/fetch_thumbnails.py <URL> --out out/qa --pages 1,3,5
 
-取得した PNG は Read ツールで開いて目視確認する。文字の欠け・はみ出し・
-装飾との重なりは API レスポンスからは分からないので、この確認を省略しないこと。
+Open the fetched PNGs with the Read tool and eyeball them. Clipped text,
+overflow, and overlap with decorations can't be told from the API response
+alone, so don't skip this check.
 """
 from __future__ import annotations
 
@@ -23,18 +24,21 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 from _i18n import t, register  # noqa: E402
 
-# 1 枚あたり getThumbnail + ダウンロードで 2 往復かかり、逐次だと実測で約 1.0 秒。
-# 同時に投げれば速くなるが、getThumbnail は Slides API の「expensive read」に
-# 当たり、**ユーザーあたり毎分 60 件**という固定クォータがある
-# （超えると HTTP 429 RATE_LIMIT_EXCEEDED）。逐次実行が約 1 秒/枚なのは、
-# 事実上このクォータぎりぎりで自然に律速されていたということ。
+# Each slide costs 2 round trips (getThumbnail + download), which measured
+# about 1.0s sequentially. Firing requests concurrently would speed this up,
+# but getThumbnail counts as an "expensive read" in the Slides API and
+# carries a fixed quota of **60 requests per user per minute** (exceeding it
+# returns HTTP 429 RATE_LIMIT_EXCEEDED). The ~1s/slide sequential rate was,
+# in effect, already self-throttling right at this quota's edge.
 #
-# したがって並列化だけでは大きなデッキで必ず 429 に当たる。毎分 60 件の
-# トークンバケットで自前に絞った上で並列に投げる。
-#   - 60 枚以下（QA の大半）… 一気に取れる。実測 31 枚が 31s -> 7.3s
-#   - 60 枚超            … クォータが下限なので 1 分あたり 60 枚で頭打ち
+# So parallelizing alone will always hit 429 on large decks. Throttle with
+# our own 60-per-minute token bucket, then fire requests in parallel on top
+# of it.
+#   - 60 slides or fewer (most QA runs) … fetched in one burst. Measured: 31
+#     slides went from 31s -> 7.3s
+#   - more than 60 slides … the quota is the hard floor, capped at 60/min
 WORKERS = 8
-QUOTA_PER_MINUTE = 55        # 60 に対し、他の処理と競合しても溢れない程度の余裕
+QUOTA_PER_MINUTE = 55        # margin below 60 so it won't overflow even under contention with other work
 QUOTA_WINDOW = 60.0
 
 register({
@@ -58,7 +62,7 @@ register({
 
 
 class _RateLimiter:
-    """毎分 N 件までに絞るスライディングウィンドウのトークンバケット。"""
+    """Sliding-window token bucket that throttles to N requests per minute."""
 
     def __init__(self, per_window: int, window: float):
         self.per_window = per_window
@@ -91,7 +95,7 @@ def main() -> int:
     args = p.parse_args()
 
     pres_id = _auth.presentation_id(args.source)
-    creds = _auth.get_credentials()   # ワーカーごとのサービス生成で使い回す
+    creds = _auth.get_credentials()   # reused when building a per-worker service
     slides, _ = _auth.services(creds)
     pres = slides.presentations().get(
         presentationId=pres_id, fields="title,slides.objectId"
@@ -100,8 +104,9 @@ def main() -> int:
     all_slides = pres.get("slides", [])
     wanted = None
     if args.pages:
-        # "1,4-6,9" のような指定を受ける。QA を複数のエージェントで分担するとき、
-        # 担当範囲を "17-24" のように渡せるほうが取り違えが起きにくい
+        # Accepts a spec like "1,4-6,9". When splitting QA across multiple
+        # agents, passing a range like "17-24" for each agent's slice reduces
+        # mix-ups
         wanted = set()
         for part in args.pages.split(","):
             part = part.strip()
@@ -121,8 +126,9 @@ def main() -> int:
     targets = [(i, s["objectId"]) for i, s in enumerate(all_slides, 1)
                if not wanted or i in wanted]
 
-    # googleapiclient のサービスは httplib2 の接続を内部で使い回すのでスレッド安全でない。
-    # ワーカーごとに 1 つ持たせる（認証情報は使い回してよい）
+    # googleapiclient's service reuses an httplib2 connection internally, so
+    # it isn't thread-safe. Give each worker its own instance (credentials
+    # can be shared)
     local = threading.local()
 
     def service():
@@ -150,8 +156,9 @@ def main() -> int:
                 retryable = isinstance(e, OSError) or code in (429, 500, 502, 503, 504)
                 if not retryable or attempt == attempts - 1:
                     raise
-                # 自前の絞りを超えて 429 が来るのは、直前の別実行がクォータを
-                # 使っている場合。ウィンドウが空くまで待つしかない
+                # A 429 beyond our own throttle means another run just before
+                # this one used up the quota. Nothing to do but wait for the
+                # window to clear
                 wait = min(60.0, 5.0 * (2 ** attempt)) + random.uniform(0, 3)
                 print(t("  warn: slide {n} hit the rate limit; retrying in "
                         "{wait:.0f}s ({attempt}/{attempts})", n=i, wait=wait,
@@ -159,7 +166,7 @@ def main() -> int:
                       file=sys.stderr)
                 time.sleep(wait)
         path = os.path.join(args.out, f"slide-{i:02d}.png")
-        urllib.request.urlretrieve(res["contentUrl"], path)   # 直リンクなのでクォータ外
+        urllib.request.urlretrieve(res["contentUrl"], path)   # direct link, so it's outside the quota
         return path
 
     if len(targets) > QUOTA_PER_MINUTE:
@@ -169,7 +176,8 @@ def main() -> int:
                 minutes=len(targets) / QUOTA_PER_MINUTE))
 
     with ThreadPoolExecutor(max_workers=min(WORKERS, len(targets) or 1)) as ex:
-        # map は入力順に結果を返すので、出力はページ番号順のまま
+        # map returns results in input order, so the output stays in
+        # page-number order
         paths = list(ex.map(fetch, targets))
     for path in paths:
         print(f"  {path}")

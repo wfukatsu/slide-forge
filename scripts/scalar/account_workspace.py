@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""Drive 上の「AE 名 / 顧客名」ワークスペースを冪等に用意する。
+"""Idempotently provision an "AE name / customer name" workspace on Drive.
 
-    <ルート>/<AE 名>/<顧客名>/
-      00_活動計画/   活動計画デッキ（URL 不変で更新）、account.json のコピー
-      01_顧客提示/   顧客提示用
-      02_顧客提案/   顧客提案用（正式提案・見積）
-      90_社内/       社内説明用（訪問計画・WPS・Deal Desk・稟議）
+    <root>/<AE name>/<customer name>/
+      00_活動計画/   activity plan deck (updated in place, URL unchanged), copy of account.json
+      01_顧客提示/   for customer-facing materials
+      02_顧客提案/   for customer proposals (formal proposal, quote)
+      90_社内/       for internal briefing (visit plan, WPS, Deal Desk, approval)
 
-ルートフォルダは `config/sales.json` に覚える（`config/` は .gitignore 済み）。
-初回だけ `--root` で指定すれば、以降は省略できる。
+The root folder is remembered in `config/sales.json` (`config/` is already
+.gitignored). Specify `--root` only on the first run; it can be omitted afterward.
 
-**このスクリプトは削除を一切しない。** Drive の整理は人が行う。
+**This script never deletes anything.** Organizing Drive is left to a human.
 
-    初回:   .venv/bin/python scripts/scalar/account_workspace.py ensure \
-                --ae "山田 一郎" --customer "テスト商事株式会社" --root "<Drive フォルダ URL>"
-    2 回目: .venv/bin/python scripts/scalar/account_workspace.py ensure \
+    First run:  .venv/bin/python scripts/scalar/account_workspace.py ensure \
+                --ae "山田 一郎" --customer "テスト商事株式会社" --root "<Drive folder URL>"
+    Second run: .venv/bin/python scripts/scalar/account_workspace.py ensure \
                 --ae "山田 一郎" --customer "テスト商事株式会社"
-    設定:   .venv/bin/python scripts/scalar/account_workspace.py config --show
+    Config:     .venv/bin/python scripts/scalar/account_workspace.py config --show
 """
 from __future__ import annotations
 
@@ -36,8 +36,9 @@ import account_ledger as ledger_mod  # noqa: E402
 
 CONFIG_PATH = REPO_DIR / "config" / "sales.json"
 
-# 番号を付けるのは Drive の並び順を固定するため。名前は変えない
-# （変えると既存フォルダを再利用できず、同じ用途のフォルダが二つできる）。
+# The numbering exists to pin the sort order in Drive. Do not rename these
+# (renaming prevents reusing the existing folder and creates a duplicate for
+# the same purpose).
 SUBFOLDERS: tuple[str, ...] = (
     "00_活動計画",
     "01_顧客提示",
@@ -45,7 +46,7 @@ SUBFOLDERS: tuple[str, ...] = (
     "90_社内",
 )
 
-# 資料種別 → 置き場。scalar-ae-materials スキルが参照する
+# Material kind -> destination folder. Referenced by the scalar-ae-materials skill
 PLACEMENT: dict[str, str] = {
     "activity-plan": "00_活動計画",
     "customer-facing": "01_顧客提示",
@@ -58,7 +59,7 @@ class WorkspaceError(RuntimeError):
     pass
 
 
-# ------------------------------------------------------------------- 設定
+# ------------------------------------------------------------------- Config
 
 def load_config() -> dict:
     if not CONFIG_PATH.exists():
@@ -77,7 +78,7 @@ def save_config(config: dict) -> Path:
 
 
 def resolve_root(root: str | None = None) -> str:
-    """ルートフォルダ ID を返す。`--root` が来ていれば設定に覚える。"""
+    """Return the root folder ID. If `--root` was given, remember it in config."""
     config = load_config()
     if root:
         rid = _auth.folder_id(root)
@@ -95,11 +96,11 @@ def resolve_root(root: str | None = None) -> str:
     return rid
 
 
-# --------------------------------------------------------------- 階層作成
+# --------------------------------------------------------------- Hierarchy creation
 
 def ensure(ae: str, customer: str, *, root: str | None = None,
            drive=None) -> dict:
-    """`<ルート>/<AE>/<顧客>/{4 つのサブフォルダ}` を冪等に用意し、ID を返す。"""
+    """Idempotently provision `<root>/<AE>/<customer>/{4 subfolders}` and return the IDs."""
     if not ae.strip() or not customer.strip():
         raise WorkspaceError("AE 名と顧客名は必須です")
     root_id = resolve_root(root)
@@ -125,7 +126,7 @@ def ensure(ae: str, customer: str, *, root: str | None = None,
 
 
 def folder_for(workspace: dict, kind: str) -> str:
-    """資料種別からフォルダ ID を引く。"""
+    """Look up the folder ID for a given material kind."""
     name = PLACEMENT.get(kind)
     if name is None:
         raise WorkspaceError(
@@ -134,7 +135,7 @@ def folder_for(workspace: dict, kind: str) -> str:
 
 
 def attach_to_ledger(ledger: dict, workspace: dict) -> dict:
-    """フォルダ ID を台帳の meta.drive に控える（次回の API 検索を省くため）。"""
+    """Record the folder IDs in the ledger's meta.drive (to skip an API lookup next time)."""
     drive = ledger.setdefault("meta", {}).setdefault("drive", {})
     for key, value in workspace.items():
         if key.startswith("_"):
@@ -151,8 +152,10 @@ def _cmd_ensure(args) -> int:
     if args.ledger:
         ledger = ledger_mod.load(args.ledger)
         meta = ledger.get("meta") or {}
-        # 引数と台帳の meta が食い違ったまま進めると、別顧客のフォルダ ID を
-        # 台帳に書き込んでしまう。台帳が正本なので、黙って引数側を採らない
+        # If we proceed with a mismatch between the arguments and the ledger's
+        # meta, we'd write a different customer's folder ID into the ledger.
+        # Since the ledger is the source of truth, we never silently favor the
+        # argument side.
         for opt, given, recorded in (("--ae", ae, meta.get("ae")),
                                      ("--customer", customer, meta.get("customer"))):
             if given and recorded and given != recorded:

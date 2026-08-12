@@ -1,135 +1,150 @@
-# スライドパターン（骨格 × 中身）
+*[日本語](slide-patterns.ja.md)*
 
-**ページをどう組むか**の型。`diagrams.Canvas` に混ざっている `PageMixin`
-（`scripts/pages.py`）の部品と、それを使ったページ構成のカタログ。
+# Slide Patterns (Skeleton × Content)
 
-`illustrations` / `patterns` / `charts` が「図表そのもの」を担うのに対し、
-こちらは**ページの骨組み**（タイトル帯・導入文・示唆・出典行・図表枠）と、
-それに合わせて使う**分析図**（ツリー・ウォーターフォール・評価マトリクス）、
-**デッキ設計の道具**（サマリー・ストーリーライン・ゴースト）を担う。
+The templates for **how to compose a page.** The `PageMixin` components
+(`scripts/pages.py`) mixed into `diagrams.Canvas`, and a catalog of page
+compositions built with them.
 
-> **作れるページを画像で見るなら
-> [slide-pattern-catalog.md](slide-pattern-catalog.md)。**
-> 42 パターンを 8 分類で、1 パターン 1 枚の実物画像と解説つきで並べてある。
-> こちらの文書は組み方の**規則**、あちらは**現物のカタログ**。
+Where `illustrations` / `patterns` / `charts` handle "the figure itself,"
+this document handles **the page's skeleton** (title band, intro line,
+implication, source line, exhibit frame) plus the **analysis diagrams** used
+alongside it (trees, waterfalls, rating matrices) and the **deck-design
+tools** (summary, storyline, ghost deck).
 
-デッキ仕様（JSON）の `figures` からも同名の type で使える。実例は 2 つあり、目的が違う。
+> **To see, in images, the pages you can build, see
+> [slide-pattern-catalog.md](slide-pattern-catalog.md).**
+> 42 patterns across 8 categories, each with one real rendered image and
+> commentary. This document is the **rules** for how to compose a page;
+> that one is the **catalog of actual examples**.
 
-| ファイル | 枚数 | 何のためのデッキか |
+These are also usable by the same `type` names from a deck spec's (JSON)
+`figures`. There are two example decks, for different purposes.
+
+| File | Pages | What the deck is for |
 |---|---|---|
-| `examples/slide-pattern-index.json` | 59 | **作れるページを見て選ぶ。** 1 枚 = 1 パターンの実物索引（画像版: [slide-pattern-catalog.md](slide-pattern-catalog.md)） |
-| `examples/read-alone-guide.json` | 30 | **配布資料の作法を学ぶ。** 部品の役割・良い例と悪い例・アンチパターン集 |
+| `examples/slide-pattern-index.json` | 59 | **Browse and pick which page to build.** A live index, one page per pattern (image version: [slide-pattern-catalog.md](slide-pattern-catalog.md)) |
+| `examples/read-alone-guide.json` | 30 | **Learn the conventions of a handout deck.** Component roles, good/bad examples, a collection of anti-patterns |
 
-新規にデッキを作るときは、まず `slide-pattern-index.json` を生成して
-「どのページで組むか」をユーザーに指させ、選ばれたパターンで仕様を書くのが速い。
+When starting a new deck, it's fastest to generate `slide-pattern-index.json`
+first, have the user point at which pages to build, and write the spec using
+the chosen patterns.
 
-## ページのパターン = 骨格 × 中身
+## Page Pattern = Skeleton × Content
 
-ページは 2 つの掛け算でできている。**骨格は 6 種しかない。**
+A page is the product of two choices. **There are only 6 skeletons.**
 
-| 骨格 | 構成 | 使いどころ |
+| Skeleton | Composition | When to use it |
 |---|---|---|
-| A 全幅 1 図 | タイトル + 導入文 + 図（全幅） + 出典 | 表や大きなツリーなど、縮めると読めない図 |
-| B 左図＋右示唆 | 図を左 2/3、`so_what` を右 1/3 | **最頻。標準はこれ** |
-| C 左右 2 図 | 図 × 2 を並置 | 2 つの事実を対にする。主張が 2 つになるなら 2 枚に割る |
-| D 上下 2 段 | 上に流れ（`flow`/`gantt`）、下に詳細 | 横長の図と内訳を重ねる |
-| E 全幅図＋下示唆帯 | 図を全幅、`so_what` を下に敷く | `matrix` / `posmap` など横幅が要る図 |
-| F 文字のみ | 表・箇条書きのみ | 前提・定義・条件など正確さが要る内容 |
+| A: One full-width figure | Title + intro + figure (full width) + source | A table or large tree — anything that becomes unreadable when shrunk |
+| B: Figure left + implication right | Figure on the left 2/3, `so_what` on the right 1/3 | **Most common. This is the default** |
+| C: Two figures side by side | Two figures placed next to each other | Pairing two facts. If it takes two claims, split into two pages instead |
+| D: Two rows, top and bottom | A flow (`flow`/`gantt`) on top, detail below | Overlaying a wide figure with a breakdown |
+| E: Full-width figure + implication band below | Figure full width, `so_what` laid below it | Figures that need the full width, like `matrix` / `posmap` |
+| F: Text only | Table or bullet list only | Content that needs precision — premises, definitions, conditions |
 
-中身（図表の枠に何を入れるか）は 7 分野 35 種で、`slide-pattern-index.json` の
-第 2〜8 章がその全実物。分野は 構成 / 定量 / 比較・評価 / 構造・論理 / 計画・体制 /
-定性・技術 / 締め・付録。
+The content (what goes inside the figure frame) spans 7 families and 35
+types; Chapters 2–8 of `slide-pattern-index.json` are the complete set of
+real examples. The families are: composition / quantitative / comparison
+& evaluation / structure & logic / planning & organization / qualitative &
+technical / closing & appendix.
 
-## 骨格の標準座標（10 × 5.625in・そのまま使える）
+## Standard Coordinates by Skeleton (10 × 5.625in — use as-is)
 
-**座標を毎回考え直さない。** 下の値は `slide-pattern-index.json` で目視確認済みの
-実測値で、そのまま使えば audit を通る。図の高さだけ中身に応じて調整する。
+**Don't re-derive coordinates every time.** The values below are measured
+values visually confirmed in `slide-pattern-index.json`; use them as-is and
+the audit passes. Only adjust the figure's height to fit its content.
 
-`TITLE_ONLY` 系レイアウト（タイトルはプレースホルダに入れる）:
+`TITLE_ONLY`-family layouts (the title goes in the placeholder):
 
-| 要素 | x | y | w | h |
+| Element | x | y | w | h |
 |---|---|---|---|---|
-| `lead_in` | 0.5 | 0.95 | 9.0 | 自動 |
-| 図（全幅・骨格A/F） | 0.5 | 1.5 | 9.0 | 〜3.0 |
-| 図（左・骨格B） | 0.5 | 1.5 | 5.9 | 〜2.9 |
-| `so_what`（右・骨格B） | 6.6 | 1.5 | 2.9 | 図と同じ |
-| 図 × 2（左右・骨格C） | 0.5 / 5.6 | 1.5 | 4.4 / 3.9 | 〜2.8 |
-| 上段（骨格D） | 0.5 | 1.5 | 9.0 | 0.75〜1.7 |
-| 下段（骨格D） | 0.5 | 上段の下端+0.3 | 9.0 | 残り |
-| 図（中央寄せ・骨格E） | 1.8 | 1.5 | 6.4 | 〜2.3 |
-| `so_what`（下帯・骨格E） | 0.5 | 3.9 | 9.0 | 0.9 |
-| `source_note` | 0.5 | 4.8 | 9.0 | 自動 |
+| `lead_in` | 0.5 | 0.95 | 9.0 | auto |
+| Figure (full width, skeleton A/F) | 0.5 | 1.5 | 9.0 | up to 3.0 |
+| Figure (left, skeleton B) | 0.5 | 1.5 | 5.9 | up to 2.9 |
+| `so_what` (right, skeleton B) | 6.6 | 1.5 | 2.9 | same as figure |
+| Figure × 2 (left/right, skeleton C) | 0.5 / 5.6 | 1.5 | 4.4 / 3.9 | up to 2.8 |
+| Top row (skeleton D) | 0.5 | 1.5 | 9.0 | 0.75–1.7 |
+| Bottom row (skeleton D) | 0.5 | top row's bottom edge + 0.3 | 9.0 | remainder |
+| Figure (centered, skeleton E) | 1.8 | 1.5 | 6.4 | up to 2.3 |
+| `so_what` (bottom band, skeleton E) | 0.5 | 3.9 | 9.0 | 0.9 |
+| `source_note` | 0.5 | 4.8 | 9.0 | auto |
 
-`BLANK` レイアウト（`governing_message` で自前のタイトルを描く）— 全体が 0.5in 下がる:
+`BLANK` layout (draws its own title with `governing_message`) — everything shifts down 0.5in:
 
-| 要素 | x | y | w |
+| Element | x | y | w |
 |---|---|---|---|
 | `governing_message` | 0.5 | 0.45 | 9.0 |
 | `lead_in` | 0.5 | 1.02 | 9.0 |
-| 図 | 0.5 | 1.55〜1.6 | 上表と同じ |
+| Figure | 0.5 | 1.55–1.6 | same as the table above |
 | `source_note` | 0.5 | 4.85 | 9.0 |
 
-守るべき下限:
+Minimums to respect:
 
-- `so_what` の `h` は **0.9 以上**（本文域は `h - 0.54`。0.72 だと 1 行も入らない）
-- `source_note` は `y ≤ 4.95`。`rule: false` なら 5.05 まで
-- 表は行数 × 約 0.34in（size 9）+ ヘッダ。**10 行前後が 1 枚の上限**。`row_h` を
-  詰めても縮まず、下端はページの端ではなく**フッター帯 y=5.20in** で止まる
-- `vbars` の `h` は 0.94 以上（数値ラベルとカテゴリラベルで 0.54 使う）
+- `so_what`'s `h` must be **0.9 or more** (the body area is `h - 0.54`; at 0.72 not even one line fits)
+- `source_note` must have `y ≤ 4.95` (up to 5.05 if `rule: false`)
+- A table needs roughly row count × 0.34in (at size 9) + header. **About 10 rows is the ceiling for one page.** Shrinking `row_h` doesn't help; the bottom edge is capped not by the page edge but by the **footer band at y=5.20in**
+- `vbars`'s `h` must be 0.94 or more (0.54 is used up by the value labels and category labels)
 
-## 用途で変わるのは「密度」であって骨格ではない
+## What Changes by Use Case Is Density, Not the Skeleton
 
-**骨格 6 種はどのデッキでも同じ。** 変わるのは 1 枚に載せる要素の量。
+**The 6 skeletons are the same across every deck.** What changes is how much
+content goes on one page.
 
-| | 登壇・勉強会 | 配布・提出・稟議（read-alone） |
+| | Stage presentation / study session | Handout / submission / internal approval (read-alone) |
 |---|---|---|
-| 読み手 | 話者が補う | 読者が独りで読み切る |
-| 使う部品 | `governing_message` と `source_note` | 全部（導入文・示唆・図表番号も） |
-| 骨格の偏り | A・F（図 1 つか文字だけ） | B が最頻。C・D・E も使う |
-| 1 枚の情報量 | 1 メッセージ・箇条書き 3 行まで | 結論・根拠・出典が 1 枚で閉じる |
-| レイアウト系統 | `*_PRESENTATION` | `*_PROPOSAL` |
+| Reader | The speaker fills in the gaps | The reader has to finish reading alone |
+| Components used | `governing_message` and `source_note` | Everything (intro line, implication, figure numbers too) |
+| Skeleton bias | A and F (a single figure, or text only) | B is most common. C, D, and E are used too |
+| Content per page | One message, up to 3 bullet lines | Conclusion, evidence, and source all close on one page |
+| Layout family | `*_PRESENTATION` | `*_PROPOSAL` |
 
-**1 つのデッキで両方を兼ねようとしない。** 兼ねると、登壇では字が多すぎ、
-配布では情報が足りない、という両方の悪いところが出る。両方要るなら 2 本作る。
+**Don't try to serve both purposes with one deck.** Doing so produces the
+worst of both — too much text for the stage, not enough information for a
+handout. Build two decks if you need both.
 
-配布資料側の作法（密度・示唆の使い方・アンチパターン）は
-`examples/read-alone-guide.json` に集約してある。
+The handout-side conventions (density, how to use implications, anti-patterns) are collected in `examples/read-alone-guide.json`.
 
-## 設計の根拠（2026-08 調査）
+## Design Rationale (2026-08 research)
 
-出典: [Deckary: Consulting Slide Standards](https://deckary.com/blog/consulting-slide-standards)、
-[Slideworks: Action Titles](https://slideworks.io/resources/how-to-write-action-titles-like-mckinsey)、
-[A1 Slides: McKinsey Presentation Framework](https://a1slides.com/mckinsey-presentation-framework/)、
+Sources: [Deckary: Consulting Slide Standards](https://deckary.com/blog/consulting-slide-standards),
+[Slideworks: Action Titles](https://slideworks.io/resources/how-to-write-action-titles-like-mckinsey),
+[A1 Slides: McKinsey Presentation Framework](https://a1slides.com/mckinsey-presentation-framework/),
 [Analyst Academy: Takeaway Boxes](https://www.theanalystacademy.com/takeaway-boxes-when-to-use/)
 
-- **アクションタイトルは 15 語（全角 40 字/行）以内・2 行まで・能動態。**
-  「何を見せるか」ではなく「何が言えるか」。タイトルだけを順に読むと
-  デッキ全体の論旨になる（横の論理）。
-- **縦の論理**: タイトルと図は不可分。図を隠してタイトルだけ読んでも、
-  タイトルを隠して図だけ見ても、同じ結論に着地しなければならない。
-- **数値の主張には必ず出典行。** 1 つでも出どころ不明の数字があると全体が疑われる。
-- **示唆ボックス（kicker）は 2 割以下。** タイトルの焼き直し・図に無い新情報は書かない。
-- **ピラミッド原則**: 結論を先に（エグゼクティブサマリー）、根拠は MECE に分解。
-- **ゴーストデッキ**: 清書の前に骨子（タイトル・図表の当て・データの状態）で
-  論旨を検証する。
+- **Action titles: within 15 words (40 full-width characters/line), 2 lines
+  max, active voice.** Not "what am I showing" but "what can I claim."
+  Reading only the titles in sequence should produce the throughline of the
+  whole deck (the horizontal logic).
+- **Vertical logic**: the title and the figure are inseparable. Hiding the
+  figure and reading only the title, or hiding the title and looking only at
+  the figure, must land on the same conclusion either way.
+- **Every numeric claim needs a source line.** Even one number of unknown
+  origin casts doubt on the whole deck.
+- **Implication boxes (kickers) should be ≤ 20% of pages.** Never restate the
+  title, never introduce new information absent from the figure.
+- **Pyramid principle**: conclusion first (executive summary), evidence
+  decomposed MECE.
+- **Ghost deck**: validate the throughline before the final polish, using
+  just the skeleton (titles, figure placeholders, data status).
 
-## どれを使うか
+## Which One to Use
 
-| 見せたいもの | 使うもの | 補足 |
+| What you want to show | Use | Notes |
 |---|---|---|
-| 結論を先に置く 1 枚 | `exec_summary` | SCR（状況→課題→答え）。冒頭専用 |
-| タイトルの連なり＝論旨 | `storyline` | 設計の検証・目次・章扉に |
-| 清書前の骨子 | `ghost` | データ状態（確定/作成中/未取得）つき |
-| 論点の分解 | `mece_tree` | 横方向のロジックツリー。体制図は `orgchart` |
-| BLANK で組むタイトル | `governing_message` | TITLE プレースホルダがあるならそちら |
-| 図の読み方の導入 | `lead_in` | タイトル直下 1〜2 行 |
-| 図の非自明な含意 | `so_what` | 使用は全体の 2 割以下 |
-| 出典・注記 | `source_note` | 数値のある全スライドに必須 |
-| 図表番号つきの枠 | `exhibit_frame` | 本文・付録から参照する図に |
-| 増減の橋渡し | `waterfall` | 合計の不一致は ValueError |
-| 案の比較（3 案×基準） | `rating_matrix` | ドット式。白黒印刷に耐える |
+| One page that leads with the conclusion | `exec_summary` | SCR (situation → problem → answer). Opening slide only |
+| A chain of titles = the throughline | `storyline` | For validating a design, tables of contents, section dividers |
+| A pre-polish skeleton | `ghost` | Carries data status (confirmed/in progress/not yet obtained) |
+| Decomposing an issue | `mece_tree` | A horizontal logic tree. Use `orgchart` for an org chart |
+| A title built on BLANK | `governing_message` | Prefer the TITLE placeholder if the layout has one |
+| An introduction to how to read the figure | `lead_in` | 1–2 lines right below the title |
+| A non-obvious implication of the figure | `so_what` | Use on ≤ 20% of pages |
+| Source/annotation | `source_note` | Required on every slide with a number |
+| A frame with a figure number | `exhibit_frame` | For figures referenced from the body text or an appendix |
+| A bridge of increases and decreases | `waterfall` | A mismatched total raises ValueError |
+| Comparing options (3 options × criteria) | `rating_matrix` | Dot-based. Holds up in black-and-white printing |
 
-## ページの標準形（定量スライド）
+## Standard Form of a Page (Quantitative Slide)
 
 ```python
 d = Canvas(deck, slide_id, template)
@@ -142,96 +157,119 @@ d.source_note(0.5, 4.85, 9.0, "各社 IR 資料（2025 年度）",
               notes=["※1 間接費は含まない"])
 ```
 
-積み上げ規約どおり各部品は下端 y を返す。**例外は `exhibit_frame` だけ**で、
-中身を描くための内側領域 `(x, y, w, h)` を返す。JSON から使う場合は内側領域を
-受け取れないため、枠だけ描いて中身は座標を手で合わせる（目安: x+0.2 / ヘッダー下 +0.45）。
+Per the stacking convention, each component returns its bottom edge y.
+**`exhibit_frame` is the only exception** — it returns the inner area
+`(x, y, w, h)` for drawing the content. When used from JSON, that inner area
+can't be received, so only the frame is drawn and the content coordinates
+have to be hand-aligned (roughly: x+0.2 / header bottom +0.45).
 
-## 部品ごとの要点
+## Notes per Component
 
-### governing_message — アクションタイトル
+### governing_message — action title
 
-- 全角 40 字/行 × 2 行を超えると警告。テンプレートに TITLE があるレイアウトでは
-  そちらを使い、この部品は BLANK で 1 枚を丸ごと組むときに使う。
+- Warns above 40 full-width characters/line × 2 lines. On a layout whose
+  template has a TITLE, use that instead — this component is for building
+  an entire page from scratch on BLANK.
 
-### lead_in — 導入文
+### lead_in — intro line
 
-- 「この図を何のために見るか」を 1〜2 行。登壇用では口頭で言えばよいので不要。
-- 高さは文字数から自動計算する（行送り 125% を織り込み済み）。
+- 1–2 lines on "why look at this figure." Unnecessary for stage
+  presentations, since it can be said aloud.
+- Height is computed automatically from character count (125% leading is baked in).
 
-### so_what — 示唆ボックス
+### so_what — implication box
 
-- `points` で箇条書きの補足を足せる。`accent` で色を変えられる（悪い例の赤など）。
-- 書いてはいけないもの: タイトルの焼き直し／図に無い新情報／複数の主張。
+- `points` can add bulleted supplementary notes. `accent` can change the
+  color (e.g. red for a bad example).
+- Never write: a restatement of the title / new information absent from the
+  figure / multiple claims.
 
-### source_note — 出典・注記行
+### source_note — source/annotation line
 
-- `source` が空だと `ValueError`。**出典を書けない数字は載せない**を実装で強制。
-- `notes` は「※1 …」形式の注記。出典より上に並ぶ。`prefix` で「根拠」等に変更可。
+- Raises `ValueError` if `source` is empty. **Enforces, in code, that a
+  number without a citable source doesn't go on the slide.**
+- `notes` are "※1 …"-style annotations, placed above the source. `prefix`
+  can change the label to something like "Basis."
 
-### exhibit_frame — 図表枠
+### exhibit_frame — exhibit frame
 
-- 番号は呼び出し側で通し管理する（部品は採番しない）。
-- 1 枚 1 図で参照が発生しない資料には不要。
+- The caller manages numbering sequentially (the component itself doesn't assign numbers).
+- Unnecessary for material with one figure per page and no cross-references.
 
-### mece_tree — ロジックツリー
+### mece_tree — logic tree
 
-- 深さ 4 超・1 列 1.1in 未満・葉が入らない高さは `ValueError`。
-- 分解が MECE か（漏れなく・重複なく）は**描く側の責任**。部品は形しか保証しない。
+- Raises `ValueError` for depth beyond 4, a column narrower than 1.1in, or a
+  height too short for its leaves.
+- Whether the decomposition is actually MECE (no gaps, no overlaps) is **the
+  author's responsibility** — the component only guarantees the shape.
 
-### waterfall — ウォーターフォール
+### waterfall — waterfall
 
-- `items` は `(ラベル, 値, "total"|"delta")`。先頭は `total` 必須。
-- **最後の total が積算と合わないと `ValueError`**（データの取り違えを止める）。
-- 合計=primary 青。増減の色は `good` で決める: `good="up"`（既定。売上・利益の橋、
-  増加が緑）か `good="down"`（コスト・リードタイム削減の橋、減少が緑）。
-  符号だけで塗るとコスト文脈で「削減＝赤」になり意味が逆転する。
-- 基線ゼロ固定（負の領域は不可）。
+- `items` is `(label, value, "total"|"delta")`. The first item must be `total`.
+- **Raises `ValueError` if the final total doesn't match the running sum**
+  (catches data mix-ups).
+- The total/primary bar is blue. `good` decides which direction (increase or
+  decrease) is colored green: `good="up"` (default — a revenue/profit
+  bridge, where increases are green) or `good="down"` (a cost/lead-time
+  reduction bridge, where decreases are green). Coloring purely by sign would
+  invert the meaning in a cost context ("reduction = red").
+- The baseline is fixed at zero (no negative regions).
 
-### rating_matrix — 評価マトリクス
+### rating_matrix — rating matrix
 
-- 値は 0〜levels の整数。ハーヴェイボール（部分塗りの円）は Slides API に
-  扇形が無く描けないため、**塗りドットの数**で表す。白黒印刷でも判別できる。
-- 2 案の比較なら `before_after`（illustrations）で足りる。3 案以上、あるいは
-  優劣を付けない並列比較なら `comparison`。矢印は「移り変わり」のときだけ置く。
+- Values are integers from 0 to `levels`. Harvey balls (partially filled
+  circles) can't be drawn because the Slides API has no pie-wedge shape, so
+  **a count of filled dots** is used instead. Distinguishable even in
+  black-and-white printing.
+- For a 2-option comparison, `before_after` (illustrations) is enough. For 3
+  or more options, or a parallel comparison without ranking, use
+  `comparison`. Only add an arrow when showing a "transition."
 
-### exec_summary — エグゼクティブサマリー
+### exec_summary — executive summary
 
-- `points`（答えを支える論点）は 5 個まで。それ以上に分かれるなら章立てを見直す。
-- 「この 1 枚だけ読めば意思決定できる」が合格条件。
+- `points` (the arguments supporting the answer) are capped at 5. If it
+  splits into more than that, reconsider the chapter structure.
+- The bar for passing is: "reading only this one page is enough to decide."
 
-### storyline — 横の論理
+### storyline — horizontal logic
 
-- `titles` は文字列か `(ページ番号, タイトル)`。`highlight` で現在地を示せる。
-- 成果物（目次・章扉）と設計の道具（論旨の検証）を兼ねる。
+- `titles` is either a string or `(page number, title)`. `highlight` can mark the current position.
+- Serves double duty as a deliverable (table of contents, section divider) and a design tool (validating the throughline).
 
-### ghost — ゴーストデッキ
+### ghost — ghost deck
 
-- 状態は `confirmed`（緑）/ `wip`（黄）/ `missing`（赤）。
-- **「未取得」が残ったまま清書に入らない**ためのチェックボードで、成果物ではない。
+- Status is `confirmed` (green) / `wip` (yellow) / `missing` (red).
+- **A checkboard to prevent "not yet obtained" items from surviving into the
+  final polish** — it isn't a deliverable itself.
 
-## アンチパターン（部品が止めるもの・人が見るもの）
+## Anti-Patterns (What Components Stop vs. What a Human Must Catch)
 
-| 失敗 | 検出 |
+| Failure | How it's caught |
 |---|---|
-| 出典なしの数値 | `source_note` が空出典で `ValueError` |
-| ウォーターフォールの合計不一致 | `waterfall` が `ValueError` |
-| 棒グラフの基線ずらし | `charts` 側で禁止（`ValueError`） |
-| 二重軸で相関を演出 | `linechart` は意図的に非対応 |
-| 3 行タイトル | `governing_message` が警告 |
-| 文字溢れ・重なり | `audit_text_fit` / `audit_overlaps`（`--dry-run --strict`） |
-| タイトルがテーマだけ／1 枚 2 主張／示唆の乱用 | 機械検出不可。`examples/read-alone-guide.json` のアンチパターン章を目安に人が見る |
+| A number with no source | `source_note` raises `ValueError` for an empty source |
+| A waterfall total that doesn't reconcile | `waterfall` raises `ValueError` |
+| A shifted baseline on a bar chart | Disallowed in `charts` (`ValueError`) |
+| Using dual axes to stage a correlation | `linechart` deliberately doesn't support this |
+| A 3-line title | `governing_message` warns |
+| Text overflow/overlap | `audit_text_fit` / `audit_overlaps` (`--dry-run --strict`) |
+| A title that's only a theme / two claims on one page / overused implications | Not machine-detectable. Check by eye against the anti-pattern chapter in `examples/read-alone-guide.json` |
 
-## 落とし穴
+## Pitfalls
 
-- **`size` キーの意味が type で違う。** icon 系・pie ではインチ（空間量）、
-  `table` などではフォント pt。仕様の検証はこの区別を織り込み済み。
-- **索引・一覧の表は 10 行前後が上限。** Slides のテーブル行は縮まないうえ、
-  下端はページの端ではなくマスターのロゴ・フッター帯で止まる。行数が多いなら
-  分野で割って複数枚にする（`slide-pattern-index.json` の索引が 5 枚あるのはこのため）。
-  `--dry-run` が帯への重なりをエラーで止める。
-- `exhibit_frame` を JSON から使うときの中身は手座標。ずれたら `--dry-run` の
-  `audit_overlaps` が拾うので、警告を見てから直せばよい。
-- ハーヴェイボール・角度指定の扇形は描けない（`pie` が画像なのと同じ制約）。
-- 印刷は 1 枚ずつ横向きが前提。ページサイズは複製方式では変えられない
-  （`references/api-notes.md` セクション 7）。A4 縦の紙面が必要なら
-  このスキルの守備範囲外。
+- **The meaning of the `size` key differs by type.** For icon-family and
+  `pie` it's inches (a spatial quantity); for `table` and others it's font
+  points. Spec validation already accounts for this distinction.
+- **An index/listing table caps out around 10 rows.** Slides table rows
+  don't shrink, and the bottom edge is capped not by the page edge but by
+  the master's logo/footer band. Split by category into multiple pages when
+  there are more rows than that (this is why `slide-pattern-index.json`'s
+  index spans 5 pages). `--dry-run` stops overlap with the band as an error.
+- When using `exhibit_frame` from JSON, the content coordinates are
+  hand-placed. If they drift, `--dry-run`'s `audit_overlaps` catches it —
+  fix it once you see the warning.
+- Harvey balls and angle-specified pie wedges can't be drawn (the same
+  constraint that makes `pie` an image).
+- Printing assumes one landscape page at a time. The page size can't be
+  changed under the copy-based generation method
+  (`references/api-notes.md` section 7). If you need a portrait A4 page,
+  that's outside this skill's scope.

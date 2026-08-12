@@ -1,21 +1,22 @@
-# Google Slides API パターンガイド
+*[日本語](google-slides-api.ja.md)*
+# Google Slides API Pattern Guide
 
-> Python + Google Slides API でプレゼンテーションを生成するための実装パターン集。
-> SlideBuilder クラスパターンとリクエストビルダー関数を定義する。
+> A collection of implementation patterns for generating presentations with Python + the Google Slides API.
+> Defines the SlideBuilder class pattern and request-builder functions.
 
-### 規約
+### Conventions
 
-本ドキュメントで使用する識別子:
+Identifiers used in this document:
 
-- **`C`** — `templates/<theme>/theme.json` の `colors` セクションから展開した色定数クラス（SKILL.md Phase 1 参照）
-- **`L`** — `templates/<theme>/theme.json` の `layouts` セクションから展開したレイアウト定数クラス
-- **`sb`** — `SlideBuilder` インスタンス
+- **`C`** — the color constant class expanded from the `colors` section of `templates/<theme>/theme.json` (see SKILL.md Phase 1)
+- **`L`** — the layout constant class expanded from the `layouts` section of `templates/<theme>/theme.json`
+- **`sb`** — a `SlideBuilder` instance
 
 ---
 
-## 1. セットアップ
+## 1. Setup
 
-### OAuth 2.0 フロー
+### OAuth 2.0 flow
 
 ```python
 import os
@@ -30,7 +31,7 @@ SCOPES = [
 ]
 ```
 
-### credentials / token 管理
+### Managing credentials / tokens
 
 ```python
 def get_credentials(creds_file, token_file):
@@ -49,7 +50,7 @@ def get_credentials(creds_file, token_file):
     return creds
 ```
 
-### 必要な pip パッケージ
+### Required pip packages
 
 ```
 google-auth-oauthlib
@@ -59,9 +60,9 @@ google-api-python-client
 
 ---
 
-## 2. 座標系
+## 2. Coordinate system
 
-### EMU（English Metric Units）
+### EMU (English Metric Units)
 
 ```python
 EMU = 914400  # 1 inch = 914,400 EMU
@@ -73,14 +74,14 @@ def inches(val):
 
 ### Google Slides vs PowerPoint
 
-| | PowerPoint 16:9 | Google Slides 16:9 | 比率 |
+| | PowerPoint 16:9 | Google Slides 16:9 | Ratio |
 |-|-----------------|---------------------|------|
-| 幅 | 13.333" (12,192,000 EMU) | **10.000"** (9,144,000 EMU) | 0.75x |
-| 高さ | 7.500" (6,858,000 EMU) | **5.625"** (5,143,500 EMU) | 0.75x |
+| Width | 13.333" (12,192,000 EMU) | **10.000"** (9,144,000 EMU) | 0.75x |
+| Height | 7.500" (6,858,000 EMU) | **5.625"** (5,143,500 EMU) | 0.75x |
 
-Google Slides は 16:9 を **10" x 5.625"** に正規化する。PowerPoint 座標からの変換には 0.75 を掛ける。
+Google Slides normalizes 16:9 to **10" x 5.625"**. Multiply by 0.75 when converting from PowerPoint coordinates.
 
-### 比率ベース座標計算（推奨）
+### Ratio-based coordinate calculation (recommended)
 
 ```python
 def calc_layout(sw, sh):
@@ -100,9 +101,9 @@ def calc_layout(sw, sh):
 
 ---
 
-## 3. ヘルパー関数
+## 3. Helper functions
 
-### 色変換
+### Color conversion
 
 ```python
 def hex_to_rgb(hex_str):
@@ -115,7 +116,7 @@ def hex_to_rgb(hex_str):
     }
 ```
 
-### スタイルビルダー
+### Style builders
 
 ```python
 def solid_fill(color):
@@ -136,9 +137,9 @@ def text_style(font_size=18, bold=False, color=None, font_family="M PLUS 1p"):
 
 ---
 
-## 4. リクエストビルダー
+## 4. Request builders
 
-### シェイプ作成
+### Creating a shape
 
 ```python
 def create_shape_request(page_id, shape_id, x, y, w, h):
@@ -161,7 +162,7 @@ def create_shape_request(page_id, shape_id, x, y, w, h):
     }}
 ```
 
-### テキストボックス作成
+### Creating a text box
 
 ```python
 def create_textbox_request(page_id, box_id, x, y, w, h):
@@ -184,7 +185,7 @@ def create_textbox_request(page_id, box_id, x, y, w, h):
     }}
 ```
 
-### テキスト挿入・スタイル適用
+### Inserting text / applying styles
 
 ```python
 def insert_text_request(box_id, text):
@@ -212,7 +213,7 @@ def update_paragraph_style_request(box_id, alignment="START", start=0, end=None,
     }}
 ```
 
-### シェイププロパティ更新
+### Updating shape properties
 
 ```python
 def shape_fill_request(shape_id, color):
@@ -243,7 +244,7 @@ def shape_no_border_request(shape_id):
     }}
 ```
 
-### ページ背景
+### Page background
 
 ```python
 def page_bg_request(page_id, color):
@@ -257,9 +258,9 @@ def page_bg_request(page_id, color):
 
 ---
 
-## 5. SlideBuilder クラスパターン
+## 5. SlideBuilder class pattern
 
-リクエストを蓄積し、最後に一括送信するビルダーパターン。
+A builder pattern that accumulates requests and sends them all in one batch at the end.
 
 ```python
 class SlideBuilder:
@@ -363,9 +364,9 @@ class SlideBuilder:
 
 ---
 
-## 6. コンポジットメソッド
+## 6. Composite methods
 
-テーマの `C`（色定数）と `L`（レイアウト定数）を使う高レベルメソッド。
+High-level methods that use the theme's `C` (color constants) and `L` (layout constants).
 
 ### add_footer
 
@@ -493,11 +494,11 @@ def add_card_slide(self, title, cards, *, source=None, card_h=3.0):
 
 ---
 
-## 7. バッチ実行
+## 7. Batch execution
 
-### 500件ずつチャンク分割
+### Chunking into batches of 500
 
-Google Slides API の batchUpdate は一度に大量のリクエストを送れるが、安全のため 500 件ずつ分割する。
+The Google Slides API's `batchUpdate` can send a large number of requests at once, but for safety they are split into chunks of 500.
 
 ```python
 def execute_batch(slides_service, pres_id, requests, chunk_size=500):
@@ -511,7 +512,7 @@ def execute_batch(slides_service, pres_id, requests, chunk_size=500):
         print(f"  Batch {i // chunk_size + 1}: {len(chunk)} requests sent")
 ```
 
-### 典型的な main() 構造
+### A typical main() structure
 
 ```python
 def main():
@@ -547,15 +548,15 @@ def main():
 
 ---
 
-## 8. Sheets API チャート連携
+## 8. Sheets API chart integration
 
-Google Slides のネイティブチャートは Sheets API と連携が必要。
+A native Google Slides chart requires integration with the Sheets API.
 
-### linked chart の作成手順
+### Steps for creating a linked chart
 
-1. Google Sheets でデータとチャートを作成
-2. `sheets_service.spreadsheets().get()` でチャート ID を取得
-3. `createSheetsChart` リクエストでスライドに埋め込む
+1. Create the data and chart in Google Sheets
+2. Get the chart ID with `sheets_service.spreadsheets().get()`
+3. Embed it into the slide with a `createSheetsChart` request
 
 ```python
 def add_linked_chart(self, slide_id, spreadsheet_id, chart_id, x, y, w, h):
@@ -584,38 +585,38 @@ def add_linked_chart(self, slide_id, spreadsheet_id, chart_id, x, y, w, h):
 
 ---
 
-## 9. API 制約・Pitfalls
+## 9. API constraints & pitfalls
 
-### 重要な制約
+### Key constraints
 
-| 制約 | 詳細 |
+| Constraint | Detail |
 |------|------|
-| pageSize は作成時のみ | `updatePageProperties` では変更不可。`presentations.create` で指定 |
-| objectId は5文字以上 | `createSlide`, `createShape` 等の objectId は最低5文字 |
-| outline weight > 0 | weight=0 はエラー。非表示には `propertyState: NOT_RENDERED` |
-| BLANK レイアウト推奨 | カスタムレイアウトでは BLANK を使い、全要素を自前で配置 |
-| 16:9 正規化 | Google Slides は 10" x 5.625" に正規化（PowerPoint の 0.75 倍） |
+| `pageSize` only at creation time | Cannot be changed via `updatePageProperties`; specify it in `presentations.create` |
+| `objectId` must be 5+ characters | The `objectId` for `createSlide`, `createShape`, etc. must be at least 5 characters |
+| outline weight > 0 | `weight=0` is an error. Use `propertyState: NOT_RENDERED` to hide it |
+| BLANK layout recommended | For custom layouts, use BLANK and place every element yourself |
+| 16:9 normalization | Google Slides normalizes to 10" x 5.625" (0.75x PowerPoint) |
 
-### レート制限
+### Rate limits
 
-| 種別 | 上限 |
+| Type | Limit |
 |------|------|
-| 読み取りリクエスト | 300/分/ユーザー |
-| 書き込みリクエスト | 60/分/ユーザー |
-| batchUpdate | 1回で複数リクエスト可（チャンクサイズ 500 推奨） |
+| Read requests | 300/min/user |
+| Write requests | 60/min/user |
+| batchUpdate | Multiple requests allowed per call (chunk size of 500 recommended) |
 
-### BLANK vs プレースホルダー
+### BLANK vs placeholders
 
-| 方式 | メリット | デメリット |
+| Approach | Pros | Cons |
 |------|---------|-----------|
-| BLANK + カスタムシェイプ | 完全なレイアウト制御。PPTX と設計共有可能 | テーマ変更の恩恵なし。全座標を自前計算 |
-| プレースホルダー | テーマ連動。テーマ変更で自動調整 | 細かいレイアウト制御が困難 |
+| BLANK + custom shapes | Full layout control; design can be shared with PPTX | No benefit from theme changes; all coordinates must be computed manually |
+| Placeholders | Theme-linked; automatically adjusts on theme change | Fine-grained layout control is difficult |
 
-**推奨:** カスタムレイアウト（36種等）が必要な場合は **BLANK + カスタムシェイプ方式** を採用。
+**Recommendation:** when custom layouts (36+ types, etc.) are required, adopt the **BLANK + custom shapes approach**.
 
 ---
 
-## 10. サムネイル取得（視覚的 QA 用）
+## 10. Retrieving thumbnails (for visual QA)
 
 ```python
 def export_thumbnails(slides_service, pres_id, output_dir):
@@ -637,9 +638,9 @@ def export_thumbnails(slides_service, pres_id, output_dir):
     return output_dir
 ```
 
-### Drive API で共有設定
+### Configuring sharing via the Drive API
 
-サムネイル URL はプレゼンテーションが共有されていなくても取得可能だが、外部ツールでの検証には共有設定が必要な場合がある。
+Thumbnail URLs can be retrieved even without the presentation being shared, but external verification tools may sometimes require sharing to be enabled.
 
 ```python
 def share_presentation(drive_service, pres_id):
@@ -652,9 +653,9 @@ def share_presentation(drive_service, pres_id):
 
 ---
 
-## 11. 汎用シェイプ作成
+## 11. General-purpose shape creation
 
-### add_shape（任意の shapeType）
+### add_shape (any shapeType)
 
 ```python
 def add_shape(self, slide_id, shape_type, x, y, w, h,
@@ -686,7 +687,7 @@ def add_shape(self, slide_id, shape_type, x, y, w, h,
     return shape_id
 ```
 
-### 便利メソッド
+### Convenience methods
 
 ```python
 def add_circle(self, slide_id, cx, cy, r, fill=None, border_color=None):
@@ -785,213 +786,213 @@ def add_badge(self, slide_id, cx, cy, r, text, fill, text_color):
                   color=text_color, alignment="CENTER", valign="MIDDLE")
 ```
 
-### シェイプタイプ 完全リファレンス（全141タイプ）
+### Complete shapeType reference (all 141 types)
 
-> `add_shape(slide_id, shape_type, x, y, w, h, ...)` の `shape_type` に指定可能な全値。
-> `TYPE_UNSPECIFIED` と `CUSTOM` は createShape では使用不可のため除外。
+> All values that can be passed as `shape_type` to `add_shape(slide_id, shape_type, x, y, w, h, ...)`.
+> `TYPE_UNSPECIFIED` and `CUSTOM` are excluded because they cannot be used with `createShape`.
 
-#### 基本図形（33）
+#### Basic shapes (33)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `RECTANGLE` | 矩形 |
-| `ROUND_RECTANGLE` | 角丸矩形 |
-| `ROUND_1_RECTANGLE` | 1角のみ角丸の矩形 |
-| `ROUND_2_DIAGONAL_RECTANGLE` | 対角2角の角丸矩形 |
-| `ROUND_2_SAME_RECTANGLE` | 同側2角の角丸矩形 |
-| `SNIP_1_RECTANGLE` | 1角カットの矩形 |
-| `SNIP_2_DIAGONAL_RECTANGLE` | 対角2角カットの矩形 |
-| `SNIP_2_SAME_RECTANGLE` | 同側2角カットの矩形 |
-| `SNIP_ROUND_RECTANGLE` | 1角カット＋1角丸の矩形 |
-| `ELLIPSE` | 楕円 / 円（w=h で真円） |
-| `ARC` | 円弧 |
-| `CHORD` | 弦（弓形） |
-| `PIE` | 扇形（パイ） |
-| `BLOCK_ARC` | ブロック円弧 |
-| `TRIANGLE` | 三角形 |
-| `RIGHT_TRIANGLE` | 直角三角形 |
-| `DIAMOND` | ひし形 |
-| `PARALLELOGRAM` | 平行四辺形 |
-| `TRAPEZOID` | 台形 |
-| `PENTAGON` | 五角形 |
-| `HEXAGON` | 六角形 |
-| `HEPTAGON` | 七角形 |
-| `OCTAGON` | 八角形 |
-| `DECAGON` | 十角形 |
-| `DODECAGON` | 十二角形 |
-| `BEVEL` | ベベル（額縁風） |
-| `CAN` | シリンダー（缶） |
-| `CUBE` | 立方体 |
-| `DONUT` | ドーナツ |
-| `FRAME` | フレーム |
-| `HALF_FRAME` | ハーフフレーム |
-| `CORNER` | コーナー |
-| `DIAGONAL_STRIPE` | 対角ストライプ |
+| `RECTANGLE` | Rectangle |
+| `ROUND_RECTANGLE` | Rounded rectangle |
+| `ROUND_1_RECTANGLE` | Rectangle with one rounded corner |
+| `ROUND_2_DIAGONAL_RECTANGLE` | Rectangle with two diagonal rounded corners |
+| `ROUND_2_SAME_RECTANGLE` | Rectangle with two same-side rounded corners |
+| `SNIP_1_RECTANGLE` | Rectangle with one cut corner |
+| `SNIP_2_DIAGONAL_RECTANGLE` | Rectangle with two diagonal cut corners |
+| `SNIP_2_SAME_RECTANGLE` | Rectangle with two same-side cut corners |
+| `SNIP_ROUND_RECTANGLE` | Rectangle with one cut corner and one rounded corner |
+| `ELLIPSE` | Ellipse / circle (a true circle when w=h) |
+| `ARC` | Arc |
+| `CHORD` | Chord (bowtie segment) |
+| `PIE` | Pie / sector |
+| `BLOCK_ARC` | Block arc |
+| `TRIANGLE` | Triangle |
+| `RIGHT_TRIANGLE` | Right triangle |
+| `DIAMOND` | Diamond |
+| `PARALLELOGRAM` | Parallelogram |
+| `TRAPEZOID` | Trapezoid |
+| `PENTAGON` | Pentagon |
+| `HEXAGON` | Hexagon |
+| `HEPTAGON` | Heptagon |
+| `OCTAGON` | Octagon |
+| `DECAGON` | Decagon |
+| `DODECAGON` | Dodecagon |
+| `BEVEL` | Bevel (frame-like) |
+| `CAN` | Cylinder (can) |
+| `CUBE` | Cube |
+| `DONUT` | Donut |
+| `FRAME` | Frame |
+| `HALF_FRAME` | Half frame |
+| `CORNER` | Corner |
+| `DIAGONAL_STRIPE` | Diagonal stripe |
 
-#### 矢印（21）
+#### Arrows (21)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `RIGHT_ARROW` | 右矢印 |
-| `LEFT_ARROW` | 左矢印 |
-| `UP_ARROW` | 上矢印 |
-| `DOWN_ARROW` | 下矢印 |
-| `LEFT_RIGHT_ARROW` | 左右矢印 |
-| `UP_DOWN_ARROW` | 上下矢印 |
-| `LEFT_RIGHT_UP_ARROW` | 左右上矢印 |
-| `LEFT_UP_ARROW` | 左上矢印 |
-| `QUAD_ARROW` | 四方向矢印 |
-| `BENT_ARROW` | 屈折矢印 |
-| `BENT_UP_ARROW` | 上向き屈折矢印 |
-| `CURVED_DOWN_ARROW` | 曲線下矢印 |
-| `CURVED_LEFT_ARROW` | 曲線左矢印 |
-| `CURVED_RIGHT_ARROW` | 曲線右矢印 |
-| `CURVED_UP_ARROW` | 曲線上矢印 |
-| `NOTCHED_RIGHT_ARROW` | ノッチ右矢印 |
-| `STRIPED_RIGHT_ARROW` | ストライプ右矢印 |
-| `UTURN_ARROW` | Uターン矢印 |
-| `ARROW_EAST` | 東矢印（細い） |
-| `ARROW_NORTH_EAST` | 北東矢印（細い） |
-| `ARROW_NORTH` | 北矢印（細い） |
+| `RIGHT_ARROW` | Right arrow |
+| `LEFT_ARROW` | Left arrow |
+| `UP_ARROW` | Up arrow |
+| `DOWN_ARROW` | Down arrow |
+| `LEFT_RIGHT_ARROW` | Left-right arrow |
+| `UP_DOWN_ARROW` | Up-down arrow |
+| `LEFT_RIGHT_UP_ARROW` | Left-right-up arrow |
+| `LEFT_UP_ARROW` | Left-up arrow |
+| `QUAD_ARROW` | Four-directional arrow |
+| `BENT_ARROW` | Bent arrow |
+| `BENT_UP_ARROW` | Bent-up arrow |
+| `CURVED_DOWN_ARROW` | Curved-down arrow |
+| `CURVED_LEFT_ARROW` | Curved-left arrow |
+| `CURVED_RIGHT_ARROW` | Curved-right arrow |
+| `CURVED_UP_ARROW` | Curved-up arrow |
+| `NOTCHED_RIGHT_ARROW` | Notched right arrow |
+| `STRIPED_RIGHT_ARROW` | Striped right arrow |
+| `UTURN_ARROW` | U-turn arrow |
+| `ARROW_EAST` | East arrow (thin) |
+| `ARROW_NORTH_EAST` | Northeast arrow (thin) |
+| `ARROW_NORTH` | North arrow (thin) |
 
-#### 矢印コールアウト（7）
+#### Arrow callouts (7)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `RIGHT_ARROW_CALLOUT` | 右矢印コールアウト |
-| `LEFT_ARROW_CALLOUT` | 左矢印コールアウト |
-| `UP_ARROW_CALLOUT` | 上矢印コールアウト |
-| `DOWN_ARROW_CALLOUT` | 下矢印コールアウト |
-| `LEFT_RIGHT_ARROW_CALLOUT` | 左右矢印コールアウト |
-| `QUAD_ARROW_CALLOUT` | 四方向矢印コールアウト |
-| `WEDGE_RECTANGLE_CALLOUT` | 矩形吹出し |
+| `RIGHT_ARROW_CALLOUT` | Right arrow callout |
+| `LEFT_ARROW_CALLOUT` | Left arrow callout |
+| `UP_ARROW_CALLOUT` | Up arrow callout |
+| `DOWN_ARROW_CALLOUT` | Down arrow callout |
+| `LEFT_RIGHT_ARROW_CALLOUT` | Left-right arrow callout |
+| `QUAD_ARROW_CALLOUT` | Four-directional arrow callout |
+| `WEDGE_RECTANGLE_CALLOUT` | Rectangular speech bubble |
 
-#### 吹出し（3）
+#### Speech bubbles (3)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `WEDGE_ELLIPSE_CALLOUT` | 楕円吹出し |
-| `WEDGE_ROUND_RECTANGLE_CALLOUT` | 角丸矩形吹出し |
-| `CLOUD_CALLOUT` | 雲形吹出し |
+| `WEDGE_ELLIPSE_CALLOUT` | Oval speech bubble |
+| `WEDGE_ROUND_RECTANGLE_CALLOUT` | Rounded-rectangle speech bubble |
+| `CLOUD_CALLOUT` | Cloud-shaped speech bubble |
 
-#### ブラケット・ブレース（6）
+#### Brackets / braces (6)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `LEFT_BRACKET` | 左角括弧 |
-| `RIGHT_BRACKET` | 右角括弧 |
-| `LEFT_BRACE` | 左波括弧 |
-| `RIGHT_BRACE` | 右波括弧 |
-| `BRACE_PAIR` | 波括弧ペア |
-| `BRACKET_PAIR` | 角括弧ペア |
+| `LEFT_BRACKET` | Left bracket |
+| `RIGHT_BRACKET` | Right bracket |
+| `LEFT_BRACE` | Left brace |
+| `RIGHT_BRACE` | Right brace |
+| `BRACE_PAIR` | Brace pair |
+| `BRACKET_PAIR` | Bracket pair |
 
-#### 星・リボン・装飾（18）
+#### Stars, ribbons, and decorations (18)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `STAR_4` | 4頂点星 |
-| `STAR_5` | 5頂点星 |
-| `STAR_6` | 6頂点星（ダビデの星） |
-| `STAR_7` | 7頂点星 |
-| `STAR_8` | 8頂点星 |
-| `STAR_10` | 10頂点星 |
-| `STAR_12` | 12頂点星 |
-| `STAR_16` | 16頂点星 |
-| `STAR_24` | 24頂点星 |
-| `STAR_32` | 32頂点星 |
-| `STARBURST` | スターバースト |
-| `RIBBON` | リボン |
-| `RIBBON_2` | リボン 2 |
-| `ELLIPSE_RIBBON` | 楕円リボン |
-| `ELLIPSE_RIBBON_2` | 楕円リボン 2 |
-| `HEART` | ハート |
-| `SUN` | 太陽 |
-| `MOON` | 月 |
+| `STAR_4` | 4-point star |
+| `STAR_5` | 5-point star |
+| `STAR_6` | 6-point star (Star of David) |
+| `STAR_7` | 7-point star |
+| `STAR_8` | 8-point star |
+| `STAR_10` | 10-point star |
+| `STAR_12` | 12-point star |
+| `STAR_16` | 16-point star |
+| `STAR_24` | 24-point star |
+| `STAR_32` | 32-point star |
+| `STARBURST` | Starburst |
+| `RIBBON` | Ribbon |
+| `RIBBON_2` | Ribbon 2 |
+| `ELLIPSE_RIBBON` | Oval ribbon |
+| `ELLIPSE_RIBBON_2` | Oval ribbon 2 |
+| `HEART` | Heart |
+| `SUN` | Sun |
+| `MOON` | Moon |
 
-#### 装飾・記号（12）
+#### Decorations / symbols (12)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `CLOUD` | 雲 |
-| `LIGHTNING_BOLT` | 稲妻 |
-| `SMILEY_FACE` | スマイリー |
-| `NO_SMOKING` | 禁止マーク |
-| `FOLDED_CORNER` | 折り曲げ角 |
-| `CHEVRON` | シェブロン |
-| `HOME_PLATE` | ホームプレート |
-| `PLAQUE` | プレート |
-| `TEARDROP` | ティアドロップ |
-| `SPEECH` | スピーチ |
-| `DOUBLE_WAVE` | 二重波 |
-| `WAVE` | 波 |
+| `CLOUD` | Cloud |
+| `LIGHTNING_BOLT` | Lightning bolt |
+| `SMILEY_FACE` | Smiley face |
+| `NO_SMOKING` | Prohibition symbol |
+| `FOLDED_CORNER` | Folded corner |
+| `CHEVRON` | Chevron |
+| `HOME_PLATE` | Home plate |
+| `PLAQUE` | Plaque |
+| `TEARDROP` | Teardrop |
+| `SPEECH` | Speech |
+| `DOUBLE_WAVE` | Double wave |
+| `WAVE` | Wave |
 
-#### スクロール・シール（4）
+#### Scrolls / seals (4)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `HORIZONTAL_SCROLL` | 水平スクロール |
-| `VERTICAL_SCROLL` | 垂直スクロール |
-| `IRREGULAR_SEAL_1` | 爆発1（不規則シール） |
-| `IRREGULAR_SEAL_2` | 爆発2（不規則シール） |
+| `HORIZONTAL_SCROLL` | Horizontal scroll |
+| `VERTICAL_SCROLL` | Vertical scroll |
+| `IRREGULAR_SEAL_1` | Explosion 1 (irregular seal) |
+| `IRREGULAR_SEAL_2` | Explosion 2 (irregular seal) |
 
-#### 数学記号（7）
+#### Math symbols (7)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `MATH_PLUS` | プラス |
-| `MATH_MINUS` | マイナス |
-| `MATH_MULTIPLY` | 掛ける |
-| `MATH_DIVIDE` | 割る |
-| `MATH_EQUAL` | イコール |
-| `MATH_NOT_EQUAL` | ノットイコール |
-| `PLUS` | 十字（プラス型シェイプ） |
+| `MATH_PLUS` | Plus |
+| `MATH_MINUS` | Minus |
+| `MATH_MULTIPLY` | Multiply |
+| `MATH_DIVIDE` | Divide |
+| `MATH_EQUAL` | Equal |
+| `MATH_NOT_EQUAL` | Not equal |
+| `PLUS` | Cross (plus-shaped shape) |
 
-#### フローチャート（29）
+#### Flowchart (29)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `FLOW_CHART_PROCESS` | 処理 |
-| `FLOW_CHART_ALTERNATE_PROCESS` | 代替処理 |
-| `FLOW_CHART_DECISION` | 判断 |
-| `FLOW_CHART_INPUT_OUTPUT` | 入出力（データ） |
-| `FLOW_CHART_PREDEFINED_PROCESS` | 定義済み処理 |
-| `FLOW_CHART_INTERNAL_STORAGE` | 内部記憶 |
-| `FLOW_CHART_DOCUMENT` | 文書 |
-| `FLOW_CHART_MULTIDOCUMENT` | 複数文書 |
-| `FLOW_CHART_TERMINATOR` | 端子（開始/終了） |
-| `FLOW_CHART_PREPARATION` | 準備 |
-| `FLOW_CHART_MANUAL_INPUT` | 手動入力 |
-| `FLOW_CHART_MANUAL_OPERATION` | 手動操作 |
-| `FLOW_CHART_CONNECTOR` | 接続子 |
-| `FLOW_CHART_OFFPAGE_CONNECTOR` | 別ページ接続子 |
-| `FLOW_CHART_PUNCHED_CARD` | パンチカード |
-| `FLOW_CHART_PUNCHED_TAPE` | パンチテープ |
-| `FLOW_CHART_SUMMING_JUNCTION` | 加算接合 |
+| `FLOW_CHART_PROCESS` | Process |
+| `FLOW_CHART_ALTERNATE_PROCESS` | Alternate process |
+| `FLOW_CHART_DECISION` | Decision |
+| `FLOW_CHART_INPUT_OUTPUT` | Input/output (data) |
+| `FLOW_CHART_PREDEFINED_PROCESS` | Predefined process |
+| `FLOW_CHART_INTERNAL_STORAGE` | Internal storage |
+| `FLOW_CHART_DOCUMENT` | Document |
+| `FLOW_CHART_MULTIDOCUMENT` | Multiple documents |
+| `FLOW_CHART_TERMINATOR` | Terminator (start/end) |
+| `FLOW_CHART_PREPARATION` | Preparation |
+| `FLOW_CHART_MANUAL_INPUT` | Manual input |
+| `FLOW_CHART_MANUAL_OPERATION` | Manual operation |
+| `FLOW_CHART_CONNECTOR` | Connector |
+| `FLOW_CHART_OFFPAGE_CONNECTOR` | Off-page connector |
+| `FLOW_CHART_PUNCHED_CARD` | Punched card |
+| `FLOW_CHART_PUNCHED_TAPE` | Punched tape |
+| `FLOW_CHART_SUMMING_JUNCTION` | Summing junction |
 | `FLOW_CHART_OR` | OR |
-| `FLOW_CHART_COLLATE` | 照合 |
-| `FLOW_CHART_SORT` | ソート |
-| `FLOW_CHART_EXTRACT` | 抽出 |
-| `FLOW_CHART_MERGE` | マージ |
-| `FLOW_CHART_ONLINE_STORAGE` | オンライン記憶 |
-| `FLOW_CHART_OFFLINE_STORAGE` | オフライン記憶 |
-| `FLOW_CHART_MAGNETIC_TAPE` | 磁気テープ |
-| `FLOW_CHART_MAGNETIC_DISK` | 磁気ディスク |
-| `FLOW_CHART_MAGNETIC_DRUM` | 磁気ドラム |
-| `FLOW_CHART_DISPLAY` | 表示 |
-| `FLOW_CHART_DELAY` | 遅延 |
+| `FLOW_CHART_COLLATE` | Collate |
+| `FLOW_CHART_SORT` | Sort |
+| `FLOW_CHART_EXTRACT` | Extract |
+| `FLOW_CHART_MERGE` | Merge |
+| `FLOW_CHART_ONLINE_STORAGE` | Online storage |
+| `FLOW_CHART_OFFLINE_STORAGE` | Offline storage |
+| `FLOW_CHART_MAGNETIC_TAPE` | Magnetic tape |
+| `FLOW_CHART_MAGNETIC_DISK` | Magnetic disk |
+| `FLOW_CHART_MAGNETIC_DRUM` | Magnetic drum |
+| `FLOW_CHART_DISPLAY` | Display |
+| `FLOW_CHART_DELAY` | Delay |
 
-#### テキスト（1）
+#### Text (1)
 
-| shapeType | 説明 |
+| shapeType | Description |
 |-----------|------|
-| `TEXT_BOX` | テキストボックス（`add_text()` で自動使用される） |
+| `TEXT_BOX` | Text box (used automatically by `add_text()`) |
 
-> **注意**: `CUSTOM` と `TYPE_UNSPECIFIED` は `createShape` では使用不可。
-> `CUSTOM` は UI で作成されたカスタム図形を API から読み取るときにのみ出現する。
+> **Note**: `CUSTOM` and `TYPE_UNSPECIFIED` cannot be used with `createShape`.
+> `CUSTOM` only appears when reading a custom shape created in the UI back via the API.
 
 ---
 
-## 12. 画像挿入
+## 12. Inserting images
 
 ### add_image
 
@@ -1018,26 +1019,26 @@ def add_image(self, slide_id, image_url, x, y, w, h):
     return img_id
 ```
 
-### 制約
+### Constraints
 
-| 項目 | 制限 |
+| Item | Limit |
 |------|------|
-| 対応フォーマット | PNG, JPEG, GIF |
-| 最大ファイルサイズ | 50 MB |
-| 最大ピクセル数 | 25 メガピクセル |
-| URL 要件 | 公開アクセス可能な HTTPS URL |
-| SVG | 非対応（PNG に変換してから挿入） |
+| Supported formats | PNG, JPEG, GIF |
+| Maximum file size | 50 MB |
+| Maximum pixel count | 25 megapixels |
+| URL requirement | A publicly accessible HTTPS URL |
+| SVG | Not supported (convert to PNG before inserting) |
 
-### Google Drive 上の画像を使う場合
+### Using images stored in Google Drive
 
-Drive 上の画像は直接 URL で挿入できない。以下のいずれかで対応:
+Images in Drive cannot be inserted directly by URL. Use one of the following approaches:
 
-1. Drive API で一時的に公開共有 → URL で挿入 → 共有解除
-2. Drive API でダウンロード → ローカルサーバーから配信 → URL で挿入
+1. Temporarily share it publicly via the Drive API → insert by URL → revoke sharing
+2. Download it via the Drive API → serve it from a local server → insert by URL
 
-### 12.1 ローカルアセットの Drive API アップロード
+### 12.1 Uploading local assets via the Drive API
 
-ローカルの画像ファイル（ロゴ、アイコン等）をスライドに挿入するには、Drive API で一時アップロードし公開 URL を取得する。OAuth スコープ `drive.file` は既にセクション1で設定済み。
+To insert a local image file (a logo, icon, etc.) into a slide, temporarily upload it via the Drive API to obtain a public URL. The `drive.file` OAuth scope was already configured in section 1.
 
 ```python
 def upload_asset(drive_service, file_path, mime_type=None):
@@ -1072,9 +1073,9 @@ def delete_uploaded_asset(drive_service, file_id):
     drive_service.files().delete(fileId=file_id).execute()
 ```
 
-### 12.2 SVG → PNG 変換
+### 12.2 SVG → PNG conversion
 
-Google Slides API は SVG 非対応のため、PNG に変換してからアップロードする。
+Since the Google Slides API does not support SVG, convert it to PNG before uploading.
 
 ```python
 def convert_svg_to_png(svg_path, png_path=None, width=512):
@@ -1086,9 +1087,9 @@ def convert_svg_to_png(svg_path, png_path=None, width=512):
     return png_path
 ```
 
-### 12.3 アセット解決ヘルパー
+### 12.3 Asset resolution helper
 
-カスタムアセットフォルダ（ユーザー指定）→ スキルデフォルト（`assets/`）の順でアセットを検索する。
+Searches for assets in order: the custom asset folder (user-specified) → the skill's default folder (`assets/`).
 
 ```python
 SKILL_ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "assets")
@@ -1117,7 +1118,7 @@ def resolve_asset(theme_name, category, filename, custom_assets_dir=None):
     return None
 ```
 
-### 12.4 SlideBuilder 拡張: add_image_from_asset
+### 12.4 SlideBuilder extension: add_image_from_asset
 
 ```python
 def add_image_from_asset(self, slide_id, theme_name, category, filename, x, y, w, h):
@@ -1138,9 +1139,9 @@ def add_image_from_asset(self, slide_id, theme_name, category, filename, x, y, w
     return self.add_image(slide_id, url, x, y, w, h)
 ```
 
-> **注意**: `SlideBuilder.__init__` で `self._uploaded_assets = []`、`self.drive_service`、`self.custom_assets_dir = None` を初期化すること。`drive_service` は `build("drive", "v3", credentials=creds)` で取得する。
+> **Note**: `SlideBuilder.__init__` must initialize `self._uploaded_assets = []`, `self.drive_service`, and `self.custom_assets_dir = None`. Obtain `drive_service` with `build("drive", "v3", credentials=creds)`.
 
-### 12.5 クリーンアップ
+### 12.5 Cleanup
 
 ```python
 def cleanup_uploaded_assets(self):
@@ -1154,9 +1155,9 @@ def cleanup_uploaded_assets(self):
     self._uploaded_assets.clear()
 ```
 
-### 12.6 出力先フォルダ
+### 12.6 Destination folder
 
-プレゼンテーションを指定の Google Drive フォルダに配置するためのヘルパー関数。
+Helper functions for placing the presentation into a specified Google Drive folder.
 
 ```python
 import re
@@ -1233,9 +1234,9 @@ def move_to_folder(drive_service, file_id, folder_id):
     ).execute()
 ```
 
-> **注意**: `drive.file` スコープは自アプリが作成したファイルのみ操作可能。既存フォルダの名前検索は結果が返らない場合がある。フォルダ URL / ID 指定を推奨し、名前検索はベストエフォートとする。
+> **Note**: the `drive.file` scope can only operate on files your own app created. Searching for an existing folder by name may return no results. Prefer specifying the folder URL / ID, and treat name search as best-effort only.
 
-### 典型的な使用フロー
+### Typical usage flow
 
 ```python
 # main() 内
@@ -1269,7 +1270,7 @@ if OUTPUT_FOLDER_ID:
 
 ---
 
-## 13. テーブル作成
+## 13. Creating tables
 
 ### add_table
 
@@ -1326,7 +1327,7 @@ def add_table(self, slide_id, rows, cols, x, y, w, h,
     return table_id
 ```
 
-### テーブルのテキストスタイル適用
+### Applying text styles to a table
 
 ```python
 def style_table_cell(self, table_id, row, col, style):
@@ -1340,12 +1341,12 @@ def style_table_cell(self, table_id, row, col, style):
     }})
 ```
 
-### 注意事項
+### Notes
 
-- `createTable` はテーブルの行高さ・列幅を均等分割で作成する
-- セル結合は `mergeTableCells` リクエストで実行可能
-- テーブル位置の微調整は `updatePageElementTransform` で行う
-- **`header_fill` 使用時は必ず白文字を適用する**: `header_fill` で色付き背景を設定した場合、デフォルトの黒テキストは読みにくい。以下のように `style_table_cell` でヘッダー行の全セルに白太字を適用すること:
+- `createTable` creates the table with row heights and column widths split evenly
+- Cell merging can be done with a `mergeTableCells` request
+- Fine-tune table position with `updatePageElementTransform`
+- **Always apply white text when using `header_fill`**: when a colored background is set with `header_fill`, the default black text becomes hard to read. Apply bold white text to every cell in the header row using `style_table_cell`, as shown below:
 
 ```python
 tbl_id = sb.add_table(sid, rows, cols, x, y, w, h, data=data, header_fill=C.tableHeader)
@@ -1356,18 +1357,18 @@ for c in range(cols):
 
 ---
 
-## 14. コネクタ線・矢印付き線
+## 14. Connector lines / arrow-tipped lines
 
-2種類のコネクタを用途で使い分ける:
+Two kinds of connector are used for different purposes:
 
-| メソッド | 用途 | シェイプ移動時 |
+| Method | Use | Behavior when a shape is moved |
 |---------|------|-------------|
-| `add_connector` | 座標指定の自由配置線（フロー図パターン10等） | 追従しない |
-| `add_connected_connector` | シェイプ接続線（分岐フローパターン11等） | 自動追従 |
+| `add_connector` | Freely-positioned line by coordinates (e.g., flow diagram pattern 10) | Does not follow |
+| `add_connected_connector` | A line connecting shapes (e.g., branching flow pattern 11) | Follows automatically |
 
-### connectionSiteIndex リファレンス
+### connectionSiteIndex reference
 
-全シェイプ共通で 4 サイト。ROUND_RECTANGLE, DIAMOND, FLOW_CHART_TERMINATOR で実測確認済み。
+Every shape shares 4 sites. Verified empirically on ROUND_RECTANGLE, DIAMOND, and FLOW_CHART_TERMINATOR.
 
 ```
          0 (TOP)
@@ -1381,8 +1382,8 @@ for c in range(cols):
 CONN_TOP, CONN_LEFT, CONN_BOTTOM, CONN_RIGHT = 0, 1, 2, 3
 ```
 
-> **注意**: `presentations.get()` の `connectionSites` フィールドは空配列を返す。
-> サイト数の確認は実際に接続を試行して `HttpError` を捕捉するのが唯一の方法。
+> **Note**: the `connectionSites` field returned by `presentations.get()` is an empty array.
+> The only way to confirm the number of sites is to actually attempt a connection and catch the `HttpError`.
 
 ### add_connector
 
@@ -1514,21 +1515,21 @@ def add_connected_connector(self, slide_id,
     return line_id
 ```
 
-### 矢印ヘッドタイプ
+### Arrowhead types
 
-| 値 | 形状 |
+| Value | Shape |
 |----|------|
-| `NONE` | なし |
-| `STEALTH_ARROW` | ステルス（細い三角） |
-| `FILL_ARROW` | 塗りつぶし三角 |
-| `OPEN_ARROW` | 白抜き三角 |
-| `FILL_CIRCLE` | 塗りつぶし円 |
-| `FILL_DIAMOND` | 塗りつぶしひし形 |
-| `FILL_SQUARE` | 塗りつぶし四角 |
+| `NONE` | None |
+| `STEALTH_ARROW` | Stealth (thin triangle) |
+| `FILL_ARROW` | Filled triangle |
+| `OPEN_ARROW` | Open (outline) triangle |
+| `FILL_CIRCLE` | Filled circle |
+| `FILL_DIAMOND` | Filled diamond |
+| `FILL_SQUARE` | Filled square |
 
-### 破線スタイル
+### Dash styles
 
-| 値 | 描画 |
+| Value | Rendering |
 |----|------|
 | `SOLID` | ──── |
 | `DASH` | ── ── |
@@ -1539,14 +1540,14 @@ def add_connected_connector(self, slide_id,
 
 ---
 
-## 15. スタイル拡張
+## 15. Style extensions
 
-### グラデーション塗り
+### Gradient fills
 
-> **制約**: Google Slides API では `shapeBackgroundFill.gradientFill` は**読み取り専用**（GET のみ）。
-> API からのグラデーション設定は `solidFill` に限定される。
+> **Constraint**: in the Google Slides API, `shapeBackgroundFill.gradientFill` is **read-only** (GET only).
+> Setting a gradient via the API is limited to `solidFill`.
 
-### グラデーション近似（半透明矩形の重ね合わせ）
+### Gradient approximation (overlapping semi-transparent rectangles)
 
 ```python
 def add_gradient_fill(self, slide_id, x, y, w, h,
@@ -1569,9 +1570,9 @@ def add_gradient_fill(self, slide_id, x, y, w, h,
                       fill=blended)
 ```
 
-もう一つの方法: UI で作成したグラデーション付きテンプレートスライドを `duplicateObject` でコピーする。
+Another approach: copy a template slide with a gradient created in the UI using `duplicateObject`.
 
-### 透明度（alpha）
+### Opacity (alpha)
 
 ```python
 def shape_opacity(self, shape_id, alpha):
@@ -1596,7 +1597,7 @@ def shape_opacity(self, shape_id, alpha):
     }})
 ```
 
-### 回転
+### Rotation
 
 ```python
 def shape_rotation(self, shape_id, angle_deg, x=None, y=None, w=None, h=None):
@@ -1655,7 +1656,7 @@ def shape_rotation(self, shape_id, angle_deg, x=None, y=None, w=None, h=None):
         }})
 ```
 
-### ドロップシャドウ
+### Drop shadow
 
 ```python
 def shape_shadow(self, shape_id, blur_radius=3.0, offset_x=2.0, offset_y=2.0,
@@ -1687,9 +1688,9 @@ def shape_shadow(self, shape_id, blur_radius=3.0, offset_x=2.0, offset_y=2.0,
 
 ---
 
-## 16. グループ化と Z-order
+## 16. Grouping and Z-order
 
-### グループ化
+### Grouping
 
 ```python
 def group_objects(self, object_ids):
@@ -1704,7 +1705,7 @@ def group_objects(self, object_ids):
     return group_id
 ```
 
-### Z-order 操作
+### Z-order operations
 
 ```python
 def set_z_order(self, shape_id, operation):
@@ -1718,27 +1719,27 @@ def set_z_order(self, shape_id, operation):
     }})
 ```
 
-### 注意事項
+### Notes
 
-- `groupObjects` のオブジェクトはすべて同一スライド上にある必要がある
-- グループ化後は `group_id` でグループ全体を移動・回転できる
-- Z-order は同一スライド内でのみ有効
+- All objects passed to `groupObjects` must be on the same slide
+- Once grouped, the entire group can be moved/rotated via `group_id`
+- Z-order is only meaningful within the same slide
 
 ---
 
-## 17. カスタムページサイズ
+## 17. Custom page sizes
 
-### プリセット
+### Presets
 
-| フォーマット | 幅 (in) | 高さ (in) | 用途 |
+| Format | Width (in) | Height (in) | Use |
 |-------------|---------|----------|------|
-| 16:9（デフォルト） | 10.000 | 5.625 | スライドプレゼンテーション |
-| A4 縦 | 8.270 | 11.690 | 印刷用インフォグラフィクス |
-| Letter 縦 | 8.500 | 11.000 | US レター縦 |
-| Square | 10.000 | 10.000 | SNS 用正方形 |
-| Poster | 11.000 | 17.000 | ポスター |
+| 16:9 (default) | 10.000 | 5.625 | Slide presentations |
+| A4 portrait | 8.270 | 11.690 | Print infographics |
+| Letter portrait | 8.500 | 11.000 | US letter portrait |
+| Square | 10.000 | 10.000 | Square format for social media |
+| Poster | 11.000 | 17.000 | Posters |
 
-### pageSize 指定（presentations.create 時のみ）
+### Specifying pageSize (only at presentations.create)
 
 ```python
 PAGE_SIZES = {
@@ -1764,9 +1765,9 @@ def create_presentation(slides_service, title, page_size="16:9"):
     return presentation
 ```
 
-### 座標のスケーリング
+### Coordinate scaling
 
-カスタムページサイズ（A4縦、ポスター等）では、セクション2の `calc_layout`（16:9スライド向け）とは異なる比率を使う:
+For custom page sizes (A4 portrait, poster, etc.), use a different set of ratios than the `calc_layout` in section 2 (which targets 16:9 slides):
 
 ```python
 def calc_layout_custom(sw, sh):
@@ -1785,6 +1786,6 @@ def calc_layout_custom(sw, sh):
     }
 ```
 
-> **使い分け**: 16:9スライドには `calc_layout()`（セクション2）、A4縦やポスター等のカスタムサイズには `calc_layout_custom()` を使用する。
+> **Usage guide**: use `calc_layout()` (section 2) for 16:9 slides, and `calc_layout_custom()` for custom sizes such as A4 portrait or posters.
 
-> **重要**: `pageSize` はプレゼンテーション作成時（`presentations.create`）にのみ指定可能。作成後の変更は不可。
+> **Important**: `pageSize` can only be specified when the presentation is created (`presentations.create`). It cannot be changed afterward.

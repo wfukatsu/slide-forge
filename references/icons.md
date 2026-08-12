@@ -1,63 +1,66 @@
-# アイコンライブラリ
+*[日本語](icons.ja.md)*
+# Icon Library
 
-`assets/scalar/pictograms/` に Scalar ブランドのピクトグラムが **62 種**入っている。24px グリッドの
-単色アイコンで、SVG が正本、PNG（512px）はラスタライザが無い環境向けの控え。
+`assets/scalar/pictograms/` contains **62** Scalar-branded pictograms. They are single-color
+icons on a 24px grid; the SVG is the source of truth, and the PNG (512px) is a fallback for
+environments without a rasterizer.
 
 ```
 assets/scalar/pictograms/
-  icons.json      名前・日本語名・英語名・検索タグ・染められるか
-  svg/<slug>.svg  正本
-  png/<slug>.png  控え（512px・素材のグレーのまま）
-cache/icons/      染めて書き出した PNG（<slug>-<色>-<px>.png）
+  icons.json      name, Japanese name, English name, search tags, whether it can be recolored
+  svg/<slug>.svg  source of truth
+  png/<slug>.png  fallback (512px, kept in the material's original gray)
+cache/icons/      recolored PNGs written out (<slug>-<color>-<px>.png)
 ```
 
-## `illustrations` のピクトグラムとの使い分け
+## Choosing between this and `illustrations` pictograms
 
 | | `illustrations.icon()` | `icons.asset_icon()` |
 |---|---|---|
-| 何で描くか | Slides の図形を組み合わせる | ブランド素材の SVG を PNG にして貼る |
-| 語彙 | 30 種の汎用（person / server / database …） | 62 種の業務語彙（情報銀行・証拠チェーン・内定 …） |
-| 通信 | 不要 | **要る**（Drive 経由で挿入するため） |
-| 見た目 | 素朴。線の太さは自前 | ブランド準拠 |
+| How it's drawn | Combines Slides shapes | Renders the brand SVG asset to a PNG and pastes it |
+| Vocabulary | 30 generic terms (person / server / database …) | 62 domain terms (data bank, evidence chain, job offer …) |
+| Network access | Not required | **Required** (inserted via Drive) |
+| Look | Plain. You control the line weight | On-brand |
 
-**社外向けの資料や、語彙が合うものは `asset_icon` を使う。** 「サーバ」「クラウド」の
-ような一般的な部品しか要らないときや、オフラインで完結させたいときは
-`illustrations.icon()` のままでよい。両者は同じスライドに混ぜても構わない。
+**Use `asset_icon` for externally facing materials, or whenever the vocabulary matches.**
+When you only need generic parts like "server" or "cloud", or you need everything to work
+offline, stick with `illustrations.icon()`. The two can be mixed freely on the same slide.
 
-## 名前を探す
+## Finding a name
 
-名前は slug（`evidence-chain`）でも日本語名（`証拠チェーン`）でも英語名でも引ける。
-タグにも当たるので「鍵」「sns」のような語からも辿れる。
+A name can be looked up by slug (`evidence-chain`), by its Japanese name (`証拠チェーン`), or by
+its English name. Tags are matched too, so words like "key" or "sns" also resolve.
 
 ```bash
-.venv/bin/python scripts/icons.py --list            # 62 種を一覧
-.venv/bin/python scripts/icons.py --search 情報銀行  # 部分一致で探す
+.venv/bin/python scripts/icons.py --list            # list all 62
+.venv/bin/python scripts/icons.py --search 情報銀行  # partial match search
 .venv/bin/python scripts/icons.py --search key
 ```
 
-曖昧な名前（例: `鍵` → public / private / shared）はエラーにして候補を出す。
-存在しない名前も候補付きで落とすので、**--dry-run の段階で誤字が分かる。**
+An ambiguous name (e.g. `鍵` → public / private / shared) errors out and lists the candidates.
+A nonexistent name also fails with candidates attached, so **typos surface at the `--dry-run`
+stage.**
 
-一覧を絵で見たいときは（cairosvg と ImageMagick が要る）:
+To view the whole catalog as an image (requires cairosvg and ImageMagick):
 
 ```bash
 .venv/bin/python scripts/icons.py --sheet --out out/icons.png --color '#2673BB'
 ```
 
-## 使う
+## Using it
 
-座標の規約は `illustrations` と同じ。size×size の正方形に描き、**戻り値は
-キャプションを含めた下端 y**。
+The coordinate convention is the same as `illustrations`: draws into a size×size square, and
+**the return value is the bottom y including the caption**.
 
-| やりたいこと | メソッド |
+| What you want to do | Method |
 |---|---|
-| 1 個だけ置く | `asset_icon(name, x, y, size, color=…, label=…)` |
-| 横一列に並べる | `asset_icon_row(x, y, w, items)` |
-| 矢印でつないで流れにする | `asset_icon_flow(x, y, w, items)` |
-| 格子状に並べる | `asset_icon_grid(x, y, w, items, cols=4)` |
-| アイコン付きのカードにする | `asset_icon_cards(x, y, w, h, items, cols=3)` |
+| Place a single icon | `asset_icon(name, x, y, size, color=…, label=…)` |
+| Line them up horizontally | `asset_icon_row(x, y, w, items)` |
+| Connect with arrows into a flow | `asset_icon_flow(x, y, w, items)` |
+| Arrange in a grid | `asset_icon_grid(x, y, w, items, cols=4)` |
+| Turn into cards with icons | `asset_icon_cards(x, y, w, h, items, cols=3)` |
 
-`items` は名前か `(名前, ラベル)`。`asset_icon_cards` だけ `(名前, 見出し, 補足)`。
+`items` is a name, or `(name, label)`. `asset_icon_cards` alone takes `(name, heading, note)`.
 
 ```python
 d = Canvas(deck, ref["slideId"], template)
@@ -68,7 +71,7 @@ b = d.asset_icon_flow(0.5, 1.15, 9.0, [
 d.asset_icon("evidence-chain", 0.8, b + 0.3, 1.0, color=d.P.info, label="証拠チェーン")
 ```
 
-デッキ仕様（JSON）からは `figures` の `type` で使う。
+From a deck spec (JSON), use the `type` field under `figures`.
 
 ```json
 { "type": "asset_icon_flow", "x": 0.5, "y": 1.15, "w": 9.0, "size": 0.86,
@@ -76,63 +79,72 @@ d.asset_icon("evidence-chain", 0.8, b + 0.3, 1.0, color=d.P.info, label="証拠�
             ["data-bank", "情報銀行"]] }
 ```
 
-`asset_icon` / `asset_icon_row` / `asset_icon_flow` / `asset_icon_grid` /
-`asset_icon_cards` の 5 つ。実例は `examples/icon-gallery.json`。
+Five types: `asset_icon` / `asset_icon_row` / `asset_icon_flow` / `asset_icon_grid` /
+`asset_icon_cards`. A working example is `examples/icon-gallery.json`.
 
-## 色
+## Color
 
-**素材は薄いグレー（#C7C9C9）の単色。**そのまま貼ると白地で沈むので、既定では
-テンプレートの主色（`P.primary`）に染める。`color=` に別の色を渡せば、
-`P.success` / `P.danger` のような意味を持たせた色にできる。
+**The source material is a single light gray (#C7C9C9).** Pasted as-is it sinks into a white
+background, so by default it's recolored to the template's primary color (`P.primary`). Pass a
+different color via `color=` to give it a meaning, such as `P.success` / `P.danger`.
 
-- 要素ごとに変えるときは `color=[…]` のリストを渡す（`_row` / `_flow` / `_grid`）。
-- 白い部分は「くり抜き」なので染め替えない（`faq` の文字など）。
-- `scalar-logo` だけはブランド色を持つため **`color` を無視する**
-  （`icons.json` の `recolorable: false`）。単色版の `scalar-logo-mono` は染まる。
+- To vary the color per element, pass a `color=[…]` list (`_row` / `_flow` / `_grid`).
+- White areas are "cutouts" and are never recolored (e.g. the text inside `faq`).
+- `scalar-logo` alone carries a brand color, so it **ignores `color`**
+  (`recolorable: false` in `icons.json`). The single-color variant `scalar-logo-mono` does
+  get recolored.
 
-## 何が起きているか
+## What happens under the hood
 
-1. SVG の `#C7C9C9` を指定色に置換する
-2. PNG に焼く（`cairosvg` → `rsvg-convert` → `ImageMagick` の順に試す）
-3. `cache/icons/<slug>-<色>-<px>.png` に残す。**同じアイコン・同じ色なら焼き直さない**
-4. `images.ImageMixin.image()` に渡す（Drive へ一時アップロード → 挿入 → 後始末）
+1. Replace `#C7C9C9` in the SVG with the requested color
+2. Rasterize to PNG (tries `cairosvg` → `rsvg-convert` → `ImageMagick`, in that order)
+3. Leave it in `cache/icons/<slug>-<color>-<px>.png`. **The same icon in the same color is
+   never rasterized twice**
+4. Hand it to `images.ImageMixin.image()` (temporary upload to Drive → insertion →
+   cleanup)
 
-3 のキャッシュと、`AssetStore` がソースのパス単位で URL を使い回すので、**同じ
-アイコンを何枚のスライドで使っても Drive へのアップロードは 1 回**で済む。
+Thanks to the cache in step 3, and because `AssetStore` reuses URLs per source path, **the same
+icon used across any number of slides is uploaded to Drive only once.**
 
-ラスタライザがひとつも無い環境では `assets/scalar/pictograms/png/` の素材をそのまま使い、
-色の指定は無視して警告を出す。`requirements.txt` の `cairosvg` を入れておくこと。
+In an environment with no rasterizer at all, the assets under `assets/scalar/pictograms/png/`
+are used as-is, the color argument is ignored, and a warning is printed. Make sure `cairosvg`
+from `requirements.txt` is installed.
 
-## 素材側の既知の不備
+## Known defects in the source material
 
-原典（Drive）の時点で、次の 2 組は**中身が同じ SVG**になっている。プレビュー画像
-では別の絵（`private-key` は閉じた目）なので、素材の登録ミスと思われる。
+At the source (Drive), the following two pairs turn out to be **the same SVG content**. Since
+the preview images show different artwork (`private-key` has closed eyes), this looks like a
+registration mistake in the material.
 
-| slug | 絵が同じ相手 |
+| slug | Shares artwork with |
 |---|---|
 | `private-key` | `public-key` |
 | `new-workflow` | `terms` |
 
-`icons.json` の `sameArtAs` に記録してあり、`--list` にも印が出る。**公開鍵と
-秘密鍵を並べて対比させる図では、同じ絵が 2 つ並ぶ。** 色を変えて区別するか、
-`illustrations.icon("key")` と混ぜるか、素材の差し替えを依頼すること。
+This is recorded in `sameArtAs` in `icons.json`, and `--list` flags it too. **In a diagram that
+places the public key and private key side by side for comparison, the same artwork will appear
+twice.** Distinguish them with color, mix in `illustrations.icon("key")`, or request that the
+source material be replaced.
 
-## 制約
+## Constraints
 
-- **通信が要る。** Slides は画像を URL からしか取り込めないため、Drive を経由する。
-  組織のポリシーで「リンクを知る全員」の共有が禁止されていると挿入できない
-  （その場合は `illustrations.icon()` を使う）。
-- `--dry-run` では実物を貼れないので、**同じ大きさの矩形に置き換えて**座標だけ
-  検査する。名前の誤りと、はみ出し・重なり・キャプションの溢れはここで拾える。
-- アイコンは正方形。`asset_icon` の `size` は一辺のインチ数で、0.5〜1.4in が実用範囲。
-- キャプションの幅は既定で size の 2 倍。横に詰めるときは `label_w` を明示する
-  （`_row` / `_flow` / `_grid` はセル幅から自動で決める）。
+- **Network access is required.** Since Slides can only ingest images from a URL, it goes
+  through Drive. If your organization's policy forbids "anyone with the link" sharing,
+  insertion fails (fall back to `illustrations.icon()` in that case).
+- `--dry-run` can't paste the real artwork, so it **substitutes a rectangle of the same
+  size** and checks only the coordinates. This catches name typos, overflow, overlap, and
+  caption spillover.
+- Icons are square. `asset_icon`'s `size` is the side length in inches; 0.5–1.4in is the
+  practical range.
+- Caption width defaults to twice `size`. When packing icons tightly, set `label_w` explicitly
+  (`_row` / `_flow` / `_grid` derive it automatically from the cell width).
 
-## 素材を増やすとき
+## Adding new material
 
-1. SVG を `assets/scalar/pictograms/svg/<slug>.svg` に置く（24×24 の viewBox、単色 #C7C9C9）
-2. `assets/scalar/pictograms/icons.json` に `ja` / `en` / `tags` / `recolorable` / `colors` を足す
-3. 控えの PNG を焼く:
+1. Place the SVG at `assets/scalar/pictograms/svg/<slug>.svg` (24×24 viewBox, single color
+   #C7C9C9)
+2. Add `ja` / `en` / `tags` / `recolorable` / `colors` to `assets/scalar/pictograms/icons.json`
+3. Bake the fallback PNG:
 
 ```bash
 .venv/bin/python -c "
@@ -142,5 +154,5 @@ cairosvg.svg2png(url=f'{icons.SVG_DIR}/{s}.svg', write_to=f'{icons.PNG_DIR}/{s}.
                  output_width=512, output_height=512)"
 ```
 
-色が #C7C9C9 以外の素材は `recolorable: false` にしておくこと。染めると
-ブランド色が壊れる。
+For material whose color is anything other than #C7C9C9, set `recolorable: false`. Recoloring
+it would break the brand color.

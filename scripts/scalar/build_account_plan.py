@@ -1,19 +1,21 @@
 #!/usr/bin/env python3
-"""顧客ごとの活動計画デッキを、台帳（account.json）から組み立てる。
+"""Assemble a per-customer activity plan deck from the ledger (account.json).
 
-    account.json → 各ページのスロット入力 → slide-templates → デッキ仕様 →
-    build_deck（初回）/ build_deck --into（2 回目以降・URL 不変）
+    account.json → slot input per page → slide-templates → deck spec →
+    build_deck (first run) / build_deck --into (subsequent runs, URL unchanged)
 
-**台帳が正本**。デッキは台帳の表示にすぎないので、直接スライドを直さない。
-直したいことがあれば台帳を直して作り直す。
+**The ledger is the source of truth.** The deck is just a rendering of the ledger,
+so never edit slides directly. If something needs to change, fix the ledger and
+rebuild.
 
-材料が足りないページは**自動で落ちる**。空欄を埋めた薄いページは作らない
-（何が無いかは `account_ledger.py gaps` とアクションプランのページに出る）。
+Pages lacking sufficient material are **automatically dropped**. We don't build
+thin pages with blanks filled in (what's missing shows up via
+`account_ledger.py gaps` and on the action-plan page).
 
-    検証:   .venv/bin/python scripts/scalar/build_account_plan.py examples/account-sample.json --dry-run --strict
-    初回:   .venv/bin/python scripts/scalar/build_account_plan.py <account.json> --folder <00_活動計画 の ID>
-    更新:   .venv/bin/python scripts/scalar/build_account_plan.py <account.json>
-            （台帳の meta.decks.activityPlan があれば自動で --into 相当になる）
+    Validate: .venv/bin/python scripts/scalar/build_account_plan.py examples/account-sample.json --dry-run --strict
+    First run: .venv/bin/python scripts/scalar/build_account_plan.py <account.json> --folder <ID of 00_活動計画>
+    Update:   .venv/bin/python scripts/scalar/build_account_plan.py <account.json>
+            (if the ledger has meta.decks.activityPlan, this automatically behaves like --into)
 """
 from __future__ import annotations
 
@@ -35,9 +37,9 @@ import account_ledger as ledger_mod  # noqa: E402
 
 DEFAULT_TEMPLATE = REPO_DIR / "templates" / "scalar-2026.json"
 
-# 活動計画の既定構成。読む順序に意味がある:
-# 今どこにいるか → 何が未達か → どこが危ないか → 何が分かっていないか →
-# なぜ効くのか → 誰を動かすか → どこまで会えたか → 次に何をするか
+# Default composition of the activity plan. The reading order is meaningful:
+# where are we now -> what hasn't been achieved -> what's at risk -> what's unknown ->
+# why it works -> who to mobilize -> who we've reached -> what to do next
 DEFAULT_PAGES: tuple[str, ...] = (
     "account-snapshot",
     "phase-gate",
@@ -50,8 +52,9 @@ DEFAULT_PAGES: tuple[str, ...] = (
     "action-plan",
 )
 
-# 活動計画には既定で入れないが、--pages で足せるページ
-# （訪問 1 回・WPS 1 回のための資料で、常設の活動計画とは寿命が違う）
+# Pages not included by default in the activity plan, but addable via --pages
+# (materials for a single visit / single WPS, with a different lifespan than the
+# standing activity plan)
 OPTIONAL_PAGES: tuple[str, ...] = ("visit-plan", "win-plan", "discovery-gaps")
 
 
@@ -76,7 +79,7 @@ def deck_title(ledger: dict) -> str:
 
 
 def build_spec(ledger: dict, pages: list[str]) -> tuple[dict, list[str], list[str]]:
-    """デッキ仕様と、(採用したページ, 材料不足で落としたページ) を返す。"""
+    """Return the deck spec and (pages used, pages dropped for lack of material)."""
     slides = [cover_slide(ledger)]
     used: list[str] = []
     skipped: list[str] = []
@@ -209,7 +212,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _report_gaps(ledger: dict) -> None:
-    """報告の主役は URL ではなく「次に確認すべきこと」。"""
+    """What matters in the report is not the URL but "what to confirm next"."""
     gaps = ledger_mod.gaps(ledger)
     if not gaps:
         print("\n次に確認すべきこと: なし（10 問すべてに答えられる状態）")

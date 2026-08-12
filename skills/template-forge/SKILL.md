@@ -18,6 +18,8 @@ description: >-
   template (google-slides-template).
 ---
 
+*[日本語](SKILL.ja.md)*
+
 # Template Forge — Create a New Slide Template (Master)
 
 ## Important
@@ -99,10 +101,10 @@ Batch into one round; skip anything already specified:
 
 | # | header | question | options |
 |---|---|---|---|
-| 1 | デザイン入力 | デザインは何から決めますか? | 対話で指定(色・フォントを聞く)/ 既存資料から抽出(サイト URL・ロゴ・既存デッキ)/ プリセット(3 種を配色の一言つきで提示) |
-| 2 | ベース | どのマスターをベースにしますか? | blank — Google 既定(推奨・既定)/ `list_templates.py` の登録テンプレートから派生 |
-| 3 | ロゴ | ロゴ画像はありますか? | ある(パスをもらう。濃色背景用があればそれも)/ ない(文字のみ) |
-| 4 | フッター | フッター表記は? | © 表記を入れる(文言をもらう)/ 入れない |
+| 1 | Design input | What should the design be based on? | Specify interactively (ask for colors/fonts) / Extract from existing material (site URL, logo, existing deck) / Preset (present 3 options with a one-line palette description each) |
+| 2 | Base | Which master should this be based on? | blank — Google's default (recommended, default) / derive from a registered template via `list_templates.py` |
+| 3 | Logo | Is there a logo image? | Yes (get the path; also get a version for dark backgrounds if one exists) / No (text only) |
+| 4 | Footer | What should the footer say? | Include a © notice (get the text) / Omit it |
 
 Template name (`[a-z0-9-]`) is derived from the brand/company name; confirm
 it in the outline, not as a separate question.

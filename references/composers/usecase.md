@@ -1,28 +1,30 @@
-# ユースケースカテゴリ コンポーザー仕様
+*[日本語](usecase.ja.md)*
 
-> usecase カテゴリ 6 タイプのレンダリング仕様。
-> 各コンポーザーはマスター関数で共通要素を配置した後、タイプ固有のコンテンツを追加する。
+# Composer Specification: usecase Category
 
-### 規約
+> Rendering specification for the 6 types in the usecase category.
+> Each composer places the shared elements via its master function, then adds type-specific content.
 
-- **`C`** — `templates/<theme>/theme.json` の `colors` セクションから展開した色定数クラス
-- **`L`** — `templates/<theme>/theme.json` の `layouts` セクションから展開したレイアウト定数クラス
-- **`sb`** — `SlideBuilder` インスタンス
-- **ページサイズ** — 10.0" x 5.625"（Google Slides 16:9）
-- **CONTENT マスター** — title: (0.323, 0.303, 9.354, 0.437), body: y=0.787 ~ y=5.208 (h=4.421")
-- **SPLIT_SCREEN マスター** — 左パネル 0~5.0" (primary bg), 右パネル 5.0~10.0" (white bg)
-- **HIGHLIGHT マスター** — primary 色全面背景, 白テキスト
+### Conventions
+
+- **`C`** — color constant class expanded from the `colors` section of `templates/<theme>/theme.json`
+- **`L`** — layout constant class expanded from the `layouts` section of `templates/<theme>/theme.json`
+- **`sb`** — `SlideBuilder` instance
+- **Page size** — 10.0" x 5.625" (Google Slides 16:9)
+- **CONTENT master** — title: (0.323, 0.303, 9.354, 0.437), body: y=0.787 ~ y=5.208 (h=4.421")
+- **SPLIT_SCREEN master** — left panel 0~5.0" (primary bg), right panel 5.0~10.0" (white bg)
+- **HIGHLIGHT master** — full-bleed primary-color background, white text
 
 ---
 
-## 1. usecase_overview — ユースケース全体像
+## 1. usecase_overview — Use case overview
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Pattern 7 (Icon+Text Row) + Pattern 6 (Pyramid)
+- **Master**: CONTENT (with footer)
+- **Pattern**: Pattern 7 (Icon+Text Row) + Pattern 6 (Pyramid)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -45,19 +47,19 @@
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| 業界バッジ | 0.500 | 0.850 | 2.000 | 0.300 |
-| 課題ラベル | 0.500 | 1.250 | 1.200 | 0.250 |
-| 課題テキスト | 0.500 | 1.500 | 9.000 | 0.500 |
-| 解決策ラベル | 0.500 | 2.100 | 1.200 | 0.250 |
-| 解決策テキスト | 0.500 | 2.350 | 9.000 | 0.500 |
-| 成果カード開始 | 0.500 | 3.100 | — | — |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Industry badge | 0.500 | 0.850 | 2.000 | 0.300 |
+| Challenge label | 0.500 | 1.250 | 1.200 | 0.250 |
+| Challenge text | 0.500 | 1.500 | 9.000 | 0.500 |
+| Solution label | 0.500 | 2.100 | 1.200 | 0.250 |
+| Solution text | 0.500 | 2.350 | 9.000 | 0.500 |
+| Outcome card start | 0.500 | 3.100 | — | — |
 
-### コード
+### Code
 
 ```python
 def compose_usecase_overview(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -131,14 +133,14 @@ def compose_usecase_overview(sb, slide_id, content, theme, page_num, total_pages
 
 ---
 
-## 2. problem_solution — 課題→解決策の対比
+## 2. problem_solution — Problem-to-solution contrast
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: SPLIT_SCREEN（左右分割 + フッター付き）
-- **パターン**: Pattern 9 (Comparison)
+- **Master**: SPLIT_SCREEN (left/right split, with footer)
+- **Pattern**: Pattern 9 (Comparison)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────┬───────────────────┐
@@ -159,21 +161,21 @@ def compose_usecase_overview(sb, slide_id, content, theme, page_num, total_pages
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| 左パネル背景 | 0.000 | 0.000 | 5.000 | 5.625 |
-| 右パネル背景 | 5.000 | 0.000 | 5.000 | 5.625 |
-| 左タイトル | 0.500 | 0.800 | 4.000 | 0.350 |
-| 左セパレーター | 0.500 | 1.180 | 2.000 | 0.025 |
-| 左箇条書き開始 | 0.500 | 1.350 | 4.000 | — |
-| 右タイトル | 5.500 | 0.800 | 4.000 | 0.350 |
-| 右セパレーター | 5.500 | 1.180 | 2.000 | 0.025 |
-| 右箇条書き開始 | 5.500 | 1.350 | 4.000 | — |
-| 箇条書き行高 | — | — | — | 0.450 |
+| Left panel background | 0.000 | 0.000 | 5.000 | 5.625 |
+| Right panel background | 5.000 | 0.000 | 5.000 | 5.625 |
+| Left title | 0.500 | 0.800 | 4.000 | 0.350 |
+| Left separator | 0.500 | 1.180 | 2.000 | 0.025 |
+| Left bullet start | 0.500 | 1.350 | 4.000 | — |
+| Right title | 5.500 | 0.800 | 4.000 | 0.350 |
+| Right separator | 5.500 | 1.180 | 2.000 | 0.025 |
+| Right bullet start | 5.500 | 1.350 | 4.000 | — |
+| Bullet row height | — | — | — | 0.450 |
 
-### コード
+### Code
 
 ```python
 def compose_problem_solution(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -256,14 +258,14 @@ def compose_problem_solution(sb, slide_id, content, theme, page_num, total_pages
 
 ---
 
-## 3. case_study — 導入事例・ケーススタディ
+## 3. case_study — Case study / customer story
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Pattern 8 (Stat Card) + テキストレイアウト
+- **Master**: CONTENT (with footer)
+- **Pattern**: Pattern 8 (Stat Card) + text layout
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -288,21 +290,21 @@ def compose_problem_solution(sb, slide_id, content, theme, page_num, total_pages
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| ロゴ | 0.500 | 0.850 | 0.600 | 0.600 |
-| 企業名 | 1.250 | 0.850 | 8.250 | 0.300 |
-| 業界ラベル | 1.250 | 1.150 | 8.250 | 0.250 |
-| セパレーター | 0.500 | 1.480 | 9.000 | 0.020 |
-| 課題テキスト | 0.500 | 1.550 | 9.000 | 0.350 |
-| 解決テキスト | 0.500 | 1.950 | 9.000 | 0.350 |
-| 成果カード開始 | 0.500 | 2.500 | — | 1.200 |
-| 引用テキスト | 0.500 | 3.900 | 9.000 | 0.600 |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Logo | 0.500 | 0.850 | 0.600 | 0.600 |
+| Company name | 1.250 | 0.850 | 8.250 | 0.300 |
+| Industry label | 1.250 | 1.150 | 8.250 | 0.250 |
+| Separator | 0.500 | 1.480 | 9.000 | 0.020 |
+| Challenge text | 0.500 | 1.550 | 9.000 | 0.350 |
+| Solution text | 0.500 | 1.950 | 9.000 | 0.350 |
+| Outcome card start | 0.500 | 2.500 | — | 1.200 |
+| Quote text | 0.500 | 3.900 | 9.000 | 0.600 |
 
-### コード
+### Code
 
 ```python
 def compose_case_study(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -383,14 +385,14 @@ def compose_case_study(sb, slide_id, content, theme, page_num, total_pages=None)
 
 ---
 
-## 4. before_after — 導入前後の比較
+## 4. before_after — Before/after comparison
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: SPLIT_SCREEN（左右分割 + フッター付き）
-- **パターン**: Pattern 9 (Comparison)
+- **Master**: SPLIT_SCREEN (left/right split, with footer)
+- **Pattern**: Pattern 9 (Comparison)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────┬───────────────────┐
@@ -412,21 +414,21 @@ def compose_case_study(sb, slide_id, content, theme, page_num, total_pages=None)
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| 左パネル背景 | 0.000 | 0.000 | 5.000 | 5.625 |
-| 右パネル背景 | 5.000 | 0.000 | 5.000 | 5.625 |
-| 左タイトル | 0.500 | 0.800 | 4.000 | 0.350 |
-| 左セパレーター | 0.500 | 1.180 | 2.000 | 0.025 |
-| 左箇条書き開始 | 0.500 | 1.350 | 4.000 | — |
-| 右タイトル | 5.500 | 0.800 | 4.000 | 0.350 |
-| 右セパレーター | 5.500 | 1.180 | 2.000 | 0.025 |
-| 右箇条書き開始 | 5.500 | 1.350 | 4.000 | — |
-| 箇条書き行高 | — | — | — | 0.450 |
+| Left panel background | 0.000 | 0.000 | 5.000 | 5.625 |
+| Right panel background | 5.000 | 0.000 | 5.000 | 5.625 |
+| Left title | 0.500 | 0.800 | 4.000 | 0.350 |
+| Left separator | 0.500 | 1.180 | 2.000 | 0.025 |
+| Left bullet start | 0.500 | 1.350 | 4.000 | — |
+| Right title | 5.500 | 0.800 | 4.000 | 0.350 |
+| Right separator | 5.500 | 1.180 | 2.000 | 0.025 |
+| Right bullet start | 5.500 | 1.350 | 4.000 | — |
+| Bullet row height | — | — | — | 0.450 |
 
-### コード
+### Code
 
 ```python
 def compose_before_after(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -511,14 +513,14 @@ def compose_before_after(sb, slide_id, content, theme, page_num, total_pages=Non
 
 ---
 
-## 5. roi_impact — ROI・導入効果の数値表示
+## 5. roi_impact — ROI / impact metrics display
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: HIGHLIGHT（primary 背景、白テキスト）
-- **パターン**: Pattern 8 (Stat Card)
+- **Master**: HIGHLIGHT (primary background, white text)
+- **Pattern**: Pattern 8 (Stat Card)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -538,17 +540,17 @@ def compose_before_after(sb, slide_id, content, theme, page_num, total_pages=Non
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| 背景 | 0.000 | 0.000 | 10.000 | 5.625 |
-| タイトル | 0.500 | 0.500 | 9.000 | 0.500 |
-| KPI カード領域 | 0.500 | 1.300 | 9.000 | — |
-| KPI カード高 | — | — | — | 2.200 |
-| サマリーテキスト | 0.500 | 4.200 | 9.000 | 0.500 |
+| Background | 0.000 | 0.000 | 10.000 | 5.625 |
+| Title | 0.500 | 0.500 | 9.000 | 0.500 |
+| KPI card area | 0.500 | 1.300 | 9.000 | — |
+| KPI card height | — | — | — | 2.200 |
+| Summary text | 0.500 | 4.200 | 9.000 | 0.500 |
 
-### コード
+### Code
 
 ```python
 def compose_roi_impact(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -621,14 +623,14 @@ def compose_roi_impact(sb, slide_id, content, theme, page_num, total_pages=None)
 
 ---
 
-## 6. deployment_steps — 導入ステップ・フェーズ
+## 6. deployment_steps — Deployment steps / phases
 
-### マスター・パターン
+### Master / Pattern
 
-- **マスター**: CONTENT（フッター付き）
-- **パターン**: Pattern 2 (H-Timeline) + Pattern 10 (Flow)
+- **Master**: CONTENT (with footer)
+- **Pattern**: Pattern 2 (H-Timeline) + Pattern 10 (Flow)
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────────┐
@@ -650,18 +652,18 @@ def compose_roi_impact(sb, slide_id, content, theme, page_num, total_pages=None)
 └──────────────────────────────────────────┘
 ```
 
-### 座標定数
+### Coordinate constants
 
-| 要素 | X | Y | W | H |
+| Element | X | Y | W | H |
 |------|-----|-----|------|------|
-| タイトル | 0.323 | 0.303 | 9.354 | 0.437 |
-| フェーズカード領域 | 0.500 | 0.900 | 9.000 | — |
-| フェーズヘッダー高 | — | — | — | 0.700 |
-| タスクリスト高 | — | — | — | 動的 |
-| カード間ギャップ | — | — | 0.350 | — |
-| 矢印コネクタ | — | — | 0.350 | — |
+| Title | 0.323 | 0.303 | 9.354 | 0.437 |
+| Phase card area | 0.500 | 0.900 | 9.000 | — |
+| Phase header height | — | — | — | 0.700 |
+| Task list height | — | — | — | dynamic |
+| Card gap | — | — | 0.350 | — |
+| Arrow connector | — | — | 0.350 | — |
 
-### コード
+### Code
 
 ```python
 def compose_deployment_steps(sb, slide_id, content, theme, page_num, total_pages=None):
@@ -754,63 +756,63 @@ def compose_deployment_steps(sb, slide_id, content, theme, page_num, total_pages
 
 ---
 
-## 共通注意事項
+## Common notes
 
-### テキスト制約
+### Text constraints
 
-| フィールド | 日本語上限 | 英語上限 |
+| Field | Japanese limit | English limit |
 |-----------|----------|---------|
-| アクションタイトル | 50文字 | 100文字 |
-| 箇条書き1項目 | 40文字 | 80文字 |
-| KPI値 | 簡潔（数文字） | 同左 |
-| メトリクス数 | 2-4個 | 同左 |
-| フェーズ数 | 3-5個 | 同左 |
-| スピーカーノート | 200文字 | 400文字 |
+| Action title | 50 characters | 100 characters |
+| Bullet item | 40 characters | 80 characters |
+| KPI value | concise (a few characters) | same |
+| Number of metrics | 2-4 | same |
+| Number of phases | 3-5 | same |
+| Speaker notes | 200 characters | 400 characters |
 
-### マスター別テキストスタイル
+### Text style by master
 
-#### CONTENT マスター（usecase_overview, case_study, deployment_steps）
+#### CONTENT master (usecase_overview, case_study, deployment_steps)
 
-| 要素 | フォント | サイズ | 色 | ウェイト |
+| Element | Font | Size | Color | Weight |
 |------|---------|-------|-----|---------|
-| アクションタイトル | fontFaceTitle | contentTitle pt | textTitle | bold |
-| サブヘッダー | fontFaceBody | 14-16pt | textSecondary | bold |
-| 本文 | fontFaceBody | 12-13pt | textPrimary | normal |
-| フッター | fontFaceEn | 10pt | textMuted | normal |
+| Action title | fontFaceTitle | contentTitle pt | textTitle | bold |
+| Subheader | fontFaceBody | 14-16pt | textSecondary | bold |
+| Body | fontFaceBody | 12-13pt | textPrimary | normal |
+| Footer | fontFaceEn | 10pt | textMuted | normal |
 
-#### SPLIT_SCREEN マスター（problem_solution, before_after）
+#### SPLIT_SCREEN master (problem_solution, before_after)
 
-| 要素 | フォント | サイズ | 色 | ウェイト |
+| Element | Font | Size | Color | Weight |
 |------|---------|-------|-----|---------|
-| 左パネルタイトル | fontFaceTitle | 20pt | textOnDark (白) | bold |
-| 左パネル本文 | fontFaceBody | 13pt | textOnDark (白) | normal |
-| 右パネルタイトル | fontFaceTitle | 20pt | textTitle | bold |
-| 右パネル本文 | fontFaceBody | 13pt | textPrimary | normal |
+| Left panel title | fontFaceTitle | 20pt | textOnDark (white) | bold |
+| Left panel body | fontFaceBody | 13pt | textOnDark (white) | normal |
+| Right panel title | fontFaceTitle | 20pt | textTitle | bold |
+| Right panel body | fontFaceBody | 13pt | textPrimary | normal |
 
-#### HIGHLIGHT マスター（roi_impact）
+#### HIGHLIGHT master (roi_impact)
 
-| 要素 | フォント | サイズ | 色 | ウェイト |
+| Element | Font | Size | Color | Weight |
 |------|---------|-------|-----|---------|
-| タイトル | fontFaceTitle | 24pt | textOnDark (白) | bold |
-| KPI 数値 | fontFaceAccent | 48pt | textOnDark (白) | bold |
-| KPI ラベル | fontFaceBody | 14pt | textOnDark (白) | bold |
-| 補足テキスト | fontFaceBody | 11pt | textOnDark (白) | normal |
+| Title | fontFaceTitle | 24pt | textOnDark (white) | bold |
+| KPI value | fontFaceAccent | 48pt | textOnDark (white) | bold |
+| KPI label | fontFaceBody | 14pt | textOnDark (white) | bold |
+| Supplementary text | fontFaceBody | 11pt | textOnDark (white) | normal |
 
-### カラー運用
+### Color usage
 
-- SPLIT_SCREEN の左パネルは primary 背景のため、全テキストは白系（`textOnDark`）を使用
-- HIGHLIGHT は primary 全面背景のため、全テキストは白系を使用。カードは半透明白（opacity=0.15）で視覚的区切りを作る
-- 成果カード（case_study, usecase_overview）は `add_stat_card` パターンを使用し、上部カラーバーは 0.025" の細線
-- 課題ポイントには `C.error`（赤）マーカー、解決ポイントには `C.success`（緑）マーカーでセマンティックカラーを適用
-- フェーズカード（deployment_steps）は同系色のグラデーション（淡→濃）で進行を表現
+- The SPLIT_SCREEN left panel has a primary background, so all text uses a white variant (`textOnDark`)
+- HIGHLIGHT has a full-bleed primary background, so all text uses a white variant. Cards use semi-transparent white (opacity=0.15) to create visual separation
+- Outcome cards (case_study, usecase_overview) use the `add_stat_card` pattern, with a 0.025" thin top color bar
+- Challenge points use a `C.error` (red) marker and solution points use a `C.success` (green) marker to apply semantic color
+- Phase cards (deployment_steps) express progression through a same-hue gradient (light → dark)
 
-### アクションタイトル例
+### Action title examples
 
-| NG（ラベル型） | OK（アクションタイトル） |
+| NG (label-style) | OK (action title) |
 |:-------------:|:--------------------:|
-| 「ユースケース」 | 「金融業界の異種DB統合課題を ScalarDB が解決する」 |
-| 「課題と解決策」 | 「手動データ整合管理を自動化し運用工数を80%削減」 |
-| 「導入事例」 | 「A社は ScalarDB 導入でトランザクション処理速度を3倍に改善した」 |
-| 「導入前後」 | 「DB別の個別実装からAPI統一により開発期間を半減」 |
-| 「導入効果」 | 「年間1.2M ドルのコスト削減と99.99% 可用性を同時に達成」 |
-| 「導入ステップ」 | 「3フェーズ8週間で本番環境への移行を完了する」 |
+| "Use cases" | "ScalarDB solves the heterogeneous-DB integration challenge in the financial industry" |
+| "Problem and solution" | "Automating manual data-consistency management cuts operational effort by 80%" |
+| "Case study" | "Company A tripled transaction processing speed by adopting ScalarDB" |
+| "Before/after" | "Unifying per-DB implementations into a single API halves development time" |
+| "Impact" | "Achieving $1.2M in annual cost savings and 99.99% availability simultaneously" |
+| "Deployment steps" | "Completing production migration in 3 phases over 8 weeks" |

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""株式会社Scalar 会社紹介・製品紹介・ユースケース デッキ生成。
+"""Generate the Scalar, Inc. company introduction / product introduction / use case deck.
 
-scalar-2026-boilerplate を keep_existing で複製し、公式の定型スライド
-（会社概要・役員構成・製品概要・導入顧客・事例・クロージング）を活かしつつ、
-Web 調査（2026-08-01 実施）に基づく生成スライドを最終位置へ挿入する。
+Duplicates scalar-2026-boilerplate with keep_existing, preserving the official
+boilerplate slides (company overview, executive lineup, product overview,
+customers, case studies, closing) while inserting generated slides based on
+web research (conducted 2026-08-01) at their final positions.
 
-  実行: .venv/bin/python scripts/scalar/build_scalar_intro.py [--folder <URL>]
-  検査: .venv/bin/python scripts/scalar/build_scalar_intro.py --dry-run
-        （同梱スライドの間引きと文言置換は複製後の実物が要るので飛ばす）
+  Run:    .venv/bin/python scripts/scalar/build_scalar_intro.py [--folder <URL>]
+  Check:  .venv/bin/python scripts/scalar/build_scalar_intro.py --dry-run
+        (skips thinning the bundled slides and text replacement, since both
+        need the real duplicated deck)
 """
 from __future__ import annotations
 
@@ -38,15 +40,15 @@ TITLE = "株式会社Scalar ご紹介資料"
 SUBTITLE = "会社概要・製品・ユースケース"
 DATE = "2026年8月"
 
-# 同梱 12 枚のうち削除する位置（0-origin）: <Proposal Title> 表紙, <Sub Section> 見出し
+# Positions to delete among the 12 bundled slides (0-origin): <Proposal Title> cover, <Sub Section> heading
 DROP_KEPT_POSITIONS = (1, 10)
 
 
-# ---------------------------------------------------------------- 図解スライド
+# ---------------------------------------------------------------- Figure slides
 
 def _band(d: Canvas, x, y, w, h, *, logo=None, text=None, text_size=10.5,
           fill=None, stroke=None):
-    """製品の帯。ロゴを左に置き、右に説明を書く。"""
+    """A product band. Places the logo on the left and description text on the right."""
     d.shape(x, y, w, h, kind="ROUND_RECTANGLE",
             fill=fill or lighten(d.P.primary, 0.88), stroke=stroke or d.P.primary)
     tx = x + 0.25
@@ -61,7 +63,7 @@ def _band(d: Canvas, x, y, w, h, *, logo=None, text=None, text_size=10.5,
 
 
 def draw_company_data(d: Canvas) -> None:
-    """会社データ。数値 3 つ + キー/バリューの行。"""
+    """Company data. Three metrics plus key/value rows."""
     d.metric(0.5, 1.05, 2.86, 1.05, "2017年12月", "設立", value_size=17)
     d.metric(3.57, 1.05, 2.86, 1.05, "3拠点", "東京・札幌・サンフランシスコ",
              value_size=17)
@@ -87,7 +89,7 @@ def draw_company_data(d: Canvas) -> None:
 
 
 def draw_history(d: Canvas) -> None:
-    """沿革。タイムライン + 補足。"""
+    """Company history. Timeline plus supplementary notes."""
     d.timeline(0.5, 1.3, 9.0, [
         ("2017.12", "創業"),
         ("2018.10", "ScalarDB を\nOSS 公開"),
@@ -108,7 +110,7 @@ def draw_history(d: Canvas) -> None:
 
 
 def draw_challenges(d: Canvas) -> None:
-    """製品が解決する課題 → 2 製品での解決。"""
+    """Challenges the products solve -> resolved by the 2 products."""
     b = d.cards(0.5, 1.05, 9.0, 1.7, [
         ("データのサイロ化", "部門・サービスごとに DB が乱立し、横断的なデータ利用や分析が難しい"),
         ("整合性の作り込み", "複数 DB やマイクロサービス間の一貫性保証をアプリ側で実装すると複雑で高コスト"),
@@ -126,15 +128,16 @@ def draw_challenges(d: Canvas) -> None:
 
 
 def draw_db_arch(d: Canvas) -> None:
-    """ScalarDB: アプリ → ScalarDB → 各データベース の 3 層。"""
+    """ScalarDB: the 3 layers of app -> ScalarDB -> each database."""
     d.label(0.5, 0.95, 9.0, 0.24, "アプリケーション", size=9.5, align="START",
             color=d.P.muted)
     d.icon_row(0.9, 1.25, 8.2, [("browser", "Web アプリ"), ("mobile", "モバイル"),
                                 ("server", "バッチ"), ("bot", "AI エージェント")],
                size=0.5, label_size=8.5)
 
-    # 帯とゾーンの間には「見出し」と「下向きの矢印」の両方が入る。帯を少し上げて
-    # 見出しの分の高さを作り、矢印は見出しより下から引く（重ねると字を貫く）
+    # Both a "heading" and a "downward arrow" go between the band and the zone.
+    # Raise the band slightly to make room for the heading's height, and draw
+    # the arrow from below the heading (overlapping it would cut through the text)
     band_y = 2.40
     d.shape(0.9, band_y, 8.2, 0.72, kind="ROUND_RECTANGLE",
             fill=lighten(d.P.primary, 0.88), stroke=d.P.primary)
@@ -144,7 +147,7 @@ def draw_db_arch(d: Canvas) -> None:
             size=10, align="START", valign="MIDDLE", color=d.P.text)
 
     zone_y = 3.55
-    caption_y = band_y + 0.74          # 帯のすぐ下
+    caption_y = band_y + 0.74          # just below the band
     d.label(0.5, caption_y, 9.0, 0.19, "バックエンドのデータベース", size=9.0,
             align="START", color=d.P.muted)
     for i, (vendor, item) in enumerate([
@@ -173,7 +176,7 @@ def draw_db_arch(d: Canvas) -> None:
 
 
 def draw_db_lineup(d: Canvas) -> None:
-    """ScalarDB のラインナップとエディション。"""
+    """ScalarDB lineup and editions."""
     b = d.cards(0.5, 1.05, 9.0, 1.8, [
         ("ScalarDB Core（OSS）", "Apache License 2.0。DB 抽象化と Consensus Commit による ACID トランザクション"),
         ("ScalarDB Cluster", "Kubernetes 上のクラスタリング。認証認可・暗号化・ABAC・SQL / GraphQL・ベクトル検索"),
@@ -194,7 +197,7 @@ def draw_db_lineup(d: Canvas) -> None:
 
 
 def draw_dl_auditor(d: Canvas) -> None:
-    """ScalarDL: Auditor 構成。管理主体を分けて相互に検証する。"""
+    """ScalarDL: Auditor configuration. Separate operating entities mutually verify each other."""
     d.icon_row(3.6, 0.95, 2.8, [("browser", "クライアント")], size=0.42,
                label_size=9)
     for i, (title, product, note, db, dbname) in enumerate([
@@ -226,7 +229,7 @@ def draw_dl_auditor(d: Canvas) -> None:
 
 
 def draw_dl_evidence(d: Canvas) -> None:
-    """ScalarDL: 改ざん検知の流れ。"""
+    """ScalarDL: the tamper-detection flow."""
     d.asset_icon_flow(0.5, 1.35, 9.0, [
         ("personal-info", "資産の更新要求"),
         ("evidence-chain", "ハッシュで\n前の記録につなぐ"),
@@ -242,7 +245,7 @@ def draw_dl_evidence(d: Canvas) -> None:
 
 
 def draw_db_patterns(d: Canvas) -> None:
-    """ScalarDB のユースケースパターン 6 種。"""
+    """ScalarDB: 6 use-case patterns."""
     b = d.cards(0.5, 1.0, 9.0, 1.55, [
         ("サイロ化 DB の統合", "統一インターフェースで複数 DB を仮想的に単一 DB として扱う"),
         ("マイクロサービスの一貫性", "DB 非依存の ACID トランザクションでサービス間の整合性を保証"),
@@ -256,7 +259,7 @@ def draw_db_patterns(d: Canvas) -> None:
 
 
 def draw_dl_patterns(d: Canvas) -> None:
-    """ScalarDL のユースケースパターン 4 種 + 対象業界。"""
+    """ScalarDL: 4 use-case patterns plus target industries."""
     b = d.cards(0.5, 1.05, 9.0, 1.75, [
         ("改ざん検知", "ビザンチン故障を検知し、アクセス時に即座に改ざんを検出"),
         ("監査証跡・証拠保全", "改ざん検知とタイムスタンプで電子データの証拠力を確保"),
@@ -272,13 +275,13 @@ def draw_dl_patterns(d: Canvas) -> None:
     ], size=0.52, label_size=8.5, color=d.P.success)
 
 
-# ---------------------------------------------------------------- デッキ構成
+# ---------------------------------------------------------------- Deck composition
 
 def build_plan():
-    """最終ページ順。("kept", 削除後の同梱スライド序数) か ("new", 種別, spec)。"""
+    """Final page order. ("kept", bundled-slide ordinal after deletion) or ("new", kind, spec)."""
     return [
-        ("kept", 0),   # 表紙（テキスト置換）
-        ("kept", 1),   # 免責事項
+        ("kept", 0),   # cover (text replacement)
+        ("kept", 1),   # disclaimer
         ("new", "content", dict(
             title="本日のアジェンダ",
             body=[
@@ -289,8 +292,8 @@ def build_plan():
             notes="本資料は 2026-08-01 時点の公開情報（scalar-labs.com / developers.scalar-labs.com / 各社プレスリリース）に基づく。")),
         ("new", "section", dict(title="1. 会社紹介",
                                 body="会社概要・ビジョン・沿革・直近のトピックス")),
-        ("kept", 2),   # 会社概要 VISION
-        ("kept", 3),   # 役員構成
+        ("kept", 2),   # Company overview VISION
+        ("kept", 3),   # Executive lineup
         ("new", "figure", dict(
             title="日本発、グローバル展開を目指す B2B ソフトウェア企業",
             draw=draw_company_data,
@@ -356,10 +359,10 @@ def build_plan():
             draw=draw_dl_evidence)),
         ("new", "section", dict(title="3. ユースケース",
                                 body="適用領域・導入顧客・事例・活用パターン")),
-        ("kept", 5),   # 適用領域の例
-        ("kept", 6),   # 導入顧客
-        ("kept", 7),   # トヨタ PCE 事例
-        ("kept", 8),   # 大手放送局 事例
+        ("kept", 5),   # Example applicable domains
+        ("kept", 6),   # Customers
+        ("kept", 7),   # Toyota PCE case study
+        ("kept", 8),   # Major broadcaster case study
         ("new", "figure", dict(
             title="ScalarDB はデータ統合・一貫性・モダナイゼーションで効く",
             draw=draw_db_patterns,
@@ -379,14 +382,14 @@ def build_plan():
             ],
             body_font_size=13,
             notes="出典: 各社プレスリリース（ENS 事例インタビュー、J-POWER 2025-01-06、NSW 2023、LayerX 2024-10-09、トヨタファイナンシャルサービス 2020-03）。定量効果が公表されているのは ENS の 1/5 のみ。")),
-        ("kept", 9),   # クロージング
+        ("kept", 9),   # Closing
     ]
 
 
-# ---------------------------------------------------------------- 生成
+# ---------------------------------------------------------------- Generation
 
 def draw_page_number(deck, ref, number: int) -> None:
-    """生成スライドへ最終ページ位置の番号を描く（add_page_numbers の単票版）。"""
+    """Draw the page number for a generated slide at its final position (single-slide version of add_page_numbers)."""
     cfg = deck.template.get("pageNumber", {})
     layout = ref["layout"]
     geo = layout.get("elements", {}).get("slideNumber")
@@ -436,20 +439,21 @@ def main() -> int:
         deck = bd.TemplateDeck.create(template, title=TITLE, folder=args.folder,
                                       keep_existing=True)
 
-    # 残した同梱スライドの間引きと表紙の文言置換。どちらも複製後の実物が要る
-    # （ID を引くのに API を叩く）ので、--dry-run では丸ごと飛ばす。ここで作る
-    # のはリクエストだけで、以降の作図と検査には影響しない
+    # Thinning out the remaining bundled slides and the cover text replacement.
+    # Both need the real duplicated deck (calling the API to look up IDs), so
+    # they're skipped entirely under --dry-run. This only builds requests here
+    # and has no effect on the drawing and validation that follow
     if not args.dry_run:
         pres = deck.slides.presentations().get(
             presentationId=deck.presentation_id, fields="slides.objectId").execute()
         ids = [s["objectId"] for s in pres.get("slides", [])]
-        # assert は python -O で消えるので、明示的に検査する
+        # assert is stripped under python -O, so check this explicitly
         if len(ids) != 12:
             raise RuntimeError(t("Expected 12 bundled slides, got {n}", n=len(ids)))
         for pos in DROP_KEPT_POSITIONS:
             deck.requests.append({"deleteObject": {"objectId": ids[pos]}})
 
-        # 表紙の文言置換（<Proposal Title> の表紙は上で削除済み）
+        # Cover text replacement (the <Proposal Title> cover was already deleted above)
         for old, new in [("<Presentation Title>", TITLE), ("<Sub Title>", SUBTITLE),
                          ("YYYY月MM月", DATE), ("YYYY年MM月", DATE)]:
             deck.requests.append({"replaceAllText": {

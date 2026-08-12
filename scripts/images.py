@@ -1,43 +1,46 @@
 #!/usr/bin/env python3
-"""スライドに写真・イラストなどの「画像」を載せるための機能。
+"""Functionality for placing "images" — photos, illustrations, etc. — onto slides.
 
-本スキルで図を作る手段は 3 つある。用途で使い分ける。
+This skill has 3 ways to produce a diagram. Choose based on the purpose.
 
-| やりたいこと | 使うもの |
+| What you want to do | What to use |
 |---|---|
-| 構造を正確に示す（フロー・構成図・グラフ） | `diagrams.Canvas` |
-| 概念を絵で示す（比喩図・アイコン・ピクトグラム） | `illustrations`（図形で描く。オフラインで動く） |
-| 雰囲気・情景を示す（表紙・扉・挿絵） | 本モジュール（AI 生成 or 手持ちの画像） |
+| Show structure precisely (flow / architecture diagram / graph) | `diagrams.Canvas` |
+| Show a concept visually (metaphor diagram / icon / pictogram) | `illustrations` (drawn with shapes; works offline) |
+| Show mood / a scene (cover, section divider, illustration) | this module (AI-generated or your own image) |
 
---- 1. AI で生成する -------------------------------------------------------
+--- 1. Generate with AI -------------------------------------------------------
 
     from images import generate
     path = generate("複数のマイクロサービスがひとつの台帳を共有している様子",
                     style="flat_vector", palette=template["colors"], aspect="16:9")
 
-生成物は内容のハッシュでキャッシュされる（同じプロンプト・スタイル・比率なら
-再生成しない）。プロンプトはサイドカーの .json に残るので後から追跡できる。
+Generated results are cached by a hash of the content (the same prompt,
+style, and aspect ratio won't be regenerated). The prompt is kept in a
+sidecar .json file, so it can be traced later.
 
-    # コマンドラインから
+    # From the command line
     python scripts/images.py --prompt "…" --style flat_vector --out out/x.png
 
-`GEMINI_API_KEY` が必要。画像モデルは無料枠のクォータが 0 のことがあり、その場合は
-429 が返る（課金を有効にしたプロジェクトのキーが要る）。
+Requires `GEMINI_API_KEY`. The image model sometimes has zero free-tier
+quota, in which case it returns 429 (a key from a project with billing
+enabled is required).
 
---- 2. 手持ちの画像を貼る --------------------------------------------------
+--- 2. Place your own image --------------------------------------------------
 
-Canvas 経由で使う。ローカルパス / http(s) URL / Drive のファイル URL・ID を受け付ける。
+Used via Canvas. Accepts a local path / http(s) URL / Drive file URL or ID.
 
     d = Canvas(deck, slide_id, template)
     d.image(0.6, 1.1, 4.2, 2.6, "assets/screenshot.png", fit="contain")
     d.ai_image(5.2, 1.1, 4.2, 2.6, "自律型エージェントが夜間にビルドを回している様子")
 
-ローカルファイルは Drive に一時アップロードして「リンクを知る全員が閲覧可」にし、
-その URL を `createImage` に渡す。Slides は挿入時に画像を**プレゼンテーション内へ
-コピーする**ため、`deck.commit()` の直後に一時ファイルを削除している
-（`AssetStore.cleanup()`。`TemplateDeck.commit()` から自動で呼ばれる）。
+Local files are uploaded temporarily to Drive, set to "anyone with the link
+can view," and that URL is passed to `createImage`. Since Slides **copies
+the image into the presentation** on insertion, the temporary file is
+deleted right after `deck.commit()` (`AssetStore.cleanup()`, called
+automatically from `TemplateDeck.commit()`).
 
-Slides が受け付ける形式は PNG / JPEG / GIF のみ、50MB 未満、25 メガピクセル未満。
+Slides only accepts PNG / JPEG / GIF, under 50MB, under 25 megapixels.
 """
 from __future__ import annotations
 
@@ -156,20 +159,23 @@ DEFAULT_CACHE = os.path.join(SKILL_DIR, "cache", "images")
 DEFAULT_MODEL = "gemini-3.1-flash-image"
 API_ROOT = "https://generativelanguage.googleapis.com/v1beta/models"
 
-# imageConfig.aspectRatio が受け付ける値
+# Values accepted by imageConfig.aspectRatio
 ASPECTS = ("1:1", "2:3", "3:2", "3:4", "4:3", "4:5", "5:4", "9:16", "16:9", "21:9")
 
-# 生成できる比は ASPECTS の 10 種類しかないので、テンプレートの画像枠の比とは
-# たいてい一致しない。差は cover の切り取りで吸収するが、切られる側に主題が
-# 寄っていると絵が台無しになる。この割合を超えてずれるときは、切り取りを
-# 見越した構図をモデルに指示する
+# Only the 10 aspect ratios in ASPECTS can be generated, so they usually
+# don't match the template's image frame ratio exactly. The difference is
+# absorbed by cropping with cover, but if the subject sits near the edge
+# that gets cropped, the picture is ruined. When the mismatch exceeds this
+# tolerance, the model is instructed to compose with the crop in mind
 FRAME_TOLERANCE = 0.02
 
 
 def frame_note(target: float, aspect: str) -> str | None:
-    """枠の比と生成比のずれを、切り取られても崩れない構図の指示にする。
+    """Turns the mismatch between the frame's ratio and the generated ratio
+    into a composition instruction that survives cropping.
 
-    target は置き先の枠の縦横比（幅 / 高さ）。ずれが小さければ None を返す。
+    target is the destination frame's aspect ratio (width / height). Returns
+    None if the mismatch is small.
     """
     aw, ah = (int(v) for v in aspect.split(":"))
     made = aw / ah
@@ -187,11 +193,11 @@ def frame_note(target: float, aspect: str) -> str | None:
         "edges free of anything that must survive."
     )
 
-# Slides の createImage が受け付ける形式
+# Formats accepted by Slides' createImage
 SLIDES_MIME = {"image/png", "image/jpeg", "image/gif"}
 
 
-# ---------- スタイル ----------
+# ---------- Style ----------
 
 STYLES: dict[str, str] = {
     "flat_vector": (
@@ -223,7 +229,7 @@ STYLES: dict[str, str] = {
 }
 DEFAULT_STYLE = "flat_vector"
 
-# どのスタイルでも常に効かせる制約。スライドに載せる前提の指示。
+# Constraints that always apply regardless of style. Instructions assuming the image will be placed on a slide.
 GUARDRAILS = (
     "Do not render any text, letters, numbers, words, labels, watermarks, logos or UI copy "
     "anywhere in the image. Composition centered with clear margins. "
@@ -233,7 +239,7 @@ GUARDRAILS = (
 
 
 def palette_hint(colors: dict | None) -> str:
-    """テンプレートの配色を、生成プロンプトに載せる指示文にする。"""
+    """Turns the template's palette into an instruction to include in the generation prompt."""
     if not colors:
         return ""
     p = Palette(colors)
@@ -247,10 +253,12 @@ def palette_hint(colors: dict | None) -> str:
 def build_prompt(subject: str, *, style: str = DEFAULT_STYLE,
                  palette: dict | None = None, extra: str | None = None,
                  frame: str | None = None) -> str:
-    """被写体の説明から、実際に投げるプロンプト全文を組み立てる。
+    """Assembles the full prompt actually sent to the API, from a
+    description of the subject.
 
-    frame は frame_note() が作る構図の指示。GUARDRAILS の「中央寄せ・余白」より
-    細かい条件なので、後ろに置いて上書きさせる。
+    frame is the composition instruction produced by frame_note(). It's a
+    more specific condition than GUARDRAILS' "centered / margins," so it's
+    placed later to override it.
     """
     if style not in STYLES:
         raise ValueError(
@@ -263,7 +271,7 @@ def build_prompt(subject: str, *, style: str = DEFAULT_STYLE,
     return "\n".join(p for p in parts if p)
 
 
-# ---------- 生成 ----------
+# ---------- Generation ----------
 
 class ImageGenerationError(RuntimeError):
     pass
@@ -308,7 +316,7 @@ def _post_json(url: str, payload: dict, *, timeout: int = 180) -> dict:
 
 def _call_model(prompt: str, *, model: str, aspect: str, key: str,
                 retries: int = 2) -> tuple[bytes, str]:
-    """画像モデルを呼び、(バイト列, mimeType) を返す。"""
+    """Calls the image model and returns (byte string, mimeType)."""
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
@@ -344,7 +352,7 @@ def _call_model(prompt: str, *, model: str, aspect: str, key: str,
                 t("Image generation failed (HTTP {code} / model={model}): {message}",
                   code=e.code, model=model, message=msg)
             ) from None
-    else:  # pragma: no cover - 到達しない（break か raise で抜ける）
+    else:  # pragma: no cover - unreachable (always exits via break or raise)
         raise ImageGenerationError(t("Image generation failed: {message}", message=last))
 
     cands = data.get("candidates") or []
@@ -370,11 +378,13 @@ def generate(subject: str, *, style: str = DEFAULT_STYLE, palette: dict | None =
              aspect: str = "16:9", extra: str | None = None,
              model: str | None = None, cache_dir: str | None = None,
              force: bool = False, frame: str | None = None) -> str:
-    """画像を生成してローカルパスを返す。同じ入力ならキャッシュを使う。
+    """Generates an image and returns its local path. Reuses the cache for
+    identical input.
 
-    キャッシュのキーは (model, style, aspect, プロンプト全文) のハッシュ。
-    デッキを作り直しても同じ絵が出るので、再現性がある。frame は
-    プロンプト全文に入るので、枠が変われば作り直しになる。
+    The cache key is a hash of (model, style, aspect, full prompt text).
+    This means recreating the deck produces the same picture, giving
+    reproducibility. Since frame is part of the full prompt text, a
+    different frame triggers regeneration.
     """
     if aspect not in ASPECTS:
         raise ValueError(t("aspect must be one of {aspects} (got: {aspect})",
@@ -399,8 +409,9 @@ def generate(subject: str, *, style: str = DEFAULT_STYLE, palette: dict | None =
             t("The model returned a format Slides cannot handle: {mime} "
               "(PNG/JPEG/GIF only)", mime=mime)
         )
-    # 中断で壊れた PNG がキャッシュに残ると exists() チェックで恒久的に再利用される
-    # ため、一時ファイルに書いてから os.replace でアトミックに置く（icons.py と同じ流儀）
+    # If a PNG corrupted by an interrupted run were left in the cache, the
+    # exists() check would keep reusing it forever, so write to a temp file
+    # first and place it atomically with os.replace (same approach as icons.py)
     tmp = f"{path}.{os.getpid()}.part"
     with open(tmp, "wb") as f:
         f.write(blob)
@@ -412,12 +423,13 @@ def generate(subject: str, *, style: str = DEFAULT_STYLE, palette: dict | None =
     return path
 
 
-# ---------- 画像の実寸 ----------
+# ---------- Actual image dimensions ----------
 
 def image_size(data: bytes) -> tuple[int, int]:
-    """PNG / JPEG / GIF のヘッダから (幅, 高さ) をピクセルで返す。
+    """Returns (width, height) in pixels from a PNG / JPEG / GIF header.
 
-    アスペクト比を保った配置に必要。Pillow を足したくないのでヘッダだけ読む。
+    Needed for aspect-ratio-preserving placement. Reads only the header
+    since we don't want to add a Pillow dependency.
     """
     if data[:8] == b"\x89PNG\r\n\x1a\n":
         return struct.unpack(">II", data[16:24])
@@ -438,7 +450,7 @@ def image_size(data: bytes) -> tuple[int, int]:
             if marker == 0xD9:
                 break
             seg = struct.unpack(">H", data[i + 2:i + 4])[0]
-            # SOF0..SOF15（DHT=C4 / JPG=C8 / DAC=CC を除く）に寸法が入る
+            # Dimensions are in SOF0..SOF15 (excluding DHT=C4 / JPG=C8 / DAC=CC)
             if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
                 h, w = struct.unpack(">HH", data[i + 5:i + 9])
                 return w, h
@@ -448,10 +460,12 @@ def image_size(data: bytes) -> tuple[int, int]:
 
 
 def _remote_image_size(url: str, limit: int = 64 * 1024) -> tuple[int, int]:
-    """リモート画像の先頭だけ取得して (幅, 高さ) をピクセルで返す。
+    """Fetches only the beginning of a remote image and returns
+    (width, height) in pixels.
 
-    fit="cover" / "contain" の計算には実寸が要る。全体をダウンロードせず
-    ヘッダが読める分だけ取る。読めなければ ValueError。
+    Actual dimensions are needed for fit="cover" / "contain" calculations.
+    Instead of downloading the whole file, only enough to read the header is
+    fetched. Raises ValueError if it can't be read.
     """
     import urllib.request
     req = urllib.request.Request(url, headers={"User-Agent": "gslides-template"})
@@ -471,13 +485,15 @@ def sniff_mime(path: str, data: bytes | None = None) -> str:
     return mimetypes.guess_type(path)[0] or "application/octet-stream"
 
 
-# ---------- Slides から参照できる URL にする ----------
+# ---------- Resolve to a URL Slides can reference ----------
 
 def _check_local(source: str) -> str:
-    """ローカル画像の存在・形式・サイズを検査し、展開済みのパスを返す。
+    """Checks a local image's existence, format, and size, and returns the
+    expanded path.
 
-    ネットワークを使わない検査だけをここに置く。アップロードを非同期にしても
-    「形式が違う」「ファイルが無い」は呼び出し箇所で即座に分かるようにするため。
+    Only network-free checks go here, so that even with asynchronous
+    uploads, "wrong format" or "file not found" is still surfaced
+    immediately at the call site.
     """
     path = os.path.expanduser(source)
     if not os.path.exists(path):
@@ -498,22 +514,27 @@ def _check_local(source: str) -> str:
 
 
 class AssetStore:
-    """画像ソースを `createImage` に渡せる URL に解決する。
+    """Resolves an image source into a URL that can be passed to
+    `createImage`.
 
-    - http(s) の URL … そのまま使う
-    - Drive の URL / `drive:<id>` … 共有設定を付けて直リンクにする
-    - ローカルのパス … Drive へ一時アップロードして共有し、直リンクにする
+    - http(s) URL ... used as-is
+    - Drive URL / `drive:<id>` ... shared and turned into a direct link
+    - local path ... uploaded temporarily to Drive, shared, and turned into
+      a direct link
 
-    一時アップロードしたファイルは `cleanup()` で消す。Slides は挿入時に画像を
-    プレゼンテーション内へコピーするので、消しても表示は壊れない。
+    Temporarily uploaded files are removed by `cleanup()`. Since Slides
+    copies the image into the presentation at insertion time, deleting it
+    afterward doesn't break the display.
     """
 
-    # Drive へのアップロードは 1 枚あたり実測で約 3.1 秒（アップロード 1.9s ＋
-    # 共有設定 1.2s）かかる。描画の途中で 1 枚ずつ同期に行うと、画像 10 枚の
-    # デッキで 30 秒以上が画像だけに消える（batchUpdate 全体より大きい）。
-    # ローカル画像は「どこに置くか」が決まった時点で URL を確定させる必要が
-    # ないので、アップロードを別スレッドに投げ、commit() の直前に URL を
-    # 埋める（flush()）。Drive の書き込みクォータに配慮して同時実行は控えめにする。
+    # Uploading to Drive measures at about 3.1 seconds per image (1.9s
+    # upload + 1.2s sharing setup). Doing this synchronously one image at a
+    # time during rendering would burn 30+ seconds on images alone for a
+    # 10-image deck (more than the entire batchUpdate). Since a local
+    # image's URL doesn't need to be finalized the moment its placement is
+    # decided, uploads are dispatched to a separate thread and the URL is
+    # filled in right before commit() (flush()). Concurrency is kept modest
+    # out of consideration for Drive's write quota.
     WORKERS = 6
 
     def __init__(self, drive=None):
@@ -524,17 +545,18 @@ class AssetStore:
         self._lock = threading.Lock()
         self._tls = threading.local()
         self._pool: ThreadPoolExecutor | None = None
-        # source -> Future[url]。同じ画像を複数枚に貼っても 1 回しか上げない
+        # source -> Future[url]. Uploads only once even if the same image is placed multiple times
         self._futures: dict[str, "Future[str]"] = {}
-        # 埋め戻し先: (createImage の props, source)
+        # Where to patch back into: (createImage's props, source)
         self._patch: list[tuple[dict, str]] = []
-        # 画像は図を描く過程で逐次アップロードされ、その都度「リンクを知る全員が
-        # 閲覧可」になる。cleanup() は commit() からしか呼ばれないので、途中で
-        # 失敗した実行は公開されたままの一時ファイルを残す。プロセスの終わりに
-        # 必ず畳めるよう、ここで後始末を予約しておく
+        # Images are uploaded one by one as diagrams are drawn, each becoming
+        # "anyone with the link can view" as it goes. Since cleanup() is only
+        # called from commit(), a run that fails partway through leaves
+        # temporary files publicly shared. Register the cleanup here so it's
+        # guaranteed to happen at process end
         atexit.register(self._atexit_cleanup)
 
-    # -- 並列アップロード --
+    # -- Parallel upload --
 
     def _executor(self) -> ThreadPoolExecutor:
         if self._pool is None:
@@ -543,14 +565,15 @@ class AssetStore:
         return self._pool
 
     def defer(self, source: str, props: dict) -> None:
-        """ローカル画像のアップロードを予約する。
+        """Schedules the upload of a local image.
 
-        `props` は createImage の中身。flush() が完了後に props["url"] を埋める。
-        壊れた指定（未対応の形式・サイズ超過・パス誤り）は**ここで**同期に
-        弾く。ネットワークだけを後回しにしないと、エラーがどの image() 由来か
-        分からなくなる。
+        `props` is the body of createImage. flush() fills in props["url"]
+        after the upload finishes. Broken input (unsupported format,
+        oversized, wrong path) is rejected synchronously **right here**.
+        Only the network part is deferred — otherwise it becomes impossible
+        to tell which image() call an error came from.
         """
-        path = _check_local(source)      # 形式・サイズの検査（ローカル完結）
+        path = _check_local(source)      # format/size check (fully local)
         with self._lock:
             if source not in self._futures:
                 mime = sniff_mime(path)
@@ -559,23 +582,26 @@ class AssetStore:
             self._patch.append((props, source))
 
     def flush(self) -> int:
-        """予約したアップロードの完了を待ち、createImage の url を埋める。
+        """Waits for scheduled uploads to finish and fills in createImage's
+        url.
 
-        commit() が batchUpdate を投げる前に必ず呼ぶこと。戻り値は解決した枚数。
+        Must always be called before commit() sends the batchUpdate. Returns
+        the number of images resolved.
         """
         if not self._patch:
             return 0
         for props, source in self._patch:
-            props["url"] = self._futures[source].result()   # 失敗はここで送出
+            props["url"] = self._futures[source].result()   # failures propagate here
         n = len(self._patch)
         self._patch = []
         return n
 
     def _atexit_cleanup(self) -> None:
-        """プロセス終了時の保険。既に cleanup() 済みなら何もしない。
+        """Safety net for process exit. Does nothing if cleanup() already ran.
 
-        アップロードがまだ飛行中だと temp_ids は空のことがある。_futures も見ないと、
-        「これから temp_ids に載るファイル」を取り逃がして公開のまま残す。
+        temp_ids can be empty while uploads are still in flight. Without
+        also checking _futures, files "about to land in temp_ids" would be
+        missed and left publicly shared.
         """
         if not self.temp_ids and not self.shared_ids and not self._futures:
             return
@@ -584,7 +610,7 @@ class AssetStore:
               file=sys.stderr)
         try:
             self.cleanup()
-        except Exception:  # 終了処理で新たな例外を投げない
+        except Exception:  # avoid raising a new exception during exit handling
             pass
 
     @property
@@ -593,7 +619,7 @@ class AssetStore:
             self._drive = _auth.services()[1]
         return self._drive
 
-    # -- 解決 --
+    # -- Resolution --
 
     def url_for(self, source: str) -> str:
         if source in self._resolved:
@@ -617,8 +643,8 @@ class AssetStore:
         from googleapiclient.http import MediaFileUpload
         media = MediaFileUpload(path, mimetype=mime, resumable=False)
         meta = {"name": f"gslides-tmp-{os.path.basename(path)}"}
-        # drive プロパティはスレッド安全でないサービスを共有するため、
-        # ワーカーごとに作る（httplib2 の接続は使い回せない）
+        # The drive property shares a service object that isn't thread-safe,
+        # so create one per worker (httplib2 connections can't be reused)
         fid = self._thread_drive().files().create(
             body=meta, media_body=media, fields="id", supportsAllDrives=True,
         ).execute()["id"]
@@ -627,7 +653,7 @@ class AssetStore:
         return fid
 
     def _thread_drive(self):
-        """呼び出しスレッド専用の Drive サービス。"""
+        """Per-calling-thread Drive service."""
         if threading.current_thread() is threading.main_thread():
             return self.drive
         if not hasattr(self._tls, "drive"):
@@ -635,10 +661,12 @@ class AssetStore:
         return self._tls.drive
 
     def _drive_url(self, file_id: str) -> str:
-        """Drive のファイルを「リンクを知る全員が閲覧可」にして直リンクを返す。
+        """Makes a Drive file "anyone with the link can view" and returns a
+        direct link.
 
-        `createImage` は URL を**匿名で**取りに行くため、認証済みの自分が
-        アクセスできるだけでは足りない。挿入後は cleanup() で共有を解除する。
+        `createImage` fetches the URL **anonymously**, so it's not enough
+        for just the authenticated caller to have access. Sharing is
+        revoked by cleanup() after insertion.
         """
         try:
             self._thread_drive().permissions().create(
@@ -647,21 +675,25 @@ class AssetStore:
             ).execute()
             with self._lock:
                 self.shared_ids.append(file_id)
-        except Exception as e:  # 既に公開済み、または組織ポリシーで禁止
+        except Exception as e:  # already public, or forbidden by org policy
             print(t("  warn: could not change the sharing settings of {file_id}: "
                     "{error}", file_id=file_id, error=e), file=sys.stderr)
         return f"https://drive.google.com/uc?export=download&id={file_id}"
 
-    # -- 後始末 --
+    # -- Cleanup --
 
     def cleanup(self) -> None:
-        """一時アップロードを削除し、既存ファイルに付けた公開共有を外す。
+        """Deletes temporary uploads and removes public sharing set on
+        existing files.
 
-        1 件あたり実測 0.85 秒（共有解除はさらに一覧＋削除の 2 往復）かかるので
-        並列に行う。片付けなので 1 件の失敗で全体を止めず、警告して次へ進む。
+        Each one measures at 0.85 seconds (unsharing takes an additional 2
+        round-trips: list + delete), so this runs in parallel. Since this is
+        cleanup, a single failure doesn't stop the whole process — it warns
+        and moves on.
         """
-        # 予約したまま未回収のアップロードがあると temp_ids に載らず取り残される。
-        # 例外は握りつぶす（後始末の途中で新たな失敗を増やさない）
+        # Uploads scheduled but never collected wouldn't be in temp_ids and
+        # would be left behind. Exceptions are swallowed (avoid adding new
+        # failures during cleanup)
         for fut in self._futures.values():
             try:
                 fut.result()
@@ -692,7 +724,7 @@ class AssetStore:
                         "{error}", file_id=fid, error=e), file=sys.stderr)
 
         temp = set(self.temp_ids)
-        # ファイルごと消すものは共有解除の対象から外す（消えていれば共有も消える）
+        # Files being deleted outright are excluded from unsharing (deleting them removes the sharing too)
         keep = [fid for fid in self.shared_ids if fid not in temp]
         jobs = [(drop, fid) for fid in self.temp_ids] + [(unshare, fid) for fid in keep]
         if jobs:
@@ -701,9 +733,10 @@ class AssetStore:
                         max_workers=min(self.WORKERS, len(jobs))) as ex:
                     list(ex.map(lambda job: job[0](job[1]), jobs))
             except RuntimeError:
-                # インタプリタ終了中（atexit 経由）はスレッドを起こせない。
-                # ここは「公開したままの一時ファイルを必ず消す」ための最後の砦なので、
-                # 遅くても逐次で確実にやりきる
+                # Threads can't be started while the interpreter is
+                # shutting down (via atexit). Since this is the last line of
+                # defense for "always delete files left publicly shared,"
+                # fall back to doing it sequentially, slow but guaranteed
                 for fn, fid in jobs:
                     fn(fid)
 
@@ -725,10 +758,10 @@ def _drive_file_id(url: str) -> str:
     return m.group(1)
 
 
-# ---------- Canvas に生やすメソッド ----------
+# ---------- Methods added to Canvas ----------
 
 class ImageMixin:
-    """`Canvas` に画像配置を足すミックスイン。diagrams.Canvas が継承する。"""
+    """Mixin that adds image placement to `Canvas`. Inherited by diagrams.Canvas."""
 
     def _asset_store(self) -> AssetStore:
         store = getattr(self.deck, "assets", None)
@@ -742,20 +775,20 @@ class ImageMixin:
 
     @staticmethod
     def _fit_rect(box, px_w, px_h, mode):
-        """(x, y, w, h) の枠に px_w×px_h の画像を収める矩形と crop を返す。"""
+        """Returns the rect and crop needed to fit a px_w×px_h image into an (x, y, w, h) frame."""
         x, y, w, h = box
         if not px_w or not px_h or mode == "stretch":
             return (x, y, w, h), None
         ar_img = px_w / px_h
         ar_box = w / h
         if mode == "cover":
-            # 枠いっぱいに敷き、はみ出す分を crop で切る（crop は左右/上下の比率）
+            # Fills the frame completely and crops away the overflow (crop is a left/right or top/bottom ratio)
             if ar_img > ar_box:
                 cut = (1 - ar_box / ar_img) / 2
                 return (x, y, w, h), {"leftOffset": cut, "rightOffset": cut}
             cut = (1 - ar_img / ar_box) / 2
             return (x, y, w, h), {"topOffset": cut, "bottomOffset": cut}
-        # contain: 比率を保ったまま枠内に収め、中央に置く
+        # contain: keeps the aspect ratio, fits inside the frame, and centers it
         if ar_img > ar_box:
             nw, nh = w, w / ar_img
         else:
@@ -765,30 +798,33 @@ class ImageMixin:
     def image(self, x, y, w, h, source, *, fit="contain", caption=None,
               caption_size=9, caption_color=None, caption_at="image",
               outline=None, outline_weight=1.0, rounded=False, alt=None) -> str:
-        """画像を配置し、objectId を返す。
+        """Places an image and returns its objectId.
 
-        source はローカルパス / http(s) URL / Drive の URL または `drive:<id>`。
+        source is a local path / http(s) URL / Drive URL, or `drive:<id>`.
 
         fit:
-          - "contain" … 比率を保って枠内に収める（既定）。余白ができる
-          - "cover"   … 枠を埋め、はみ出しを切り落とす
-          - "stretch" … 枠に合わせて引き伸ばす（比率が崩れる）
+          - "contain" ... keeps the aspect ratio and fits inside the frame
+            (default). Leaves margins
+          - "cover"   ... fills the frame, cropping away the overflow
+          - "stretch" ... stretches to fit the frame (aspect ratio distorted)
 
-        caption を渡すと下にキャプションを置く。`caption_at`:
+        If caption is passed, a caption is placed below. `caption_at`:
 
-          - "image" … 画像の実際の下端に付ける（既定）。1 枚だけ置くときはこちら
-          - "box"   … 枠の下端に付ける。複数の画像を横に並べるとき、fit の違いで
-                      キャプションの高さがバラバラになるのを防ぐ
+          - "image" ... attached at the image's actual bottom edge
+            (default). Use this when placing a single image
+          - "box"   ... attached at the frame's bottom edge. Prevents
+            caption heights from varying when placing multiple images side
+            by side with different fit values
 
-        戻り値は画像の objectId。
+        Returns the image's objectId.
         """
         if fit not in ("contain", "cover", "stretch"):
             raise ValueError(t("fit must be one of contain / cover / stretch: {fit}",
                                fit=fit))
         if getattr(self.deck, "dry", False):
-            # --dry-run: 実物は取りに行かない。ここでアップロードすると、
-            # 検査のたびに Drive へ公開状態の一時ファイルが増える
-            # （icons / cloud_icons / charts と同じ流儀）
+            # --dry-run: don't fetch the real thing. Uploading here would
+            # add another publicly shared temp file to Drive on every check
+            # (same approach as icons / cloud_icons / charts)
             oid = self.shape(x, y, w, h, kind="RECTANGLE",
                              fill=self.P.border, stroke=None)
             if caption:
@@ -802,20 +838,26 @@ class ImageMixin:
         is_local = os.path.exists(local)
         url = None
         if is_local:
-            # ローカル画像は実寸をその場で読めるので、URL の確定を待つ必要がない。
-            # アップロードは裏で走らせ、commit 直前の flush() で url を埋める
+            # Local images have their actual dimensions readable right away,
+            # so there's no need to wait for the URL to resolve. The upload
+            # runs in the background, and flush() right before commit fills
+            # in the url
             with open(local, "rb") as f:
                 try:
                     px = image_size(f.read(64 * 1024))
                 except ValueError:
                     px = (0, 0)
         else:
-            # リモートは実寸を読むのに URL 自体が要る（Drive なら共有設定も
-            # 先に要る）ので、ここは同期に解決する
+            # For a remote image, the URL itself is needed to read its
+            # actual size (and Drive additionally requires the sharing
+            # setup first), so this is resolved synchronously
             url = store.url_for(source)
-            # リモート画像（http / Drive）も先頭だけ取得して実寸を読む。
-            # cover を実寸なしで進めると後処理の絶対 transform が実質 stretch になり
-            # 比率が崩れるため、読めなければ contain（比率保持）へ落として警告する
+            # For remote images (http / Drive) too, only the beginning is
+            # fetched to read the actual size. Proceeding with cover without
+            # actual dimensions would make the later absolute transform
+            # effectively a stretch, distorting the aspect ratio, so if it
+            # can't be read, fall back to contain (aspect preserved) with a
+            # warning
             try:
                 px = _remote_image_size(url)
             except Exception:
@@ -834,12 +876,13 @@ class ImageMixin:
                  "elementProperties": self._elem_props(*rect)}
         self.deck.requests.append({"createImage": props})
         if is_local:
-            # url は None のまま。commit() 直前の flush() が埋める
+            # url stays None. flush() right before commit() fills it in
             store.defer(source, props)
         if fit != "contain":
-            # createImage は指定サイズに関係なく元の縦横比を保つ（＝常に contain
-            # 相当に縮められる）。枠を埋めたい場合は、生成後に transform を
-            # 上書きして直すしかない。commit() の後処理で拾わせる
+            # createImage preserves the original aspect ratio regardless of
+            # the specified size (i.e. it's always shrunk to a contain-like
+            # fit). To fill the frame, the transform has to be overridden
+            # after creation. Have commit()'s post-processing pick this up
             fixups = getattr(self.deck, "image_fixups", None)
             if fixups is None:
                 print(t("  warn: this deck does not support image size fixups; "
@@ -867,13 +910,15 @@ class ImageMixin:
             self.deck.requests.append({"updatePageElementAltText": {
                 "objectId": oid, "description": alt}})
         if rounded:
-            # Slides に角丸マスクは無い。枠線で代用する旨を明示しておく
+            # Slides has no rounded-corner mask. Make explicit that an
+            # outline is used as a substitute
             print(t("  note: the Slides API cannot round image corners "
                     "(rounded is ignored)"), file=sys.stderr)
 
         self._seq += 1
         self.rects[oid] = (*rect, "IMAGE")
-        # 画像は不透明。先に置かれた文字を覆い隠すので solids として記録する
+        # Images are opaque and cover any text placed earlier, so record
+        # them as solids
         self.solids.append({"rect": rect, "seq": self._seq,
                             "name": t("image {name}",
                                       name=os.path.basename(str(source))[:16])})
@@ -886,16 +931,20 @@ class ImageMixin:
 
     def ai_image(self, x, y, w, h, subject, *, style=DEFAULT_STYLE, aspect=None,
                  extra=None, model=None, force=False, **kw) -> str:
-        """AI で画像を生成して配置する。引数の残りは image() と同じ。
+        """Generates an image with AI and places it. The remaining
+        arguments match image().
 
-        aspect を省略すると枠の縦横比に最も近い比率を選ぶ。生成できる比は 10 種類
-        しかないので枠とぴったりにはならず、残りの差は cover の切り取りで埋める。
-        切られる分を見越した構図をモデルに指示するので、枠に当てはめても主題は
-        欠けない。生成物はキャッシュされるので、同じ subject でデッキを作り直しても
-        絵は変わらない。
+        If aspect is omitted, the ratio closest to the frame's aspect ratio
+        is chosen. Since only 10 ratios can be generated, it won't match the
+        frame exactly, and the remaining difference is filled in by cover's
+        cropping. The model is instructed to compose with the crop in mind,
+        so the subject isn't cut off even after fitting to the frame.
+        Results are cached, so recreating the deck with the same subject
+        produces the same picture.
 
-        aspect を明示した場合は、それが枠と合っているかは呼び手の責任とみなし、
-        構図の指示は付けない。
+        If aspect is given explicitly, it's treated as the caller's
+        responsibility to make sure it matches the frame, and no composition
+        instruction is added.
         """
         frame = None
         if aspect is None:
@@ -910,24 +959,27 @@ class ImageMixin:
         path = generate(subject, style=style, palette=self._template_colors,
                         aspect=aspect, extra=extra, model=model, force=force,
                         frame=frame)
-        # 枠を埋める。生成比は枠と完全には一致しないため contain だと余白が出て、
-        # テンプレートの地が覗いてしまう
+        # Fill the frame. Since the generated ratio never matches the frame
+        # exactly, contain would leave margins that expose the template's
+        # background
         kw.setdefault("fit", "cover")
         kw.setdefault("alt", subject)
         return self.image(x, y, w, h, path, **kw)
 
 
 def sweep_temp(delete: bool = False) -> int:
-    """中断した実行が Drive に残した一時アップロードを片付ける。
+    """Cleans up temporary uploads left in Drive by an interrupted run.
 
-    名前が `gslides-tmp-` で始まり自分が所有するファイルだけを対象にする。
-    公開共有が付いたまま残るのが問題なので、まず共有を外し、それからゴミ箱へ
-    送る（完全削除はしない — 誤対象でも 30 日は復元できる）。
+    Only targets files whose name starts with `gslides-tmp-` and that the
+    caller owns. Since the problem is public sharing being left on, sharing
+    is removed first, then the file is sent to the trash (not permanently
+    deleted — even a mistaken target can be restored for 30 days).
 
-    Drive の `name contains` は語頭一致で、`gslides-tmp-` 以外の語で始まる
-    無関係ファイルもヒットしうる（過去に別の前方一致クエリで実ファイルを
-    消した事故がある）。API の結果を信用せず、削除対象は必ずクライアント側で
-    厳密な前方一致を確認してから選ぶ。
+    Drive's `name contains` is a word-prefix match, so unrelated files that
+    start with a word other than `gslides-tmp-` can also match (a similarly
+    loose prefix-match query once deleted real files in the past). Don't
+    trust the API's result — always confirm a strict prefix match
+    client-side before selecting anything for deletion.
     """
     drive = _auth.services()[1]
     found, token = [], None
@@ -943,7 +995,7 @@ def sweep_temp(delete: bool = False) -> int:
         token = res.get("nextPageToken")
         if not token:
             break
-    # 1 件あたり 2 往復かかるので並列に調べる。数百件たまることがある
+    # Each one takes 2 round-trips, so check in parallel. Can accumulate into the hundreds
     tls = threading.local()
 
     def _drive():
@@ -957,10 +1009,11 @@ def sweep_temp(delete: bool = False) -> int:
                 fileId=f["id"], fields="permissions(id,type)",
                 supportsAllDrives=True).execute().get("permissions", [])
         except Exception:  # noqa: BLE001
-            # 一覧を取ってから調べるまでの間に消えることがある（別の掃除と並走した
-            # ときなど）。片付けが目的なので、消えていれば何もしなくてよい
+            # Can be deleted between listing and checking (e.g. when running
+            # alongside another cleanup). Since the goal is cleanup, nothing
+            # needs to be done if it's already gone
             f["anyone"] = []
-            return True          # 消えていた
+            return True          # already gone
         f["anyone"] = [p["id"] for p in perms if p.get("type") == "anyone"]
         return False
 
@@ -981,7 +1034,8 @@ def sweep_temp(delete: bool = False) -> int:
         return 0
     def purge(f):
         svc = _drive()
-        # list() のクエリは語頭一致なので、消してよい名前かここで最終確認する
+        # list()'s query is a word-prefix match, so do a final confirmation
+        # here that the name is actually safe to delete
         if not f.get("name", "").startswith("gslides-tmp-"):
             return
         for pid in f["anyone"]:

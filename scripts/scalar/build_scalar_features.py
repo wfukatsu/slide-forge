@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Scalar 製品機能紹介デッキ(1機能=1スライド・図解付き)。
+"""Scalar product feature introduction deck (1 feature = 1 slide, with a figure).
 
-developers.scalar-labs.com のドキュメント調査(2026-08-01)に基づき、各機能を
-「図解 / 機能概要 / ユースケース / 特長」の共通レイアウトで並べる。
-ScalarDB 15 機能 + ScalarDL 9 機能。
+Based on a documentation survey of developers.scalar-labs.com (2026-08-01), each
+feature is laid out in a common "figure / overview / use cases / value" format.
+15 ScalarDB features + 9 ScalarDL features.
 
-  実行: .venv/bin/python scripts/scalar/build_scalar_features.py [--folder <URL>]
-  検査: .venv/bin/python scripts/scalar/build_scalar_features.py --dry-run
+  Run:    .venv/bin/python scripts/scalar/build_scalar_features.py [--folder <URL>]
+  Check:  .venv/bin/python scripts/scalar/build_scalar_features.py --dry-run
 """
 from __future__ import annotations
 
@@ -32,15 +32,15 @@ TITLE = "Scalar 製品機能のご紹介"
 SUBTITLE = "ScalarDB / ScalarDL — 図解・機能概要・ユースケース・特長"
 DATE = "2026年8月"
 
-# 図解エリア(左)。全ミニ図はこの枠内に描く
+# Figure area (left). All mini-diagrams are drawn within this frame
 FX, FY, FW, FH = 0.5, 0.98, 5.25, 2.32
 
 
-# ---------------------------------------------------------------- 共通部品
+# ---------------------------------------------------------------- Shared components
 
 def _pill(d: Canvas, x, y, w, h, text, accent, *, light=0.88, size=9,
           bold=False, color=None):
-    """角丸の帯・チップ。"""
+    """A rounded band/chip."""
     return d.shape(x, y, w, h, kind="ROUND_RECTANGLE",
                    fill=lighten(accent, light), stroke=accent, text=text,
                    size=size, bold=bold, color=color or d.P.text,
@@ -48,14 +48,14 @@ def _pill(d: Canvas, x, y, w, h, text, accent, *, light=0.88, size=9,
 
 
 def _code(d: Canvas, x, y, w, h, text, *, size=8):
-    """コード風の濃色チップ。"""
+    """A code-styled dark chip."""
     return d.shape(x, y, w, h, kind="ROUND_RECTANGLE", fill=d.P.text,
                    stroke=None, text=text, size=size, color="#FFFFFF",
                    line_spacing=118)
 
 
 def _caption(d: Canvas, text, *, y=None, size=8.5):
-    """図解エリア下端の説明文。"""
+    """Caption text at the bottom edge of the figure area."""
     d.label(FX, y if y is not None else FY + FH - 0.26, FW, 0.24, text,
             size=size, align="CENTER", color=d.P.muted)
 
@@ -65,7 +65,7 @@ def _va(d: Canvas, x1, y1, x2, y2, color=None):
             _anchored=True)
 
 
-# ---------------------------------------------------------------- ScalarDB 図解
+# ---------------------------------------------------------------- ScalarDB figures
 
 def fig_db_acid(d, accent):
     d.icon("server", 1.35, FY + 0.02, 0.36, label="アプリケーション",
@@ -300,7 +300,7 @@ def fig_db_import(d, accent):
     _caption(d, "データ移行なし・アプリ停止なしで横断トランザクションの対象に")
 
 
-# ---------------------------------------------------------------- ScalarDL 図解
+# ---------------------------------------------------------------- ScalarDL figures
 
 def fig_dl_bft(d, accent):
     d.icon("browser", 2.72, FY - 0.02, 0.34, label="クライアント",
@@ -312,8 +312,8 @@ def fig_dl_bft(d, accent):
     d.cloud_zone(3.25, FY + 0.68, 2.25, 1.3, title="管理ドメイン B",
                  title_size=8, color=accent)
     _pill(d, 3.45, FY + 1.1, 1.85, 0.4, "Auditor", accent, size=9, bold=True)
-    # 絵の左右の端から出す。絵の真下は「クライアント」のキャプションなので、
-    # そこから引くと線が字を横切る
+    # Draw from the left/right edges of the illustration. Directly below the
+    # illustration is the "client" caption, so drawing from there would cut through the text
     _va(d, 2.72, FY + 0.15, 1.9, FY + 0.66)
     _va(d, 3.06, FY + 0.15, 3.9, FY + 0.66)
     d.line(2.63, FY + 1.3, 3.42, FY + 1.3, color=d.P.danger, weight=1.5,
@@ -436,10 +436,10 @@ def fig_dl_proof(d, accent):
     _caption(d, "後から Ledger 側を書き換えても、手元の証拠との乖離で検知")
 
 
-# ---------------------------------------------------------------- レイアウト
+# ---------------------------------------------------------------- Layout
 
 def draw_feature(d: Canvas, f: dict, accent) -> None:
-    """機能スライド共通: 左=図解 / 右=機能概要 / 下=ユースケース + 特長。"""
+    """Common feature-slide layout: left=figure / right=overview / bottom=use cases + value."""
     if f.get("edition"):
         d.label(5.0, 0.60, 4.5, 0.26, f["edition"], size=9, align="END",
                 color=d.P.muted)
@@ -478,7 +478,7 @@ def draw_feature(d: Canvas, f: dict, accent) -> None:
 
 
 def draw_feature_map(d: Canvas, groups, accent) -> None:
-    """機能マップ: 2×2 のグループカード。"""
+    """Feature map: a 2x2 grid of group cards."""
     for i, (head, items) in enumerate(groups):
         gx = 0.5 + (i % 2) * 4.61
         gy = 1.0 + (i // 2) * 2.0
@@ -801,7 +801,7 @@ DL_MAP = [
 ]
 
 
-# ---------------------------------------------------------------- 生成
+# ---------------------------------------------------------------- Generation
 
 def main() -> int:
     p = argparse.ArgumentParser()

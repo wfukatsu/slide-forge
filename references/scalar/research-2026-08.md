@@ -1,66 +1,69 @@
-# Scalar 製品・会社 調査まとめ(2026-08-01 実施)
+*[日本語](research-2026-08.ja.md)*
 
-**鮮度に注意**: 本ファイルは 2026-08-01 時点の公開情報。バージョン・ニュース・事例は
-陳腐化するため、**調査日から 3 か月以上経過していたら再調査してから使うこと**
-(調査エージェントを scalar-labs.com / developers.scalar-labs.com へ並行で出す)。
+# Scalar Product & Company Research Summary (conducted 2026-08-01)
 
-## 会社(出典: scalar-labs.com/ja/company, STARTUP DB)
+**Freshness warning**: This file reflects public information as of 2026-08-01. Versions,
+news, and case studies go stale, so **if more than 3 months have passed since the
+research date, re-research before using this file**
+(dispatch research agents in parallel against scalar-labs.com / developers.scalar-labs.com).
 
-- 株式会社Scalar (Scalar, Inc.)。設立 2017年12月。東京(神楽坂)・札幌・サンフランシスコ(US Scalar Labs)
-- 代表: 深津 航 (Founder/代表取締役CEO)、山田 浩之 (Founder/代表取締役CTO) ※boilerplate 公式スライド準拠
-- 米国法人 CEO: Joe McCunney。従業員 約50名(2026年7月, STARTUP DB)
-- ビジョン「データマネジメントの未来を創る」/ タグライン "Absolute data reliability"
-- バリュー: Quality Obsessed / Customer Focus / Frontier Spirit
-- 沿革: 2018.10 ScalarDB OSS 公開 → 2019 FIBC グランプリ → 2022.11 シリーズA 15億円 →
-  2022-23 VLDB 2年連続採択 → 2023.12 執行役員体制強化
-- **資本金は一次情報で未確認 → 記載しない**
+## Company (sources: scalar-labs.com/ja/company, STARTUP DB)
 
-## 直近トピックス(2025-2026)
+- Scalar, Inc. (株式会社Scalar). Founded December 2017. Tokyo (Kagurazaka), Sapporo, San Francisco (US Scalar Labs)
+- Representatives: Wataru Fukatsu (Founder/Representative Director & CEO), Hiroyuki Yamada (Founder/Representative Director & CTO) *per the boilerplate official slides
+- US entity CEO: Joe McCunney. Approx. 50 employees (July 2026, STARTUP DB)
+- Vision: "Creating the future of data management" / Tagline: "Absolute data reliability"
+- Values: Quality Obsessed / Customer Focus / Frontier Spirit
+- History: Oct 2018 ScalarDB OSS released → 2019 FIBC Grand Prix → Nov 2022 Series A JPY 1.5B →
+  2022-23 VLDB accepted two years running → Dec 2023 strengthened executive officer structure
+- **Capital amount unconfirmed from primary sources → do not state it**
 
-- 2026.05 ScalarDB 3.18(ABAC 強化・OIDC・Spanner 対応・ワンフェーズコミット拡張)
-- 2026.03 ScalarDL 3.13(ネームスペース管理・Java 21)※ニュースでは 4 月表記、リリースノートは 3/25
-- 2026.01 Kong 社パートナーシップ / 2025.12 ScalarDB 3.17 / 2025.10 MCP Server・ゼンリン協業
-- 2025.06 NSW メインフレームモダナイゼーション強化 / 2025.04 コーポレート PPA 実証
+## Recent topics (2025-2026)
 
-## ScalarDB(最新 3.18.0, 2026-05-01)
+- May 2026 ScalarDB 3.18 (enhanced ABAC, OIDC, Spanner support, extended one-phase commit)
+- Mar 2026 ScalarDL 3.13 (namespace management, Java 21) *news reported this as April, but the release notes are dated 3/25
+- Jan 2026 Kong partnership / Dec 2025 ScalarDB 3.17 / Oct 2025 MCP Server & Zenrin collaboration
+- Jun 2025 strengthened NSW mainframe modernization / Apr 2025 corporate PPA proof of concept
 
-- Universal HTAP エンジン。Core(OSS/Apache 2.0)+ Cluster(商用/K8s)+ Analytics(商用/Spark)
-- Consensus Commit による DB 非依存 ACID。対応: RDBMS(MySQL/PostgreSQL/Oracle/SQL Server/Db2 等)、
-  NewSQL(Aurora/AlloyDB/Spanner/TiDB/YugabyteDB)、NoSQL(DynamoDB/Cassandra/Cosmos DB)
-- 機能 15: ACID/マルチストレージ/2PC(マイクロサービス)/Cluster/SQL/GraphQL/認証認可/暗号化/
-  ABAC/ベクトル検索/非トランザクショナル/リモートレプリケーション/Analytics/MCP Server/--import
-- 料金例(Marketplace, Pod=2vCPU/4GB): Standard $1.40/h、Premium $2.79/h (AWS)
+## ScalarDB (latest 3.18.0, 2026-05-01)
 
-## ScalarDL(最新 3.13.0, 2026-03-25)
+- Universal HTAP engine. Core (OSS/Apache 2.0) + Cluster (commercial/K8s) + Analytics (commercial/Spark)
+- DB-agnostic ACID via Consensus Commit. Supports: RDBMS (MySQL/PostgreSQL/Oracle/SQL Server/Db2, etc.),
+  NewSQL (Aurora/AlloyDB/Spanner/TiDB/YugabyteDB), NoSQL (DynamoDB/Cassandra/Cosmos DB)
+- 15 features: ACID / multi-storage / 2PC (microservices) / Cluster / SQL / GraphQL / authentication & authorization / encryption /
+  ABAC / vector search / non-transactional / remote replication / Analytics / MCP Server / --import
+- Example pricing (Marketplace, Pod=2vCPU/4GB): Standard $1.40/h, Premium $2.79/h (AWS)
 
-- ビザンチン故障検知ミドルウェア。2 管理ドメイン(Ledger+Auditor)・数万 TPS・ACID
-- 機能 9: BFT検知/Ledger/Auditor/Contract/Function/TableStore(3.12)/HashStore(3.12)/
-  ネームスペース(3.13)/Asset Proof
-- エディション: Ledger=Community、Ledger(BYOL)/Auditor(BYOL)=Enterprise
+## ScalarDL (latest 3.13.0, 2026-03-25)
 
-## ユースケース・公表事例
+- Byzantine fault detection middleware. 2 administrative domains (Ledger+Auditor), tens of thousands of TPS, ACID
+- 9 features: BFT detection / Ledger / Auditor / Contract / Function / TableStore (3.12) / HashStore (3.12) /
+  Namespace (3.13) / Asset Proof
+- Editions: Ledger=Community, Ledger (BYOL)/Auditor (BYOL)=Enterprise
 
-- トヨタ自動車 PCE(ScalarDL/Azure, 知財証拠保全)※boilerplate に公式スライドあり
-- 大手放送局 コンテンツデータ管理(ScalarDB)※boilerplate に公式スライドあり
-- ENS 電力量30分値(ScalarDB): **法定帳票業務 1/5 — 唯一の公表定量効果**
-- J-POWER 環境価値PF(ScalarDL, 2025.1〜) / NSW COBOL移行(ScalarDB) / LayerX Ai Workforce(ScalarDB, 2024.10)
-- トヨタファイナンシャルサービス実証(2020.3) / NTT Digital・ドコモ Web3 提携(2023.7, 詳細不明)
-- 常石造船 基幹システム刷新(ScalarDB + Kong Konnect, 2026.6.10 発表, 2026-08-02 調査):
-  15年以上稼働のモノリスを AI 駆動開発で刷新。現状分析・再設計 2 日、MVP 実質 3 ヶ月、
-  IT 担当 2 名が Scalar に常駐、ビジネスドメイン単位の 9 マイクロサービス構成。
-  出典: prtimes.jp/main/html/rd/p/000000071.000037795.html /
+## Use cases and published case studies
+
+- Toyota Motor Corporation PCE (ScalarDL/Azure, IP evidence preservation) *official slides exist in the boilerplate
+- Major broadcaster content data management (ScalarDB) *official slides exist in the boilerplate
+- ENS 30-minute electricity volume data (ScalarDB): **statutory reporting work reduced to 1/5 — the only published quantitative result**
+- J-POWER environmental value platform (ScalarDL, from Jan 2025) / NSW COBOL migration (ScalarDB) / LayerX Ai Workforce (ScalarDB, Oct 2024)
+- Toyota Financial Services proof of concept (Mar 2020) / NTT Digital & docomo Web3 partnership (Jul 2023, details unknown)
+- Tsuneishi Shipbuilding core system modernization (ScalarDB + Kong Konnect, announced 2026-06-10, researched 2026-08-02):
+  Modernized a monolith that had run for 15+ years using AI-driven development. Current-state analysis and redesign took 2 days, MVP took roughly 3 months,
+  2 Scalar IT staff were embedded on-site, resulting in a 9-microservice structure organized by business domain.
+  Sources: prtimes.jp/main/html/rd/p/000000071.000037795.html /
   atmarkit.itmedia.co.jp/ait/articles/2606/29/news054.html /
   jp.konghq.com/news/kong-tsuneishi-ai-core-system-modernization
-- パターン: DB=サイロ統合・マイクロサービス一貫性・レガシー移行・マルチクラウド・生成AI基盤・大量データ /
-  DL=改ざん検知・監査証跡・トレーサビリティ・ブロックチェーン代替
+- Patterns: DB = silo consolidation, microservices consistency, legacy migration, multi-cloud, generative AI infrastructure, high-volume data /
+  DL = tamper detection, audit trails, traceability, blockchain alternative
 
-## 既知の落とし穴(スライド化するとき)
+## Known pitfalls (when turning this into slides)
 
-1. **SQL インターフェースのエディション所属に表記揺れ**(features: Premium / pricing: Standard)。
-   features 表準拠 + 要確認注記にする
-2. **プレビュー明記**: ABAC(私的プレビュー・日本のみ)/ リモートレプリケーション(私的プレビュー)/
-   ベクトル検索(公開プレビュー)
-3. **「スキーマ変更ゼロ」という表現は docs に無い** → 正式には Schema Loader `--import`(既存テーブルのインポート)
-4. **ScalarDL の「SQL 対応」の正式な姿は TableStore**(独立機能名ではない)
-5. 導入事例の専用ページは無い(ニュース/ブログのみ)。定量効果は ENS 1/5 のみ
-6. 認証認可も features 表(Standard 以上)と個別ページ(Premium タグ)で揺れ → features 表準拠 + 注記
+1. **Inconsistent edition assignment for the SQL interface** (features page: Premium / pricing page: Standard).
+   Follow the features table and add a "needs confirmation" note
+2. **Note preview status explicitly**: ABAC (private preview, Japan only) / remote replication (private preview) /
+   vector search (public preview)
+3. **The phrase "zero schema changes" does not appear in the docs** → the official term is Schema Loader `--import` (importing existing tables)
+4. **ScalarDL's "SQL support" officially takes the form of TableStore** (not a standalone feature name)
+5. There is no dedicated page for case studies (only news/blog posts). ENS's 1/5 is the only quantitative result
+6. Authentication/authorization is also inconsistent between the features table (Standard and above) and individual pages (Premium tag) → follow the features table and add a note

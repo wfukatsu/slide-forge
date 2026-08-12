@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
-"""ScalarDB を使った AI 駆動開発の提案デッキ（PoC 提案 / 開発・テストの 2 環境前提）。
+"""AI-driven development proposal deck using ScalarDB (PoC proposal / assumes a 2-environment dev+test setup).
 
-build_scalar_proposal.py（3 環境の worked example）を土台に、
-「AI 駆動開発を回すための開発環境とテスト環境を用意する」前提へ書き換えたもの。
-顧客名は未特定のため〈〇〇株式会社〉の仮置き（汎用の型）。
+Built on top of build_scalar_proposal.py (the 3-environment worked example),
+rewritten around the premise of "provisioning dev and test environments to run
+AI-driven development." The customer name is unspecified, so a placeholder
+〈〇〇株式会社〉("Customer Co., Ltd.") is used as a generic template.
 
-書き換え時の鉄則（元の worked example と同じ）:
-- 顧客固有の数値（工数・件数・金額）はヒアリングで取れたものだけ書く
-- 期待効果の定量値は算定根拠を添えられるものだけ。無ければ定性で書き、
-  「定量は PoC で実測」と明示する
-- 事例・価格は references/scalar/research-2026-08.md 準拠（鮮度 3 ヶ月ルール）
+Ground rules when rewriting (same as the original worked example):
+- Only write customer-specific figures (effort, counts, amounts) that came from
+  actual hearings
+- Only include quantified expected-effect figures that can be backed by a stated
+  basis. Otherwise state qualitatively and make explicit that "quantitative
+  figures will be measured during the PoC"
+- Case studies and pricing follow references/scalar/research-2026-08.md (3-month freshness rule)
 
-  実行: .venv/bin/python scripts/scalar/build_aidd_proposal.py [--folder <URL>]
-  検査: .venv/bin/python scripts/scalar/build_aidd_proposal.py --dry-run
+  Run:    .venv/bin/python scripts/scalar/build_aidd_proposal.py [--folder <URL>]
+  Check:  .venv/bin/python scripts/scalar/build_aidd_proposal.py --dry-run
 """
 from __future__ import annotations
 
@@ -38,7 +41,7 @@ register({
 
 TEMPLATE = os.path.join(REPO_DIR, "templates", "scalar-2026.json")
 
-# ============================================================ 提案データ
+# ============================================================ Proposal data
 
 PROPOSAL = {
     "customer": "〇〇株式会社",
@@ -46,7 +49,7 @@ PROPOSAL = {
     "subtitle": "ScalarDB を土台に、AI が自走する開発サイクルをつくる",
     "date": "2026年8月",
 
-    # エグゼクティブサマリ（状況 → 課題 → 答え。1 枚で意思決定できる粒度）
+    # Executive summary (situation -> complication -> resolution. Detailed enough for one-slide decision-making)
     "summary": {
         "situation": "コーディングエージェントを開発に導入し、コードが書かれる速さは確かに上がっている",
         "complication": "一方でデータ整合性の担保がレビュー頼みで、手元に再現環境も常設テスト環境も無いため、"
@@ -60,7 +63,7 @@ PROPOSAL = {
         ],
     },
 
-    # 現状（ヒアリング結果を書く。ここは汎用の型としての整理）
+    # Current state (write hearing results here; this is organized as a generic template)
     "current": {
         "systems": [("bulb", "AI がコードを\n書く"),
                     ("browser", "人がレビューで\n整合性を確認"),
@@ -69,7 +72,7 @@ PROPOSAL = {
         "so_what": "速くなったのは「書く」工程だけで、マージまでのリードタイムは変わっていない",
     },
 
-    # 課題（3 点まで。打ち手の対応表と同順・同文言）
+    # Challenges (up to 3 points. Same order and wording as the solution-mapping table)
     "challenges": [
         ("整合性の担保がレビュー頼み",
          "複数 DB・複数サービスにまたがる更新の整合性が、実装ごとの書き方とレビューに委ねられている"),
@@ -78,7 +81,7 @@ PROPOSAL = {
         ("検証が生成速度に追いつかない",
          "結合テストを回せる常設環境が無く、検証が共有環境の順番待ちと手作業になっている"),
     ],
-    # 課題の構造（見えている問題 / 根本原因）
+    # Structure of the challenge (visible problems / root causes)
     "iceberg": {
         "above": ["レビュー待ち・指摘の往復", "環境差異による「手元では動く」", "結合テストの順番待ち"],
         "below": ["データアクセス層が DB ごとにばらばらで、整合性の担保が実装者と"
@@ -87,7 +90,7 @@ PROPOSAL = {
                   "AI が自分で結果を確かめられる常設のテスト環境が無い"],
     },
 
-    # 目指す姿とスコープ（To-Be と、やらないことの明示）
+    # Target state and scope (To-Be, and making explicit what's out of scope)
     "tobe": {
         "before": ["整合性の正しさを人がレビューで判定",
                    "動作確認は共有環境で順番待ち",
@@ -99,7 +102,7 @@ PROPOSAL = {
                      "AI コーディングツール自体の選定・調達（本提案の範囲は開発・テストの 2 環境とデータ層）",
     },
 
-    # 提案の中身（課題 → 打ち手 → 効果の対応表）
+    # Substance of the proposal (challenge -> solution -> effect mapping table)
     "mapping": [
         ("整合性の担保が\nレビュー頼み",
          "ScalarDB の分散 ACID\n（Consensus Commit）",
@@ -112,7 +115,7 @@ PROPOSAL = {
          "CI から結合テストが自動で回り、マージ前に判定できる"),
     ],
 
-    # 比較（なぜこの打ち手か。「これでないといけない理由」）
+    # Comparison (why this solution — "the reason it has to be this")
     "alternatives": {
         "headers": ["評価軸", "AI ツール\n導入のみ", "自作の抽象化層\n+ 共有環境", "ScalarDB + 2 環境\n(本提案)"],
         "rows": [
@@ -124,7 +127,7 @@ PROPOSAL = {
         ],
     },
 
-    # 期待効果（業務がどう変わるか。定量はヒアリング/実測が取れたものだけ）
+    # Expected effects (how work changes. Quantitative figures only where hearing/measurement supports them)
     "effects": {
         "before": ["整合性の担保にレビュー工数を割いている",
                    "環境差異による手戻りが定期的に発生",
@@ -136,7 +139,7 @@ PROPOSAL = {
                    "（公表事例では 15 年以上稼働したモノリスを MVP 実質 3 ヶ月で刷新）",
     },
 
-    # 事例（公表事例のみ。research-2026-08.md 準拠）
+    # Case studies (published cases only. Follows research-2026-08.md)
     "cases": [
         ("常石造船 — 基幹システムの刷新",
          "15 年以上稼働したモノリスを ScalarDB + Kong で刷新。現状分析・再設計 2 日、"
@@ -148,7 +151,7 @@ PROPOSAL = {
     ],
     "cases_source": "各社公表資料・Scalar 公式発表（2026年8月時点の調査、出典 URL は話者ノート参照）",
 
-    # 進め方（PoC の成功基準までがワンセット）
+    # Approach (the PoC and its success criteria are a single package)
     "journey": [
         ("環境構築（2〜4 週間）", "開発（ローカル）とテスト環境を立ち上げる"),
         ("PoC（2 ヶ月）", "対象機能 1 本を AI 駆動開発で実装し実測"),
@@ -168,7 +171,7 @@ PROPOSAL = {
         ],
     },
 
-    # システム構成（ご指定の 2 環境。クラウド既定は AWS）
+    # System architecture (the specified 2 environments. Default cloud is AWS)
     "architecture": {
         "diagram": os.path.join(REPO_DIR, "examples", "scalar-proposal-aidd-envs.png"),
         "drawio": "examples/scalar-proposal-aidd-envs.drawio",
@@ -193,7 +196,7 @@ PROPOSAL = {
         "source": "ScalarDB Cluster 価格: AWS Marketplace 公表値（2026年8月時点、Standard エディション）",
     },
 
-    # 体制（お客様側の負担も見えるように）
+    # Team structure (make the customer-side workload visible too)
     "team": ("PoC 推進会議\n(隔週)",
              [("〇〇株式会社\n開発チーム", []),
               ("Scalar\nアーキテクト", []),
@@ -204,7 +207,7 @@ PROPOSAL = {
         ["Scalar 導入支援", "2 環境の構築支援、CI 連携、技術 QA と運用の引き継ぎ"],
     ],
 
-    # 概算費用（費目と幅。確定値ではなく概算であることを明示）
+    # Estimated cost (line items and ranges. Make explicit these are estimates, not fixed values)
     "costs": {
         "rows": [
             ["開発環境（ローカル）", "ScalarDB Core（Community）× 開発者数", "無料"],
@@ -216,7 +219,7 @@ PROPOSAL = {
         "source": "ScalarDB Cluster 価格: AWS Marketplace 公表値（2026年8月時点、Standard エディション）",
     },
 
-    # リスクと対策（先回りして潰す）
+    # Risks and mitigations (get ahead of objections)
     "risks": [
         ["AI が生成したコードの品質が読めない",
          "整合性は ScalarDB が保証し、テスト環境の自動結合テストをマージのゲートにする。"
@@ -231,13 +234,13 @@ PROPOSAL = {
          "PoC 成功基準に性能実測を含め、未達なら本導入に進まない（Go/No-Go を明示）"],
     ],
 
-    # 次のステップ（今日決めること → 直近のアクション）
+    # Next steps (what to decide today -> immediate action)
     "next": ["本日:\n課題認識の\nすり合わせ", "〜2 週間:\nPoC スコープと\n対象機能の合意",
              "〜1 ヶ月:\n2 環境の\n構築開始", "3〜4 ヶ月後:\nGo/No-Go\n判断"],
 }
 
 
-# ============================================================ 描画
+# ============================================================ Drawing
 
 def draw_current(d: Canvas, cur: dict) -> None:
     d.icon_flow(1.1, 1.35, 7.8, cur["systems"], size=0.78, label_size=9.5,
@@ -268,7 +271,7 @@ def draw_tobe(d: Canvas, tobe: dict) -> None:
 
 
 def draw_solution(d: Canvas, _p: dict) -> None:
-    """AI 駆動開発 × ScalarDB の提案図（生成→検証ループとデータ層）。"""
+    """The AI-driven development x ScalarDB proposal figure (generate->verify loop and data layer)."""
     ac = d.P.primary
     d.icon_row(1.5, 1.15, 7.0, [("bot", "AI が生成"), ("check", "自動テスト"),
                                 ("sync", "AI が自己修正"), ("people", "人がレビュー")],
@@ -392,7 +395,7 @@ def draw_next(d: Canvas, steps: list) -> None:
 
 
 def print_bom(arch: dict) -> None:
-    """構成内訳（サービス一覧と Scalar 製品・数量・月額）をコンソールにも出す。"""
+    """Also print the Bill of Materials (service list plus Scalar products, quantity, and monthly cost) to the console."""
     print("\n" + t("=== Bill of Materials (BOM) ==="))
     print(t("[Cloud services ({cloud})]", cloud=arch["cloud"]))
     for e in arch["envs"]:
@@ -405,7 +408,7 @@ def print_bom(arch: dict) -> None:
     print(f"  {arch['monthly_note']}")
 
 
-# ============================================================ 組み立て
+# ============================================================ Assembly
 
 def build(deck, template) -> list[str]:
     P = PROPOSAL
@@ -420,12 +423,12 @@ def build(deck, template) -> list[str]:
             audits += d.audit_connectors()
         problems.extend(f"{title[:16]}…: {m}" for m in audits)
 
-    # 0. 表紙
+    # 0. Cover
     deck.add_slide("COVER", title=f"{P['customer']}様向け\n{P['title']}",
                    subtitle=P["subtitle"], body=f"{P['date']}\n株式会社Scalar",
                    notes="顧客未特定のため customer は仮置き。実案件では customer / date を書き換える。")
 
-    # 1. エグゼクティブサマリ（結論先出し）
+    # 1. Executive summary (conclusion first)
     ref = deck.add_slide(
         "TITLE_ONLY", title="エグゼクティブサマリ — 「書く速さ」ではなく「回る速さ」を上げる",
         notes="決裁者は冒頭の要約しか読まない前提で、課題・解決策・進め方をこの 1 枚に集約する"
@@ -437,7 +440,7 @@ def build(deck, template) -> list[str]:
     problems.extend(f"サマリ: {m}" for m in
                     (d.audit_bounds() + d.audit_overlaps() + d.audit_text_fit()))
 
-    # 2. 課題の合意形成
+    # 2. Building agreement on the challenge
     drawn("背景と現状 — AI コーディングは導入したが、開発サイクルは速くなっていない",
           draw_current, P["current"],
           notes="現状認識の合意が提案全体の前提。ヒアリング結果をそのまま書き、推測で補わない。")
@@ -447,7 +450,7 @@ def build(deck, template) -> list[str]:
           draw_iceberg, P["iceberg"],
           notes="対症療法（レビュー体制の強化・ツールの追加導入）との差別化の土台になるスライド。")
 
-    # 3. ご提案
+    # 3. The proposal
     deck.add_slide("SECTION", title="ご提案",
                    body="AI が自走できるデータ層と開発・テスト環境")
     drawn("目指す姿 — AI が生成からテストまで自走し、人はレビューに集中する",
@@ -475,7 +478,7 @@ def build(deck, template) -> list[str]:
                 "ENS prtimes.jp/main/html/rd/p/000000006.000037795.html。"
                 "鮮度 3 ヶ月ルールに従い再調査してから使う。")
 
-    # 4. 進め方
+    # 4. Approach
     deck.add_slide("SECTION", title="導入の進め方", body="2 環境を立ち上げ、PoC で実測する")
     drawn("導入アプローチ — 2 環境を立ち上げ、PoC で「自走率」を実測する", draw_journey, P,
           notes="PoC は成功基準（Go/No-Go）までがワンセット。自走率の目標値はヒアリングで決める。")
@@ -502,7 +505,7 @@ def build(deck, template) -> list[str]:
           notes="リスクの先回り（才流 稟議書 8 項目）。ScalarDB 迂回の直接書き込みは "
                 "proposal-map.md §4 の制約。隠さず論点として出す。")
 
-    # 5. クロージング
+    # 5. Closing
     drawn("次のステップ — 本日ご判断いただきたいこと", draw_next, P["next"],
           notes="次のアクションを明示して送りっぱなしにしない。")
     deck.add_slide("CLOSING")

@@ -1,328 +1,359 @@
-# Google Slides API の制約と落とし穴
+*[日本語](api-notes.ja.md)*
 
-実測で確認した挙動。ドキュメントに明記されていないものが多い。
+# Google Slides API constraints and pitfalls
+
+Behavior confirmed through hands-on testing. Much of this is not documented anywhere.
 
 ---
 
-## 1. マスター/レイアウトは「作れない」が「直せる」
+## 1. Masters/layouts "cannot be created" but "can be edited"
 
-`presentations.batchUpdate` のリクエスト種別に、マスターやレイアウトを**新規作成する**ものは
-存在しない（`Request` スキーマに `Master` / `Layout` を含む型は無い）。colorScheme の変更も
-できず、試すと `Resetting the color scheme is not supported` が返る。
+Among `presentations.batchUpdate` request types, there is no type that **creates a new**
+master or layout (no `Request` schema type includes `Master` / `Layout`). The colorScheme
+also cannot be changed — attempting it returns `Resetting the color scheme is not supported`.
 
-一方、**既存**のマスター/レイアウトの中身は変更できる。以下はすべて実測で成功を確認した:
+On the other hand, the contents of an **existing** master/layout can be modified. All of the
+following have been confirmed to work by hands-on testing:
 
-| 操作 | 可否 |
+| Operation | Possible? |
 |------|------|
-| レイアウト上の図形の塗りを変更（`updateShapeProperties`） | ✅ |
-| レイアウト/マスターの背景色を変更（`updatePageProperties`） | ✅ |
-| レイアウトに図形を追加（`createShape` + `pageObjectId` にレイアウト ID） | ✅ |
-| レイアウト上の画像・図形を削除（`deleteObject`） | ✅ |
-| 空のプレースホルダの既定フォントを変更（`updateTextStyle`） | ✅ |
-| マスター上のテキストの色を変更 | ✅ |
-| マスター/レイアウトの**新規作成** | ❌ リクエスト種別が無い |
-| colorScheme の変更 | ❌ `Resetting the color scheme is not supported` |
-| レイアウトの表示名の変更 | ❌ |
+| Change a shape's fill on a layout (`updateShapeProperties`) | Yes |
+| Change the background color of a layout/master (`updatePageProperties`) | Yes |
+| Add a shape to a layout (`createShape` + layout ID as `pageObjectId`) | Yes |
+| Delete an image/shape on a layout (`deleteObject`) | Yes |
+| Change the default font of an empty placeholder (`updateTextStyle`) | Yes |
+| Change the color of text on a master | Yes |
+| **Create** a new master/layout | No — no such request type |
+| Change the colorScheme | No — `Resetting the color scheme is not supported` |
+| Change a layout's display name | No |
 
-**変更は、そのレイアウトから作った新規スライドに継承される**（検証済み）。
+**Changes are inherited by new slides created from that layout** (verified).
 
-**帰結**:
+**Consequences**:
 
-- ブランドデザインを持つ資料を作るには、UI で作ったテンプレートを複製するのが基本。これが本スキルが複製方式を採る理由。
-- 既存テンプレートを土台にすれば、**配色違いの派生マスターをプログラムで作れる**。ただし colorScheme は変えられないので、`theme:ACCENT6` のようなテーマ色参照は元の配色のまま解決される。派生を作る場合は、テーマ色を参照している要素を**すべて明示 RGB で上書き**する必要がある。
-- ゼロからマスターを作ることはできない。土台となるプレゼンテーションが必ず要る。
+- To build materials with a branded design, the basic approach is to duplicate a template
+  built in the UI. This is why this skill uses the duplication approach.
+- Starting from an existing template, **you can programmatically create derivative masters
+  with different color schemes**. However, since the colorScheme itself cannot be changed,
+  theme color references such as `theme:ACCENT6` still resolve against the original color
+  scheme. When creating a derivative, you must **explicitly override every element that
+  references a theme color with an explicit RGB value**.
+- You cannot build a master from scratch. A base presentation is always required.
 
 ---
 
-## 2. SLIDE_NUMBER プレースホルダは生成できない
+## 2. The SLIDE_NUMBER placeholder cannot be generated
 
-`createSlide` の `placeholderIdMappings` に `{"layoutPlaceholder": {"type": "SLIDE_NUMBER", "index": 0}}`
-を指定しても、**エラーにならず黙って無視される**。生成されたスライドを取得しても
-SLIDE_NUMBER の pageElement は存在しない。
+Even when `{"layoutPlaceholder": {"type": "SLIDE_NUMBER", "index": 0}}` is passed to
+`createSlide`'s `placeholderIdMappings`, it is **silently ignored without an error**. Fetching
+the generated slide shows no pageElement of type SLIDE_NUMBER.
 
 ```
-createSlide with SLIDE_NUMBER mapping: OK       ← 成功として返る
- element SLIDES_API…_0 {'type': 'TITLE',  …}    ← TITLE と BODY だけ
+createSlide with SLIDE_NUMBER mapping: OK       ← returned as success
+ element SLIDES_API…_0 {'type': 'TITLE',  …}    ← only TITLE and BODY
  element SLIDES_API…_1 {'type': 'BODY',   …}
 ```
 
-ページ番号の表示は Google Slides の UI 側の設定（挿入 → スライド番号）で、API に等価な操作が無い。
+Page number display is a Google Slides UI-side setting (Insert → Slide numbers); there is no
+API equivalent.
 
-**対処**: レイアウトの `slideNumber` 座標にテキストボックスを自前で描く（`add_page_numbers()`）。
-元のプレースホルダ枠は数 mm 幅しかないことが多く、2桁のページ番号が切れる。右端を保ったまま
-最小 0.5in に広げてから右揃えにする。
+**Workaround**: draw a text box yourself at the layout's `slideNumber` coordinates
+(`add_page_numbers()`). The original placeholder frame is often only a few mm wide, so a
+2-digit page number gets clipped. Keep the right edge fixed, widen the box to at least 0.5in,
+then right-align it.
 
 ---
 
-## 3. colorScheme の JSON 構造が他と違う
+## 3. The colorScheme JSON structure differs from everywhere else
 
-通常の色指定は `{"opaqueColor": {"rgbColor": {"red": …}}}` だが、マスターの colorScheme だけは
-`rgbColor` の階層が無く `color` 直下に RGB が入る。
+Normal color specifications look like `{"opaqueColor": {"rgbColor": {"red": …}}}`, but only
+the master's colorScheme has no `rgbColor` level — RGB sits directly under `color`.
 
 ```jsonc
-// マスターの colorScheme
+// Master colorScheme
 {"type": "ACCENT5", "color": {"red": 0.149, "green": 0.451, "blue": 0.733}}
 
-// 図形の塗り
+// Shape fill
 {"solidFill": {"color": {"rgbColor": {"red": 0.149, …}}, "alpha": 1}}
 ```
 
-`color.rgbColor` を期待するパーサーを書くと、全色が黒（#000000）として取れてしまう。
+Writing a parser that expects `color.rgbColor` will end up reading every color as black
+(#000000).
 
 ---
 
-## 3b. `propertyState: NOT_RENDERED` は「色は入っているが描画されない」
+## 3b. `propertyState: NOT_RENDERED` means "the color is present but not drawn"
 
-塗りや枠線は、色の値を持ったまま非表示にできる。
+Fills and borders can hold a color value while remaining hidden.
 
 ```jsonc
 "shapeBackgroundFill": {
-  "propertyState": "NOT_RENDERED",          // ← 透明。下の色は使われない
+  "propertyState": "NOT_RENDERED",          // ← transparent. The color below is unused
   "solidFill": {"color": {"themeColor": "LIGHT2"}, "alpha": 1}
 }
 ```
 
-`propertyState` を見ずに `solidFill` の色だけ読むと、**透明な図形を「LIGHT2 で塗られている」と誤認する**。
-そこへ `updateShapeProperties` で色を設定すると `propertyState` が実質 RENDERED になり、
-図形が不透明になる。全面サイズの矩形でこれをやると、マスターのロゴ・フッターを覆って消してしまう。
+If you read only the `solidFill` color without checking `propertyState`, you will
+**mistake a transparent shape for one "filled with LIGHT2."** Setting a color via
+`updateShapeProperties` on it effectively flips `propertyState` to RENDERED, making the
+shape opaque. Doing this on a full-page-size rectangle covers up and hides the master's
+logo/footer.
 
-テンプレートには「将来の背景差し替え用に置かれた、色だけ入った透明な全面矩形」が入っていることが
-実際にある。派生マスターを作るときは、色を書き換える前に必ず `propertyState` を確認すること。
+Templates in practice do contain "full-page transparent rectangles carrying only a color,
+placed for future background swaps." When creating a derivative master, always check
+`propertyState` before overwriting a color.
 
-取りうる値は `RENDERED` / `NOT_RENDERED` / `INHERIT`。キー自体が無い場合は描画される。
+Possible values are `RENDERED` / `NOT_RENDERED` / `INHERIT`. If the key itself is absent, the
+element is rendered.
 
-## 4. 値が 0 のチャンネルはキーごと省略される
+## 4. Channels with a value of 0 are omitted entirely
 
-`{"red": 1, "blue": 1}` は「緑が 0」を意味する（マゼンタ）。`{"blue": 1}` は純青。
-`c["green"]` で読むと KeyError になるので、必ず `c.get("green", 0)` を使う。
+`{"red": 1, "blue": 1}` means "green is 0" (magenta). `{"blue": 1}` is pure blue. Reading
+with `c["green"]` raises a KeyError, so always use `c.get("green", 0)`.
 
-黒 `#000000` は `{"rgbColor": {}}` という空オブジェクトになる。
+Black `#000000` is represented as the empty object `{"rgbColor": {}}`.
 
 ---
 
-## 5. 座標は transform の scale を掛ける必要がある
+## 5. Coordinates must be multiplied by the transform's scale
 
-`size` は要素の素の大きさで、実際の表示サイズは `transform.scaleX` / `scaleY` を掛けた値。
-位置は `transform.translateX` / `translateY`。単位は EMU（1 inch = 914400 EMU）。
+`size` is the element's raw dimensions; the actual displayed size is that value multiplied by
+`transform.scaleX` / `scaleY`. Position is `transform.translateX` / `translateY`. The unit is
+EMU (1 inch = 914400 EMU).
 
 ```python
-w = size.width.magnitude * transform.scaleX / 914400   # インチ
+w = size.width.magnitude * transform.scaleX / 914400   # inches
 x = transform.translateX / 914400
 ```
 
-scale を無視すると、拡大縮小された図形の寸法を取り違える。
+Ignoring scale leads to misreading the dimensions of a scaled shape.
 
 ---
 
-## 6. スピーカーノートの objectId はスライド作成後にしか分からない
+## 6. The speaker notes objectId is only known after the slide is created
 
-ノート枠の `speakerNotesObjectId` は `createSlide` のレスポンスに含まれず、`batchUpdate` の
-リクエスト内で参照することもできない。
+The notes frame's `speakerNotesObjectId` is not included in `createSlide`'s response, nor can
+it be referenced within a `batchUpdate` request.
 
-**対処**: スライドを作る `batchUpdate` を実行 → `presentations().get()` で
-`slides.slideProperties.notesPage.notesProperties.speakerNotesObjectId` を取得 →
-2 回目の `batchUpdate` で `insertText` する。
-
----
-
-## 7. pageSize は作成時にしか指定できない
-
-`presentations().create()` の body でのみ設定可能。作成後の変更手段が無い。
-
-複製方式ではテンプレートのページサイズをそのまま引き継ぐため、この制約は問題にならない。
-逆に、テンプレートと違うページサイズにしたい場合は複製方式を使えない。
+**Workaround**: run the `batchUpdate` that creates the slide → call `presentations().get()`
+to fetch `slides.slideProperties.notesPage.notesProperties.speakerNotesObjectId` → call
+`insertText` in a second `batchUpdate`.
 
 ---
 
-## 8. batchUpdate はできるだけ 1 回にまとめる
+## 7. pageSize can only be set at creation time
 
-**分割するほど遅くなる。** リクエスト件数を揃えた実測（8,000 件、毎回まっさらな
-プレゼンテーション）:
+It can only be set in the body of `presentations().create()`. There is no way to change it
+after creation.
 
-| 分割 | バッチ数 | 所要 | 1 件あたり |
+Since the duplication approach carries over the template's page size as-is, this constraint
+is not an issue. Conversely, if you want a page size different from the template's, you
+cannot use the duplication approach.
+
+---
+
+## 8. Batch batchUpdate calls into as few requests as possible
+
+**The more you split it, the slower it gets.** Hands-on measurements with the request count
+held constant (8,000 requests, a fresh presentation each time):
+
+| Split | # of batches | Time | Per request |
 |---|---|---|---|
-| 500 件ずつ | 16 | 18.2s | 2.28 ms |
-| 2,000 件ずつ | 4 | 12.2s | 1.52 ms |
-| 分割なし | 1 | **6.3s** | 0.79 ms |
+| 500 at a time | 16 | 18.2s | 2.28 ms |
+| 2,000 at a time | 4 | 12.2s | 1.52 ms |
+| No split | 1 | **6.3s** | 0.79 ms |
 
-バッチごとの固定コストは 0.1〜0.25 秒しかないので、この差は往復回数ではなく、
-サーバ側がバッチ単位でリビジョンを確定し直すぶんと見られる。
+Since the fixed cost per batch is only 0.1–0.25 seconds, this gap looks less like round-trip
+overhead and more like the server re-finalizing a revision per batch.
 
-**並列化してはいけない。** 同一プレゼンテーションへの同時 batchUpdate は競合して
-かえって遅くなる（4 並列 × 2,000 件で 20.1s / 逐次 12.2s）。
+**Do not parallelize.** Concurrent batchUpdate calls against the same presentation contend
+with each other and end up slower (4-way parallel at 2,000 requests each: 20.1s vs. 12.2s
+sequential).
 
-上限は Google API 共通のリクエストボディ 10MB。図のリクエストは実測 288 bytes 程度
-なので 3 万件近く入る（30,305 件 / 7.5MB を 1 バッチで投げて 20.0s、成功）。
-`build_deck._batches()` は安全率を見て 10,000 件 / 5MB で切っている。
+The ceiling is the 10MB request body limit shared across Google APIs. A shape request
+measures roughly 288 bytes, so nearly 30,000 fit (30,305 requests / 7.5MB sent as a single
+batch succeeded in 20.0s). `build_deck._batches()` cuts at 10,000 requests / 5MB with a
+safety margin.
 
-リクエストは**送った順に**適用されるので、「図形を作る → テキストを入れる →
-スタイルを当てる」の順序は分割しても保たれる。
+Requests are applied **in the order sent**, so an ordering like "create the shape → insert
+text → apply style" is preserved even when split across batches.
 
-### 既定値と同じ指定は送らない
+### Don't send values that match the default
 
-所要時間は件数にほぼ比例するので、送らずに済むリクエストを減らすのがそのまま短縮になる。
-`createShape` 直後の既定値（実測）:
+Since duration is roughly proportional to request count, cutting requests you don't need to
+send is a direct speedup. Measured defaults immediately after `createShape`:
 
-| shapeType | 塗り・枠 | contentAlignment | 段落 alignment |
+| shapeType | Fill/border | contentAlignment | Paragraph alignment |
 |---|---|---|---|
-| `TEXT_BOX` | ともに `NOT_RENDERED` | `TOP` | `START` |
-| それ以外 | テーマ由来（`NOT_RENDERED` ではない） | `MIDDLE` | `CENTER` |
+| `TEXT_BOX` | Both `NOT_RENDERED` | `TOP` | `START` |
+| Everything else | Theme-derived (not `NOT_RENDERED`) | `MIDDLE` | `CENTER` |
 
-`diagrams.Canvas.shape()` はこれと同じ値になる `updateShapeProperties` /
-`updateParagraphStyle` を省く。実デッキで約 19% の削減になる。
-
----
-
-## 9. サムネイル取得はレイアウト/マスターにも効く
-
-`presentations.pages.getThumbnail` の `pageObjectId` には、スライドだけでなく
-レイアウトやマスターの objectId も渡せる。テンプレートのレイアウトを目視確認するのに使える。
-
-サイズは `SMALL` / `MEDIUM`（約 800px 幅）/ `LARGE`（約 1600px 幅）。
-細部（7pt のページ番号など）を確認するときは LARGE を取って切り出す。
-
-`contentUrl` は短時間で失効するので、取得したらすぐダウンロードする。
-
-### クォータは毎分 60 件
-
-getThumbnail は Slides API の **expensive read** に分類され、
-`ExpensiveReadRequestsPerMinutePerUser = 60` という固定クォータがある。超えると
-HTTP 429 `RATE_LIMIT_EXCEEDED`。
-
-1 枚あたり API + ダウンロードで 2 往復・約 1.0 秒かかるため、逐次実行は事実上
-このクォータぎりぎりで律速されている。並列化するなら**自前で毎分 60 件に絞る**こと
-（`fetch_thumbnails.py` は 55 件/分のトークンバケット + 429 の指数バックオフ）。
-絞らずに並列で投げると、60 枚超のデッキでは必ず途中で落ちる。
+`diagrams.Canvas.shape()` skips `updateShapeProperties` / `updateParagraphStyle` calls that
+would just set these same values. This cuts roughly 19% off request count in a real deck.
 
 ---
 
-## 10. 複製にはコピー権限が必要
+## 9. Thumbnail fetching also works on layouts/masters
 
-`drive.files().copy()` は、共有設定で「閲覧者・コメント投稿者に…ダウンロード、印刷、コピーを
-無効にする」が有効なファイルに対して 403 を返す。テンプレートの所有者に設定解除を依頼するか、
-自分の Drive にテンプレートの複製を1つ持っておく。
+The `pageObjectId` for `presentations.pages.getThumbnail` accepts not just slide IDs but
+also layout and master objectIds. Useful for visually checking a template's layouts.
 
-なお `files.copy` は、枚数の多いテンプレート（数十枚）で **一時的に 500 Internal Error や
-読み取りタイムアウトを返すことが実際にある**。リトライすれば通る
-（`build_deck.py` の `_retry()` が 5xx / 429 を指数バックオフで拾う）。
+Sizes are `SMALL` / `MEDIUM` (~800px wide) / `LARGE` (~1600px wide). Use LARGE and crop when
+checking fine detail (e.g., a 7pt page number).
 
-- **500 が返った場合**、ファイルは作られていない（実測）
-- **クライアント側でタイムアウトした場合**、サーバ側では複製が完了していて
-  **孤立したファイルが Drive に残る**（実測）。タイムアウトで作り直したときは、
-  同名のファイルが 2 つ無いか確認して片付けること
+`contentUrl` expires quickly, so download immediately after fetching it.
+
+### Quota is 60 requests per minute
+
+getThumbnail is classified as an **expensive read** in the Slides API and carries a fixed
+quota of `ExpensiveReadRequestsPerMinutePerUser = 60`. Exceeding it returns HTTP 429
+`RATE_LIMIT_EXCEEDED`.
+
+Each thumbnail takes about 2 round trips (API + download) and roughly 1.0 second, so
+sequential execution is effectively already rate-limited right at this quota. If
+parallelizing, **throttle to 60 requests per minute yourself**
+(`fetch_thumbnails.py` uses a 55-per-minute token bucket plus exponential backoff on 429).
+Firing requests in parallel without throttling always fails partway through for decks over
+60 slides.
 
 ---
 
-## 11. `createImage` は指定サイズを無視して縦横比を保つ
+## 10. Duplication requires copy permission
 
-`elementProperties.size` に枠の寸法を渡しても、**画像は元の縦横比のまま、その枠に
-収まるよう縮小されて配置される**（＝常に「contain」）。枠を埋める配置は作成時には
-実現できない。
+`drive.files().copy()` returns 403 for files where the sharing setting "Disable download,
+print, and copy for viewers and commenters" is enabled. Either ask the template owner to
+disable that setting, or keep a copy of the template in your own Drive.
 
-実測（1200×675 の画像を 4.30×2.90in の枠に挿入）:
+Note that `files.copy` on templates with many slides (dozens) **does in practice sometimes
+return a temporary 500 Internal Error or a read timeout**. Retrying gets it through
+(`build_deck.py`'s `_retry()` catches 5xx / 429 with exponential backoff).
 
-```
-要求: w=4.30 h=2.90              → 結果: w=4.30 h=2.42  （比率 1.778 = 元画像）
-```
+- **When a 500 is returned**, the file was not created (confirmed by testing)
+- **When the client times out**, the copy may have actually completed server-side, leaving
+  an **orphaned file in Drive** (confirmed by testing). When you retry after a timeout, check
+  whether two files with the same name now exist and clean up.
 
-さらに `size.magnitude` は渡した値ではなく画像由来の値に置き換えられ、縮小は
-`transform.scaleX/scaleY` に入る。したがって「枠ぴったり」にするには 3 段階が要る。
+---
 
-1. `createImage` で挿入する
-2. `presentations().get()` で **生成された要素の `size.magnitude`** を読む
-3. `updatePageElementTransform`（`applyMode: "ABSOLUTE"`）で
-   `scale = 枠の寸法 / magnitude` を設定し直す
+## 11. `createImage` ignores the specified size and preserves aspect ratio
 
-`build_deck.py` の `_post_pass()` がこれをやっている（スピーカーノートの書き込みと
-同じ 2 回目の batchUpdate に相乗りする）。
+Even when frame dimensions are passed via `elementProperties.size`, **the image is placed
+scaled down to fit the frame while keeping its original aspect ratio** (i.e., it is always
+"contain"). Filling the frame exactly cannot be achieved at creation time.
 
-`cropProperties` は**元画像を切り取るだけで、要素の寸法には影響しない**。切り取った
-結果の比率と要素の比率が合っていないと中身が引き伸ばされる。「はみ出しを切って枠を
-埋める」を正しくやるには、crop と上記の transform 上書きの両方が必要。
-
-## 11b. `createImage` の URL は匿名で取得される
-
-`url` は Slides 側が取りに行く。**認証済みの自分がアクセスできるだけでは足りず、
-リンクを知る全員が閲覧できる必要がある。** Drive のファイルを使う場合は
-`permissions().create({"type": "anyone", "role": "reader"})` を先に付ける。
-
-挿入時に画像は**プレゼンテーション内へコピーされる**ので、`batchUpdate` の成功後は
-元ファイルを削除しても公開を解除しても表示は壊れない。一時ファイルはその場で畳むのが
-安全（`images.AssetStore.cleanup()`）。
-
-受け付ける形式は PNG / JPEG / GIF のみ、50MB 未満・25 メガピクセル未満。
-
-## 12. 図形を回すと中の文字も回る
-
-`AffineTransform` に回転角のフィールドは無く、`scaleX / scaleY / shearX / shearY` で表す。
+Measured example (a 1200×675 image inserted into a 4.30×2.90in frame):
 
 ```
-x' = scaleX·x + shearX·y + translateX      θ 回転:
+Requested: w=4.30 h=2.90         → Result: w=4.30 h=2.42  (ratio 1.778 = original image)
+```
+
+Furthermore, `size.magnitude` is replaced not with the value you passed but with a value
+derived from the image, and the shrinking is expressed in `transform.scaleX/scaleY`. So
+achieving "exactly fills the frame" requires 3 steps.
+
+1. Insert with `createImage`
+2. Read the **generated element's `size.magnitude`** via `presentations().get()`
+3. Re-set `scale = frame dimensions / magnitude` via `updatePageElementTransform`
+   (`applyMode: "ABSOLUTE"`)
+
+`build_deck.py`'s `_post_pass()` does this (piggybacking on the same second `batchUpdate`
+that writes the speaker notes).
+
+`cropProperties` **only crops the source image and does not affect the element's dimensions.**
+If the cropped result's aspect ratio doesn't match the element's aspect ratio, the content
+gets stretched. Correctly doing "crop the overflow to fill the frame" requires both crop and
+the transform override above.
+
+## 11b. `createImage`'s URL is fetched anonymously
+
+Slides fetches the `url` itself. **Being accessible to you, authenticated, is not enough —
+anyone with the link needs to be able to view it.** When using a Drive file, first attach
+`permissions().create({"type": "anyone", "role": "reader"})`.
+
+Since the image is **copied into the presentation** at insert time, deleting the source file
+or revoking its public access after `batchUpdate` succeeds does not break the display. It is
+safe to clean up temporary files right there (`images.AssetStore.cleanup()`).
+
+Accepted formats are PNG / JPEG / GIF only, under 50MB and under 25 megapixels.
+
+## 12. Rotating a shape also rotates the text inside it
+
+`AffineTransform` has no rotation-angle field; rotation is expressed via
+`scaleX / scaleY / shearX / shearY`.
+
+```
+x' = scaleX·x + shearX·y + translateX      For rotation by θ:
 y' = shearY·x + scaleY·y + translateY        scaleX = scaleY = cosθ
                                              shearX = -sinθ, shearY = sinθ
 ```
 
-中心を保って回すには、translate を
-`cx - (cosθ·w/2 - sinθ·h/2)`, `cy - (sinθ·w/2 + cosθ·h/2)` にする。
+To rotate around the center, set translate to
+`cx - (cosθ·w/2 - sinθ·h/2)`, `cy - (sinθ·w/2 + cosθ·h/2)`.
 
-**テキストだけを回さない方法は無い。** 台形（`TRAPEZOID` は既定で上底が狭い）を
-180 度回して「上底が広い台形」として使うとき、`insertText` した文字も上下逆さまに出る。
-図形と文字は別の要素に分けること。`diagrams.Canvas.shape()` は 0/90/270 度以外の
-回転に文字を入れると警告する。
+**There is no way to rotate only the text.** When rotating a trapezoid (`TRAPEZOID` defaults
+to a narrow top edge) by 180 degrees to use it as a "trapezoid with a wide top edge," the
+text inserted via `insertText` also comes out upside down. Keep the shape and the text as
+separate elements. `diagrams.Canvas.shape()` warns when text is placed inside a rotation
+other than 0/90/270 degrees.
 
-## 13. 塗りの alpha は指定できる
+## 13. Fill alpha can be specified
 
-`solidFill` の `alpha` は 0〜1 で効く（ベン図の重なりなど）。ただし `fields` に
-`shapeBackgroundFill.solidFill.color` だけを指定すると alpha が反映されないため、
-`shapeBackgroundFill.solidFill` を指定すること。
+`solidFill`'s `alpha` works over 0–1 (e.g., overlapping Venn diagram circles). However, if
+`fields` specifies only `shapeBackgroundFill.solidFill.color`, alpha is not applied — you
+must specify `shapeBackgroundFill.solidFill` instead.
 
-## 14. テキスト枠には既定の内側余白がある
+## 14. Text frames have default inner padding
 
-テキストの折り返しを見積もるとき、枠の幅をそのまま使ってはいけない。Slides の
-テキスト枠には既定で **左右 0.1in / 上下 0.05in の内側余白**があり、文字が使える
-幅はその分狭い。
+When estimating text wrapping, don't use the frame width as-is. Slides text frames have a
+default **inner padding of 0.1in left/right and 0.05in top/bottom**, so the width available
+for characters is narrower by that amount.
 
 ```
-1行に入る文字数 = (枠の幅[in] − 0.1×2) × 72 ÷ フォントサイズ[pt]
+Characters per line = (frame width[in] − 0.1×2) × 72 ÷ font size[pt]
 ```
 
-引かずに計算すると 1〜2 字多く入る勘定になり、実際には折り返している文字列を
-「1 行に収まる」と誤判定する（実測: 1.62in / 11pt の枠に全角 10 字を入れると
-折り返すが、余白を引かない式では「10.6 字入る」と出る）。
+Calculating without subtracting the padding overestimates capacity by 1–2 characters, causing
+strings that actually wrap to be misjudged as "fits on one line" (measured example: 10
+full-width characters in a 1.62in / 11pt frame wrap, but the formula without padding
+subtracted yields "10.6 characters fit").
 
-一方、**縦方向は引かないこと。** Slides は枠から縦に溢れた文字を切り取らずに
-そのまま描くため、上下余白まで差し引くと 1 行のラベルが軒並み誤検知になる
-（実測: 0.24in の枠に 9.5pt の 1 行は問題なく表示される）。
+On the other hand, **do not subtract padding for the vertical direction.** Slides draws text
+that overflows the frame vertically without clipping it, so subtracting the top/bottom
+padding too causes single-line labels to be misdetected across the board (measured example: a
+single 9.5pt line in a 0.24in frame displays fine).
 
-## 15. `TRAPEZOID` の傾きは変えられない
+## 15. `TRAPEZOID`'s slope cannot be changed
 
-上底の食い込みは **表示上の高さ × 0.25**（左右それぞれ）で固定されている。実測:
+The top-edge inset is fixed at **displayed height × 0.25** (on each side). Measured:
 
-| 素の箱 | scaleY | 表示高さ | 上底 | 下底 |
+| Raw box | scaleY | Displayed height | Top edge | Bottom edge |
 |---|---|---|---|---|
 | 4.0 × 1.4in | 1.0 | 1.40in | 3.30in | 4.00in |
 | 4.0 × 2.8in | 0.5 | 1.40in | 3.30in | 4.00in |
 
-どちらも食い込み計 0.70in = 0.25 × 1.40 × 2。**幅を変えても scaleY で潰しても
-比率は変わらない**（2 行目は「素の高さで計算されるなら 1.40in になるはず」を
-狙った実験で、そうはならなかった）。API に図形の調整値（OOXML の `adj`）を
-渡す手段は無い。
+Both have a total inset of 0.70in = 0.25 × 1.40 × 2. **The ratio does not change whether you
+change the width or squash it via scaleY** (the second row was an experiment aimed at testing
+"if it's computed from the raw height, it should be 1.40in" — it was not). The API has no way
+to pass a shape adjustment value (OOXML's `adj`).
 
-**帰結**: ピラミッドやファネルのように「上底と下底を自分で決めたい」図に
-`TRAPEZOID` は使えない。段ごとに高さが同じでも幅が違えば傾きが変わるため、
-積み上げると輪郭がギザギザになる。
+**Consequence**: for diagrams like pyramids or funnels where you want to set the top and
+bottom edges yourself, `TRAPEZOID` cannot be used. Even when each tier has the same height, a
+different width changes the slope, so stacking them produces a jagged outline.
 
-**対処**: 「中央の矩形＋左右の直角三角形」の 3 部品で描く
-（`illustrations.IllustrationMixin._taper()`）。`RIGHT_TRIANGLE` は既定で
-直角が**左下**にあり、`scaleX` / `scaleY` を負にする鏡像で 4 隅どの向きも作れる。
+**Workaround**: draw with 3 parts — "a center rectangle + right triangles on each side"
+(`illustrations.IllustrationMixin._taper()`). `RIGHT_TRIANGLE` defaults to having its right
+angle at the **bottom-left**, and negating `scaleX` / `scaleY` mirrors it to produce any of
+the 4 corner orientations.
 
 ```
-既定            flip_x          flip_y          flip_x+flip_y
+default         flip_x          flip_y          flip_x+flip_y
 ■               　■             ■■              ■■
 ■■              ■■             ■               　■
 ```
 
-向きの実測結果: 既定は「垂直な辺が左、斜辺が左上→右下」。
+Measured orientation: the default has "the vertical edge on the left, the hypotenuse running
+from top-left to bottom-right."
 
-なお `TRAPEZOID` の既定の向きは**上底が狭く下底が広い**。180 度回すと逆になるが、
-中の文字も一緒に逆さまになる（セクション 12）。
+Note that `TRAPEZOID`'s default orientation has **a narrow top edge and a wide bottom edge**.
+Rotating 180 degrees reverses this, but the text inside also flips upside down together with
+it (section 12).

@@ -1,33 +1,36 @@
-# イベント案内図（events.py）
+*[日本語](events.ja.md)*
+# Event Announcement Diagrams (events.py)
 
-`diagrams.Canvas` に混ざっている `EventMixin` の使い方。セミナー・勉強会・
-カンファレンスの案内デッキで定番の部品を型にしたもので、**オンライン開催・
-会場（オフライン）開催・ハイブリッド開催**の 3 形式に対応する。すべて図形だけで
-描くのでキーもネットワークも不要、色はテンプレートの配色に従う。座標はインチ、
-戻り値は描画領域の下端 y。
+Usage of `EventMixin`, mixed into `diagrams.Canvas`. It codifies the parts commonly
+needed for seminar / study-group / conference announcement decks, supporting all
+three formats: **online, in-person (offline), and hybrid**. Everything is drawn
+with shapes only, so no API keys or network access are needed, and colors follow
+the template's palette. Coordinates are in inches; the return value is the
+bottom y of the drawn area.
 
-デッキ仕様（JSON）の `figures` からも同名の type で使える。実例は
-`examples/event-announcement.json`（オンライン / オフライン / ハイブリッド /
-プログラムの 4 枚デモ）。
+Also usable from a deck spec (JSON) via the same type names under `figures`. See
+`examples/event-announcement.json` (a 4-slide demo: online / offline / hybrid /
+program).
 
-**中身は必ずユーザーの素材から取る。** 日付・会場・URL・登壇者名を勝手に
-埋めない。未確定の URL は「申込後にご案内」のような文言にする。
+**Content must always come from the user's material.** Never fill in dates,
+venues, URLs, or speaker names on your own. For an unconfirmed URL, use wording
+like "details will be sent after registration."
 
-## どれを使うか
+## Which one to use
 
-| 見せたいもの | 使うもの | 補足 |
+| What to show | Use | Notes |
 |---|---|---|
-| 開催形式のラベル | `event_mode_badge` | `event_overview` の `mode` でも自動で付く |
-| 日時・会場・参加費・定員 | `event_overview` | ピクトグラム付きの項目リスト |
-| プログラム（時刻 × 内容） | `event_timetable` | 1 枚 8 行まで目安 |
-| 登壇者の顔ぶれ | `event_speakers` | 1 行 5 人まで。超えたら 2 段 |
-| 参加方法（会場 / 配信） | `event_access` | `mode="hybrid"` で 2 パネル並列 |
+| A format label | `event_mode_badge` | Also added automatically via `event_overview`'s `mode` |
+| Date/time, venue, fee, capacity | `event_overview` | An item list with pictograms |
+| Program (time × content) | `event_timetable` | Rule of thumb: up to 8 rows per slide |
+| Speaker lineup | `event_speakers` | Up to 5 people per row; wrap to 2 rows beyond that |
+| How to attend (venue / streaming) | `event_access` | `mode="hybrid"` places two panels side by side |
 
-イベント案内でよく使うピクトグラム: `calendar`（日時）, `pin`（会場）,
-`browser`（配信）, `coin`（参加費）, `people`（定員）, `mail`（申込）,
-`clock`（受付・締切）。
+Pictograms commonly used for event announcements: `calendar` (date/time), `pin`
+(venue), `browser` (streaming), `coin` (fee), `people` (capacity), `mail`
+(registration), `clock` (reception/deadline).
 
-## event_overview — 開催概要
+## event_overview — Event overview
 
 ```python
 d.event_overview(x, y, w, rows,
@@ -35,9 +38,9 @@ d.event_overview(x, y, w, rows,
                  size=11, term_w=1.15, icon_size=0.34, row_h=0.5)
 ```
 
-- `rows` は `[ピクトグラム名, 項目, 値]` の並び。
-- 値が折り返して 2 行になるなら `row_h` を広げる（自動では広げない —
-  はみ出しは `audit_text_fit` が拾う）。
+- `rows` is a list of `[pictogram name, item, value]`.
+- If a value wraps to 2 lines, widen `row_h` (it isn't widened automatically —
+  overflow is caught by `audit_text_fit`).
 
 ```json
 { "type": "event_overview", "x": 0.5, "y": 1.15, "w": 4.4, "mode": "online",
@@ -48,33 +51,35 @@ d.event_overview(x, y, w, rows,
   ] }
 ```
 
-## event_timetable — プログラム
+## event_timetable — Program
 
 ```python
 d.event_timetable(x, y, w, rows,
                   size=11, time_w=1.55, row_h=0.42, zebra=True)
 ```
 
-- `rows` は `[時刻, 内容]` か `[時刻, 内容, 登壇者]`。時刻は
-  `"15:00–15:30"` のような文字列をそのまま描く。
-- 登壇者列の幅は最長の名前から自動確保。長い内容は内容列で折り返さず
-  短く書き直すこと（1 行に収まる長さが読みやすい）。
-- 行数が多いときは `row_h` を詰めるより 2 枚に分ける（1 枚 8 行まで目安）。
+- `rows` is `[time, content]` or `[time, content, speaker]`. Time is drawn as-is
+  from a string like `"15:00–15:30"`.
+- The speaker column's width is derived automatically from the longest name.
+  For long content, rewrite it to be shorter rather than letting it wrap in the
+  content column (a length that fits on one line reads best).
+- When there are many rows, split into 2 slides rather than compressing
+  `row_h` (rule of thumb: up to 8 rows per slide).
 
-## event_speakers — 登壇者カード
+## event_speakers — Speaker cards
 
 ```python
 d.event_speakers(x, y, w, speakers,
                  size=10, icon="person", gap=0.24)
 ```
 
-- `speakers` は `[氏名, 肩書]` か `[氏名, 肩書, 講演タイトル]`。**1 行 5 人まで**
-  （6 人以上は 2 回呼んで 2 段に分ける）。
-- 高さは固定（肩書まで 1.28 / 講演タイトル付き 1.62）。次のブロックは
-  戻り値の y から置く。
-- 氏名・肩書は**実在の登壇者の確定情報だけ**を使う。
+- `speakers` is `[name, title]` or `[name, title, talk title]`. **Up to 5 people
+  per row** (for 6 or more, call it twice to wrap into 2 rows).
+- Height is fixed (1.28 up through title, 1.62 with a talk title). Place the
+  next block starting from the returned y.
+- Use only **confirmed information about real speakers** for names and titles.
 
-## event_access — 参加方法パネル
+## event_access — How-to-attend panel
 
 ```python
 d.event_access(x, y, w, h, mode="hybrid",
@@ -83,11 +88,14 @@ d.event_access(x, y, w, h, mode="hybrid",
                size=10.5)
 ```
 
-- `mode="offline"` は会場パネルのみ（`venue` 必須）、`"online"` は配信パネルのみ
-  （`online` 必須）、`"hybrid"` は両方を左右に並べる（両方必須）。
-- パネルの高さは行数に合わせて手で決める: 見出し 0.62 + 1 行 0.34。
-  3 行（name / address / access）なら h ≥ 1.7、hybrid で 2 行ずつなら h ≥ 1.4。
-- `venue.access`（最寄駅など）と `online.note`（アーカイブ配信など）は省略可。
+- `mode="offline"` shows only the venue panel (`venue` required), `"online"`
+  shows only the streaming panel (`online` required), `"hybrid"` shows both
+  side by side (both required).
+- Decide the panel height by hand based on row count: heading 0.62 + 0.34 per
+  row. For 3 rows (name / address / access), h ≥ 1.7; for hybrid with 2 rows
+  each, h ≥ 1.4.
+- `venue.access` (e.g. nearest station) and `online.note` (e.g. archived
+  recording) are optional.
 
 ```json
 { "type": "event_access", "x": 0.5, "y": 3.75, "w": 9.0, "h": 1.4,
@@ -96,21 +104,22 @@ d.event_access(x, y, w, h, mode="hybrid",
   "online": {"platform": "Zoom ウェビナー", "url": "視聴 URL は申込後にご案内"} }
 ```
 
-## event_mode_badge — 開催形式バッジ
+## event_mode_badge — Format badge
 
 ```python
 d.event_mode_badge(x, y, mode, label=None, size=10)
 ```
 
-既定の文言は オンライン開催 / 会場開催 / ハイブリッド開催。`label` で
-「オンライン開催（無料）」のように差し替えられる。`event_overview` に
-`mode` を渡した場合は内部でこれが呼ばれるので、単独で使うのは
-表紙・クロージングにバッジだけ置きたいときくらい。
+Default wording is "Online Event" / "In-Person Event" / "Hybrid Event." Use
+`label` to swap in something like "Online Event (Free)." When `mode` is passed
+to `event_overview`, this is called internally, so using it standalone is mainly
+for placing just a badge on the cover or closing slide.
 
-## レイアウトの定石（TITLE_ONLY 1 枚に収める）
+## Layout convention (fitting one TITLE_ONLY slide)
 
-- **概要 + 参加方法**: `event_overview`（左 w 4.4）+ `event_access`（右 w 4.35）。
-- **ハイブリッドの概要**: `event_overview` を全幅（w 8.9）で上に、
-  `event_access mode="hybrid"`（w 9.0, h 1.4）を下に。
-- **プログラム + 登壇者**: `event_timetable`（w 9.0, 5 行）の下に
-  `event_speakers`（w 9.0, 3 人）— 4 枚目の実例を参照。
+- **Overview + how to attend**: `event_overview` (left, w 4.4) + `event_access`
+  (right, w 4.35).
+- **Hybrid overview**: `event_overview` full-width (w 8.9) at the top, with
+  `event_access mode="hybrid"` (w 9.0, h 1.4) below.
+- **Program + speakers**: `event_timetable` (w 9.0, 5 rows) with `event_speakers`
+  (w 9.0, 3 people) below it — see the 4th example.

@@ -1,26 +1,31 @@
 #!/usr/bin/env python3
-"""図形だけで描く「イメージ図」。
+"""Diagram-style "image diagrams" drawn with shapes only.
 
-`diagrams.Canvas` に生えるミックスイン。API キーもネットワークも要らず、色は
-テンプレートの配色から取るので、AI 生成画像と違って**毎回まったく同じ絵**になる。
+A mixin added to `diagrams.Canvas`. Needs no API key or network access, and
+pulls its colors from the template's palette, so unlike AI-generated images
+it produces **the exact same picture every time**.
 
-2 層ある。
+There are two layers.
 
-1. **ピクトグラム** … 人・サーバ・DB・雲・鍵など、意味を 1 個の絵で表す部品。
-   `icon()` / `icon_row()` / `icon_flow()` から使う。
-2. **比喩図** … ピラミッド・ファネル・氷山・天秤など、関係の形そのものを見せる図。
-   `pyramid()` / `funnel()` / `iceberg()` / `balance()` など。
+1. **Pictograms** ... parts that represent a single meaning as one picture:
+   person, server, DB, cloud, key, etc. Used via `icon()` / `icon_row()` /
+   `icon_flow()`.
+2. **Metaphor diagrams** ... diagrams that show the shape of a relationship
+   itself, such as a pyramid, funnel, iceberg, or balance scale. See
+   `pyramid()` / `funnel()` / `iceberg()` / `balance()`, etc.
 
         d = Canvas(deck, slide_id, template)
         d.icon_flow(0.7, 1.2, 8.6, [("person", "利用者"), ("browser", "アプリ"),
                                     ("server", "API"), ("database", "台帳")])
         b = d.pyramid(1.6, 2.4, 6.8, 2.4, ["経営指標", "業務指標", "システム指標"])
 
-すべての図は `diagrams` と同じ積み上げ規約に従い、**描画領域の下端 y を返す**。
-次のブロックはその戻り値を起点に置くこと。
+All diagrams follow the same stacking convention as `diagrams` and
+**return the bottom y of the drawn area**. Place the next block starting
+from that return value.
 
-図を描いたら `audit_overlaps()` / `audit_text_fit()` を必ず呼ぶ。ラベルが長いと
-ピクトグラムのキャプションどうしがぶつかるが、これは座標の段階で拾える。
+After drawing a diagram, always call `audit_overlaps()` / `audit_text_fit()`.
+Pictogram captions can collide with each other when labels are long, and
+this can be caught at the coordinate stage.
 """
 from __future__ import annotations
 
@@ -49,7 +54,7 @@ register({
         "列を減らすか表に切り替えてください",
 })
 
-# ピクトグラムの一覧。icon() の name に渡せる値。
+# List of pictograms. Values that can be passed to icon()'s name.
 ICONS = (
     "person", "people", "server", "database", "cloud", "document", "documents",
     "gear", "lock", "shield", "browser", "mobile", "bot", "chart", "clock",
@@ -60,18 +65,19 @@ ICONS = (
 
 
 class IllustrationMixin:
-    """`Canvas` にピクトグラムと比喩図を足すミックスイン。"""
+    """Mixin that adds pictograms and metaphor diagrams to `Canvas`."""
 
-    # ---------------- ピクトグラム ----------------
+    # ---------------- Pictograms ----------------
 
     def icon(self, name: str, x: float, y: float, size: float = 0.8, *,
              color: str | None = None, label: str | None = None,
              label_size: float = 9, label_w: float | None = None,
              label_gap: float = 0.05, bold_label: bool = False) -> float:
-        """size×size の正方形にピクトグラムを描く。戻り値は下端 y。
+        """Draws a pictogram in a size×size square. Returns the bottom y.
 
-        label を渡すと絵の下に中央揃えのキャプションを置く。キャプションの幅は
-        既定で size の 2 倍（絵より広い）。横に並べるときは label_w で明示すること。
+        If label is passed, a center-aligned caption is placed below the
+        picture. By default the caption width is 2x size (wider than the
+        picture). Specify label_w explicitly when placing icons side by side.
         """
         if name not in ICONS:
             raise ValueError(t("Unknown pictogram '{name}'. Available: {available}",
@@ -91,7 +97,7 @@ class IllustrationMixin:
 
     def icon_row(self, x: float, y: float, w: float, items, *, size: float = 0.82,
                  color=None, label_size: float = 9.5, gap: float | None = None) -> float:
-        """ピクトグラムを横一列に等間隔で並べる。items は名前か (名前, ラベル)。"""
+        """Lays pictograms out in an evenly spaced row. items is a name or a (name, label) tuple."""
         n = len(items)
         cell = w / n
         bottom = y
@@ -106,13 +112,16 @@ class IllustrationMixin:
 
     def icon_flow(self, x: float, y: float, w: float, items, *, size: float = 0.82,
                   color=None, label_size: float = 9.5, arrow_color=None) -> float:
-        """ピクトグラムを矢印でつないだ流れ図。「利用者 → アプリ → DB」の類。
+        """Flow diagram connecting pictograms with arrows, e.g. "User → App → DB".
 
-        矢印は絵と絵の間の隙間にだけ引く（絵に食い込まない）。
+        Arrows are only drawn in the gap between pictures (never overlapping
+        a picture).
 
-        **絵が大きすぎると隙間が無くなる。** そのまま描くと矢印の終点が始点より
-        左に来て、右向きのはずの矢印が逆向きに描かれる。API も audit も
-        （`_anchored` な線なので）これを拾わないため、ここで止める。
+        **If the pictures are too large, the gap disappears.** Drawing it
+        anyway would put the arrow's end point to the left of its start
+        point, drawing what should be a right-pointing arrow backwards.
+        Neither the API nor the audit catches this (since it's an
+        `_anchored` line), so we stop it here instead.
         """
         n = len(items)
         cell = w / n
@@ -142,7 +151,7 @@ class IllustrationMixin:
     def icon_grid(self, x: float, y: float, w: float, items, *, cols: int = 4,
                   size: float = 0.72, row_gap: float = 0.30, color=None,
                   label_size: float = 9) -> float:
-        """ピクトグラムを格子状に並べる。items は名前か (名前, ラベル)。"""
+        """Lays pictograms out in a grid. items is a name or a (name, label) tuple."""
         cell = w / cols
         bottom = y
         row_top = y
@@ -157,7 +166,7 @@ class IllustrationMixin:
                 label_size=label_size, label_w=cell - 0.14))
         return bottom
 
-    # ---- 個々のピクトグラム。すべて (x, y, s, c) の正方形に収める ----
+    # ---- Individual pictograms. All fit inside an (x, y, s, c) square ----
 
     def _icon_person(self, x, y, s, c):
         self.shape(x + 0.34 * s, y + 0.04 * s, 0.32 * s, 0.32 * s,
@@ -209,8 +218,10 @@ class IllustrationMixin:
                    kind="ELLIPSE", fill="#FFFFFF", stroke=None)
 
     def _icon_lock(self, x, y, s, c):
-        # 掛け金はドーナツ（円環）。下半分は本体で隠れるので、きれいな U 字に見える。
-        # 角丸矩形で代用すると半径が足りず「四角い掛け金」になる
+        # The shackle is a donut (ring). The bottom half is hidden behind
+        # the body, so it reads as a clean U shape.
+        # Substituting a round rectangle doesn't have enough radius and
+        # produces a "square shackle"
         self.shape(x + 0.27 * s, y + 0.04 * s, 0.46 * s, 0.52 * s,
                    kind="DONUT", fill=c, stroke=None)
         self.shape(x + 0.12 * s, y + 0.38 * s, 0.76 * s, 0.54 * s,
@@ -356,7 +367,7 @@ class IllustrationMixin:
                    kind="TRIANGLE", fill=c, stroke=None, rotation=270)
 
     def _icon_calendar(self, x, y, s, c):
-        # 綴じリング 2 本 + 本体 + ヘッダー帯 + 日付ドット
+        # 2 binder rings + body + header band + date dots
         for rx in (0.24, 0.70):
             self.shape(x + rx * s, y + 0.02 * s, 0.06 * s, 0.16 * s,
                        kind="RECTANGLE", fill=darken(c, 0.2), stroke=None)
@@ -372,7 +383,7 @@ class IllustrationMixin:
                            kind="RECTANGLE", fill=lighten(c, 0.55), stroke=None)
 
     def _icon_pin(self, x, y, s, c):
-        # 地図ピン: 丸い頭 + 下向きの脚 + 白い中心
+        # Map pin: round head + downward-pointing leg + white center
         self.shape(x + 0.30 * s, y + 0.50 * s, 0.40 * s, 0.44 * s,
                    kind="TRIANGLE", fill=c, stroke=None, rotation=180)
         self.shape(x + 0.18 * s, y + 0.04 * s, 0.64 * s, 0.64 * s,
@@ -403,22 +414,26 @@ class IllustrationMixin:
         self.shape(x + 0.34 * s, y + 0.34 * s, 0.32 * s, 0.32 * s,
                    kind="RECTANGLE", fill=c, stroke=None)
 
-    # ---------------- 比喩図 ----------------
+    # ---------------- Metaphor diagrams ----------------
 
-    # 継ぎ目に背景色の筋が出ないように部品どうしを重ねる量（インチ）
+    # Amount (in inches) parts overlap by, so seams don't show background-color streaks
     _SEAM = 0.01
 
     def _taper(self, cx, y, h, w_top, w_bot, fill, *, alpha=1.0) -> None:
-        """上底 w_top・下底 w_bot の等脚台形を、指定どおりの傾きで描く。
+        """Draws an isosceles trapezoid with top width w_top and bottom
+        width w_bot, at exactly the specified slope.
 
-        **Slides の `TRAPEZOID` は使えない。** 上底の食い込みが「表示高さ × 0.25」に
-        固定されていて、幅でも scaleY でも変えられないため（実測）、上底と下底を
-        自分で決める図（ピラミッド・ファネル）には向かない。TRAPEZOID をそのまま
-        積むと、段ごとに傾きが変わって輪郭がギザギザになる。
+        **Slides' `TRAPEZOID` shape can't be used.** Its top-edge inset is
+        fixed at "display height × 0.25" and can't be changed via width or
+        scaleY (verified empirically), which makes it unsuitable for
+        diagrams where the top and bottom widths must be chosen explicitly
+        (pyramid, funnel). Stacking TRAPEZOID shapes directly also makes the
+        slope change from step to step, producing a jagged outline.
 
-        そこで「中央の矩形＋左右の直角三角形」の 3 部品に分けて描く。
-        RIGHT_TRIANGLE は既定で直角が左下にあるので、flip_x / flip_y で
-        必要な向きの角を作る。
+        So instead this draws 3 parts: a center rectangle plus a right
+        triangle on each side. RIGHT_TRIANGLE has its right angle at the
+        bottom-left by default, so flip_x / flip_y are used to produce the
+        corner orientation needed.
         """
         inner = min(w_top, w_bot)
         wedge = abs(w_bot - w_top) / 2
@@ -428,25 +443,30 @@ class IllustrationMixin:
                        fill=fill, stroke=None, alpha=alpha)
         if wedge < 0.01:
             return
-        down = w_bot > w_top          # 下が広い＝ピラミッド。実体は下側
-        # 左のくさび: 実体は中央寄り（右）。下広なら右下、上広なら右上に直角が来る
+        down = w_bot > w_top          # bottom wider = pyramid; the solid part is at the bottom
+        # Left wedge: the solid part faces the center (right). If wider at
+        # the bottom, the right angle sits bottom-right; if wider at the
+        # top, top-right
         self.shape(cx - max(w_top, w_bot) / 2, y, wedge + s, h,
                    kind="RIGHT_TRIANGLE", fill=fill, stroke=None, alpha=alpha,
                    flip_x=True, flip_y=not down)
-        # 右のくさび: 実体は中央寄り（左）
+        # Right wedge: the solid part faces the center (left)
         self.shape(cx + inner / 2 - s, y, wedge + s, h,
                    kind="RIGHT_TRIANGLE", fill=fill, stroke=None, alpha=alpha,
                    flip_y=not down)
 
     def pyramid(self, x, y, w, h, levels, *, colors=None, size=12,
                 gap=0.04, captions=None) -> float:
-        """階層（上ほど少数・上位）。levels は上から順のラベル。戻り値は下端 y。
+        """Hierarchy (fewer / higher-ranked toward the top). levels are
+        labels ordered from top to bottom. Returns the bottom y.
 
-        captions を渡すと各段の右側に補足を置く。x + w の外側を使うので、
-        captions を使うときは w を狭めに取ること。
+        If captions is passed, supplementary text is placed to the right of
+        each level. This uses space outside x + w, so keep w narrower when
+        using captions.
 
-        台形は 180 度回して上底を狭くしている。**文字は図形に入れず別に重ねる**
-        （回すと文字も一緒に逆さまになるため）。
+        The trapezoid is rotated 180 degrees to narrow the top edge.
+        **Text is not embedded in the shape but overlaid separately** (since
+        rotating would flip the text upside down too).
         """
         n = len(levels)
         cols = colors or [lighten(self.P.primary, 0.55 * i / max(n - 1, 1))
@@ -455,8 +475,9 @@ class IllustrationMixin:
         cx = x + w / 2
         for i, text in enumerate(levels):
             top = y + i * (lh + gap)
-            # 頂点を幅 0 として線形に広げる。上底＝ひとつ上の段の下底なので、
-            # 段ごとの傾きが揃い、輪郭が一直線になる
+            # Widens linearly from a 0-width apex. Since each level's top
+            # width equals the level above's bottom width, the slope stays
+            # consistent across levels and the outline forms a straight line
             top_w = w * i / n
             bot_w = w * (i + 1) / n
             fill = cols[i] if not isinstance(cols, str) else cols
@@ -465,7 +486,7 @@ class IllustrationMixin:
                            fill=fill, stroke=None)
             else:
                 self._taper(cx, top, lh, top_w, bot_w, fill)
-            # 頂点の段は塗りが細いので、文字は下寄りに置く
+            # The apex level's fill is narrow, so the text is placed toward the bottom
             if i == 0:
                 self.label(cx - w / 2, top + lh - 0.30, w, 0.30, text, size=size,
                            align="CENTER", valign="MIDDLE", bold=True,
@@ -482,18 +503,21 @@ class IllustrationMixin:
 
     def funnel(self, x, y, w, h, stages, *, size=12, gap=0.06,
                value_w=1.5) -> float:
-        """絞り込み（上が広く下が狭い）。stages は (ラベル, 値の表示) か文字列。
+        """Narrowing funnel (wide at the top, narrow at the bottom). stages
+        is (label, displayed value) or a plain string.
 
-        値を表示する場合、その領域は x + w の右外側を使う。
+        When displaying a value, that area uses the space to the right of
+        x + w.
         """
         n = len(stages)
         lh = (h - gap * (n - 1)) / n
         cx = x + w / 2
-        narrow = 0.62               # 最下段までに何割すぼめるか
+        narrow = 0.62               # what fraction to taper by, down to the bottom level
         for i, st in enumerate(stages):
             label, value = st if isinstance(st, (tuple, list)) else (st, None)
             top = y + i * (lh + gap)
-            # 各段の上底＝ひとつ上の段の下底。輪郭が一直線につながる
+            # Each level's top width equals the level above's bottom width,
+            # so the outline connects in a straight line
             top_w = w * (1 - narrow * i / n)
             bot_w = w * (1 - narrow * (i + 1) / n)
             fill = lighten(self.P.primary, 0.62 * i / max(n - 1, 1))
@@ -508,7 +532,7 @@ class IllustrationMixin:
         return y + h
 
     def venn(self, x, y, w, h, sets, *, center=None, size=11, alpha=0.55) -> float:
-        """重なり。sets は 2 個または 3 個のラベル。center は共通部分のラベル。"""
+        """Overlap diagram. sets is 2 or 3 labels. center is the label for the shared intersection."""
         n = len(sets)
         if n not in (2, 3):
             raise ValueError(t("venn supports exactly 2 or 3 labels"))
@@ -525,8 +549,10 @@ class IllustrationMixin:
         for (ccx, ccy), col in zip(centers, cols):
             self.shape(ccx - r, ccy - r, r * 2, r * 2, kind="ELLIPSE",
                        fill=col, stroke=None, alpha=alpha)
-        # ラベルは円の外側へ。円の上に重ねるとアルファ越しに読みにくい。
-        # 外へ出した結果が枠からはみ出さないよう、最後に [x, x+w] に収める
+        # Labels go outside the circles. Overlaying them on the circle
+        # makes them hard to read through the alpha blending.
+        # Clamp the final position to [x, x+w] so pushing them outward
+        # doesn't overflow the frame
         lw = min(1.7, w * 0.46)
         for (ccx, ccy), label, col in zip(centers, sets, cols):
             out_x, out_y = ccx - x - w / 2, ccy - y - h / 2
@@ -539,7 +565,7 @@ class IllustrationMixin:
         if center:
             mx = sum(c[0] for c in centers) / n
             my = sum(c[1] for c in centers) / n
-            # 重なりは淡いので白抜きだと沈む。濃い文字色にする
+            # The overlap is pale, so white text would get lost; use a dark text color instead
             self.label(mx - 0.75, my - 0.15, 1.5, 0.3, center, size=size - 1,
                        align="CENTER", valign="MIDDLE", bold=True,
                        color=darken(self.P.primary, 0.45))
@@ -547,10 +573,13 @@ class IllustrationMixin:
 
     def iceberg(self, x, y, w, h, above, below, *, above_title="見えている部分",
                 below_title="見えていない部分", size=10, art_ratio=0.44) -> float:
-        """氷山（表に出ている一部と、水面下の大半）。above/below は文字列のリスト。
+        """Iceberg (the visible sliver above vs. the bulk hidden below the
+        waterline). above/below are lists of strings.
 
-        左 art_ratio の幅に絵、右に説明を置く。海面は絵の領域だけを塗るので、
-        右の文字が水色の上に載って読みにくくなることはない。
+        The picture occupies the left art_ratio of the width, with
+        explanatory text on the right. The sea is only painted within the
+        picture's area, so the text on the right never sits on top of the
+        blue and become hard to read.
         """
         art_w = w * art_ratio
         water = y + h * 0.30
@@ -561,7 +590,7 @@ class IllustrationMixin:
         peak_w = art_w * 0.52
         self.shape(cx - peak_w / 2, y, peak_w, water - y, kind="TRIANGLE",
                    fill=lighten(self.P.primary, 0.30), stroke=None)
-        # 水面下は上底が広く下へすぼまる＝台形を 180 度回したもの
+        # Below the waterline: wide at top, narrowing downward = a trapezoid rotated 180 degrees
         self.shape(cx - art_w * 0.44, water, art_w * 0.88, (y + h) - water - 0.06,
                    kind="TRAPEZOID", fill=lighten(self.P.primary, 0.60),
                    stroke=None, rotation=180)
@@ -583,15 +612,17 @@ class IllustrationMixin:
         return y + h
 
     def balance(self, x, y, w, h, left, right, *, size=11, tilt=0) -> float:
-        """天秤（2 つの選択肢の比較）。left/right は (見出し, [項目…])。
+        """Balance scale (comparing two options). left/right are
+        (heading, [items...]).
 
-        tilt が正なら右が重い、負なら左が重い見た目になる。0 なら水平。
+        If tilt is positive, the right side looks heavier; if negative, the
+        left side does. 0 is level.
         """
         beam_y = y + h * 0.22
         drop = h * 0.055 * (1 if tilt > 0 else -1 if tilt < 0 else 0)
         cx = x + w / 2
-        hang = 0.30          # 吊り紐の長さ。短いと皿が竿にめり込んで見える
-        # 支柱と支点（竿より先に描く＝竿が上に来る）
+        hang = 0.30          # length of the hanging string; too short and the pan looks like it's sunk into the beam
+        # Post and pivot (drawn before the beam, so the beam ends up on top)
         self.shape(cx - 0.05, beam_y, 0.10, h * 0.56, kind="RECTANGLE",
                    fill=self.P.muted, stroke=None)
         self.shape(cx - w * 0.055, y + h * 0.78, w * 0.11, h * 0.16,
@@ -621,10 +652,12 @@ class IllustrationMixin:
         return y + h
 
     def steps(self, x, y, w, h, items, *, size=11, captions=None) -> float:
-        """階段（段階を踏んで上がっていく）。items は下段から上段へのラベル。
+        """Staircase (climbing step by step). items are labels ordered from
+        the bottom step to the top.
 
-        段どうしは隙間なく隣接させる。離すと棒グラフに見えてしまい、
-        「量の比較」という別の意味に読まれる。
+        Steps are placed flush against each other with no gap. Spacing them
+        out would make it read as a bar chart instead, implying the
+        unrelated meaning of "comparing quantities."
         """
         n = len(items)
         bw = w / n
@@ -644,7 +677,7 @@ class IllustrationMixin:
         return y + h
 
     def layers(self, x, y, w, h, items, *, size=11, gap=0.06) -> float:
-        """積層（技術スタック等）。items は上から順の (ラベル, 補足) か文字列。"""
+        """Stacked layers (e.g. a tech stack). items is (label, note) or a plain string, ordered from top to bottom."""
         n = len(items)
         lh = (h - gap * (n - 1)) / n
         for i, item in enumerate(items):
@@ -662,12 +695,13 @@ class IllustrationMixin:
 
     def hub(self, x, y, w, h, center, spokes, *, size=10, center_size=11,
             radius=None) -> float:
-        """中心と放射（ハブ＆スポーク）。spokes は周囲に置くラベルのリスト。"""
+        """Hub and spoke. spokes is a list of labels placed around the center."""
         cx, cy = x + w / 2, y + h / 2
         cw, ch = min(w * 0.30, 2.1), min(h * 0.30, 0.86)
         nw, nh = min(w * 0.26, 1.8), min(h * 0.24, 0.62)
-        # 周回半径は「枠の半分 − ノードの半分」。固定係数だと枠を余らせるか、
-        # ノードの分だけはみ出すかのどちらかになる
+        # The orbit radius is "half the frame minus half the node." A fixed
+        # coefficient would either leave slack in the frame or overflow it
+        # by the node's size
         rx = max(0.2, w / 2 - nw / 2 - 0.04) if radius is None else radius
         ry = max(0.2, h / 2 - nh / 2 - 0.04) if radius is None else radius
         n = len(spokes)
@@ -689,11 +723,11 @@ class IllustrationMixin:
 
     def matrix(self, x, y, w, h, quadrants, *, x_axis=("低", "高"),
                y_axis=("低", "高"), x_label=None, y_label=None, size=11) -> float:
-        """2×2 のマトリクス。quadrants は左上・右上・左下・右下の順。"""
+        """2×2 matrix. quadrants are in top-left, top-right, bottom-left, bottom-right order."""
         if len(quadrants) != 4:
             raise ValueError(t("quadrants takes exactly 4 items "
                                "(top-left, top-right, bottom-left, bottom-right)"))
-        pad = 0.44          # 軸ラベルの領域
+        pad = 0.44          # area reserved for axis labels
         gx, gy = x + pad, y
         gw, gh = w - pad, h - pad
         cw, ch = gw / 2, gh / 2
@@ -721,8 +755,9 @@ class IllustrationMixin:
             self.label(gx, gy + gh + 0.26, gw, 0.26, x_label, size=size - 1,
                        align="CENTER", bold=True, color=self.P.text)
         if y_label:
-            # 回転（rotation=270）だと日本語が横倒しになって読みにくい。
-            # 1 文字ずつ改行して縦に積む＝擬似的な縦書きにする
+            # Rotating (rotation=270) turns Japanese text sideways and makes
+            # it hard to read. Instead, break each character onto its own
+            # line and stack them vertically, simulating vertical writing
             ls = size - 1
             lh = len(y_label) * ls * self.LINE_EM / 72.0
             self.label(x - 0.02, gy + gh / 2 - lh / 2, pad - 0.10, lh + 0.06,
@@ -732,23 +767,31 @@ class IllustrationMixin:
 
     def comparison(self, x, y, w, h, columns, *, size=11, arrows=False,
                    highlight=None, colors=None, gap=0.22) -> float:
-        """案を横に並べて比べる。columns は (見出し, [項目…]) のリスト。
+        """Lays options out side by side for comparison. columns is a list
+        of (heading, [items...]).
 
-        2 案の「現状 → 提案」は `before_after()` が特化形として用意してある。
-        こちらは案が 3 つ以上あるとき、移り変わりではなく並列の比較のとき、
-        推し案を 1 つ決めて見せたいときに使う。
+        For 2 options showing "current state → proposal", `before_after()`
+        provides a specialized form. Use this one when there are 3 or more
+        options, when it's a parallel comparison rather than a transition,
+        or when you want to highlight one recommended option.
 
-        - `arrows=True` で列の間に右向き矢印を置く。**移り変わり**（現状 →
-          提案、As-Is → To-Be）にだけ使うこと。並列の比較に矢印を置くと
-          「左から右に進む」という無い意味が生まれる。
-        - `highlight` に列番号を渡すと、その列だけ primary・他は muted になる。
-          推奨案を 1 つ示すとき用。既定は全列同色（優劣を示さない並列比較）。
-        - `colors` で列ごとの色を明示できる（`highlight` より優先）。
+        - `arrows=True` places right-pointing arrows between columns. Use
+          this **only for transitions** (current → proposal, As-Is →
+          To-Be). Adding arrows to a parallel comparison implies the
+          unintended meaning of "progressing left to right."
+        - Passing a column index to `highlight` makes only that column
+          primary-colored, with the rest muted. Use this to indicate one
+          recommended option. The default is all columns the same color
+          (a parallel comparison with no implied ranking).
+        - `colors` lets you set each column's color explicitly (takes
+          priority over `highlight`).
 
-        角は `RECTANGLE`。ROUND_RECTANGLE の角丸は短辺に比例する（実測で
-        半径 ≒ 0.155 × 短辺）ため、背の低い見出し帯と背の高い本文ボックスで
-        同じ指定をしても丸みが揃わない。Slides API は角丸半径を指定できない
-        ので、`so_what` / `steps` と同じく角ばらせて揃える。
+        Corners use `RECTANGLE`. ROUND_RECTANGLE's corner radius scales
+        with the shorter side (measured at roughly radius ≒ 0.155 × short
+        side), so a short heading band and a tall body box end up with
+        mismatched roundness even with identical settings. Since the
+        Slides API doesn't let you specify a corner radius directly, this
+        keeps corners square instead, matching `so_what` / `steps`.
         """
         n = len(columns)
         if n < 2:
@@ -775,8 +818,9 @@ class IllustrationMixin:
                        color=readable_on(col))
             self.shape(px, y + 0.46, pw, h - 0.46, kind="RECTANGLE",
                        fill=lighten(col, 0.88), stroke=lighten(col, 0.6))
-            # 左右の余白は詰める。広く取ると 1 行に入る文字数が減り、
-            # 箇条書きが 1 文字だけ次行へこぼれる
+            # Keep the left/right margins tight. Widening them reduces the
+            # characters that fit per line, causing bullet items to spill a
+            # single character onto the next line
             self.label(px + 0.10, y + 0.60, pw - 0.20, h - 0.74,
                        "\n".join(f"・{s}" for s in items), size=size,
                        align="START", valign="TOP", color=self.P.text,
@@ -789,33 +833,37 @@ class IllustrationMixin:
 
     def before_after(self, x, y, w, h, before, after, *, size=11,
                      before_title="Before", after_title="After") -> float:
-        """左右の対比。before/after は文字列のリスト。中央に矢印を置く。
+        """Side-by-side contrast. before/after are lists of strings, with
+        an arrow placed in the center.
 
-        `comparison()` の 2 列・矢印つき・右を強調した特化形。3 案以上や
-        優劣を付けない並列比較は `comparison()` を直接使う。
+        A specialized form of `comparison()`: 2 columns, with an arrow,
+        highlighting the right side. For 3+ options or a parallel
+        comparison with no implied ranking, use `comparison()` directly.
         """
         return self.comparison(x, y, w, h,
                                [(before_title, before), (after_title, after)],
                                size=size, arrows=True, highlight=1)
 
     def journey(self, x, y, w, h, milestones, *, size=10, size_title=11) -> float:
-        """道のり。マイルストーンを一本道の上下に交互に配置する。
+        """Journey. Places milestones alternately above and below a single
+        road/line.
 
-        milestones は (見出し, 補足) か文字列。項目が増えても縦に潰れない。
+        milestones is (heading, note) or a plain string. Doesn't get
+        vertically squeezed as items increase.
         """
         road_y = y + h / 2
         self.shape(x, road_y - 0.07, w, 0.14, kind="ROUND_RECTANGLE",
                    fill=lighten(self.P.primary, 0.80), stroke=None)
         n = len(milestones)
         cell = w / n
-        stem = 0.26         # 道から見出しの箱までの距離
+        stem = 0.26         # distance from the road to the heading box
         head_h = 0.34
         for i, ms in enumerate(milestones):
             head, sub = ms if isinstance(ms, (tuple, list)) else (ms, None)
             cx = x + i * cell + cell / 2
             up = (i % 2 == 0)
             bw = cell - 0.18
-            # 見出しの箱は道の近くに、補足はその外側に。上下で鏡像になる
+            # The heading box sits near the road, with the note further out. Mirrors above/below
             if up:
                 by = road_y - stem - head_h
                 sub_y, sub_h = y, by - y - 0.04
@@ -836,7 +884,7 @@ class IllustrationMixin:
         return y + h
 
     def timeline(self, x, y, w, items, *, size=10, size_title=11, row_h=0.9) -> float:
-        """横方向の時系列。items は (時点, 見出し) か文字列。"""
+        """Horizontal timeline. items is (point in time, heading) or a plain string."""
         line_y = y + 0.30
         self.line(x, line_y, x + w, line_y, color=lighten(self.P.primary, 0.5),
                   weight=2.0, free=True)
@@ -845,8 +893,9 @@ class IllustrationMixin:
         for i, it in enumerate(items):
             when, head = it if isinstance(it, (tuple, list)) else ("", it)
             cx = x + i * cell + cell / 2
-            # TOP だと文字が枠の下端（●のすぐ上）に寄って詰まって見える。
-            # 縦中央にすると●との間隔がちょうどよい
+            # With TOP alignment, text crowds toward the bottom of its box
+            # (right above the ●) and looks cramped.
+            # MIDDLE alignment gives the right amount of spacing from the ●
             self.label(cx - cell / 2, y, cell, 0.24, when, size=size,
                        align="CENTER", valign="MIDDLE", color=self.P.muted,
                        bold=True)

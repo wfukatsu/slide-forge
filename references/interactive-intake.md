@@ -1,67 +1,73 @@
-# 対話でデッキの設計を確定する
+*[日本語](interactive-intake.ja.md)*
+# Nailing Down a Deck's Design Through Dialogue
 
-デッキを作る前に、**テンプレート・用途・構成・分量**をユーザーに確認して確定させる
-手順。ホストで利用可能な対話質問機能を使い、決めごとを選択肢として提示する。
-Codex ではルート `AGENTS.md` の質問規則に従う。
+The procedure for confirming the **template, purpose, structure, and length** with the user
+before building a deck. Use whatever interactive-question feature is available on the host, and
+present decisions as multiple-choice options. Under Codex, follow the question rules in the root
+`AGENTS.md`.
 
-このスキルの生成は「仕様を直して作り直す」流儀なので、**前提を外したまま 40 枚
-生成してしまうと丸ごと作り直しになる**。前提の確認は生成前に、まとめて済ませる。
+This skill's generation follows an "edit the spec and rebuild" convention, so **generating 40
+slides with a wrong premise means rebuilding the whole thing**. Confirm the premise before
+generation, all at once.
 
-## 他のスキルから参照するとき
+## When another skill references this one
 
-セクション **0（いつ聞くか）・3（アウトライン承認ゲート）・4（生成後の確認）・
-5（やってはいけない聞き方）は作法で、デッキの種類によらず共通**。上に載るスキル
-（`scalar-product-slides` など）はここを参照して従う。
+Sections **0 (when to ask), 3 (the outline approval gate), 4 (post-generation confirmation), and
+5 (question styles to avoid) are conventions shared regardless of deck type.** Skills built on
+top of this one (e.g. `scalar-product-slides`) refer to these sections and follow them.
 
-セクション **1・2 の質問セットは本スキル固有**（テンプレート選択が起点）。
-専用ワークフローを持つスキルは、自分の分岐に合わせた質問セットを自前で持ち、
-作法だけをここから借りること。
-
----
-
-## 0. いつ聞き、いつ聞かないか
-
-**聞かない**（自分で決めて進める）:
-
-- ユーザーが既に指定している項目。「scalar-2026 で 10 枚の登壇資料を」と言われたら
-  テンプレートも系統も分量も確定している。残りだけ聞く。
-- 「おまかせ」「適当に」「早く」と言われたとき。既定値で組んで、**採用した前提を
-  1 行で明示してから**生成する（黙って決めない）。
-- 座標・フォントサイズ・図の部品選び・色。これは**こちらの責任範囲**で、
-  ユーザーに選ばせるものではない。迷ったら `references/` の規約に従う。
-- 既存デッキの微修正、カタログやデモの再生成など、設計上の分岐が無い作業。
-
-**聞く**:
-
-- 新規デッキで、テンプレート・用途・構成・分量のどれかが未指定のとき。
-- 選択によって**作り直しが発生する**分岐（テンプレート、Proposal / Presentation 系統、
-  構成の型、想定分量、出力先フォルダ）。
-- 生成前のアウトライン承認（後述のゲート）。ここを飛ばさない。
-
-**まとめて聞く。** 1 回で最大 4 問、1 問あたり 2〜4 択。
-1 問ずつ往復せず、下の Q1 セット（4 問）→ Q2 セット（必要な分だけ）→
-アウトライン承認、の**最大 3 往復**に収める。
+Sections **1 and 2's question sets are specific to this skill** (starting from template
+selection). Skills with their own dedicated workflow should own a question set suited to their
+own branching, borrowing only the conventions from here.
 
 ---
 
-## 1. Q1 セット — 前提を決める
+## 0. When to ask, and when not to
 
-最初の 1 回。選択肢の文言はそのまま使ってよいが、**テンプレートの選択肢は
-実データから作る**こと（登録が増減しても腐らないように）:
+**Don't ask** (decide it yourself and proceed):
+
+- Anything the user has already specified. If told "10 slides for a talk, using scalar-2026,"
+  the template, category, and length are all already settled. Only ask about what's left.
+- When told "use your judgment," "whatever," or "just make it quick." Assemble it with the
+  defaults, **state the premises you adopted in one line** before generating (never decide
+  silently).
+- Coordinates, font sizes, choice of figure parts, colors. These are **your responsibility**, not
+  something to hand to the user to choose. When in doubt, follow the conventions in
+  `references/`.
+- Minor edits to an existing deck, regenerating a catalog or demo, or any work with no design
+  branch point.
+
+**Do ask**:
+
+- For a new deck, when any of template, purpose, structure, or length is unspecified.
+- For any branch point where the choice **triggers a rebuild** (template, Proposal vs.
+  Presentation category, structure type, expected length, output destination folder).
+- The pre-generation outline approval (the gate described below). Never skip this.
+
+**Ask in batches.** At most 4 questions per round, 2–4 options per question. Don't go back and
+forth one question at a time — stay within **at most 3 round trips**: the Q1 set (4 questions) →
+the Q2 set (only what's still needed) → outline approval.
+
+---
+
+## 1. Q1 set — deciding the premise
+
+Asked once, up front. The option wording below can be reused as-is, but **build the template
+options from live data** (so they don't go stale as registrations change):
 
 ```bash
-.venv/bin/python scripts/list_templates.py        # 人が読む形
-.venv/bin/python scripts/list_templates.py --json # 選択肢を組む材料
+.venv/bin/python scripts/list_templates.py        # human-readable form
+.venv/bin/python scripts/list_templates.py --json # material for building options
 ```
 
-| # | header | 質問 | 選択肢の作り方 |
+| # | header | Question | How to build the options |
 |---|---|---|---|
-| 1 | テンプレート | どのテンプレートで作りますか？ | `list_templates.py` の結果から最大 3 件＋「新しい URL を解析して登録」。`description` に「レイアウト N 種 / 定型スライド N 枚同梱」を入れる。手持ちのテンプレートが無くブランドに合わせて新規デザインしたい場合は `template-forge` スキルへ |
-| 2 | 用途 | このデッキは何に使いますか？ | 提案書・営業資料（Proposal 系）／ 登壇・勉強会（Presentation 系）／ 社内共有・報告。テンプレートが系統を持たない場合はこの問い自体を省く |
-| 3 | 構成 | どの構成で組みますか？ | `references/deck-outlines.md` の型から 3 つ＋「内容に合わせて組む」。**`preview` にセクション見出しを入れる**と比較しやすい |
-| 4 | 分量 | 目安の枚数は？ | 10 枚前後（15 分）／ 20 枚前後（30 分）／ 40 枚以上（詳細版・Appendix 込み） |
+| 1 | Template | Which template should we use? | Up to 3 entries from `list_templates.py`'s output, plus "Parse and register a new URL." Put "N layouts / N boilerplate slides included" in `description`. If the user has no existing template and wants a brand-new design matched to their brand, point them to the `template-forge` skill instead |
+| 2 | Purpose | What is this deck for? | Proposal / sales material (Proposal category) / conference talk or study session (Presentation category) / internal sharing or reporting. If the template has no notion of category, skip this question entirely |
+| 3 | Structure | Which structure should we build it with? | 3 types from `references/deck-outlines.md`, plus "Build it to match the content." **Put section headings into `preview`** so they're easy to compare |
+| 4 | Length | About how many slides? | ~10 slides (15 min) / ~20 slides (30 min) / 40+ slides (detailed version, with appendix) |
 
-実際の呼び出し（値は `list_templates.py` の出力に合わせて差し替える）:
+The actual call (substitute values to match `list_templates.py`'s output):
 
 ```json
 {
@@ -117,55 +123,57 @@ Codex ではルート `AGENTS.md` の質問規則に従う。
 
 ---
 
-## 2. Q2 セット — 中身の前提を決める
+## 2. Q2 set — deciding the premises for the content
 
-Q1 の答えで決まらなかったものだけを聞く。全部聞く必要はない。
+Ask only about what Q1's answers didn't settle. There's no need to ask all of them.
 
-| header | 質問 | 選択肢 |
+| header | Question | Options |
 |---|---|---|
-| 図の使い方 | どの見せ方を使いますか？（複数可・`multiSelect: true`） | 表・グラフ／イメージ図・フレームワーク図／クラウド構成図／コードサンプル |
-| ページの型 | どのページ構成で組みますか？（配布資料のとき） | 骨格 6 種から選ぶ。`examples/slide-pattern-index.json` を生成して実物を見せると速い |
-| 素材 | 中身の素材はありますか？ | 手元にある（パス・URL を渡す）／ 既存デッキから引き継ぐ／ こちらで調査する／ 仮置き（○○ のままにする） |
-| 出力先 | Drive のどこに置きますか？ | マイドライブ直下／ フォルダを指定する（URL か ID）／ 既存デッキに追記する |
-| 表紙 | 表紙に入れる情報は？ | 日付＋会社名／ 日付のみ／ 入れない |
-| 検証 | 生成後にビジュアル QA（サムネイル検証）を行いますか？ | 実行する（推奨・既定）／ スキップする（生成のみ。後から `slide-qa` スキルで実行できる） |
-| 出力形式 | Google Slides に加えて PowerPoint (.pptx) も書き出しますか？ | Google Slides のみ（既定）／ PPTX も書き出す（納品・配布用。`pptx-export` スキルで生成後にエクスポート） |
-| 明細資料 | 費用・構成の明細（見積もり）をスプレッドシートでも出しますか？ | 出さない（既定。スライドの要約のみ）／ 出す — Excel＋Google Spreadsheet（`spreadsheets` スキル。デッキと同じ Drive フォルダに置き、合計をスライドと一致させる） |
+| Use of figures | Which visual treatments should we use? (multiple allowed, `multiSelect: true`) | Tables/charts / illustrative diagrams or frameworks / cloud architecture diagrams / code samples |
+| Page type | Which page structures should we build with? (for handout materials) | Choose from 6 skeleton types. Generating `examples/slide-pattern-index.json` and showing the real thing is faster |
+| Materials | Do you have source content? | Have it on hand (provide a path/URL) / carry over from an existing deck / we'll research it / placeholder (leave as ○○) |
+| Output destination | Where in Drive should it go? | My Drive root / a specified folder (URL or ID) / append to an existing deck |
+| Cover | What information goes on the cover? | Date + company name / date only / none |
+| Verification | Run visual QA (thumbnail verification) after generation? | Run it (recommended, default) / skip it (generation only; can be run later via the `slide-qa` skill) |
+| Output format | In addition to Google Slides, also export to PowerPoint (.pptx)? | Google Slides only (default) / also export PPTX (for delivery/distribution; exported after generation via the `pptx-export` skill) |
+| Cost breakdown | Also produce a cost/composition breakdown (quotation) as a spreadsheet? | No (default; slide summary only) / yes — Excel + Google Spreadsheet (via the `spreadsheets` skill; placed in the same Drive folder as the deck, with the total matching the slides) |
 
-注意:
+Notes:
 
-- **「クラウド構成図」を選ばれたら、`scripts/fetch_cloud_icons.py` の取り込み済みを
-  先に確認する**（未取り込みだと生成時に止まる）。
-- **AI 画像（`aiImage`）は課金済みの `GEMINI_API_KEY` が要る**。使う前提の回答が
-  来たらキーの有無を先に確かめ、無ければ図形で描く手段（`illustrations` /
-  `patterns`）を提案する。無料枠のキーは画像モデルのクォータが 0 で、生成時に
-  429 で失敗する。
-- 素材が「こちらで調査する」なら、**推測で数値を埋めない**。出典の取れないものは
-  `○○` の仮置きにして、その旨をユーザーに伝える。
-- **「検証」は既定で「実行する」を先頭（推奨）に置く**。API のレスポンスからは
-  文字のはみ出しや矢印の誤接続が分からないことを `description` で一言添える。
-  「スキップする」が選ばれたら生成だけで完了とし、QA 未実施であることを結果報告に
-  明記する。QA の手順（サムネイル取得 → 目視 → 修正ループ → 検証ファイル削除）は
-  `slide-qa` スキルの所掌。
-- **「出力形式」は PPTX での納品・配布が想定されるとき（提案書・顧客向け資料など）
-  だけ聞く**。登壇資料や社内共有では聞かずに Google Slides のみとする。
-  「PPTX も書き出す」が選ばれたら、生成と QA が**すべて終わった後**に
-  `pptx-export` スキルでエクスポートする（エクスポートはスナップショットなので、
-  再生成したら再エクスポート）。手順・忠実度の注意は同スキルの所掌。
-- **「明細資料」はデッキに費用・構成の数字が載るとき（提案書・稟議・BOM 付き）
-  だけ聞く**。「出す」が選ばれたら `spreadsheets` スキルで見積もり明細を
-  Excel＋Google Spreadsheet として生成し、デッキと同じ Drive フォルダに置く。
-  スライド側は合計・要約に留め、明細の合計とスライドの数字を必ず一致させる。
-  単価・税率はユーザーか素材から取る（推測で埋めない — 無いものは `○○`）。
+- **If "cloud architecture diagram" is chosen, first check whether
+  `scripts/fetch_cloud_icons.py` has already ingested them** (generation halts if it hasn't).
+- **AI images (`aiImage`) require a billed `GEMINI_API_KEY`.** If the answer indicates they plan
+  to use one, check for a key first; if there isn't one, propose a shape-based alternative
+  (`illustrations` / `patterns`). A free-tier key has zero quota for the image model and fails
+  with a 429 at generation time.
+- If materials are "we'll research it," **never fill in numbers by guessing.** Anything without
+  a verifiable source becomes an `○○` placeholder, and tell the user so.
+- **For "verification," default to putting "run it" first (recommended).** Mention in the
+  `description` that text overflow or mis-wired connectors can't be detected from the API
+  response alone. If "skip it" is chosen, treat generation alone as complete, and state clearly
+  in the final report that QA was not performed. The QA procedure (fetch thumbnails → visual
+  review → fix loop → delete verification files) is owned by the `slide-qa` skill.
+- **Only ask about "output format" when PPTX delivery/distribution is expected** (proposals,
+  customer-facing materials, etc.). Don't ask for conference talks or internal sharing — default
+  to Google Slides only. If "also export PPTX" is chosen, export via the `pptx-export` skill
+  only **after generation and QA are both fully complete** (an export is a snapshot, so
+  regenerating the deck requires re-exporting). Procedure and fidelity notes are owned by that
+  skill.
+- **Only ask about "cost breakdown" when the deck will carry cost/composition figures**
+  (proposals, approval requests, decks with a BOM). If "yes" is chosen, generate the quotation
+  breakdown as Excel + Google Spreadsheet via the `spreadsheets` skill, placed in the same Drive
+  folder as the deck. Keep the slide side to totals/summary only, and always make the
+  breakdown's total match the number on the slide. Unit prices and tax rates come from the user
+  or the source material (never fill them in by guessing — anything missing becomes `○○`).
 
 ---
 
-## 3. アウトライン承認ゲート（省略禁止）
+## 3. Outline approval gate (never skip)
 
-Q1・Q2 の答えから**アウトライン案をテキストで提示してから**、承認を取る。
-JSON 仕様やスライドの生成はこの後。
+**Present the draft outline as text** from the Q1/Q2 answers, then get approval. The JSON spec
+and slide generation come after this.
 
-提示するもの（会話の本文に書く。長い JSON は貼らない）:
+What to present (write it in the chat body; don't paste long JSON):
 
 ```
 全 18 枚 / scalar-2026 / Proposal 系 / 課題解決型
@@ -178,7 +186,7 @@ JSON 仕様やスライドの生成はこの後。
 18  CLOSING
 ```
 
-そのうえで承認を取る:
+Then get approval:
 
 ```json
 {
@@ -195,39 +203,42 @@ JSON 仕様やスライドの生成はこの後。
 }
 ```
 
-**アウトラインが承認されたら、そこから先は聞かずに最後まで通す。**
-仕様作成 → `--dry-run --strict` → 生成 →（検証を選んだ場合）サムネイル QA
-までは一続きの作業で、途中で確認を挟むと待ち時間が増えるだけになる。
+**Once the outline is approved, run everything through to the end without asking anything
+further.** Writing the spec → `--dry-run --strict` → generation → (if verification was chosen)
+thumbnail QA form one continuous piece of work; inserting a confirmation partway through only
+adds waiting time.
 
 ---
 
-## 4. 生成後の確認
+## 4. Confirmation after generation
 
-**検証を「実行する」で受けている場合**、QA（`slide-qa` スキル: サムネイル目視 →
-修正 → `cleanup_qa.py` で検証ファイル削除）まで**自分で済ませてから**結果を出す。
-目視で潰せる不具合をユーザーに見つけさせない。
-**「スキップする」だった場合**は生成とレポートで完了とし、QA 未実施であることと
-`slide-qa` で後から検証できることを結果報告に明記する。
-そのうえで、直す余地があるときだけ聞く:
+**If verification was chosen as "run it,"** finish QA yourself first (`slide-qa` skill: visual
+review of thumbnails → fix → delete verification files with `cleanup_qa.py`) **before**
+delivering the result. Don't make the user find defects that a visual check would have caught.
+**If it was "skip it,"** treat generation plus the report as complete, and state clearly in the
+final report both that QA was not performed and that it can be run later via `slide-qa`.
+After that, only ask if there's room to refine it:
 
-| header | 質問 | 選択肢 |
+| header | Question | Options |
 |---|---|---|
-| 仕上げ | このまま確定しますか？ | 確定する／ 文言を直す／ 図の見せ方を変える／ 枚数を調整する |
+| Finishing touches | Should we finalize this as-is? | Finalize / revise the wording / change how a figure is presented / adjust the slide count |
 
-修正は**仕様を直して作り直す**（部分修正しない）。作り直すときは、
-**先に古い生成物を Drive から削除**してから再生成する（残骸を残さない）。
+Fixes are made by **editing the spec and rebuilding** (never a partial edit). When rebuilding,
+**delete the old generated output from Drive first**, then regenerate (never leave stale
+leftovers behind).
 
 ---
 
-## 5. やってはいけない聞き方
+## 5. Question styles to avoid
 
-- **1 問ずつ聞く。** 往復が増えるだけ。前提はまとめて 1 回で聞く。
-- **答えを持っているのに聞く。** `list_templates.py` を実行すれば分かることを
-  「どんなテンプレートがありますか？」と聞き返さない。
-- **選択肢を出さずに自由記述で聞く。** 「構成はどうしますか？」ではなく、
-  型を 3 つ出して選ばせる。選択肢に無ければユーザーが自分で書ける（"Other"）。
-- **生成を止めて聞く。** 承認ゲート以外で手を止めない。答えが無くても進められる
-  部分は先に進め、依存する部分だけ後回しにする。
-- **確認したのに反映しない。** 聞いた以上、答えは仕様に必ず反映する。
-  反映できない答え（テンプレートに無いレイアウトなど）は、その場で理由を伝えて
-  代替を出す。
+- **Asking one question at a time.** It only adds round trips. Ask about the premises together,
+  in one go.
+- **Asking when you already have the answer.** Don't ask back "What templates are available?"
+  when running `list_templates.py` would tell you.
+- **Asking as free text instead of offering options.** Instead of "How should we structure it?",
+  present 3 types to choose from. If none fit, the user can always write their own ("Other").
+- **Stopping generation to ask.** Don't pause outside the approval gate. Push forward on
+  anything that doesn't need an answer yet, and defer only the parts that depend on one.
+- **Asking, then not reflecting the answer.** Once you've asked, the answer must always be
+  reflected in the spec. For an answer that can't be honored (e.g. a layout the template doesn't
+  have), explain why on the spot and offer an alternative.

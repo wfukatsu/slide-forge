@@ -1,16 +1,18 @@
-# Content コンポーザー仕様
+*[日本語](content.ja.md)*
 
-content カテゴリ（9タイプ）のコンポーザー関数仕様。
+# Content Composer Specification
+
+Composer function specification for the content category (9 types).
 
 ---
 
 ## compose_text_bullets
 
-**マスター**: CONTENT | **パターン**: テキスト直接配置
+**Master**: CONTENT | **Pattern**: Direct text placement
 
-箇条書きによる要点列挙。最も基本的なコンテンツスライド。
+Bulleted enumeration of key points. The most basic content slide.
 
-### レイアウト
+### Layout
 
 ```
 ┌──────────────────────────────────────┐
@@ -28,7 +30,7 @@ content カテゴリ（9タイプ）のコンポーザー関数仕様。
 └──────────────────────────────────────┘
 ```
 
-### コード
+### Code
 
 ```python
 def compose_text_bullets(sb, content, theme, slide_id, page_num):
@@ -58,11 +60,11 @@ def compose_text_bullets(sb, content, theme, slide_id, page_num):
 
 ## compose_columns
 
-**マスター**: CONTENT | **パターン**: Pattern 9 (Comparison) 応用
+**Master**: CONTENT | **Pattern**: Pattern 9 (Comparison) applied
 
-2-3列の並列レイアウト。各カラムにアイコン・見出し・箇条書き。
+2-3 column parallel layout. Each column contains an icon, heading, and bullet list.
 
-### コード
+### Code
 
 ```python
 def compose_columns(sb, content, theme, slide_id, page_num):
@@ -118,11 +120,11 @@ def compose_columns(sb, content, theme, slide_id, page_num):
 
 ## compose_image_text
 
-**マスター**: CONTENT | **パターン**: 画像+テキスト分割
+**Master**: CONTENT | **Pattern**: Image + text split
 
-左右分割で画像とテキストを配置。imagePosition で左右入替可能。
+Places an image and text in a left/right split. The left/right sides can be swapped via imagePosition.
 
-### コード
+### Code
 
 ```python
 def compose_image_text(sb, content, theme, slide_id, page_num):
@@ -166,11 +168,11 @@ def compose_image_text(sb, content, theme, slide_id, page_num):
 
 ## compose_chart
 
-**マスター**: CONTENT | **パターン**: Sheets API 連携
+**Master**: CONTENT | **Pattern**: Sheets API integration
 
-Google Sheets にデータを作成し、チャートを埋め込む。
+Creates data in Google Sheets and embeds a chart.
 
-### コード
+### Code
 
 ```python
 def compose_chart(sb, content, theme, slide_id, page_num):
@@ -200,11 +202,11 @@ def compose_chart(sb, content, theme, slide_id, page_num):
 
 ## compose_table
 
-**マスター**: CONTENT | **パターン**: Table API 直接
+**Master**: CONTENT | **Pattern**: Direct Table API
 
-テーブル形式のデータ表示。テーマカラーでヘッダー・交互行を着色。
+Displays data in table format. Header and alternating rows are colored using theme colors.
 
-### コード
+### Code
 
 ```python
 def compose_table(sb, content, theme, slide_id, page_num):
@@ -252,28 +254,28 @@ def compose_table(sb, content, theme, slide_id, page_num):
 
 ## compose_kpi_highlight
 
-**マスター**: HIGHLIGHT | **パターン**: Pattern 8 (Stat Card)
+**Master**: HIGHLIGHT | **Pattern**: Pattern 8 (Stat Card)
 
-KPI・主要指標の強調表示。暗色背景に大きな数値。
+Emphasized display of KPIs / key metrics. Large numbers on a dark background.
 
-### KPI 値フォントサイズガイドライン
+### KPI value font size guidelines
 
-カード幅に対して KPI 値が折り返されないよう、値の文字数に応じてフォントサイズを調整する。
+Adjust the font size according to the character count of the value so that the KPI value does not wrap relative to the card width.
 
-| カード幅 | 値の文字数 | 最大フォントサイズ | 例 |
+| Card width | Value character count | Max font size | Example |
 |---------|----------|----------------|-----|
-| 2.0-2.2" | 4文字以下 | 32pt | "3x", "<5ms" |
-| 2.0-2.2" | 5-6文字 | 28pt | "99.99%", "$1.2M" |
-| 2.0-2.2" | 7文字以上 | 24pt | "99.999%" |
-| 2.8" | 4文字以下 | 56pt | "3x", "100%" |
-| 2.8" | 5-6文字 | 48pt | "<5ms", "99.9%" |
-| 2.8" | 7文字以上 | 40pt | "99.999%", "$1.2M" |
-| 3.0"+ | 7文字以下 | 56pt | — |
-| 3.0"+ | 8文字以上 | 44pt | — |
+| 2.0-2.2" | 4 chars or fewer | 32pt | "3x", "<5ms" |
+| 2.0-2.2" | 5-6 chars | 28pt | "99.99%", "$1.2M" |
+| 2.0-2.2" | 7 chars or more | 24pt | "99.999%" |
+| 2.8" | 4 chars or fewer | 56pt | "3x", "100%" |
+| 2.8" | 5-6 chars | 48pt | "<5ms", "99.9%" |
+| 2.8" | 7 chars or more | 40pt | "99.999%", "$1.2M" |
+| 3.0"+ | 7 chars or fewer | 56pt | — |
+| 3.0"+ | 8 chars or more | 44pt | — |
 
-> **注意**: Century Gothic（fontFaceAccent）は等幅ではないため、"%" や "." は "M" や "W" より狭い。上記は実測に基づく安全な上限値。
+> **Note**: Century Gothic (fontFaceAccent) is not monospaced, so "%" and "." are narrower than "M" or "W". The values above are safe upper bounds based on empirical measurement.
 
-### コード
+### Code
 
 ```python
 def compose_kpi_highlight(sb, content, theme, slide_id):
@@ -323,11 +325,11 @@ def compose_kpi_highlight(sb, content, theme, slide_id):
 
 ## compose_process_flow
 
-**マスター**: CONTENT | **パターン**: Pattern 10 (Flow Diagram)
+**Master**: CONTENT | **Pattern**: Pattern 10 (Flow Diagram)
 
-プロセスフロー。3-5ステップを横並びで矢印接続。
+Process flow. 3-5 steps arranged horizontally and connected with arrows.
 
-### コード
+### Code
 
 ```python
 def compose_process_flow(sb, content, theme, slide_id, page_num):
@@ -385,11 +387,11 @@ def compose_process_flow(sb, content, theme, slide_id, page_num):
 
 ## compose_quote
 
-**マスター**: QUOTE | **パターン**: 独自
+**Master**: QUOTE | **Pattern**: Custom
 
-引用・顧客の声。淡い背景に大きな引用テキストと発言者情報。
+Quotation / customer testimonial. Large quote text and speaker information on a light background.
 
-### コード
+### Code
 
 ```python
 def compose_quote(sb, content, theme, slide_id):
@@ -428,11 +430,11 @@ def compose_quote(sb, content, theme, slide_id):
 
 ## compose_icon_grid
 
-**マスター**: CONTENT | **パターン**: Pattern 7 (Icon+Text Row)
+**Master**: CONTENT | **Pattern**: Pattern 7 (Icon+Text Row)
 
-アイコン+テキストのグリッド。3-6個を2-3列×1-2行で配置。
+Icon + text grid. Arranges 3-6 items in 2-3 columns x 1-2 rows.
 
-### コード
+### Code
 
 ```python
 def compose_icon_grid(sb, content, theme, slide_id, page_num):

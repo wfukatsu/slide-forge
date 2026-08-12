@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """Build references/slide-template-catalog.md from slide-templates/ metadata.
 
-パック別カタログ仕様の生成（build_slide_template_catalog.py）でデッキを作り、
-fetch_thumbnails.py で PNG を取り込んだあと、このスクリプトがテンプレートの
-メタデータ（description / answers / guardrails / figures）から図入りの
-Markdown カタログを書き出す。テンプレートを追加したら再実行するだけでよい。
+Generate the per-pack catalog spec (build_slide_template_catalog.py) to build
+a deck, import the PNGs with fetch_thumbnails.py, and then this script writes
+out an illustrated Markdown catalog from each template's metadata
+(description / answers / guardrails / figures). Just re-run this after adding
+a template.
 
     .venv/bin/python scripts/build_slide_template_catalog.py --pack <pack> --out out/template-catalog/<pack>.json
-    （全パックを 1 つのデッキに結合して build_deck.py で生成）
+    (build all packs by combining them into one deck with build_deck.py)
     .venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/template-catalog/thumbs --size MEDIUM
-    （thumbs を references/images/slide-templates/<id>.png に取り込み）
+    (import thumbs into references/images/slide-templates/<id>.png)
     .venv/bin/python scripts/build_template_catalog_doc.py
 """
 from __future__ import annotations

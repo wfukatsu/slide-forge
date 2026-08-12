@@ -1,39 +1,49 @@
 #!/usr/bin/env python3
-"""ページ部品と分析図（`diagrams.Canvas` に混ぜて使うミックスイン）。
+"""Page components and analysis figures (a mixin used together with `diagrams.Canvas`).
 
-`illustrations` / `patterns` / `charts` が「図表そのもの」を描くのに対し、
-こちらは **ページの骨組みを作る部品**（タイトル帯・導入文・示唆・出典行・図表枠）と、
-それに合わせて使う **分析図**（ロジックツリー・ウォーターフォール・評価マトリクス）、
-**デッキ設計の道具**（サマリー・ストーリーライン・ゴースト）を持つ。
+While `illustrations` / `patterns` / `charts` draw "the figure itself," this
+module holds **components that build the page's skeleton** (title bar, lead-in
+text, kicker, source-note line, exhibit frame), the **analysis figures** used
+alongside them (logic tree, waterfall, rating matrix), and **deck-design
+tools** (summary, storyline, ghost deck).
 
-デッキの用途を問わず使える。ただし**どこまで使うかは用途で変わる**:
+Usable regardless of the deck's purpose. That said, **how much of it you use
+depends on the purpose**:
 
-- 登壇・勉強会 … `governing_message`（アクションタイトル）と `source_note` だけ。
-  1 枚 1 メッセージで、導入文や示唆は口頭で言えばよい
-- 配布・提出・稟議（read-alone） … 全部使う。読者が独りで読み切るので、
-  1 枚に結論・根拠・出典が閉じている必要がある
+- Talks / study sessions -- just `governing_message` (the action title) and
+  `source_note`. One message per slide; lead-in text and kickers can be said
+  aloud instead
+- Handouts / submissions / approval documents (read-alone) -- use all of it.
+  Since the reader goes through it alone, each slide must contain its
+  conclusion, evidence, and source in a self-contained way
 
     d = Canvas(deck, slide_id, template)
-    b = d.governing_message(0.5, 0.55, 9.0, "受注処理の内製化で年 1,800 万円を削減できる")
-    b = d.lead_in(0.5, b + 0.06, 9.0, "現行 3 工程のうち、2 工程は既存システムで代替できる。")
-    inner = d.exhibit_frame(0.5, b + 0.18, 5.9, 2.7, 1, "工程別の年間コスト")
+    b = d.governing_message(0.5, 0.55, 9.0, "In-housing order processing can cut costs by $180K/year")
+    b = d.lead_in(0.5, b + 0.06, 9.0, "Of the current 3 processes, 2 can be replaced by the existing system.")
+    inner = d.exhibit_frame(0.5, b + 0.18, 5.9, 2.7, 1, "Annual cost by process")
     d.vbars(inner[0] + 0.2, inner[1] + 0.15, inner[2] - 0.4, inner[3] - 0.3, [...])
-    d.so_what(6.6, b + 0.18, 2.9, 2.7, "上位 2 工程だけで削減額の 8 割を占める")
-    d.source_note(0.5, 4.85, 9.0, "2026 年 3 月の業務量調査（n=42）",
-                  notes=["※1 人件費は部門平均単価で換算"])
+    d.so_what(6.6, b + 0.18, 2.9, 2.7, "The top 2 processes alone account for 80% of the savings")
+    d.source_note(0.5, 4.85, 9.0, "March 2026 workload survey (n=42)",
+                  notes=["*1 Labor cost converted using the department average rate"])
 
-設計の根拠（2026-08 調査。コンサルティングファームのスライド規約より）:
+Design rationale (researched 2026-08, based on consulting-firm slide conventions):
 
-- アクションタイトルは **15 語以内・2 行まで・能動態**。「何を見せるか」ではなく
-  「何が言えるか」を書く。タイトルだけを順に読むと論旨になる（横の論理）。
-- 定量スライドには**必ず出典行**を置く。数値の主張に出典が無いものは載せない。
-- 示唆ボックス（kicker）は**使いすぎない**。目安は全体の 2 割以下。タイトルの
-  焼き直しを入れない（それはタイトルの仕事）。図に無い新情報も入れない。
-- 図表には通し番号を振る。本文・付録から参照できるようにするため。
+- The action title must be **15 words or fewer, at most 2 lines, active
+  voice**. Write "what can be concluded," not "what is being shown." Reading
+  just the titles in sequence should form the argument (horizontal logic).
+- **Always place a source-note line** on a quantitative slide. Never show a
+  numeric claim without a source.
+- **Don't overuse** the kicker (so-what) box. A rule of thumb is at most 20%
+  of slides overall. Don't restate the title (that's the title's job), and
+  don't introduce new information that isn't in the figure.
+- Number exhibits sequentially so they can be referenced from the body text
+  or an appendix.
 
-すべての部品は他と同じ積み上げ規約に従い、**描画領域の下端 y を返す**。
-例外は `exhibit_frame` だけで、中身を描くための内側領域 `(x, y, w, h)` を返す。
-座標はインチ。描いたら `audit_*` の自己点検を必ず通すこと。
+All components follow the same stacking convention as the rest of the
+codebase and **return the y-coordinate of the bottom edge of the area they
+drew**. The one exception is `exhibit_frame`, which returns the inner area
+`(x, y, w, h)` for drawing its contents. Coordinates are in inches. Always
+run the `audit_*` self-checks after drawing.
 """
 from __future__ import annotations
 
@@ -98,7 +108,7 @@ register({
         "ghost: 未知の状態 '{status}'（{allowed}）",
 })
 
-# ゴーストデッキのデータ状態。清書前に「未取得」が残っていないかを見るための区分
+# Data status categories for a ghost deck. Used to check that no "未取得" (missing) items remain before finalizing
 GHOST_STATUS = {
     "confirmed": ("確定", "success"),
     "wip": ("作成中", "warning"),
@@ -107,7 +117,7 @@ GHOST_STATUS = {
 
 
 def _node(tree):
-    """ロジックツリーのノードを (ラベル, [子…]) に正規化する。JSON 由来の list も受ける。"""
+    """Normalize a logic-tree node to (label, [children...]). Also accepts a list, as read from JSON."""
     if isinstance(tree, str):
         return tree, []
     if isinstance(tree, dict):
@@ -127,28 +137,29 @@ def _depth(tree) -> int:
 
 
 class PageMixin:
-    """`Canvas` にページ部品と分析図を足すミックスイン。"""
+    """Mixin that adds page components and analysis figures to `Canvas`."""
 
-    # 本文の実効行高の係数。label() の行送りと合わせてある
+    # Effective line-height factor for body text. Matches the line spacing used by label()
     _LINE = 1.45
 
-    # ---- 1. ガバニングメッセージ（アクションタイトル） ----
+    # ---- 1. Governing message (action title) ----
 
     def governing_message(self, x, y, w, text, *, size=17, bar=0.055,
                           color=None, max_words=15) -> float:
-        """アクションタイトルを帯つきで描く。戻り値は下端 y。
+        """Draw the action title with an accent bar. Returns the bottom y.
 
-        テンプレートの TITLE プレースホルダが使えるならそちらを優先する。
-        この部品は BLANK レイアウトで組むときと、2 行のタイトルを確実に
-        意図した位置に出したいときに使う。
+        Prefer the template's TITLE placeholder when it's usable. This
+        component is for composing with a BLANK layout, or when you need a
+        2-line title to land exactly where you intend.
 
-        `max_words` を超えると警告を出す（15 語・2 行が上限という作法）。
-        日本語は語で数えられないので、全角 40 字を 1 行の目安として数える。
+        Warns when `max_words` is exceeded (the convention caps titles at 15
+        words / 2 lines). Japanese can't be counted in words, so full-width
+        characters are counted at 40 per line as a rule of thumb.
         """
         if not text or not text.strip():
             raise ValueError(t("governing_message: text is empty"))
         c = color or self.P.primary
-        # 行数の見積もり。全角 1・半角 0.5 で数え、1 行の収容字数で割る
+        # Estimate the line count: count full-width chars as 1, half-width as 0.5, and divide by the per-line capacity
         width = sum(1.0 if ord(ch) > 0x2E80 else 0.5 for ch in text)
         per_line = max(1.0, (w - 0.3) * 72 / size)
         lines = max(1, int(width / per_line + 0.999))
@@ -163,13 +174,14 @@ class PageMixin:
                    valign="MIDDLE", line_spacing=105)
         return y + h
 
-    # ---- 2. リードイン（導入文） ----
+    # ---- 2. Lead-in ----
 
     def lead_in(self, x, y, w, text, *, size=10.5, rule=True) -> float:
-        """タイトル直下の 1〜2 行。「この図を何のために見るか」を書く。戻り値は下端 y。
+        """1-2 lines right below the title, stating why to look at this figure. Returns the bottom y.
 
-        配布・提出資料では読者が独りで読むので、図の前に読み方を渡す。
-        登壇用デッキでは口頭で言えばよいので、通常は不要。
+        In handouts/submissions the reader goes through it alone, so hand
+        them the reading guidance before the figure. In a talk deck this can
+        usually be omitted since it can be said aloud.
         """
         if not text or not text.strip():
             raise ValueError(t("lead_in: text is empty"))
@@ -179,8 +191,8 @@ class PageMixin:
                        fill=self.P.border, stroke=None)
             top = y + 0.012 + 0.06
         width = sum(1.0 if ord(ch) > 0x2E80 else 0.5 for ch in text)
-        # audit_text_fit と同じ前提で見積もる: 左右パディング 0.1in ずつ、
-        # 行高は _LINE × line_spacing。ここをけちると検査に自分で引っかかる
+        # Estimate under the same assumptions as audit_text_fit: 0.1in padding on each side,
+        # line height = _LINE x line_spacing. Skimp here and you'll trip the check yourself
         per_line = max(1.0, (w - 0.2) * 72 / size)
         lines = max(1, int(width / per_line + 0.999))
         h = lines * size * self._LINE * 1.25 / 72 + 0.06
@@ -188,18 +200,20 @@ class PageMixin:
                    line_spacing=125)
         return top + h
 
-    # ---- 3. 示唆ボックス（So what / kicker） ----
+    # ---- 3. So-what box (kicker) ----
 
     def so_what(self, x, y, w, h, text, *, label="示唆", size=10.5,
                 accent=None, points=None) -> float:
-        """図から読み取れることを言葉で置く。戻り値は下端 y。
+        """Put into words what can be read from the figure. Returns the bottom y.
 
-        **使いすぎない。** 目安は全体の 2 割以下。次の 2 つは書いてはならない:
+        **Don't overuse it.** A rule of thumb is at most 20% of slides
+        overall. Never write either of these:
 
-        - タイトルの焼き直し（スライドの主張はタイトルの仕事）
-        - 図に無い新情報（根拠のない主張になる）
+        - A restatement of the title (the slide's claim is the title's job)
+        - New information that isn't in the figure (that becomes an unsupported claim)
 
-        左端のアクセントバーに合わせ、角は丸めない（スキル共通の規約）。
+        Aligned with the left accent bar; corners are not rounded (a shared
+        convention across this skill).
         """
         if not text or not text.strip():
             raise ValueError(t("so_what: text is empty"))
@@ -220,14 +234,15 @@ class PageMixin:
                    size=size, color=self.P.text, line_spacing=130)
         return y + h
 
-    # ---- 4. 出典・注記行 ----
+    # ---- 4. Source-note line ----
 
     def source_note(self, x, y, w, source, *, notes=None, size=7.5,
                     rule=True, prefix="出典") -> float:
-        """ページ下端の出典行と注記。戻り値は下端 y。
+        """The source-note line and footnotes at the bottom of the page. Returns the bottom y.
 
-        **数値を載せたスライドには必ず置く。** 出典を書けない数字は載せない。
-        `notes` は本文中の「※1」に対応する注記のリストで、出典より上に出る。
+        **Always place this on a slide that shows numbers.** Never show a
+        figure you can't source. `notes` is a list of footnotes corresponding
+        to a "*1" marker in the body text, shown above the source line.
         """
         if not source or not str(source).strip():
             raise ValueError(
@@ -244,14 +259,17 @@ class PageMixin:
                    color=self.P.muted, line_spacing=120)
         return top + h
 
-    # ---- 5. 図表枠（Exhibit） ----
+    # ---- 5. Exhibit frame ----
 
     def exhibit_frame(self, x, y, w, h, number, title, *, size=9.5,
                       pad=0.14, label_prefix="図表"):
-        """図表番号つきの枠を描き、**中身を描くための内側領域 (x, y, w, h) を返す**。
+        """Draw a numbered exhibit frame, and **return the inner area (x, y, w, h) for drawing its contents**.
 
-        この部品だけ戻り値が積み上げ規約と違う（枠の中に別の図を描くため）。
-        番号は本文や付録から参照するために振る。呼び出し側で通し番号を管理すること。
+        This is the one component whose return value differs from the
+        stacking convention (since another figure is drawn inside the
+        frame). The number is assigned so it can be referenced from the body
+        text or an appendix; the caller is responsible for managing the
+        sequential numbering.
         """
         if h <= 0.6 or w <= 1.0:
             raise ValueError(t("exhibit_frame: the frame is too small (w={w}, h={h})",
@@ -270,18 +288,19 @@ class PageMixin:
                    color=self.P.text, valign="MIDDLE")
         return (x + pad, y + head_h + 0.08, w - pad * 2, h - head_h - 0.08 - pad)
 
-    # ---- 6. ロジックツリー（MECE） ----
+    # ---- 6. Logic tree (MECE) ----
 
     def mece_tree(self, x, y, w, h, tree, *, size=10, gap=0.34,
                   root_fill=None, node_h=None) -> float:
-        """左から右へ広がるロジックツリー。戻り値は下端 y。
+        """A logic tree that expands from left to right. Returns the bottom y.
 
-        `orgchart`（patterns）が縦の体制図なのに対し、こちらは論点の分解を
-        横に展開する。分解が MECE か（漏れなく・重複なく）は描く側の責任で、
-        この部品は形しか保証しない。
+        Whereas `orgchart` (patterns) is a vertical org chart, this expands
+        the breakdown of an issue horizontally. Whether the breakdown is
+        MECE (no gaps, no overlaps) is the drawer's responsibility; this
+        component only guarantees the shape.
 
-        `tree` は `(ラベル, [子…])`。子は同じ形の入れ子・文字列・
-        `{"label": …, "children": […]}` のいずれでもよい。
+        `tree` is `(label, [children...])`. A child can be the same nested
+        shape, a plain string, or `{"label": ..., "children": [...]}`.
         """
         depth, leaves = _depth(tree), _leaves(tree)
         if depth > 4:
@@ -298,7 +317,7 @@ class PageMixin:
                                leaves=leaves, h=row_h))
 
         def draw(node, level: int, top: float) -> tuple[float, float]:
-            """(中心 y, 占有した高さ) を返す。"""
+            """Returns (center y, height occupied)."""
             label, children = _node(node)
             span = _leaves(node) * row_h
             cx = x + level * (col_w + gap)
@@ -314,7 +333,7 @@ class PageMixin:
             child_top = top
             for ch in children:
                 ccy, cspan = draw(ch, level + 1, child_top)
-                # 親の右辺 → 中間 → 子の左辺。折れ点は free（接しないのが正しい線）
+                # Parent's right edge -> midpoint -> child's left edge. Bend points are free (not touching is the correct line)
                 midx = cx + col_w + gap / 2
                 self.line(cx + col_w, cy, midx, cy, color=self.P.border, free=True)
                 self.line(midx, cy, midx, ccy, color=self.P.border, free=True)
@@ -326,23 +345,27 @@ class PageMixin:
         draw(tree, 0, y)
         return y + h
 
-    # ---- 7. ウォーターフォール ----
+    # ---- 7. Waterfall ----
 
     def waterfall(self, x, y, w, h, items, *, unit="", size=9.5,
                   bar_ratio=0.62, max_value=None, good="up") -> float:
-        """増減の橋渡し（ウォーターフォール）。戻り値は下端 y。
+        """A bridge of increases and decreases (waterfall). Returns the bottom y.
 
-        `items` は `(ラベル, 値)` か `(ラベル, 値, 種別)`。種別は
-        `"total"`（0 から積む合計）か `"delta"`（前の合計から浮かせる増減。既定）。
-        合計は primary。増減の色は `good` で決める:
+        `items` is `(label, value)` or `(label, value, kind)`. `kind` is
+        `"total"` (a sum stacked from 0) or `"delta"` (a change floating from
+        the previous total; the default). Totals are colored primary. The
+        color of a delta is decided by `good`:
 
-        - `good="up"`（既定）… 増加が success 緑（売上・利益の橋）
-        - `good="down"` … 減少が success 緑（コスト・リードタイム削減の橋）
+        - `good="up"` (default) -- an increase is success green (a
+          revenue/profit bridge)
+        - `good="down"` -- a decrease is success green (a cost/lead-time
+          reduction bridge)
 
-        符号だけで塗ると、コスト削減の文脈で「削減＝赤」になり意味が逆転する。
+        Coloring purely by sign would flip the meaning in a cost-reduction
+        context, where "a reduction" would end up red.
 
-        **最後の total は積算と一致していなければならない。** ずれていたら
-        `ValueError`（データの取り違えをここで止める）。
+        **The last total must match the running sum.** A mismatch raises
+        `ValueError` (catching a data mix-up right here).
         """
         if good not in ("up", "down"):
             raise ValueError(t("waterfall: good must be 'up' or 'down' (got {good!r})",
@@ -362,7 +385,7 @@ class PageMixin:
         if rows[0][2] != "total":
             raise ValueError(t("waterfall: the first item must be a total (the starting sum)"))
 
-        # 積算とバーの上下端を決める
+        # Determine the running sum and each bar's top/bottom edges
         cum, bars = 0.0, []
         for label, value, kind in rows:
             if kind == "total":
@@ -414,7 +437,7 @@ class PageMixin:
             self.label(cx - cell / 2, base_y + 0.04, cell, cat_h, label,
                        size=size - 0.5, align="CENTER", valign="TOP",
                        color=self.P.muted, line_spacing=105)
-            # 橋渡しの点線。前の棒の上端（または下端）と次をつなぐ
+            # Bridging dashed line. Connects the previous bar's top (or bottom) edge to the next one
             connect_y = base_y - (hi if value >= 0 or kind == "total" else lo) / top * plot_h
             if prev_right is not None:
                 self.line(prev_right[0], prev_right[1], bx, prev_right[1],
@@ -423,18 +446,21 @@ class PageMixin:
                           base_y - (hi if value >= 0 else lo) / top * plot_h)
         return y + h
 
-    # ---- 8. 評価マトリクス（ドット評価） ----
+    # ---- 8. Rating matrix (dot rating) ----
 
     def rating_matrix(self, x, y, w, columns, rows, *, levels=4, size=10,
                       label_w=None, row_h=0.42, dot=0.13) -> float:
-        """行 × 列の評価をドットの数で示す。戻り値は下端 y。
+        """Show a row x column rating as a number of dots. Returns the bottom y.
 
-        `rows` は `(ラベル, [値, …])` で、値は 0〜`levels` の整数。
-        列の数と値の数は一致していなければならない。
+        `rows` is `(label, [value, ...])`, where each value is an integer
+        from 0 to `levels`. The number of columns must match the number of
+        values.
 
-        Slides API には角度を指定できる扇形が無く、ハーヴェイボールの
-        「4 分の 1 だけ塗る」が描けないため、塗り分けたドットの数で表す。
-        **白黒印刷でも塗り／抜きが判別できる**ので、配布資料ではむしろ扱いやすい。
+        The Slides API has no pie-slice shape with an adjustable angle, so a
+        Harvey ball's "fill exactly a quarter" can't be drawn; this
+        represents it with a count of filled-in dots instead. **Filled vs.
+        outlined is distinguishable even in black-and-white printing**,
+        which actually makes this easier to handle in handout materials.
         """
         if not rows:
             raise ValueError(t("rating_matrix: rows is empty"))
@@ -478,15 +504,17 @@ class PageMixin:
                                stroke_weight=0.75)
         return top + len(rows) * row_h
 
-    # ---- 9. エグゼクティブサマリー（SCR） ----
+    # ---- 9. Executive summary (SCR) ----
 
     def exec_summary(self, x, y, w, h, situation, complication, resolution, *,
                      points=None, size=10.5, labels=("状況", "課題", "答え")) -> float:
-        """状況 → 課題 → 答え の 3 段で結論を先に置く。戻り値は下端 y。
+        """Lead with the conclusion in 3 tiers: Situation -> Complication -> Resolution. Returns the bottom y.
 
-        ピラミッド原則の入口。**この 1 枚だけ読めば意思決定できる**ことが条件で、
-        続く本編はここの根拠を並べたものになる。`points` は答えを支える論点
-        （3〜5 個。それ以上に分けるなら本編の章立てを見直す）。
+        The entry point to the Pyramid Principle. The condition is that
+        **this one slide alone must let the reader make a decision**; the
+        body that follows is just the supporting evidence for it. `points`
+        are the supporting points behind the answer (3-5; if you need more,
+        reconsider the body's chapter breakdown).
         """
         blocks = [(labels[0], situation), (labels[1], complication), (labels[2], resolution)]
         if points and len(points) > 5:
@@ -525,15 +553,16 @@ class PageMixin:
                            color=self.P.text, valign="MIDDLE")
         return y + h
 
-    # ---- 10. 横の論理（ストーリーライン） ----
+    # ---- 10. Horizontal logic (storyline) ----
 
     def storyline(self, x, y, w, titles, *, size=10, row_h=0.44,
                   highlight=None) -> float:
-        """アクションタイトルを順に並べ、読むと論旨になることを確かめる図。戻り値は下端 y。
+        """Lines up the action titles in order, to confirm that reading them forms the argument. Returns the bottom y.
 
-        `titles` は文字列か `(ページ番号, タイトル)`。左の縦罫で連結する。
-        **設計に使う図**でもある: ここで論旨が通らないなら、スライドを作る前に
-        構成を直す（ゴーストデッキ → この図 → 生成、の順）。
+        `titles` is a string or `(page number, title)`, connected by a
+        vertical rule on the left. **Also a design tool**: if the argument
+        doesn't hold together here, fix the structure before building the
+        slides (order: ghost deck -> this figure -> generation).
         """
         if not titles:
             raise ValueError(t("storyline: titles is empty"))
@@ -550,8 +579,9 @@ class PageMixin:
             self.shape(rail_x - 0.105, ry + row_h / 2 - 0.11, 0.23, 0.23,
                        kind="ELLIPSE", fill=c if on else self.P.white,
                        stroke=None if on else c, stroke_weight=1.0)
-            # 番号ラベルの枠は円より広めに取る。audit_text_fit は左右 0.1in の
-            # パディングを見込むため、円と同寸だと機械的に「溢れ」と判定される
+            # Make the number label's box wider than the circle. audit_text_fit
+            # assumes 0.1in of padding on each side, so at the circle's exact
+            # size it would mechanically be flagged as "overflow"
             self.label(rail_x - 0.2, ry + row_h / 2 - 0.11, 0.42, 0.23, str(num),
                        size=7, bold=True, align="CENTER", valign="MIDDLE",
                        color=self.P.white if on else c)
@@ -559,14 +589,15 @@ class PageMixin:
                        bold=on, valign="MIDDLE", color=self.P.text)
         return y + len(rows) * row_h
 
-    # ---- 11. ゴーストデッキ ----
+    # ---- 11. Ghost deck ----
 
     def ghost(self, x, y, w, h, slides, *, cols=4, size=8, gap=0.16) -> float:
-        """骨子だけのスライドを並べたゴーストデッキ。戻り値は下端 y。
+        """A ghost deck of skeleton-only slides laid out in a grid. Returns the bottom y.
 
-        `slides` は `(番号, アクションタイトル, 図表の説明, 状態)`。状態は
-        `confirmed` / `wip` / `missing`。**清書の前にここで論旨とデータの
-        当てを確かめる**ための図で、成果物ではなく設計の道具。
+        `slides` is `(number, action title, exhibit description, status)`.
+        Status is `confirmed` / `wip` / `missing`. This is a figure **for
+        confirming the argument and the data lineup before finalizing**; it
+        is a design tool, not a deliverable.
         """
         if not slides:
             raise ValueError(t("ghost: slides is empty"))

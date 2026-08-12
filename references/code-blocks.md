@@ -1,14 +1,16 @@
-# コードブロック（シンタックスハイライト付きコードサンプル）
+*[日本語](code-blocks.ja.md)*
+# Code Blocks (syntax-highlighted code samples)
 
-`Canvas.code_block()` で、等幅フォント + 濃色パネル + シンタックスハイライトの
-コードサンプルを描く。ハイライトは Slides API の `updateTextStyle`
-（`FIXED_RANGE`）による範囲着色で、生成後もユーザーがテキストとして編集できる。
+`Canvas.code_block()` draws a code sample using a monospace font, a dark panel,
+and syntax highlighting. Highlighting is applied via the Slides API's
+`updateTextStyle` (`FIXED_RANGE`) range-based coloring, so the generated text
+remains editable by the user afterward.
 
 ```python
 d.code_block(0.5, 1.0, 6.1, 2.9, code, lang="java")
 ```
 
-JSON 仕様（`figures`）からも使える:
+Also usable from a JSON spec (`figures`):
 
 ```json
 { "type": "code_block", "x": 0.5, "y": 1.0, "w": 6.1, "h": 2.9,
@@ -16,65 +18,71 @@ JSON 仕様（`figures`）からも使える:
   "lang": "java" }
 ```
 
-## 引数
+## Arguments
 
-| 引数 | 既定 | 意味 |
+| Argument | Default | Meaning |
 |---|---|---|
-| `code` | 必須 | コード文字列。BMP 外の文字（絵文字等）は入れない（範囲指定が UTF-16 単位のため） |
-| `lang` | `"java"` | `java` / `graphql` / `json` / `bash`。未知の言語は単色で描く |
-| `size` / `line_spacing` | 7.5 / 104 | 文字サイズ(pt)・行送り(%) |
-| `bg` / `fg` | `#1F2933` / `#E8ECF1` | パネルと基本文字の色 |
-| `font` | `"Roboto Mono"` | 等幅フォント |
+| `code` | required | The code string. Don't include characters outside the BMP (e.g. emoji), since range indexing is UTF-16-based |
+| `lang` | `"java"` | `java` / `graphql` / `json` / `bash`. Unknown languages are rendered in a single color |
+| `size` / `line_spacing` | 7.5 / 104 | Font size (pt) / line spacing (%) |
+| `bg` / `fg` | `#1F2933` / `#E8ECF1` | Panel and base text color |
+| `font` | `"Roboto Mono"` | Monospace font |
 
-## 守ること
+## Rules to follow
 
-- **角は直角（RECTANGLE）。角丸にしない。** ユーザー指摘で確定した規約
-  （アクセントバー付きカードの直角規約と同じ）。`code_block` は実装で直角を強制する
-- **高さは実効行高で見積もる。** Slides 上の 1 行は
-  `fontSize × lineSpacing × 約 1.45`（Noto Sans JP フォールバック分）。
-  目安: `h = 行数 × size × (ls/100) × 1.45 / 72 + 0.14in`。
-  過小だと文字が枠から上下にあふれる（valign=MIDDLE なので両側に出る）
-- 1 行は 60 桁程度まで。日本語コメントは短く（等幅でも日本語は約 2 桁分）
-- コードは一次資料（公式ドキュメント・リポジトリ）から取り、要約・省略した場合は
-  スピーカーノートに出典と省略内容を書く
+- **Corners are square (RECTANGLE). Never rounded.** Confirmed by user feedback
+  as a fixed convention (the same square-corner rule as accent-bar cards).
+  `code_block` enforces square corners in the implementation
+- **Estimate height from effective line height.** On Slides, one line's rendered
+  height is `fontSize × lineSpacing × ~1.45` (accounting for the Noto Sans JP
+  fallback). Rule of thumb: `h = lines × size × (ls/100) × 1.45 / 72 + 0.14in`.
+  Underestimating overflows text above and below the box (since valign=MIDDLE
+  overflows both sides)
+- Keep lines to around 60 columns. Keep Japanese comments short (even in
+  monospace, Japanese characters take up about 2 columns each)
+- Source code from primary sources (official docs, repositories). If summarized
+  or truncated, note the source and what was omitted in the speaker notes
 
-## 配色（VS Code Dark+ 風・濃色背景でコントラスト比 4.5:1 以上）
+## Color scheme (VS Code Dark+ style, ≥4.5:1 contrast on the dark background)
 
-| トークン | 色 | 例 |
+| Token | Color | Example |
 |---|---|---|
-| comment | `#7DBA7D` 緑 | `// 開始` `# ① 開始` |
-| string | `#E2A37E` 橙 | `"PAID"` `'sales'` |
-| keyword | `#6FB6EA` 青 | `public` `query` `SELECT` `true` |
-| type | `#56C9B4` 青緑 | `DistributedTransaction`（大文字始まり） |
-| func | `#DCDCAA` 黄 | `begin()` `newBuilder()`、bash は `$ ` 直後のコマンド名 |
-| anno | `#D19FD3` 紫 | `@Override` `@transaction` |
-| prop | `#9CDCFE` 水色 | GraphQL/JSON のプロパティ名、bash の `--flag` |
-| number | `#B5CEA8` 淡緑 | `1000` |
+| comment | `#7DBA7D` green | `// start` `# ① start` |
+| string | `#E2A37E` orange | `"PAID"` `'sales'` |
+| keyword | `#6FB6EA` blue | `public` `query` `SELECT` `true` |
+| type | `#56C9B4` teal | `DistributedTransaction` (capitalized) |
+| func | `#DCDCAA` yellow | `begin()` `newBuilder()`; in bash, the command name right after `$ ` |
+| anno | `#D19FD3` purple | `@Override` `@transaction` |
+| prop | `#9CDCFE` light blue | GraphQL/JSON property names, bash `--flag`s |
+| number | `#B5CEA8` pale green | `1000` |
 
-## 言語ごとの癖
+## Language-specific quirks
 
-- **java**: 大文字始まりの識別子は型として青緑。SQL を含む文字列は IDE と同様に
-  文字列色（橙）で塗り潰される
-- **bash**: **二重引用符の中身は素通し**にして、`CREATE` / `SELECT` などの
-  SQL キーワードを拾う（ScalarDL TableStore の `--statement "CREATE …"` のための設計）。
-  文字列として塗るのは単一引用符のみ
-- **graphql / json**: `key:` のようなプロパティ名は水色。JSON はキーと値を塗り分ける
+- **java**: capitalized identifiers are colored as types (teal). Strings
+  containing SQL are colored entirely as strings (orange), matching typical IDE
+  behavior
+- **bash**: **the contents of double quotes are left unstyled**, so SQL keywords
+  like `CREATE` / `SELECT` are still picked up (designed for ScalarDL TableStore's
+  `--statement "CREATE …"`). Only single-quoted text is colored as a string
+- **graphql / json**: property names like `key:` are colored light blue. JSON
+  colors keys and values separately
 
-## 言語の追加
+## Adding a language
 
-`diagrams.py` の `Canvas._CODE_RULES` に `(トークン名, 正規表現)` のリストを足す。
-**上にある規則が優先**なので、コメント・文字列を必ず先頭に置く（後続の規則が
-文字列の中身を誤って塗るのを防ぐ）。トークン名は `_CODE_STYLES` のキーに合わせる。
+Add a `(token name, regex)` list to `Canvas._CODE_RULES` in `diagrams.py`.
+**Rules listed earlier take priority**, so always place comment/string rules
+first (to prevent later rules from mis-coloring text inside a string). Token
+names must match the keys in `_CODE_STYLES`.
 
-## レイアウトの定石（コードサンプルスライド）
+## Layout convention (code-sample slides)
 
-「左 = コード / 右 = 解説 / 下 = ポイント帯」の 3 分割が収まりが良い。
-実例: `~/Documents/Slides/scalar-intro-2026/add_code_samples.py`
-（既存デッキへの挿入・ページ番号の振り直しまで含む）。
+A 3-way split of "left = code / right = explanation / bottom = key-point band"
+fits well. Example: `~/Documents/Slides/scalar-intro-2026/add_code_samples.py`
+(includes inserting into an existing deck and renumbering page numbers).
 
-既存デッキへ挿入する場合は、編集前に必ず
-`scripts/snapshot_version.py <URL>` で版を確保し（リビジョン ID の記録と
-PPTX バックアップ）、リビジョン ID をユーザーに報告してから実行する。
+When inserting into an existing deck, always secure a version snapshot first
+with `scripts/snapshot_version.py <URL>` (records the revision ID and takes a
+PPTX backup), and report the revision ID to the user before proceeding.
 
 ```python
 d.label(CX, y, CW, 0.2, "Java — CRUD インターフェース", size=8.5,

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""配色ユーティリティ。
+"""Color utilities.
 
-`diagrams` / `charts` / `illustrations` / `patterns` / `images` の 5 つが共有する。
-これらは互いを import する関係にあるため、共通の色計算をここに置いて循環を避けている。
+Shared by all five of `diagrams` / `charts` / `illustrations` / `patterns` /
+`images`. Since those modules import each other, the common color math lives
+here to avoid circular imports.
 
-後方互換のため `diagrams` からも同じ名前で re-export している
-（`from diagrams import lighten` は従来どおり動く）。
+For backward compatibility, the same names are also re-exported from
+`diagrams` (`from diagrams import lighten` continues to work as before).
 """
 from __future__ import annotations
 
@@ -15,14 +16,14 @@ def _clamp(v: float) -> int:
 
 
 def mix(hex_a: str, hex_b: str, t: float) -> str:
-    """hex_a と hex_b を t (0→a, 1→b) で混ぜる。"""
+    """Mix hex_a and hex_b by t (0→a, 1→b)."""
     a = [int(hex_a.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)]
     b = [int(hex_b.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)]
     return "#%02X%02X%02X" % tuple(_clamp(a[i] + (b[i] - a[i]) * t) for i in range(3))
 
 
 def lighten(hex_color: str, t: float) -> str:
-    """白へ寄せる。t=0 で元の色、t=1 で白。"""
+    """Blend toward white. t=0 gives the original color, t=1 gives white."""
     return mix(hex_color, "#FFFFFF", t)
 
 
@@ -44,12 +45,12 @@ def contrast_ratio(a: str, b: str) -> float:
 
 
 def readable_on(bg: str, dark: str = "#0F172A", light: str = "#FFFFFF") -> str:
-    """背景色に対してコントラストの高い方の文字色を返す。"""
+    """Return whichever text color has higher contrast against the background."""
     return dark if contrast_ratio(bg, dark) >= contrast_ratio(bg, light) else light
 
 
 class Palette:
-    """テンプレートの colorScheme から図解用の色を組み立てる。"""
+    """Build the diagram color set from the template's colorScheme."""
 
     def __init__(self, colors: dict):
         c = colors
@@ -65,19 +66,23 @@ class Palette:
         self.surfaceAlt = c.get("light2", "#F9FAFB")
         self.border = lighten(self.primary, 0.65)
         self.white = "#FFFFFF"
-        # スライドの地の色。文字の下に敷く板をこの色にすると、明るい
-        # テンプレートでも暗いテンプレートでも背景に馴染む
+        # Slide background color. Using this color for panels placed behind text
+        # blends naturally with both light and dark templates
         self.page = c.get("light1", "#FFFFFF")
 
     def series(self, n: int) -> list[str]:
-        """系列色を n 個返す。テーマ由来の色を順に使い、足りなければ明度で伸ばす。
+        """Return n series colors. Cycles through theme-derived colors in order,
+        extending with lightness variants once they run out.
 
-        並びは**固定**（グラフの系列は常にこの順で塗り、循環・並べ替えをしない）。
-        順序は色覚多様性の検証を通したもの: primary → info の青2連は隣どうしが
-        判別できず（ΔE 10.5 < 15）、warning の黄はほぼ白に沈むため、
-        青 → 緑 → 水色 → 赤 → 暗黄 の並びに置き、黄だけチャート用に暗くしている
-        （全隣接ペアで CVD ΔE ≥ 9.2 / 通常視 ΔE ≥ 27）。緑と暗黄は白背景との
-        コントラストが 3:1 を下回るので、グラフ側は必ず凡例と直接ラベルを添える。
+        The order is **fixed** (chart series are always painted in this order;
+        never cycled or reordered). This order passed color-vision-deficiency
+        validation: a back-to-back primary → info blue pair is indistinguishable
+        (ΔE 10.5 < 15), and warning's yellow nearly disappears against white, so
+        the sequence is blue → green → cyan → red → dark yellow, with yellow
+        darkened specifically for charts (every adjacent pair reaches CVD
+        ΔE ≥ 9.2 / normal vision ΔE ≥ 27). Green and dark yellow fall below a
+        3:1 contrast ratio against a white background, so charts using them
+        must always add a legend and direct labels.
         """
         chart_yellow = "#C7A500"
         base = [self.primary, self.success, self.info, self.danger, chart_yellow]

@@ -1,90 +1,97 @@
 ---
 description: >-
-  顧客ごとの活動計画を作る・追記する・照会する: 台帳の用意 → 材料の取り込み →
-  検証 → 未確認をアクションに変換 → 活動計画デッキを同じ URL で更新 →
-  次に確認すべきことの報告
-argument-hint: "<顧客名> [new | update | show] [議事録やメモのパス]"
+  Create, update, or query a per-customer activity plan: prepare the ledger →
+  ingest materials → validate → convert unconfirmed items into actions →
+  update the activity plan deck at the same URL → report what to confirm next
+argument-hint: "<customer name> [new | update | show] [path to meeting notes or memo]"
 ---
 
-# /account — 顧客の活動計画
+*[日本語](account.ja.md)*
 
-`$ARGUMENTS` を出発点に、`scalar-account-plan` スキルの流れを**途中で止めずに**
-実行する。作業ディレクトリは slide-forge ルート。
+# /account — Customer Activity Plan
 
-このコマンドは**社内資料**を扱う。台帳と活動計画デッキは顧客に渡さない。
+Starting from `$ARGUMENTS`, run the `scalar-account-plan` skill flow through
+**without stopping partway**. The working directory is the slide-forge root.
 
-## Step 0: モードを決める
+This command handles **internal materials**. The ledger and the activity plan
+deck are never handed to the customer.
 
-引数から判断する。判断がつかないときだけ `AskUserQuestion` で 1 回確認する。
+## Step 0: Decide the mode
 
-| 引数 | やること |
+Decide from the arguments. Only ask once via `AskUserQuestion` if it's unclear.
+
+| Argument | What to do |
 |---|---|
-| `new` / 台帳が無い | 台帳を作り、Drive 階層を用意し、初回のデッキを生成する |
-| `update`（既定）/ 議事録が付いている | 台帳に追記し、同じ URL のデッキを差し替える |
-| `show` | 台帳を読んで状況を答える。**書き込みも生成もしない** |
+| `new` / no ledger exists | Create the ledger, set up the Drive hierarchy, generate the first deck |
+| `update` (default) / meeting notes attached | Append to the ledger, replace the deck at the same URL |
+| `show` | Read the ledger and report the status. **No writes, no generation** |
 
-AE 名は `config/sales.json` の `defaultAe`、無ければユーザーに確認する。
+The AE name comes from `defaultAe` in `config/sales.json`; if absent, ask the user.
 
-## Step 1: 台帳を読む・作る
+## Step 1: Read or create the ledger
 
 ```bash
-ls accounts/*/<顧客名>/account.json
+ls accounts/*/<customer name>/account.json
 ```
 
-無ければ `scalar-account-plan` の手順 1 で作り、Drive 階層を用意する。
-**Drive ルートが未設定なら必ずユーザーに確認する**（勝手にマイドライブ直下に作らない）。
+If it doesn't exist, create it per step 1 of `scalar-account-plan` and set up
+the Drive hierarchy. **Always confirm with the user if the Drive root is not
+configured** (never create it under My Drive root on your own).
 
-`show` のときはここで読み、Step 6 の形式で答えて終わる。
+For `show`, read it here, answer using the Step 6 format, and stop.
 
-## Step 2: 材料を取り込む（聞く前に読む）
+## Step 2: Ingest materials (read before asking)
 
-引数で渡された議事録・メモ・メールを先に読む。読んだうえで、足りないものだけを
-`AskUserQuestion` で **1 回にまとめて**聞く。
+Read any meeting notes, memos, or emails passed as arguments first. After
+reading, ask about only the missing items, **in a single round**, via
+`AskUserQuestion`.
 
-台帳に書くときは `facts[].kind` を必ず付ける — `said`（顧客が言った）/
-`observed`（文書で確認した）/ `assumed`（こちらの推測）。**`assumed` は
-`confirmed` にできない。**
+When writing to the ledger, always attach `facts[].kind` — `said` (the
+customer said it) / `observed` (confirmed in a document) / `assumed` (our
+inference). **`assumed` can never become `confirmed`.**
 
-## Step 3: 検証する（省略禁止）
+## Step 3: Validate (do not skip)
 
 ```bash
-.venv/bin/python scripts/scalar/account_ledger.py validate accounts/<AE>/<顧客名>/account.json
+.venv/bin/python scripts/scalar/account_ledger.py validate accounts/<AE>/<customer name>/account.json
 ```
 
-矛盾が出たら**台帳を直す**。検証を緩めない。
+If contradictions surface, **fix the ledger**. Do not relax validation.
 
-## Step 4: 未確認をアクションに変える
+## Step 4: Turn unconfirmed items into actions
 
 ```bash
-.venv/bin/python scripts/scalar/account_ledger.py gaps accounts/<AE>/<顧客名>/account.json
+.venv/bin/python scripts/scalar/account_ledger.py gaps accounts/<AE>/<customer name>/account.json
 ```
 
-出た項目の**期限だけ**をユーザーに確認する（期限は AE の約束であって、こちらが
-決めるものではない）。答えを埋めない。
+For each item that comes up, confirm **only the deadline** with the user (the
+deadline is the AE's commitment, not something we decide). Don't fill in the
+answers yourself.
 
-## Step 5: デッキを作る / 差し替える
+## Step 5: Build / replace the deck
 
 ```bash
-# 検証（API を呼ばない）
+# Validate (no API calls)
 .venv/bin/python scripts/scalar/build_account_plan.py <account.json> --dry-run --strict
 ```
 
-- **初回**: `--folder <00_活動計画 の ID>` を付けて生成する
-- **2 回目以降**: 先に `scripts/snapshot_version.py "<デッキ URL>"` で版を確保してから
-  `--carry-over` 付きで実行する。デッキ URL は変わらない
+- **First time**: generate with `--folder <ID of 00_活動計画>` attached
+- **Subsequent times**: first secure a version with
+  `scripts/snapshot_version.py "<deck URL>"`, then run with `--carry-over`.
+  The deck URL does not change
 
 ```bash
 .venv/bin/python scripts/scalar/build_account_plan.py <account.json> --carry-over
 ```
 
-続けて `slide-qa` スキルで目視検査し、`scripts/cleanup_qa.py` で後片付けする。
-台帳と `action-plan.md` を `00_活動計画` にアップロードする。
+Then perform a visual inspection with the `slide-qa` skill and clean up with
+`scripts/cleanup_qa.py`. Upload the ledger and `action-plan.md` to `00_活動計画`.
 
-## Step 6: 報告
+## Step 6: Report
 
-1. **次に確認すべきこと**（誰に・いつまでに・何が取れたら完了か）— これが主役
-2. ステージ・フォーキャストと、その根拠。前回から変わった点
-3. 活動計画デッキの URL と Drive フォルダの URL
-4. 材料不足で落としたページと、足りない情報
-5. 仕上げの確認: 確定する / 期限を直す / ページ構成を変える / 訪問資料も作る
-   （`/visit`）
+1. **What to confirm next** (who, by when, what condition marks it done) — this is the main point
+2. The stage/forecast and its basis. What changed since last time
+3. The activity plan deck URL and the Drive folder URL
+4. Pages dropped due to insufficient material, and what information is missing
+5. Final check: finalize / fix a deadline / change the page structure / also
+   produce visit materials (`/visit`)

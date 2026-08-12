@@ -1,63 +1,66 @@
-# 実例: ScalarDB / ScalarDL 製品機能解説
+*[日本語](README.ja.md)*
 
-55 枚（うち図解 46 枚）のデッキ。1 機能 1 ページで公開ドキュメントの機能を網羅する構成の見本。
+# Example: ScalarDB / ScalarDL Product Feature Walkthrough
+
+A 55-slide deck (46 of which are diagrams). A reference example of a structure that covers the features documented in the public docs, one feature per page.
 
 ```bash
-# 座標検査（API を呼ばない）
+# Coordinate inspection (does not call the API)
 python ../../scripts/validate_layout.py deck.py
 
-# 構成の一覧
+# List the composition
 python ../../scripts/render_deck.py deck.py --dry-run
 
-# 生成
+# Generate
 python ../../scripts/render_deck.py deck.py
 
-# 自社マスターで生成する場合
+# Generating with your own company master
 SLIDE_FORGE_TEMPLATE=../../templates/my-brand.json \
     python ../../scripts/render_deck.py deck.py
 ```
 
-## 構成
+## Composition
 
-| セクション | 枚数 | 内容 |
+| Section | Slides | Content |
 |---|---|---|
-| 1. 全体像 | 3 | 課題、3 層アーキテクチャ、エディション機能マトリクス |
-| 2. Core | 12 | トランザクションプロトコル、分離レベル、リカバリ、最適化、データモデル、API |
-| 3. Cluster | 14 | クラスタリング、各種インターフェース、認証認可、暗号化、レプリケーション、AI 連携 |
-| 4. Analytics | 4 | アーキテクチャ、データカタログ、クエリ実行、認可 |
-| 5. 運用 | 5 | データ移行、バックアップ、監視、K8s デプロイ、性能評価 |
-| 6. ScalarDL | 6 | 改ざん検知、ハッシュチェーン、署名、相互検証、HashStore、TableStore |
-| 7. まとめ | 2 | 使い分け、進め方 |
+| 1. Overview | 3 | Problem statement, 3-layer architecture, edition feature matrix |
+| 2. Core | 12 | Transaction protocol, isolation levels, recovery, optimization, data model, API |
+| 3. Cluster | 14 | Clustering, various interfaces, authentication/authorization, encryption, replication, AI integration |
+| 4. Analytics | 4 | Architecture, data catalog, query execution, authorization |
+| 5. Operations | 5 | Data migration, backup, monitoring, K8s deployment, performance evaluation |
+| 6. ScalarDL | 6 | Tamper detection, hash chain, signatures, mutual verification, HashStore, TableStore |
+| 7. Summary | 2 | How to choose between them, how to proceed |
 
-## 読みどころ
+## Highlights
 
-デッキモジュールの書き方の参考として、次のスライドを見るとよい。
+As a reference for how to write deck modules, the following slides are worth reviewing.
 
-| 関数 | 図のパターン |
+| Function | Diagram pattern |
 |---|---|
-| `s_problem` | Before/After の 2 パネル対比（`zone` ×2 ＋ 中央の太矢印 ＋ 丸バツ／丸チェック） |
-| `s_arch3` | レイヤー図を手描きで構成（層ごとに濃度を変える） |
-| `s_editions` | `grid` の `cell_colors` で ●／○／− を色分け |
-| `s_cc_phases` | スイムレーン。レーンをまたぐ矢印を実座標で結ぶ |
-| `s_recovery` | 条件分岐（`DIAMOND` ＋ Yes/No ＋ 2 つの帰結） |
-| `s_optim` | Before/After の帯 ＋ `Canvas.cards` ＋ 回数の可視化 |
-| `s_adapters` | 中核から 3 グループへ放射する構成図 |
-| `s_exceptions` | 3 分類への分岐（分類ごとに色を割り当てる） |
-| `s_oidc` | シーケンス（レーン ＋ 番号付き矢印）＋ 4 段の検証フロー |
-| `s_replication` | 3 サイト構成図（`db` の円柱 ＋ サイト間のデータフロー） |
-| `s_vector` | パイプラインの一部だけを自社領域として強調 |
-| `s_backup` | タイムライン（マーカー ＋ 期間の帯 ＋ 復旧ポイント） |
-| `s_catalog` | 階層ツリー（インデント ＋ かぎ線） |
-| `s_asset` | ハッシュチェーン（改ざん箇所に丸バツ） |
-| `s_next` | 2 列のステップ ＋ 列間の余白を通るエルボー接続 |
+| `s_problem` | Before/After two-panel comparison (two `zone`s + a bold center arrow + circle/cross marks) |
+| `s_arch3` | Hand-drawn layered diagram (varying shade per layer) |
+| `s_editions` | Color-coding ●/○/− using `grid`'s `cell_colors` |
+| `s_cc_phases` | Swimlanes, with cross-lane arrows connected via real coordinates |
+| `s_recovery` | Conditional branching (`DIAMOND` + Yes/No + two outcomes) |
+| `s_optim` | Before/After bands + `Canvas.cards` + visualization of counts |
+| `s_adapters` | A configuration diagram radiating from a core to 3 groups |
+| `s_exceptions` | Branching into 3 categories (each category assigned a color) |
+| `s_oidc` | Sequence (lanes + numbered arrows) + a 4-stage verification flow |
+| `s_replication` | 3-site configuration diagram (`db` cylinders + inter-site data flow) |
+| `s_vector` | Highlighting only part of a pipeline as your own company's domain |
+| `s_backup` | Timeline (markers + duration bands + recovery points) |
+| `s_catalog` | Hierarchical tree (indentation + elbow connectors) |
+| `s_asset` | Hash chain (cross marks at the tampered location) |
+| `s_next` | Two columns of steps + an elbow connection through the gap between columns |
 
-## 注意
+## Notes
 
-- **性能数値は載せていない。** 公開ドキュメントに実測値が無いため、ベンチマークのページは
-  「測定時に変えるべき変数」を図示し、自環境での実測を促す構成にしている。
-  出典のない数値をグラフにしないこと。
-- 内容は ScalarDB 3.18 / ScalarDL 3.13 時点の公開ドキュメントに基づく。
-  機能の提供状況（GA / Private Preview）とエディションは版ごとに変わるため、
-  流用する場合は対象バージョンで確認すること。
-- 表紙は TITLE ＋ SUBTITLE だけで構成している。BODY プレースホルダを持つ表紙レイアウトは
-  限られるため、可搬性のためにこうしている。
+- **No performance numbers are included.** Since the public documentation has no measured
+  values, the benchmark pages are structured to illustrate "the variables you should change
+  when measuring," encouraging readers to measure in their own environment.
+  Do not chart numbers that lack a source.
+- The content is based on the public documentation as of ScalarDB 3.18 / ScalarDL 3.13.
+  Feature availability (GA / Private Preview) and editions change with each release,
+  so if you reuse this content, verify it against the target version.
+- The cover slide is composed of only TITLE and SUBTITLE. Cover layouts with a BODY
+  placeholder are limited, so this approach is used for portability.

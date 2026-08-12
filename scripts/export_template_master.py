@@ -28,7 +28,8 @@ from pathlib import Path
 
 from googleapiclient.http import MediaIoBaseDownload
 
-# マスターは 6〜8MB あり、既定のソケットタイムアウトでは読み切れずに落ちる
+# Masters run 6-8MB, and the default socket timeout isn't enough to read them
+# fully, so it fails
 socket.setdefaulttimeout(300)
 
 from _auth import get_credentials, services

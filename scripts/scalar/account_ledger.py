@@ -1,25 +1,26 @@
 #!/usr/bin/env python3
-"""顧客ごとの営業活動台帳（account.json）の読み書き・検証・派生。
+"""Read, write, validate, and derive from the per-customer sales activity ledger (account.json).
 
-台帳は **資料生成のための作業台帳**であり、CRM を置き換えるものではない
-（references/scalar/sales-playbook.md §8）。ステージ・金額・予定日の正本は CRM。
+The ledger is a **working ledger for generating materials**, not a CRM replacement
+(references/scalar/sales-playbook.md §8). The CRM remains the source of truth for
+stage, amount, and expected close date.
 
-    accounts/<AE 名>/<顧客名>/account.json
+    accounts/<AE name>/<customer name>/account.json
 
-このモジュールが持つのは 4 つの責務だけ:
+This module has exactly 4 responsibilities:
 
-1. スキーマの検証 — 「確認済みなのに証拠が無い」のような矛盾を弾く
-2. `gaps()` — プレイブック §7 の 10 問に答えられない箇所を洗い出す
-3. `to_slot_data()` — 各スライドテンプレートの入力 JSON を台帳から作る
-4. `action_markdown()` — CRM の Next Action に貼れる形で書き出す
+1. Schema validation — reject contradictions such as "marked confirmed but no evidence"
+2. `gaps()` — surface where the 10 questions from playbook §7 can't be answered
+3. `to_slot_data()` — build the input JSON for each slide template from the ledger
+4. `action_markdown()` — write out in a form that can be pasted into the CRM's Next Action
 
-**答えを埋めない。** 未確認は未確認のまま `actions` に送るのがこの台帳の仕事で、
-推測を confirmed に格上げすることではない。
+**Don't fill in the answers.** This ledger's job is to send unconfirmed items to
+`actions` as unconfirmed, not to upgrade guesses to confirmed.
 
-    検証:   .venv/bin/python scripts/scalar/account_ledger.py validate <account.json>
-    未確認: .venv/bin/python scripts/scalar/account_ledger.py gaps <account.json>
-    行動:   .venv/bin/python scripts/scalar/account_ledger.py actions <account.json> --markdown
-    雛形:   .venv/bin/python scripts/scalar/account_ledger.py init --ae "<AE 名>" --customer "<顧客名>"
+    Validate:  .venv/bin/python scripts/scalar/account_ledger.py validate <account.json>
+    Gaps:      .venv/bin/python scripts/scalar/account_ledger.py gaps <account.json>
+    Actions:   .venv/bin/python scripts/scalar/account_ledger.py actions <account.json> --markdown
+    Scaffold:  .venv/bin/python scripts/scalar/account_ledger.py init --ae "<AE name>" --customer "<customer name>"
 """
 from __future__ import annotations
 
@@ -39,12 +40,13 @@ SCHEMA_VERSION = 1
 
 
 class LedgerError(ValueError):
-    """台帳が壊れている（読めない・スキーマ違反）。"""
+    """The ledger is broken (unreadable, or violates the schema)."""
 
 
-# --------------------------------------------------------------------- 語彙
-# すべて references/scalar/sales-playbook.md に対応する。ここを増やすときは
-# プレイブックも直すこと（片方だけ増やすと資料と判断がずれる）。
+# --------------------------------------------------------------------- Vocabulary
+# All of this corresponds to references/scalar/sales-playbook.md. When extending
+# this, update the playbook too (updating only one side causes materials and
+# judgment to drift apart).
 
 STAGES: dict[int, str] = {
     0: "Territory / Account Planning",
@@ -56,7 +58,7 @@ STAGES: dict[int, str] = {
     6: "Delivery / Renewal / Expansion",
 }
 
-# ステージ -> [(ゲート ID, 移行条件)]。プレイブック §2 の表と 1 対 1。
+# Stage -> [(gate ID, transition criterion)]. 1-to-1 with the table in playbook §2.
 GATES: dict[int, list[tuple[str, str]]] = {
     0: [
         ("g0.icp-fit", "対象アカウントが ICP に適合している"),
@@ -107,7 +109,7 @@ GATES: dict[int, list[tuple[str, str]]] = {
 ALL_GATE_IDS = {gid for items in GATES.values() for gid, _ in items}
 GATE_LABEL = {gid: label for items in GATES.values() for gid, label in items}
 
-# 表の 1 列に収まる短い呼び名。移行条件の全文は GATE_LABEL 側にある。
+# Short names that fit in one table column. The full transition-criterion text lives in GATE_LABEL.
 GATE_SHORT: dict[str, str] = {
     "g0.icp-fit": "ICP 適合",
     "g0.hypothesis-defined": "仮説の定義",
@@ -146,8 +148,9 @@ FACT_KINDS = ("said", "observed", "assumed")
 GATE_STATUS = ("met", "partial", "unmet")
 DISCOVERY_STATUS = ("confirmed", "wip", "missing")
 BANT_LEVELS = ("ok", "risk", "unknown")
-# proposed = 未確認から自動で起こした候補。期限を入れるまで open にしない
-# （期限は AE が顧客に対してする約束なので、こちらが決めない）
+# proposed = a candidate automatically raised from an unconfirmed item. Don't make
+# it open until a due date is set (the due date is a promise the AE makes to the
+# customer, so we don't decide it here)
 ACTION_STATUS = ("proposed", "open", "done", "dropped")
 LIVE_ACTIONS = ("proposed", "open")
 BUYING_ROLES = ("決裁", "推進", "門番", "利用", "評価", "反対")
@@ -159,7 +162,7 @@ BANT_KEYS: tuple[tuple[str, str], ...] = (
     ("timeframe", "Timeframe 時期"),
 )
 
-# MEDDPICC + 「なぜ今か」。discovery-map の並び順もこの順。
+# MEDDPICC plus "why now". The discovery-map ordering also follows this order.
 DISCOVERY_KEYS: tuple[tuple[str, str], ...] = (
     ("identifiedPain", "課題 I"),
     ("metrics", "指標 M"),
@@ -173,7 +176,7 @@ DISCOVERY_KEYS: tuple[tuple[str, str], ...] = (
 )
 DISCOVERY_LABEL = dict(DISCOVERY_KEYS)
 
-# プレイブック §7 の 10 問。(番号, 問い, 判定関数名, 確認相手の目安)
+# The 10 questions from playbook §7. (number, question, judgment function name, who to confirm with)
 CHECKPOINTS: tuple[tuple[int, str, str, str], ...] = (
     (1, "顧客が達成したい事業成果は何か", "metrics", "課題所有部門の責任者"),
     (2, "なぜ今、意思決定する必要があるのか", "compellingEvent", "Champion"),
@@ -191,18 +194,18 @@ _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 def _is_date(value: Any) -> bool:
-    """YYYY-MM-DD の文字列か。文字列以外を _DATE_RE.match に渡して落ちないための入口。"""
+    """Whether the value is a YYYY-MM-DD string. Guards _DATE_RE.match from crashing on non-strings."""
     return isinstance(value, str) and bool(_DATE_RE.match(value))
 
 
-# ----------------------------------------------------------------- 入出力
+# ----------------------------------------------------------------- I/O
 
 def today() -> str:
     return _dt.date.today().isoformat()
 
 
 def ledger_path(ae: str, customer: str, *, root: Path | None = None) -> Path:
-    """accounts/<AE 名>/<顧客名>/account.json。名前はそのまま使う（正規化しない）。"""
+    """accounts/<AE name>/<customer name>/account.json. Names are used as-is (not normalized)."""
     base = root or ACCOUNTS_DIR
     return base / ae / customer / "account.json"
 
@@ -221,7 +224,7 @@ def load(path: str | os.PathLike) -> dict:
 
 
 def save(ledger: dict, path: str | os.PathLike) -> Path:
-    """`updatedAt` を今日に更新して原子的に書き出す。"""
+    """Update `updatedAt` to today and write out atomically."""
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     ledger.setdefault("schemaVersion", SCHEMA_VERSION)
@@ -234,7 +237,7 @@ def save(ledger: dict, path: str | os.PathLike) -> Path:
 
 
 def blank(ae: str, customer: str, *, opportunity: str = "") -> dict:
-    """最小構成の台帳。空欄は空欄のまま残す（推測で埋めない）。"""
+    """A minimal-configuration ledger. Leaves blanks as blanks (does not fill in guesses)."""
     return {
         "schemaVersion": SCHEMA_VERSION,
         "meta": {
@@ -265,14 +268,14 @@ def blank(ae: str, customer: str, *, opportunity: str = "") -> dict:
     }
 
 
-# ------------------------------------------------------------------- 検証
+# ------------------------------------------------------------------- Validation
 
 def _problem(out: list[str], where: str, message: str) -> None:
     out.append(f"{where}: {message}")
 
 
 def validate(ledger: dict) -> list[str]:
-    """スキーマと内部矛盾を検査する。空欄は問題ではない（未確認は正常な状態）。"""
+    """Check the schema and internal contradictions. Blanks are not problems (unconfirmed is a normal state)."""
     out: list[str] = []
     if ledger.get("schemaVersion") != SCHEMA_VERSION:
         _problem(out, "schemaVersion", f"{SCHEMA_VERSION} である必要があります")
@@ -285,7 +288,7 @@ def validate(ledger: dict) -> list[str]:
         if not isinstance(meta.get(key), str) or not meta[key].strip():
             _problem(out, f"meta.{key}", "必須です")
     stage = meta.get("stage")
-    # bool は int のサブクラスなので `True in STAGES` が通ってしまう（True == 1）。明示的に弾く
+    # bool is a subclass of int, so `True in STAGES` would pass (True == 1). Reject it explicitly
     if isinstance(stage, bool) or stage not in STAGES:
         _problem(out, "meta.stage", f"0〜6 である必要があります（現在: {stage!r}）")
     forecast = meta.get("forecast")
@@ -322,7 +325,7 @@ def validate(ledger: dict) -> list[str]:
                 _problem(out, where, f"{axis} は 0〜1 の数値")
             elif not 0.0 <= float(value) <= 1.0:
                 _problem(out, where, f"{axis} は 0〜1 の範囲")
-        # 会っていない相手を「中立」として地図に置かない（プレイブックの原則）
+        # Don't place someone who hasn't been met on the map as "neutral" (playbook principle)
         if not str(person.get("met", "")).strip() and person.get("stance") not in (None,):
             if not str(person.get("evidence", "")).strip():
                 _problem(out, where,
@@ -368,8 +371,8 @@ def validate(ledger: dict) -> list[str]:
         if item.get("status") == "met" and not str(item.get("evidence", "")).strip():
             _problem(out, where, "met には顧客側の証拠が必須です（社内の合意は証拠になりません）")
 
-    # risks / partners は export_ledger_md.render() が dict 前提で表にする。
-    # ここを通しておかないと「validate OK なのに書き出しで落ちる」台帳ができる
+    # risks / partners are tabulated by export_ledger_md.render() assuming dicts.
+    # Without checking this here, a ledger could pass validate but crash on export
     risks = ledger.get("risks")
     if risks is not None and not isinstance(risks, list):
         _problem(out, "risks", "配列である必要があります")
@@ -426,7 +429,7 @@ def validate(ledger: dict) -> list[str]:
         if visit.get("status") not in ("planned", "done"):
             _problem(out, where, "status は planned / done のいずれか")
 
-    # フォーキャストの整合。根拠を書けない Commit は Best に落とす（§5）
+    # Forecast consistency. A Commit without documented grounds is demoted to Best (§5)
     if forecast == "Commit":
         weak = [label for key, label in BANT_KEYS
                 if (bant.get(key) or {}).get("level") != "ok"]
@@ -441,7 +444,7 @@ def _as_list(value: Any) -> list:
     return value if isinstance(value, list) else []
 
 
-# ------------------------------------------------------------------- 未確認
+# ------------------------------------------------------------------- Unconfirmed items
 
 def _discovery_status(ledger: dict, key: str) -> str:
     item = (ledger.get("discovery") or {}).get(key) or {}
@@ -450,7 +453,7 @@ def _discovery_status(ledger: dict, key: str) -> str:
 
 
 def _current_gates(ledger: dict) -> list[tuple[str, str, dict]]:
-    """現ステージのゲートを (ID, 条件, 記録) で返す。記録が無ければ空の dict。"""
+    """Return the current stage's gates as (ID, criterion, record). Empty dict if no record."""
     stage = (ledger.get("meta") or {}).get("stage")
     stage = stage if stage in GATES else 1
     recorded = ledger.get("gates") or {}
@@ -458,10 +461,10 @@ def _current_gates(ledger: dict) -> list[tuple[str, str, dict]]:
 
 
 def gaps(ledger: dict) -> list[dict]:
-    """プレイブック §7 の 10 問のうち、答えられない箇所を返す。
+    """Return where the 10 questions from playbook §7 can't be answered.
 
-    返すのは**行動の候補**であり、期限は入っていない。期限を決めるのは AE の仕事で、
-    `carry_over()` で `actions` に取り込むときに付ける。
+    What's returned are **candidate actions**, without a due date. Setting the due
+    date is the AE's job, done when `carry_over()` pulls them into `actions`.
     """
     out: list[dict] = []
     meta = ledger.get("meta") or {}
@@ -541,10 +544,12 @@ def gaps(ledger: dict) -> list[dict]:
 
 
 def carry_over(ledger: dict, *, default_due: str = "") -> dict:
-    """未完了アクションを残し、`gaps()` の新しい候補を取り込む。
+    """Keep incomplete actions and pull in new candidates from `gaps()`.
 
-    - 既に同じ `what` の行があれば触らない（AE が付けた期限を上書きしない）
-    - 取り込む行の `due` は空のまま。期限は AE が決める（`default_due` で一括指定可）
+    - Leaves rows alone if one with the same `what` already exists (never overwrites
+      a due date the AE has already set)
+    - Newly pulled-in rows keep `due` blank. The AE decides the due date (can be set
+      in bulk via `default_due`)
     """
     actions = _as_list(ledger.get("actions"))
     known = {str(a.get("what", "")).strip() for a in actions if isinstance(a, dict)}
@@ -571,17 +576,17 @@ def carry_over(ledger: dict, *, default_due: str = "") -> dict:
 
 
 def overdue(ledger: dict, *, on: str | None = None) -> list[dict]:
-    """期限切れの未完了アクション。"""
+    """Overdue, incomplete actions."""
     day = on or today()
     return [a for a in _as_list(ledger.get("actions"))
             if isinstance(a, dict) and a.get("status") == "open"
             and _is_date(a.get("due")) and a["due"] < day]
 
 
-# ------------------------------------------------------------- スロット生成
+# ------------------------------------------------------------- Slot generation
 
 def _fit(text: Any, limit: int) -> str:
-    """テンプレートの maxLength に収める。切り詰めたことが分かるよう … を残す。"""
+    """Fit within the template's maxLength. Leaves a … so truncation is visible."""
     s = "" if text is None else str(text).replace("\n", " ").strip()
     if len(s) <= limit:
         return s
@@ -602,7 +607,7 @@ def _stage_label(ledger: dict) -> str:
 
 
 def _short(person: dict, limit: int = 6) -> str:
-    """influence-map のラベルは 6 文字まで。`short` があればそれを使う。"""
+    """influence-map labels are limited to 6 characters. Uses `short` if present."""
     return _fit(person.get("short") or person.get("name", ""), limit)
 
 
@@ -687,7 +692,7 @@ def _page_bant_risk(ledger: dict) -> dict | None:
     if weak:
         insight = f"{'・'.join(l.split()[0] for l in weak)} が未確定。"
         forecast = (ledger.get("meta") or {}).get("forecast")
-        # forecast 未設定の台帳で「None 以上には上げない」と出さない
+        # Don't emit "won't go above None" for a ledger where forecast isn't set
         if forecast:
             insight += f"{forecast} 以上には上げない。"
     else:
@@ -703,7 +708,7 @@ def _page_bant_risk(ledger: dict) -> dict | None:
 def _bant_title(weak: list[str]) -> str:
     if not weak:
         return "BANT は 4 項目とも確定済み。残るリスクは提供側にある"
-    # 4 項目すべてを並べると見出しが 2 行に折り返して 1 文字だけ残る
+    # Listing all 4 items wraps the headline to 2 lines with just 1 character left over
     if len(weak) == len(BANT_KEYS):
         return "BANT は 4 項目とも未確定。ここが商談を止める"
     names = "・".join(l.split()[0] for l in weak)
@@ -780,7 +785,8 @@ def _timeline_title(visits: list[dict], ledger: dict) -> str:
         days = 0
     if days > 30:
         return f"最終接触から {days} 日空いている。接点を作り直すところから始める"
-    # 接触量を成果と読み替えない。現ステージの条件が未達なら、そう言う（§1 原則 5）
+    # Don't reinterpret contact volume as an outcome. If the current stage's criteria
+    # aren't met, say so (§1 principle 5)
     unmet = sum(1 for _, _, item in _current_gates(ledger) if item.get("status") != "met")
     if unmet:
         return f"{len(visits)} 回接触したが、現ステージの条件は {unmet} 件が未達のまま"
@@ -801,7 +807,7 @@ def _page_discovery_map(ledger: dict) -> dict | None:
         return None
     items = items[:8]
     missing = [i[1] for i in items if i[3] == "missing"]
-    # wip は「埋まった」ではない。証拠が付くまでは未確認として扱う（§1 原則 5）
+    # wip does not mean "filled in". Treat it as unconfirmed until evidence is attached (§1 principle 5)
     unconfirmed = [i[1] for i in items if i[3] != "confirmed"]
     if missing:
         insight = f"{'・'.join(missing[:3])} が空白のまま。ここが埋まるまで提案書は書かない。"
@@ -930,7 +936,7 @@ def _page_visit_plan(ledger: dict) -> dict | None:
                if isinstance(v, dict) and v.get("status") == "planned"]
     if not planned:
         return None
-    # 日付が空だと空文字が sort で先頭に来て「次回訪問」を乗っ取る。日付ありを優先する
+    # If date is empty, the empty string sorts first and hijacks "next visit". Prefer entries with a date
     visit = sorted(planned, key=lambda v: (not _is_date(v.get("date")),
                                            str(v.get("date") or "")))[0]
     questions = [_fit(q, 44) for q in _as_list(visit.get("questions"))][:4]
@@ -990,9 +996,10 @@ PAGES: dict[str, Any] = {
 
 
 def to_slot_data(ledger: dict, page_id: str) -> dict | None:
-    """スライドテンプレート 1 枚分の入力を作る。材料が足りなければ None。
+    """Build the input for one slide template. Returns None if there isn't enough material.
 
-    None を返したページは**デッキから落とす**。空欄を埋めた薄いページを作らない。
+    A page that returns None is **dropped from the deck**. We don't build thin
+    pages with blanks filled in.
     """
     builder = PAGES.get(page_id)
     if builder is None:
@@ -1005,13 +1012,14 @@ def available_pages(ledger: dict) -> list[str]:
     return [pid for pid in PAGES if to_slot_data(ledger, pid) is not None]
 
 
-# ------------------------------------------------------------ Markdown 出力
+# ------------------------------------------------------------ Markdown output
 
 def md_cell(value: Any) -> str:
-    """Markdown 表のセルに入れて安全な形にする。
+    """Make a value safe to embed in a Markdown table cell.
 
-    `|` は列の区切り、改行は行の区切りとして解釈されるので、そのまま埋め込むと
-    表が崩れる。ここと export_ledger_md.py の両方がこのヘルパーを使う。
+    `|` is interpreted as a column separator and newlines as row separators, so
+    embedding them raw breaks the table. Both this module and export_ledger_md.py
+    use this helper.
     """
     s = "" if value is None else str(value)
     return (s.replace("|", "\\|")
@@ -1019,7 +1027,7 @@ def md_cell(value: Any) -> str:
 
 
 def action_markdown(ledger: dict) -> str:
-    """CRM の Next Action に貼れる形。期限順、期限切れには ⚠ を付ける。"""
+    """Format suitable for pasting into the CRM's Next Action. Sorted by due date, overdue items marked with ⚠."""
     meta = ledger.get("meta") or {}
     open_actions = [a for a in _as_list(ledger.get("actions"))
                     if isinstance(a, dict) and a.get("status") in LIVE_ACTIONS]
@@ -1062,10 +1070,10 @@ def action_markdown(ledger: dict) -> str:
 # -------------------------------------------------------------------- CLI
 
 def _ensure_valid(ledger: dict) -> bool:
-    """派生コマンド（gaps / actions / slots）の入口検査。
+    """Entry-point check for derived commands (gaps / actions / slots).
 
-    壊れた台帳を gaps() や to_slot_data() に渡すと途中でクラッシュするので、
-    validate コマンドと同じく問題を全件 stderr に出して止める。
+    Passing a broken ledger to gaps() or to_slot_data() would crash midway, so
+    just like the validate command, print every problem to stderr and stop.
     """
     problems = validate(ledger)
     for problem in problems:

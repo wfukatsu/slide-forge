@@ -1,52 +1,54 @@
-# ピクトグラムカタログ
+*[日本語](pictogram-catalog.ja.md)*
+# Pictogram Catalog
 
-> Google Slides API のシェイプ＋テキストで構築するピクトグラムパターン集。
-> 外部画像不要でスライド上にアイコン的要素を作成する。
+> A collection of pictogram patterns built from Google Slides API shapes + text.
+> Create icon-like elements on slides without needing external images.
 
-### 規約
+### Conventions
 
-本ドキュメントで使用する識別子:
+Identifiers used in this document:
 
-- **`C`** — `templates/<theme>/theme.json` の `colors` セクションから展開した色定数クラス
-- **`L`** — `templates/<theme>/theme.json` の `layouts` セクションから展開したレイアウト定数クラス
-- **`sb`** / **`self`** — `SlideBuilder` インスタンス（パターンは SlideBuilder のメソッドとして実装）
+- **`C`** — the color constant class expanded from the `colors` section of `templates/<theme>/theme.json`
+- **`L`** — the layout constant class expanded from the `layouts` section of `templates/<theme>/theme.json`
+- **`sb`** / **`self`** — a `SlideBuilder` instance (patterns are implemented as `SlideBuilder` methods)
 
 ---
 
-## 1. 概要
+## 1. Overview
 
-### 1.1 ピクトグラムとは
+### 1.1 What are pictograms?
 
-Google Slides API では画像アイコンの代わりに、シェイプ（141種）を組み合わせてアイコン的な視覚要素を構築できる。
+Instead of image icons, the Google Slides API lets you combine shapes (141 types) to build icon-like visual elements.
 
-利点:
+Benefits:
 
-- **外部画像不要** — Drive API アップロードが不要。batchUpdate のみで完結
-- **テーマカラーに自動適応** — `C.primary` 等のセマンティックカラーで色指定するため、テーマ切替時に自動更新
-- **サイズ変更でも劣化しない** — ベクターシェイプのため、拡大・縮小しても品質を維持
-- **グループ化して移動・回転可能** — `group_objects()` で一括操作
-- **テキスト埋め込み可能** — シェイプ内にテキストを配置して、ラベル付きアイコンを実現
+- **No external images required** — no Drive API upload needed; everything is done via `batchUpdate` alone
+- **Automatically adapts to theme colors** — colors are specified with semantic colors such as `C.primary`, so they update automatically on theme switch
+- **No quality loss when resized** — since these are vector shapes, quality is preserved when scaled up or down
+- **Can be grouped for combined move/rotate** — `group_objects()` lets you operate on them as one unit
+- **Text can be embedded** — placing text inside a shape lets you build labeled icons
 
-### 1.2 構築パターン
+### 1.2 Construction patterns
 
-3つの構築パターンがある:
+There are three construction patterns:
 
-| パターン | 説明 | 複雑度 | 例 |
+| Pattern | Description | Complexity | Examples |
 |----------|------|--------|-----|
-| **単一シェイプ** | 1つのシェイプだけで表現 | 低 | CLOUD, CAN, SHIELD |
-| **シェイプ＋テキスト** | シェイプ内にテキストを配置 | 中 | バッジ、ラベル付きアイコン |
-| **複合シェイプ** | 複数シェイプを組み合わせてグループ化 | 高 | サーバー、ロック、ユーザー |
+| **Single shape** | Expressed with just one shape | Low | CLOUD, CAN, SHIELD |
+| **Shape + text** | Text placed inside a shape | Medium | Badges, labeled icons |
+| **Composite shape** | Multiple shapes combined and grouped | High | Server, lock, user |
 
-**原則**: 可能な限り単一シェイプで表現する。3シェイプ以上の複合ピクトグラムは複雑になりすぎるため、外部画像の使用を検討すること。
+**Principle**: Express with a single shape whenever possible. Composite pictograms with 3 or more shapes become too complex, so consider using an external image instead.
 
-> **外部画像を使う場合の第一候補は `assets/shared/icons/` のアイコンライブラリ**（Scalar
-> ブランドの 62 種）。テーマ色に染めて貼れる。使い方は `references/icon-library.md`。
-> 「情報銀行」「証拠チェーン」「内定」のような業務語彙はシェイプでは描けないので、
-> 最初からそちらを使う。ただし Drive 経由の通信が発生する点だけ注意する。
+> **When using an external image, the first choice is the icon library under `assets/shared/icons/`**
+> (62 Scalar-branded icons). It can be tinted with theme colors and pasted in. See `references/icon-library.md`
+> for usage. Business vocabulary such as "information bank," "evidence chain," or "job offer" cannot be
+> drawn with shapes, so use the icon library from the start for those. Just be aware this involves
+> communication via Drive.
 
-### 1.3 共通ヘルパー
+### 1.3 Common helper
 
-全ピクトグラム関数に共通するシグネチャ:
+The signature shared by all pictogram functions:
 
 ```python
 def add_pictogram(self, slide_id, picto_type, x, y, size, color=None, label=None):
@@ -68,7 +70,7 @@ def add_pictogram(self, slide_id, picto_type, x, y, size, color=None, label=None
     return fn(self, slide_id, x, y, size, color=color, label=label)
 ```
 
-### 1.4 レジストリ
+### 1.4 Registry
 
 ```python
 PICTO_REGISTRY = {
@@ -126,19 +128,19 @@ PICTO_REGISTRY = {
 
 ---
 
-## 2. カテゴリ別ピクトグラム
+## 2. Pictograms by category
 
-### 2.1 データベース・ストレージ
+### 2.1 Database / storage
 
-| 名前 | shapeType | 用途 | 推奨サイズ | パターン |
+| Name | shapeType | Use | Recommended size | Pattern |
 |------|-----------|------|----------|---------|
-| `database` | `CAN` | データベース全般 | 0.5" | 単一 |
-| `storage` | `FLOW_CHART_MAGNETIC_DISK` | ストレージ・ディスク | 0.5" | 単一 |
-| `document` | `FLOW_CHART_DOCUMENT` | ドキュメント・ファイル | 0.5" | 単一 |
-| `multi_document` | `FLOW_CHART_MULTIDOCUMENT` | 複数ファイル | 0.6" | 単一 |
-| `cache` | `FLOW_CHART_INTERNAL_STORAGE` | キャッシュ・メモリ | 0.5" | 単一 |
+| `database` | `CAN` | Databases in general | 0.5" | Single |
+| `storage` | `FLOW_CHART_MAGNETIC_DISK` | Storage / disk | 0.5" | Single |
+| `document` | `FLOW_CHART_DOCUMENT` | Document / file | 0.5" | Single |
+| `multi_document` | `FLOW_CHART_MULTIDOCUMENT` | Multiple files | 0.6" | Single |
+| `cache` | `FLOW_CHART_INTERNAL_STORAGE` | Cache / memory | 0.5" | Single |
 
-#### database — データベース
+#### database — Database
 
 ```python
 def picto_database(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -155,7 +157,7 @@ def picto_database(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### storage — ストレージ
+#### storage — Storage
 
 ```python
 def picto_storage(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -171,7 +173,7 @@ def picto_storage(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### document — ドキュメント
+#### document — Document
 
 ```python
 def picto_document(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -189,7 +191,7 @@ def picto_document(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### multi_document — 複数ドキュメント
+#### multi_document — Multiple documents
 
 ```python
 def picto_multi_document(self, slide_id, x, y, size=0.6, color=None, label=None):
@@ -205,7 +207,7 @@ def picto_multi_document(self, slide_id, x, y, size=0.6, color=None, label=None)
     return shape_id
 ```
 
-#### cache — キャッシュ
+#### cache — Cache
 
 ```python
 def picto_cache(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -223,18 +225,18 @@ def picto_cache(self, slide_id, x, y, size=0.5, color=None, label=None):
 
 ---
 
-### 2.2 クラウド・ネットワーク
+### 2.2 Cloud / network
 
-| 名前 | shapeType | 用途 | 推奨サイズ | パターン |
+| Name | shapeType | Use | Recommended size | Pattern |
 |------|-----------|------|----------|---------|
-| `cloud` | `CLOUD` | クラウドサービス | 0.6" | 単一 |
-| `cloud_callout` | `CLOUD_CALLOUT` | クラウドアノテーション | 0.6" | 単一 |
-| `network` | `HEXAGON` | ネットワーク・ノード | 0.5" | シェイプ＋テキスト |
-| `server` | `RECTANGLE` + `RECTANGLE` | サーバー | 0.5" | 複合 |
-| `load_balancer` | `TRAPEZOID` | ロードバランサー | 0.6" | 単一 |
-| `firewall` | `RECTANGLE` + `LIGHTNING_BOLT` | ファイアウォール | 0.6" | 複合 |
+| `cloud` | `CLOUD` | Cloud services | 0.6" | Single |
+| `cloud_callout` | `CLOUD_CALLOUT` | Cloud annotation | 0.6" | Single |
+| `network` | `HEXAGON` | Network / node | 0.5" | Shape + text |
+| `server` | `RECTANGLE` + `RECTANGLE` | Server | 0.5" | Composite |
+| `load_balancer` | `TRAPEZOID` | Load balancer | 0.6" | Single |
+| `firewall` | `RECTANGLE` + `LIGHTNING_BOLT` | Firewall | 0.6" | Composite |
 
-#### cloud — クラウド
+#### cloud — Cloud
 
 ```python
 def picto_cloud(self, slide_id, x, y, size=0.6, color=None, label=None):
@@ -251,7 +253,7 @@ def picto_cloud(self, slide_id, x, y, size=0.6, color=None, label=None):
     return shape_id
 ```
 
-#### cloud_callout — クラウド吹出し
+#### cloud_callout — Cloud callout
 
 ```python
 def picto_cloud_callout(self, slide_id, x, y, size=0.6, color=None, label=None):
@@ -271,7 +273,7 @@ def picto_cloud_callout(self, slide_id, x, y, size=0.6, color=None, label=None):
     return shape_id
 ```
 
-#### network — ネットワークノード
+#### network — Network node
 
 ```python
 def picto_network(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -286,7 +288,7 @@ def picto_network(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### server — サーバー（複合）
+#### server — Server (composite)
 
 ```python
 def picto_server(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -324,7 +326,7 @@ def picto_server(self, slide_id, x, y, size=0.5, color=None, label=None):
     return group_id
 ```
 
-#### load_balancer — ロードバランサー
+#### load_balancer — Load balancer
 
 ```python
 def picto_load_balancer(self, slide_id, x, y, size=0.6, color=None, label=None):
@@ -341,7 +343,7 @@ def picto_load_balancer(self, slide_id, x, y, size=0.6, color=None, label=None):
     return shape_id
 ```
 
-#### firewall — ファイアウォール（複合）
+#### firewall — Firewall (composite)
 
 ```python
 def picto_firewall(self, slide_id, x, y, size=0.6, color=None, label=None):
@@ -372,18 +374,18 @@ def picto_firewall(self, slide_id, x, y, size=0.6, color=None, label=None):
 
 ---
 
-### 2.3 セキュリティ
+### 2.3 Security
 
-| 名前 | shapeType | 用途 | 推奨サイズ | パターン |
+| Name | shapeType | Use | Recommended size | Pattern |
 |------|-----------|------|----------|---------|
-| `shield` | `PENTAGON` | セキュリティ・保護 | 0.5" | 単一 |
-| `lock` | `ROUND_RECTANGLE` + `RECTANGLE` | 認証・暗号化 | 0.5" | 複合 |
-| `key` | `PLUS` + `RECTANGLE` | アクセスキー・認証情報 | 0.5" | 複合 |
-| `check_circle` | `ELLIPSE` + text "✓" | 検証済み・合格 | 0.4" | シェイプ＋テキスト |
-| `warning` | `TRIANGLE` + text "!" | 警告・注意 | 0.4" | シェイプ＋テキスト |
-| `ban` | `NO_SMOKING` | 禁止・非推奨 | 0.4" | 単一 |
+| `shield` | `PENTAGON` | Security / protection | 0.5" | Single |
+| `lock` | `ROUND_RECTANGLE` + `RECTANGLE` | Authentication / encryption | 0.5" | Composite |
+| `key` | `PLUS` + `RECTANGLE` | Access key / credential | 0.5" | Composite |
+| `check_circle` | `ELLIPSE` + text "✓" | Verified / passed | 0.4" | Shape + text |
+| `warning` | `TRIANGLE` + text "!" | Warning / caution | 0.4" | Shape + text |
+| `ban` | `NO_SMOKING` | Prohibited / deprecated | 0.4" | Single |
 
-#### shield — シールド
+#### shield — Shield
 
 ```python
 def picto_shield(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -401,7 +403,7 @@ def picto_shield(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### lock — ロック（複合）
+#### lock — Lock (composite)
 
 ```python
 def picto_lock(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -441,7 +443,7 @@ def picto_lock(self, slide_id, x, y, size=0.5, color=None, label=None):
     return group_id
 ```
 
-#### key — 鍵
+#### key — Key
 
 ```python
 def picto_key(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -470,7 +472,7 @@ def picto_key(self, slide_id, x, y, size=0.5, color=None, label=None):
     return group_id
 ```
 
-#### check_circle — チェック済み
+#### check_circle — Verified
 
 ```python
 def picto_check_circle(self, slide_id, x, y, size=0.4, color=None, label=None):
@@ -494,7 +496,7 @@ def picto_check_circle(self, slide_id, x, y, size=0.4, color=None, label=None):
     return shape_id
 ```
 
-#### warning — 警告
+#### warning — Warning
 
 ```python
 def picto_warning(self, slide_id, x, y, size=0.4, color=None, label=None):
@@ -519,7 +521,7 @@ def picto_warning(self, slide_id, x, y, size=0.4, color=None, label=None):
     return shape_id
 ```
 
-#### ban — 禁止
+#### ban — Prohibited
 
 ```python
 def picto_ban(self, slide_id, x, y, size=0.4, color=None, label=None):
@@ -537,18 +539,18 @@ def picto_ban(self, slide_id, x, y, size=0.4, color=None, label=None):
 
 ---
 
-### 2.4 プロセス・フロー
+### 2.4 Process / flow
 
-| 名前 | shapeType | 用途 | 推奨サイズ | パターン |
+| Name | shapeType | Use | Recommended size | Pattern |
 |------|-----------|------|----------|---------|
-| `process` | `FLOW_CHART_PROCESS` | 処理ステップ | 0.5" | 単一 |
-| `decision` | `FLOW_CHART_DECISION` | 判断・分岐 | 0.5" | 単一 |
-| `start_end` | `FLOW_CHART_TERMINATOR` | 開始/終了 | 0.5" | 単一 |
-| `manual_input` | `FLOW_CHART_MANUAL_INPUT` | ユーザー入力 | 0.5" | 単一 |
-| `connector` | `FLOW_CHART_CONNECTOR` | 接続点 | 0.3" | 単一 |
-| `preparation` | `FLOW_CHART_PREPARATION` | 準備・セットアップ | 0.5" | 単一 |
+| `process` | `FLOW_CHART_PROCESS` | Processing step | 0.5" | Single |
+| `decision` | `FLOW_CHART_DECISION` | Decision / branch | 0.5" | Single |
+| `start_end` | `FLOW_CHART_TERMINATOR` | Start/end | 0.5" | Single |
+| `manual_input` | `FLOW_CHART_MANUAL_INPUT` | User input | 0.5" | Single |
+| `connector` | `FLOW_CHART_CONNECTOR` | Connection point | 0.3" | Single |
+| `preparation` | `FLOW_CHART_PREPARATION` | Preparation / setup | 0.5" | Single |
 
-#### process — 処理
+#### process — Process
 
 ```python
 def picto_process(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -567,7 +569,7 @@ def picto_process(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### decision — 判断
+#### decision — Decision
 
 ```python
 def picto_decision(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -584,7 +586,7 @@ def picto_decision(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### start_end — 開始/終了
+#### start_end — Start/end
 
 ```python
 def picto_start_end(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -602,7 +604,7 @@ def picto_start_end(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### manual_input — ユーザー入力
+#### manual_input — User input
 
 ```python
 def picto_manual_input(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -620,7 +622,7 @@ def picto_manual_input(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### connector — 接続点
+#### connector — Connection point
 
 ```python
 def picto_connector(self, slide_id, x, y, size=0.3, color=None, label=None):
@@ -636,7 +638,7 @@ def picto_connector(self, slide_id, x, y, size=0.3, color=None, label=None):
     return shape_id
 ```
 
-#### preparation — 準備
+#### preparation — Preparation
 
 ```python
 def picto_preparation(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -658,19 +660,19 @@ def picto_preparation(self, slide_id, x, y, size=0.5, color=None, label=None):
 
 ---
 
-### 2.5 ビジネス・ユーザー
+### 2.5 Business / user
 
-| 名前 | shapeType | 用途 | 推奨サイズ | パターン |
+| Name | shapeType | Use | Recommended size | Pattern |
 |------|-----------|------|----------|---------|
-| `user` | `ELLIPSE` + `TRAPEZOID` | ユーザー・人物 | 0.5" | 複合 |
-| `team` | 複数 user | チーム | 1.2" | 複合 |
-| `building` | `RECTANGLE` + `TRIANGLE` | 企業・オフィス | 0.6" | 複合 |
-| `handshake` | `CURVED_RIGHT_ARROW` x2 | パートナーシップ | 0.6" | 複合 |
-| `money` | `ELLIPSE` + text "$"/"¥" | コスト・料金 | 0.4" | シェイプ＋テキスト |
-| `chart_up` | `RIGHT_TRIANGLE` | 成長・上昇 | 0.5" | 単一 |
-| `target` | `DONUT` + `ELLIPSE` | 目標・ターゲット | 0.5" | 複合 |
+| `user` | `ELLIPSE` + `TRAPEZOID` | User / person | 0.5" | Composite |
+| `team` | multiple user | Team | 1.2" | Composite |
+| `building` | `RECTANGLE` + `TRIANGLE` | Company / office | 0.6" | Composite |
+| `handshake` | `CURVED_RIGHT_ARROW` x2 | Partnership | 0.6" | Composite |
+| `money` | `ELLIPSE` + text "$"/"¥" | Cost / pricing | 0.4" | Shape + text |
+| `chart_up` | `RIGHT_TRIANGLE` | Growth / increase | 0.5" | Single |
+| `target` | `DONUT` + `ELLIPSE` | Goal / target | 0.5" | Composite |
 
-#### user — ユーザー（複合）
+#### user — User (composite)
 
 ```python
 def picto_user(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -700,7 +702,7 @@ def picto_user(self, slide_id, x, y, size=0.5, color=None, label=None):
     return group_id
 ```
 
-#### team — チーム
+#### team — Team
 
 ```python
 def picto_team(self, slide_id, x, y, size=1.2, color=None, label=None):
@@ -728,7 +730,7 @@ def picto_team(self, slide_id, x, y, size=1.2, color=None, label=None):
     return group_id
 ```
 
-#### building — ビル/企業（複合）
+#### building — Building/company (composite)
 
 ```python
 def picto_building(self, slide_id, x, y, size=0.6, color=None, label=None):
@@ -767,7 +769,7 @@ def picto_building(self, slide_id, x, y, size=0.6, color=None, label=None):
     return group_id
 ```
 
-#### handshake — パートナーシップ（複合）
+#### handshake — Partnership (composite)
 
 ```python
 def picto_handshake(self, slide_id, x, y, size=0.6, color=None, label=None):
@@ -794,7 +796,7 @@ def picto_handshake(self, slide_id, x, y, size=0.6, color=None, label=None):
     return group_id
 ```
 
-#### money — コスト
+#### money — Cost
 
 ```python
 def picto_money(self, slide_id, x, y, size=0.4, color=None, label=None,
@@ -819,7 +821,7 @@ def picto_money(self, slide_id, x, y, size=0.4, color=None, label=None,
     return shape_id
 ```
 
-#### chart_up — 成長
+#### chart_up — Growth
 
 ```python
 def picto_chart_up(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -835,7 +837,7 @@ def picto_chart_up(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### target — ターゲット（複合）
+#### target — Target (composite)
 
 ```python
 def picto_target(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -862,19 +864,19 @@ def picto_target(self, slide_id, x, y, size=0.5, color=None, label=None):
 
 ---
 
-### 2.6 テクノロジー
+### 2.6 Technology
 
-| 名前 | shapeType | 用途 | 推奨サイズ | パターン |
+| Name | shapeType | Use | Recommended size | Pattern |
 |------|-----------|------|----------|---------|
-| `api` | `ROUND_RECTANGLE` + text "API" | API エンドポイント | 0.5" | シェイプ＋テキスト |
-| `microservice` | `HEXAGON` + text | マイクロサービス | 0.5" | シェイプ＋テキスト |
-| `container` | `CUBE` | コンテナ・Docker | 0.5" | 単一 |
-| `queue` | `CHEVRON` x3 | メッセージキュー | 0.6" | 複合 |
-| `gear` | `STAR_8` | 設定・エンジン | 0.5" | 単一 |
-| `code` | `FOLDED_CORNER` | コード・スクリプト | 0.5" | 単一 |
-| `terminal` | `ROUND_RECTANGLE` + text "> _" | CLI・ターミナル | 0.6" | シェイプ＋テキスト |
+| `api` | `ROUND_RECTANGLE` + text "API" | API endpoint | 0.5" | Shape + text |
+| `microservice` | `HEXAGON` + text | Microservice | 0.5" | Shape + text |
+| `container` | `CUBE` | Container / Docker | 0.5" | Single |
+| `queue` | `CHEVRON` x3 | Message queue | 0.6" | Composite |
+| `gear` | `STAR_8` | Configuration / engine | 0.5" | Single |
+| `code` | `FOLDED_CORNER` | Code / script | 0.5" | Single |
+| `terminal` | `ROUND_RECTANGLE` + text "> _" | CLI / terminal | 0.6" | Shape + text |
 
-#### api — API エンドポイント
+#### api — API endpoint
 
 ```python
 def picto_api(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -899,7 +901,7 @@ def picto_api(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### microservice — マイクロサービス
+#### microservice — Microservice
 
 ```python
 def picto_microservice(self, slide_id, x, y, size=0.5, color=None, label=None,
@@ -923,7 +925,7 @@ def picto_microservice(self, slide_id, x, y, size=0.5, color=None, label=None,
     return shape_id
 ```
 
-#### container — コンテナ
+#### container — Container
 
 ```python
 def picto_container(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -938,7 +940,7 @@ def picto_container(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### queue — メッセージキュー（複合）
+#### queue — Message queue (composite)
 
 ```python
 def picto_queue(self, slide_id, x, y, size=0.6, color=None, label=None):
@@ -968,7 +970,7 @@ def picto_queue(self, slide_id, x, y, size=0.6, color=None, label=None):
     return group_id
 ```
 
-#### gear — 設定・エンジン
+#### gear — Configuration / engine
 
 ```python
 def picto_gear(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -988,7 +990,7 @@ def picto_gear(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### code — コード/スクリプト
+#### code — Code / script
 
 ```python
 def picto_code(self, slide_id, x, y, size=0.5, color=None, label=None):
@@ -1015,7 +1017,7 @@ def picto_code(self, slide_id, x, y, size=0.5, color=None, label=None):
     return shape_id
 ```
 
-#### terminal — ターミナル
+#### terminal — Terminal
 
 ```python
 def picto_terminal(self, slide_id, x, y, size=0.6, color=None, label=None):
@@ -1048,21 +1050,22 @@ def picto_terminal(self, slide_id, x, y, size=0.6, color=None, label=None):
 
 ---
 
-### 2.7 ステータス・インジケーター
+### 2.7 Status / indicator
 
-| 名前 | shapeType | 用途 | デフォルトカラー | パターン |
+| Name | shapeType | Use | Default color | Pattern |
 |------|-----------|------|--------------|---------|
-| `success` | `ELLIPSE` + "✓" | 成功 | `C.success` (green) | シェイプ＋テキスト |
-| `error` | `ELLIPSE` + "✗" | エラー | `C.alertRed` | シェイプ＋テキスト |
-| `warning` | `TRIANGLE` + "!" | 警告 | `C.cautionYellow` | シェイプ＋テキスト |
-| `info` | `ELLIPSE` + "i" | 情報 | `C.primary` (blue) | シェイプ＋テキスト |
-| `pending` | `DONUT` | 処理中 | `C.accent` | 単一 |
-| `star` | `STAR_5` | お気に入り・重要 | `C.cautionYellow` | 単一 |
+| `success` | `ELLIPSE` + "✓" | Success | `C.success` (green) | Shape + text |
+| `error` | `ELLIPSE` + "✗" | Error | `C.alertRed` | Shape + text |
+| `warning` | `TRIANGLE` + "!" | Warning | `C.cautionYellow` | Shape + text |
+| `info` | `ELLIPSE` + "i" | Information | `C.primary` (blue) | Shape + text |
+| `pending` | `DONUT` | In progress | `C.accent` | Single |
+| `star` | `STAR_5` | Favorite / important | `C.cautionYellow` | Single |
 
-> **注意**: `success` は `check_circle`（2.3節）と同一実装。`warning` も 2.3 節と同一。
-> ここではステータス表示に特化した用途でのカラーデフォルトを示す。
+> **Note**: `success` uses the same implementation as `check_circle` (section 2.3). `warning` is also
+> identical to the one in section 2.3. This section shows the default color specialized for status-display
+> use cases.
 
-#### error — エラー
+#### error — Error
 
 ```python
 def picto_error(self, slide_id, x, y, size=0.4, color=None, label=None):
@@ -1084,7 +1087,7 @@ def picto_error(self, slide_id, x, y, size=0.4, color=None, label=None):
     return shape_id
 ```
 
-#### info — 情報
+#### info — Information
 
 ```python
 def picto_info(self, slide_id, x, y, size=0.4, color=None, label=None):
@@ -1106,7 +1109,7 @@ def picto_info(self, slide_id, x, y, size=0.4, color=None, label=None):
     return shape_id
 ```
 
-#### pending — 処理中
+#### pending — In progress
 
 ```python
 def picto_pending(self, slide_id, x, y, size=0.4, color=None, label=None):
@@ -1121,7 +1124,7 @@ def picto_pending(self, slide_id, x, y, size=0.4, color=None, label=None):
     return shape_id
 ```
 
-#### star — 重要
+#### star — Important
 
 ```python
 def picto_star(self, slide_id, x, y, size=0.4, color=None, label=None):
@@ -1138,19 +1141,19 @@ def picto_star(self, slide_id, x, y, size=0.4, color=None, label=None):
 
 ---
 
-## 3. 複合ピクトグラムの構築ガイドライン
+## 3. Guidelines for building composite pictograms
 
-### 3.1 設計原則
+### 3.1 Design principles
 
-複合ピクトグラム（2つ以上のシェイプの組み合わせ）を構築する際の原則:
+Principles for building composite pictograms (a combination of two or more shapes):
 
-1. **シェイプ数は最大3つ** — それ以上は視覚的に複雑になりすぎる
-2. **必ず `group_objects()` でグループ化** — 移動・回転を一括操作可能にする
-3. **Z-order に注意** — 後から追加したシェイプが前面に来る（先に背景を追加）
-4. **サイズは比率で計算** — `size` パラメータに対する比率でサブシェイプの座標を算出
-5. **ラベルはグループ外** — ラベルテキストはグループに含めない（グループ後に追加）
+1. **Cap the shape count at 3** — anything more becomes too visually complex
+2. **Always group with `group_objects()`** — this makes move/rotate operations possible as a single unit
+3. **Watch the Z-order** — shapes added later come to the front (add the background first)
+4. **Compute sizes as ratios** — derive sub-shape coordinates as ratios of the `size` parameter
+5. **Keep the label outside the group** — do not include the label text in the group (add it after grouping)
 
-### 3.2 構築テンプレート
+### 3.2 Construction template
 
 ```python
 def picto_composite_template(self, slide_id, x, y, size, color=None, label=None):
@@ -1200,7 +1203,7 @@ def picto_composite_template(self, slide_id, x, y, size, color=None, label=None)
     return group_id
 ```
 
-### 3.3 サーバーラック（応用例）
+### 3.3 Server rack (applied example)
 
 ```
 ┌──────────────┐
@@ -1261,31 +1264,31 @@ def picto_server_rack(self, slide_id, x, y, size=0.8, color=None, label=None):
 
 ---
 
-## 4. テーマカラーの適用
+## 4. Applying theme colors
 
-### 4.1 セマンティックカラーマッピング
+### 4.1 Semantic color mapping
 
-ピクトグラムの色はコンテンツの文脈に応じて使い分ける。テーマの `C` オブジェクトのセマンティックカラーを使用する。
+The color of a pictogram should be chosen according to the context of the content. Use the semantic colors on the theme's `C` object.
 
-| ピクトグラムの文脈 | 使用カラー | HEX（scalar テーマ） | 例 |
+| Pictogram context | Color to use | HEX (scalar theme) | Examples |
 |---|---|---|---|
-| 自社製品 | `C.primary` | `#2673BB` (blue) | ScalarDB, ScalarDL のアイコン |
-| 外部システム | `C.textMuted` | `#666666` (gray) | PostgreSQL, MySQL, Cassandra |
-| ユーザー/クライアント | `C.cautionYellow` | `#BE9000` (orange) | ブラウザ、モバイルアプリ |
-| 成功・正常フロー | `C.success` | `#63C045` (green) | 正常パス、合格 |
-| エラー・障害 | `C.alertRed` | `#F4CCCC` (red) | 障害パス、エラー |
-| 新機能・アクセント | `C.accent` | `#0985FC` (cyan/blue) | 新機能ハイライト |
-| 補助要素 | `C.surfaceLight` | `#F0F4F8` (light gray) | 背景ゾーン、枠 |
+| Own product | `C.primary` | `#2673BB` (blue) | ScalarDB, ScalarDL icons |
+| External system | `C.textMuted` | `#666666` (gray) | PostgreSQL, MySQL, Cassandra |
+| User/client | `C.cautionYellow` | `#BE9000` (orange) | Browser, mobile app |
+| Success / normal flow | `C.success` | `#63C045` (green) | Normal path, pass |
+| Error / failure | `C.alertRed` | `#F4CCCC` (red) | Failure path, error |
+| New feature / accent | `C.accent` | `#0985FC` (cyan/blue) | Highlighting a new feature |
+| Supporting element | `C.surfaceLight` | `#F0F4F8` (light gray) | Background zones, borders |
 
-### 4.2 塗りと線のルール
+### 4.2 Fill and stroke rules
 
-| スタイル | 用途 | 設定方法 |
+| Style | Use | Setting method |
 |---------|------|---------|
-| **ソリッド塗り** | メインのピクトグラム | `fill=c, border_color=c`（同色ボーダー） |
-| **アウトライン** | 補助的な要素 | `border_color=c` のみ（`fill=None`） |
-| **薄い塗り + 濃いボーダー** | 強調したい補助要素 | `fill=C.surfaceLight, border_color=c` |
-| **ダーク背景上** | 背景が暗いスライド | `fill=C.background`（白）+ `border_color=c` |
-| **グレー背景上** | 灰色の背景ゾーン内 | `fill=C.background`（白）+ `border_color=C.primary` |
+| **Solid fill** | Main pictogram | `fill=c, border_color=c` (border of the same color) |
+| **Outline only** | Supporting element | `border_color=c` only (`fill=None`) |
+| **Light fill + dark border** | A supporting element you want to emphasize | `fill=C.surfaceLight, border_color=c` |
+| **On a dark background** | Slide with a dark background | `fill=C.background` (white) + `border_color=c` |
+| **On a gray background** | Inside a gray background zone | `fill=C.background` (white) + `border_color=C.primary` |
 
 ```python
 # ソリッド塗りの例（メインアイコン）
@@ -1300,37 +1303,38 @@ self.add_shape(slide_id, "HEXAGON", x, y, w, h,
                fill=C.surfaceLight, border_color=C.primary, border_weight=1.0)
 ```
 
-### 4.3 コントラスト要件
+### 4.3 Contrast requirements
 
-WCAG AA 準拠（コントラスト比 4.5:1 以上）を維持する:
+Maintain WCAG AA compliance (contrast ratio of 4.5:1 or higher):
 
-| 背景色 | テキスト/アイコン色 | コントラスト比 | 判定 |
+| Background color | Text/icon color | Contrast ratio | Verdict |
 |--------|-------------------|-------------|------|
 | `#FFFFFF` (white) | `C.primary` (#2673BB) | 5.2:1 | OK |
 | `#FFFFFF` (white) | `C.textMuted` (#666666) | 5.7:1 | OK |
-| `#FFFFFF` (white) | `C.success` (#63C045) | 3.3:1 | NG — テキストには不可 |
+| `#FFFFFF` (white) | `C.success` (#63C045) | 3.3:1 | NG — not usable for text |
 | `C.primary` (#2673BB) | `#FFFFFF` (white) | 5.2:1 | OK |
 | `C.surfaceLight` (#F0F4F8) | `C.primary` (#2673BB) | 4.6:1 | OK |
 
-> **重要**: `C.success`（緑）はシェイプの塗り色としては使用可能だが、その上のテキストは白を使用すること。テキスト色として単独使用はコントラスト不足になる場合がある。
+> **Important**: `C.success` (green) can be used as a shape fill color, but any text on top of it must be
+> white. Using it alone as a text color can result in insufficient contrast.
 
 ---
 
-## 5. サイズガイドライン
+## 5. Sizing guidelines
 
-### 5.1 用途別推奨サイズ
+### 5.1 Recommended sizes by use case
 
-| 用途 | 推奨サイズ | 最小サイズ | 備考 |
+| Use case | Recommended size | Minimum size | Notes |
 |------|----------|----------|------|
-| インライン（テキスト横） | 0.3"-0.4" | 0.25" | テキストの行高に合わせる |
-| カード内アイコン | 0.4"-0.6" | 0.35" | カード幅の 20-30% |
-| グリッドアイコン | 0.5"-0.7" | 0.4" | グリッドセル幅の 25-35% |
-| メインビジュアル | 0.8"-1.2" | 0.6" | スライド中央の主要要素 |
-| ヒーローアイコン | 1.5"-2.0" | 1.0" | タイトルスライド等の大型アイコン |
+| Inline (next to text) | 0.3"-0.4" | 0.25" | Match the text line height |
+| Icon inside a card | 0.4"-0.6" | 0.35" | 20-30% of the card width |
+| Grid icon | 0.5"-0.7" | 0.4" | 25-35% of the grid cell width |
+| Main visual | 0.8"-1.2" | 0.6" | The primary element centered on a slide |
+| Hero icon | 1.5"-2.0" | 1.0" | Large icons on title slides, etc. |
 
-### 5.2 Google Slides 座標系での注意
+### 5.2 Note on the Google Slides coordinate system
 
-Google Slides の座標系は **10.0" x 5.625"**（PowerPoint の 0.75 倍）。推奨サイズは全てこの座標系でのインチ値。
+The Google Slides coordinate system is **10.0" x 5.625"** (0.75x PowerPoint's). All recommended sizes above are inch values in this coordinate system.
 
 ```python
 # サイズ計算のヘルパー
@@ -1342,28 +1346,28 @@ def relative_size(base_size, scale=1.0):
     return base_size * scale
 ```
 
-### 5.3 内部テキストのフォントサイズ目安
+### 5.3 Guidance for internal text font size
 
-シェイプ内にテキストを配置する場合のフォントサイズ:
+Font sizes when placing text inside a shape:
 
-| シェイプサイズ | テキスト1文字 | テキスト2-3文字 | テキスト4文字以上 |
+| Shape size | 1 character | 2-3 characters | 4+ characters |
 |-------------|-------------|--------------|---------------|
-| 0.3" | 12pt | 8pt | 使用不可 |
+| 0.3" | 12pt | 8pt | Not usable |
 | 0.4" | 16pt | 10pt | 8pt |
 | 0.5" | 18pt | 12pt | 9pt |
 | 0.6" | 22pt | 14pt | 10pt |
 | 0.8" | 28pt | 18pt | 12pt |
 | 1.0" | 36pt | 22pt | 14pt |
 
-> **最小フォントサイズ**: ピクトグラム内テキストは **8pt 以上** を厳守（7pt 未満は視認性が著しく低下する）。
+> **Minimum font size**: text inside a pictogram must be **8pt or larger** (below 7pt, legibility drops sharply).
 
 ---
 
-## 6. グリッドレイアウトパターン
+## 6. Grid layout patterns
 
-### 6.1 アイコングリッド (2x3)
+### 6.1 Icon grid (2x3)
 
-2行 x 3列のピクトグラムグリッド。各セルにアイコン＋タイトル＋説明を配置する。
+A 2-row x 3-column pictogram grid. Each cell holds an icon, a title, and a description.
 
 ```
 ┌─────────┐ ┌─────────┐ ┌─────────┐
@@ -1421,7 +1425,7 @@ def add_picto_grid(self, slide_id, items, x_start, y_start,
                           alignment="CENTER", valign="TOP")
 ```
 
-### 使用例
+### Example usage
 
 ```python
 sid = self.add_content_slide("ScalarDB の主要機能")
@@ -1448,9 +1452,9 @@ self.add_picto_grid(sid, items,
 
 ---
 
-### 6.2 横並びアイコン (1xN)
+### 6.2 Horizontal icon row (1xN)
 
-1行に N 個のピクトグラムを水平配置する。ステップ表示や比較に使用。
+Lay out N pictograms horizontally in a single row. Used for step displays or comparisons.
 
 ```
 [Step1] ──→ [Step2] ──→ [Step3] ──→ [Step4]
@@ -1497,7 +1501,7 @@ def add_picto_row(self, slide_id, items, x_start, y, total_w,
                            fill=C.border)
 ```
 
-### 使用例
+### Example usage
 
 ```python
 sid = self.add_content_slide("デプロイフロー")
@@ -1514,9 +1518,9 @@ self.add_picto_row(sid, steps,
 
 ---
 
-### 6.3 フローチャートとピクトグラムの組み合わせ
+### 6.3 Combining a flowchart with pictograms
 
-フローチャートのノードをピクトグラムに置き換える応用パターン。
+An applied pattern that replaces flowchart nodes with pictograms.
 
 ```python
 def add_picto_flow(self, slide_id, nodes, x_start, y_start,
@@ -1599,26 +1603,26 @@ def add_picto_flow(self, slide_id, nodes, x_start, y_start,
 
 ---
 
-## 7. スライドタイプとの対応
+## 7. Mapping to slide types
 
-各スライドタイプでよく使用されるピクトグラムの一覧。コンポーザ関数からの参照に使用する。
+A list of pictograms commonly used for each slide type, intended for reference by composer functions.
 
-| スライドタイプ | 推奨ピクトグラム | 用途 |
+| Slide type | Recommended pictograms | Use |
 |---|---|---|
-| `icon_grid` | 全カテゴリから選択 | グリッド内のアイコン |
-| `architecture` | database, cloud, server, container, api, firewall, load_balancer | アーキテクチャ図のノード |
-| `product_overview` | target, gear, check_circle, star, shield | 製品特徴のアイコン |
-| `feature_matrix` | check_circle, error, warning, ban | 機能有無の表示 |
-| `security_compliance` | shield, lock, key, check_circle, ban | セキュリティ要素 |
-| `deployment_steps` | process, gear, cloud, container, code, terminal | デプロイ手順 |
-| `ecosystem` | network, handshake, api, cloud, microservice | エコシステム連携 |
-| `data_flow` | database, queue, cache, process, connector | データフロー図 |
-| `multi_cloud` | cloud（複数色）, database, server | マルチクラウド構成 |
-| `comparison` | check_circle, error, star | 比較表のマーカー |
-| `kpi_dashboard` | chart_up, money, target, success | KPIカードのアイコン |
-| `timeline` | process, start_end, decision | タイムラインのマーカー |
+| `icon_grid` | Selected from all categories | Icons within the grid |
+| `architecture` | database, cloud, server, container, api, firewall, load_balancer | Nodes in architecture diagrams |
+| `product_overview` | target, gear, check_circle, star, shield | Icons for product features |
+| `feature_matrix` | check_circle, error, warning, ban | Indicating feature availability |
+| `security_compliance` | shield, lock, key, check_circle, ban | Security elements |
+| `deployment_steps` | process, gear, cloud, container, code, terminal | Deployment steps |
+| `ecosystem` | network, handshake, api, cloud, microservice | Ecosystem integrations |
+| `data_flow` | database, queue, cache, process, connector | Data flow diagrams |
+| `multi_cloud` | cloud (multiple colors), database, server | Multi-cloud configurations |
+| `comparison` | check_circle, error, star | Markers in comparison tables |
+| `kpi_dashboard` | chart_up, money, target, success | Icons for KPI cards |
+| `timeline` | process, start_end, decision | Timeline markers |
 
-### スライドタイプごとの配色パターン
+### Color patterns by slide type
 
 ```python
 # architecture スライドの典型的な配色
@@ -1643,30 +1647,30 @@ FEATURE_COLORS = {
 
 ---
 
-## 8. Unicode テキストアイコン（簡易代替）
+## 8. Unicode text icons (a simple alternative)
 
-シェイプを使わずに、テキストランに Unicode 文字を含めることで簡易的なアイコンを表現する方法。シェイプのピクトグラムほど自由度はないが、テキスト中にインラインでアイコンを挿入したい場合に有用。
+A way to express a simple icon by embedding a Unicode character in a text run, without using a shape. This offers less flexibility than a shape pictogram, but is useful when you want to insert an icon inline within running text.
 
-### 8.1 推奨 Unicode アイコン一覧
+### 8.1 Recommended Unicode icon list
 
-| 文字 | Unicode | 用途 | フォント互換性 |
+| Character | Unicode | Use | Font compatibility |
 |------|---------|------|------------|
-| ✓ | U+2713 | 成功・対応 | 高 |
-| ✗ | U+2717 | 失敗・非対応 | 高 |
-| ● | U+25CF | マーカー・ドット | 高 |
-| ○ | U+25CB | 空マーカー | 高 |
-| ▶ | U+25B6 | 再生・次へ | 高 |
-| ◆ | U+25C6 | 強調マーカー | 高 |
-| ★ | U+2605 | 重要・お気に入り | 高 |
-| ☆ | U+2606 | 未評価 | 高 |
-| ⚡ | U+26A1 | 高速・パフォーマンス | 中 |
-| ⚙ | U+2699 | 設定・ギア | 中 |
-| ⬆ | U+2B06 | 上昇・改善 | 高 |
-| ⬇ | U+2B07 | 下降・削減 | 高 |
-| → | U+2192 | フロー・方向 | 高 |
-| ∞ | U+221E | 無制限 | 高 |
+| ✓ | U+2713 | Success / supported | High |
+| ✗ | U+2717 | Failure / unsupported | High |
+| ● | U+25CF | Marker / dot | High |
+| ○ | U+25CB | Empty marker | High |
+| ▶ | U+25B6 | Play / next | High |
+| ◆ | U+25C6 | Emphasis marker | High |
+| ★ | U+2605 | Important / favorite | High |
+| ☆ | U+2606 | Not yet rated | High |
+| ⚡ | U+26A1 | Fast / performance | Medium |
+| ⚙ | U+2699 | Settings / gear | Medium |
+| ⬆ | U+2B06 | Increase / improvement | High |
+| ⬇ | U+2B07 | Decrease / reduction | High |
+| → | U+2192 | Flow / direction | High |
+| ∞ | U+221E | Unlimited | High |
 
-### 8.2 テキスト内での使用例
+### 8.2 Example usage in text
 
 ```python
 # 箇条書きのプレフィックスとして
@@ -1683,36 +1687,37 @@ self.add_text(slide_id, "⬆ 99.9%",
               font_size=28, bold=True, color=C.success)
 ```
 
-### 8.3 フォント互換性の注意
+### 8.3 Notes on font compatibility
 
-- **高互換性**（Arial, Noto Sans JP で表示可能）: ✓ ✗ ● ○ ▶ ◆ ★ → ∞
-- **中互換性**（一部フォントで文字化けの可能性）: ⚡ ⚙ 🔒 🔑
-- **低互換性**（カラー絵文字、環境依存）: 🚀 💡 📊 🎯
+- **High compatibility** (renders in Arial, Noto Sans JP): ✓ ✗ ● ○ ▶ ◆ ★ → ∞
+- **Medium compatibility** (may not render correctly in some fonts): ⚡ ⚙ 🔒 🔑
+- **Low compatibility** (color emoji, environment-dependent): 🚀 💡 📊 🎯
 
-> **推奨**: テキスト内アイコンには高互換性の Unicode 文字を使用する。中・低互換性の文字はシェイプピクトグラムで代替すること。
+> **Recommendation**: use high-compatibility Unicode characters for in-text icons. Use shape pictograms
+> instead for medium- and low-compatibility characters.
 
 ---
 
-## 9. API リクエスト数の最適化
+## 9. Optimizing the number of API requests
 
-### 9.1 リクエスト数の目安
+### 9.1 Approximate request counts
 
-| パターン | 1個あたりのリクエスト数 | 備考 |
+| Pattern | Requests per instance | Notes |
 |---------|---------------------|------|
-| 単一シェイプ | 2-3 | createShape + fill + border |
-| シェイプ＋テキスト | 5-7 | shape + fill + textbox + insert + style |
-| 複合（2シェイプ） | 6-8 | shape x2 + fills + groupObjects |
-| 複合（3シェイプ） | 9-12 | shape x3 + fills + groupObjects |
-| ラベル付き | +4 | textbox + insert + style + paragraph |
+| Single shape | 2-3 | createShape + fill + border |
+| Shape + text | 5-7 | shape + fill + textbox + insert + style |
+| Composite (2 shapes) | 6-8 | shape x2 + fills + groupObjects |
+| Composite (3 shapes) | 9-12 | shape x3 + fills + groupObjects |
+| With label | +4 | textbox + insert + style + paragraph |
 
-### 9.2 最適化のヒント
+### 9.2 Optimization tips
 
-1. **グリッド内は単一シェイプを優先** — 6セルのグリッドで複合ピクトグラムを使うと 50+ リクエストになる
-2. **500リクエスト制限に注意** — batchUpdate の推奨チャンクサイズは 500。ピクトグラムの多用で超過しないこと
-3. **ラベルの省略** — グリッド下のテキストで十分な場合、ピクトグラム自体のラベルは省略可能
-4. **Unicode アイコンの活用** — 単純なマーカー（✓/✗）はテキストで代替してリクエスト数を削減
+1. **Prefer single shapes inside grids** — using a composite pictogram in a 6-cell grid can produce 50+ requests
+2. **Mind the 500-request limit** — the recommended `batchUpdate` chunk size is 500. Avoid exceeding it through heavy pictogram use
+3. **Omit labels where possible** — if the text below the grid is already sufficient, the pictogram's own label can be omitted
+4. **Leverage Unicode icons** — replace simple markers (✓/✗) with text to reduce request count
 
-### 9.3 リクエスト数の見積もり
+### 9.3 Estimating request counts
 
 ```python
 def estimate_picto_requests(items, has_labels=True, pattern="single"):
@@ -1730,114 +1735,114 @@ def estimate_picto_requests(items, has_labels=True, pattern="single"):
 
 ---
 
-## 10. 使用上の注意
+## 10. Usage notes
 
-### 10.1 一般的な注意事項
+### 10.1 General notes
 
-1. **過度な複合化を避ける** — 3シェイプ以上の複合ピクトグラムは複雑になりすぎる。それ以上の精密さが必要な場合は外部画像（Drive API 経由のアップロード）を検討すること
+1. **Avoid over-compositing** — composite pictograms with 3 or more shapes become too complex. If more precision is required than that, consider an external image (uploaded via the Drive API)
 
-2. **テキスト内アイコン** — Unicode 記号（✓ ✗ ● ★ 等）をテキストランに含めることで、シェイプ不要の簡易アイコンも実現可能。セクション 8 を参照
+2. **In-text icons** — including Unicode symbols (✓ ✗ ● ★, etc.) in a text run can also achieve a simple icon without a shape. See section 8
 
-3. **一貫性の維持** — 同一スライド内では同じ構築パターンで統一する。単一シェイプと複合シェイプを混在させない
+3. **Maintain consistency** — use the same construction pattern throughout a given slide. Do not mix single shapes and composite shapes
 
-4. **コントラスト確保** — WCAG AA 準拠（4.5:1 以上）。白背景にはアウトライン付き or ソリッド塗り、ダーク背景には白塗り + カラーボーダー
+4. **Ensure contrast** — comply with WCAG AA (4.5:1 or higher). Use an outline or solid fill on a white background, and a white fill with a colored border on a dark background
 
-5. **グループ化の徹底** — 複合ピクトグラムは必ず `group_objects()` でグループ化する。グループ化しないと移動時にバラバラになる
+5. **Always group** — composite pictograms must always be grouped with `group_objects()`. Without grouping, the pieces will scatter when moved
 
-### 10.2 パフォーマンスの注意
+### 10.2 Performance notes
 
-6. **API リクエスト数** — ピクトグラムはシェイプ作成 + スタイル設定で複数リクエストを消費する。大量のピクトグラムを使用する場合は batchUpdate のチャンクサイズ（500件）に注意
+6. **API request count** — pictograms consume multiple requests for shape creation plus style settings. When using many pictograms, be mindful of the `batchUpdate` chunk size (500 requests)
 
-7. **レンダリング負荷** — 多数のシェイプはブラウザでのレンダリングが重くなる。1スライドあたりのシェイプ数は **50個以下** を推奨
+7. **Rendering load** — a large number of shapes increases browser rendering load. We recommend no more than **50 shapes** per slide
 
-### 10.3 デザインの注意
+### 10.3 Design notes
 
-8. **同一サイズの使用** — グリッド内では全ピクトグラムを同じ `size` パラメータで作成する。サイズが不揃いだと視覚的にバランスが崩れる
+8. **Use a uniform size** — create all pictograms in a grid with the same `size` parameter. Inconsistent sizes throw off the visual balance
 
-9. **余白の確保** — ピクトグラム間には最低 0.15" の余白を確保する。密集配置は視認性を低下させる
+9. **Ensure spacing** — keep at least 0.15" of spacing between pictograms. Dense placement reduces legibility
 
-10. **色の統一** — 1スライド内で使用する色は **3色以下**（60-30-10 ルール）。ピクトグラムの色もこのルールに従う
+10. **Keep colors consistent** — use **3 colors or fewer** per slide (the 60-30-10 rule). Pictogram colors should follow this rule as well
 
 ---
 
-## 付録 A. ピクトグラム対応表（クイックリファレンス）
+## Appendix A. Pictogram reference table (quick reference)
 
-| タイプ名 | shapeType | パターン | デフォルト色 | 推奨サイズ |
+| Type name | shapeType | Pattern | Default color | Recommended size |
 |---------|-----------|---------|------------|----------|
-| `database` | CAN | 単一 | primary | 0.5" |
-| `storage` | FLOW_CHART_MAGNETIC_DISK | 単一 | primary | 0.5" |
-| `document` | FLOW_CHART_DOCUMENT | 単一 | primary | 0.5" |
-| `multi_document` | FLOW_CHART_MULTIDOCUMENT | 単一 | primary | 0.6" |
-| `cache` | FLOW_CHART_INTERNAL_STORAGE | 単一 | accent | 0.5" |
-| `cloud` | CLOUD | 単一 | primary | 0.6" |
-| `cloud_callout` | CLOUD_CALLOUT | 単一 | calloutBg | 0.6" |
+| `database` | CAN | Single | primary | 0.5" |
+| `storage` | FLOW_CHART_MAGNETIC_DISK | Single | primary | 0.5" |
+| `document` | FLOW_CHART_DOCUMENT | Single | primary | 0.5" |
+| `multi_document` | FLOW_CHART_MULTIDOCUMENT | Single | primary | 0.6" |
+| `cache` | FLOW_CHART_INTERNAL_STORAGE | Single | accent | 0.5" |
+| `cloud` | CLOUD | Single | primary | 0.6" |
+| `cloud_callout` | CLOUD_CALLOUT | Single | calloutBg | 0.6" |
 | `network` | HEXAGON | S+T | primary | 0.5" |
-| `server` | ROUND_RECT + RECT x3 + ELLIPSE | 複合 | textMuted | 0.5" |
-| `load_balancer` | TRAPEZOID | 単一 | accent | 0.6" |
-| `firewall` | RECT + LIGHTNING_BOLT | 複合 | alertRed | 0.6" |
-| `shield` | PENTAGON | 単一 | primary | 0.5" |
-| `lock` | ROUND_RECT x2 + ELLIPSE | 複合 | primary | 0.5" |
-| `key` | ELLIPSE + RECTANGLE | 複合 | cautionYellow | 0.5" |
+| `server` | ROUND_RECT + RECT x3 + ELLIPSE | Composite | textMuted | 0.5" |
+| `load_balancer` | TRAPEZOID | Single | accent | 0.6" |
+| `firewall` | RECT + LIGHTNING_BOLT | Composite | alertRed | 0.6" |
+| `shield` | PENTAGON | Single | primary | 0.5" |
+| `lock` | ROUND_RECT x2 + ELLIPSE | Composite | primary | 0.5" |
+| `key` | ELLIPSE + RECTANGLE | Composite | cautionYellow | 0.5" |
 | `check_circle` | ELLIPSE + "✓" | S+T | success | 0.4" |
 | `warning` | TRIANGLE + "!" | S+T | cautionYellow | 0.4" |
-| `ban` | NO_SMOKING | 単一 | alertRed | 0.4" |
-| `process` | FLOW_CHART_PROCESS | 単一 | primary | 0.5" |
-| `decision` | FLOW_CHART_DECISION | 単一 | accent | 0.5" |
-| `start_end` | FLOW_CHART_TERMINATOR | 単一 | primary | 0.5" |
-| `manual_input` | FLOW_CHART_MANUAL_INPUT | 単一 | cautionYellow | 0.5" |
-| `connector` | FLOW_CHART_CONNECTOR | 単一 | border | 0.3" |
-| `preparation` | FLOW_CHART_PREPARATION | 単一 | surfaceLight | 0.5" |
-| `user` | ELLIPSE + TRAPEZOID | 複合 | primary | 0.5" |
-| `team` | user x3 | 複合 | primary | 1.2" |
-| `building` | RECT + TRIANGLE + RECT x4 | 複合 | textMuted | 0.6" |
-| `handshake` | CURVED_*_ARROW x2 | 複合 | primary | 0.6" |
+| `ban` | NO_SMOKING | Single | alertRed | 0.4" |
+| `process` | FLOW_CHART_PROCESS | Single | primary | 0.5" |
+| `decision` | FLOW_CHART_DECISION | Single | accent | 0.5" |
+| `start_end` | FLOW_CHART_TERMINATOR | Single | primary | 0.5" |
+| `manual_input` | FLOW_CHART_MANUAL_INPUT | Single | cautionYellow | 0.5" |
+| `connector` | FLOW_CHART_CONNECTOR | Single | border | 0.3" |
+| `preparation` | FLOW_CHART_PREPARATION | Single | surfaceLight | 0.5" |
+| `user` | ELLIPSE + TRAPEZOID | Composite | primary | 0.5" |
+| `team` | user x3 | Composite | primary | 1.2" |
+| `building` | RECT + TRIANGLE + RECT x4 | Composite | textMuted | 0.6" |
+| `handshake` | CURVED_*_ARROW x2 | Composite | primary | 0.6" |
 | `money` | ELLIPSE + "¥" | S+T | success | 0.4" |
-| `chart_up` | RIGHT_TRIANGLE | 単一 | success | 0.5" |
-| `target` | DONUT + ELLIPSE | 複合 | alertRed | 0.5" |
+| `chart_up` | RIGHT_TRIANGLE | Single | success | 0.5" |
+| `target` | DONUT + ELLIPSE | Composite | alertRed | 0.5" |
 | `api` | ROUND_RECT + "API" | S+T | primary | 0.5" |
 | `microservice` | HEXAGON + text | S+T | accent | 0.5" |
-| `container` | CUBE | 単一 | accent | 0.5" |
-| `queue` | CHEVRON x3 | 複合 | accent | 0.6" |
-| `gear` | STAR_8 + ELLIPSE | 複合 | textMuted | 0.5" |
+| `container` | CUBE | Single | accent | 0.5" |
+| `queue` | CHEVRON x3 | Composite | accent | 0.6" |
+| `gear` | STAR_8 + ELLIPSE | Composite | textMuted | 0.5" |
 | `code` | FOLDED_CORNER + "{ }" | S+T | surfaceLight | 0.5" |
 | `terminal` | ROUND_RECT + "> _" | S+T | dark | 0.6" |
 | `success` | ELLIPSE + "✓" | S+T | success | 0.4" |
 | `error` | ELLIPSE + "✗" | S+T | alertRed | 0.4" |
 | `info` | ELLIPSE + "i" | S+T | primary | 0.4" |
-| `pending` | DONUT | 単一 | accent | 0.4" |
-| `star` | STAR_5 | 単一 | cautionYellow | 0.4" |
+| `pending` | DONUT | Single | accent | 0.4" |
+| `star` | STAR_5 | Single | cautionYellow | 0.4" |
 
-> **凡例**: S+T = シェイプ＋テキスト、複合 = 複数シェイプ（group_objects 必要）
+> **Legend**: S+T = shape + text, Composite = multiple shapes (requires `group_objects`)
 
 ---
 
-## 付録 B. shapeType 選定チートシート
+## Appendix B. shapeType selection cheat sheet
 
-ピクトグラム設計時に、概念から shapeType を選ぶための逆引き表。
+A reverse lookup from concept to shapeType, for use when designing a pictogram.
 
-| 表現したい概念 | 推奨 shapeType | 代替候補 |
+| Concept to express | Recommended shapeType | Alternative candidates |
 |--------------|---------------|---------|
-| データベース | `CAN` | `FLOW_CHART_MAGNETIC_DISK` |
-| ファイル/文書 | `FLOW_CHART_DOCUMENT` | `FOLDED_CORNER` |
-| クラウド | `CLOUD` | `CLOUD_CALLOUT` |
-| サーバー/マシン | `ROUND_RECTANGLE`（複合） | `RECTANGLE` |
-| セキュリティ | `PENTAGON` | `FLOW_CHART_PREPARATION` |
-| 認証/暗号 | `ROUND_RECTANGLE`（複合でロック） | — |
-| 処理ステップ | `FLOW_CHART_PROCESS` | `RECTANGLE` |
-| 判断/分岐 | `FLOW_CHART_DECISION` | `DIAMOND` |
-| 人物 | `ELLIPSE` + `TRAPEZOID`（複合） | — |
-| 企業/建物 | `RECTANGLE` + `TRIANGLE`（複合） | — |
-| API/サービス | `ROUND_RECTANGLE` + text | `HEXAGON` + text |
-| コンテナ | `CUBE` | `ROUND_RECTANGLE` |
-| 設定/ギア | `STAR_8` | `SUN` |
-| 成功 | `ELLIPSE` + "✓" | Unicode ✓ |
-| エラー | `ELLIPSE` + "✗" | `NO_SMOKING` |
-| 警告 | `TRIANGLE` + "!" | Unicode ⚠ |
-| 方向/フロー | `RIGHT_ARROW` 系 | `CHEVRON` |
-| コスト/金額 | `ELLIPSE` + "¥"/"$" | — |
-| ネットワーク | `HEXAGON` | `OCTAGON` |
-| キュー/ストリーム | `CHEVRON`（複合） | `RIGHT_ARROW` |
-| 目標/ターゲット | `DONUT` + `ELLIPSE`（複合） | `STAR_5` |
-| 重要/優先 | `STAR_5` | `STARBURST` |
-| 禁止 | `NO_SMOKING` | `MATH_MULTIPLY` |
-| 高速/パフォーマンス | `LIGHTNING_BOLT` | Unicode ⚡ |
+| Database | `CAN` | `FLOW_CHART_MAGNETIC_DISK` |
+| File / document | `FLOW_CHART_DOCUMENT` | `FOLDED_CORNER` |
+| Cloud | `CLOUD` | `CLOUD_CALLOUT` |
+| Server / machine | `ROUND_RECTANGLE` (composite) | `RECTANGLE` |
+| Security | `PENTAGON` | `FLOW_CHART_PREPARATION` |
+| Authentication / encryption | `ROUND_RECTANGLE` (composite lock) | — |
+| Processing step | `FLOW_CHART_PROCESS` | `RECTANGLE` |
+| Decision / branch | `FLOW_CHART_DECISION` | `DIAMOND` |
+| Person | `ELLIPSE` + `TRAPEZOID` (composite) | — |
+| Company / building | `RECTANGLE` + `TRIANGLE` (composite) | — |
+| API / service | `ROUND_RECTANGLE` + text | `HEXAGON` + text |
+| Container | `CUBE` | `ROUND_RECTANGLE` |
+| Settings / gear | `STAR_8` | `SUN` |
+| Success | `ELLIPSE` + "✓" | Unicode ✓ |
+| Error | `ELLIPSE` + "✗" | `NO_SMOKING` |
+| Warning | `TRIANGLE` + "!" | Unicode ⚠ |
+| Direction / flow | `RIGHT_ARROW` family | `CHEVRON` |
+| Cost / amount | `ELLIPSE` + "¥"/"$" | — |
+| Network | `HEXAGON` | `OCTAGON` |
+| Queue / stream | `CHEVRON` (composite) | `RIGHT_ARROW` |
+| Goal / target | `DONUT` + `ELLIPSE` (composite) | `STAR_5` |
+| Important / priority | `STAR_5` | `STARBURST` |
+| Prohibited | `NO_SMOKING` | `MATH_MULTIPLY` |
+| Fast / performance | `LIGHTNING_BOLT` | Unicode ⚡ |

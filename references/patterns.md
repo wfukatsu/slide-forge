@@ -1,39 +1,44 @@
-# ビジネスフレームワーク図（patterns.py）
+*[日本語](patterns.ja.md)*
+# Business Framework Diagrams (patterns.py)
 
-`diagrams.Canvas` に混ざっている `PatternMixin` の使い方。新規事業提案・企画稟議の
-デッキで定番の「型」を部品にしたもの。すべて図形だけで描くのでキーもネットワークも
-不要、色はテンプレートの配色に従う。座標はインチ、戻り値は描画領域の下端 y。
+How to use `PatternMixin`, which is mixed into `diagrams.Canvas`. It packages the "shapes" that
+are standard in decks for new-business proposals and internal approval requests. All are drawn
+purely with shapes, so no keys or network access are required, and colors follow the template's
+palette. Coordinates are in inches, and the return value is the bottom y of the drawn area.
 
-デッキ仕様（JSON)の `figures` からも同名の type で使える。実例は
-`examples/patterns-demo.json`（6 種すべてを使った動くデモ）。
+These are also available from the deck spec (JSON)'s `figures`, under the same `type` name. A
+working example using all 6 kinds is `examples/patterns-demo.json`.
 
-## どれを使うか
+## Which one to use
 
-| 見せたいもの | 使うもの | 補足 |
+| What you want to show | What to use | Notes |
 |---|---|---|
-| 競合との位置関係（2 軸） | `posmap` | 象限の「分類」なら `matrix`(illustrations) |
-| フェーズ × 期間の線表 | `gantt` | マイルストーン（◆）も置ける |
-| 体制・組織の階層 | `orgchart` | 葉 8 個・深さ 3 まで。超えるなら分割 |
-| ビジネスモデルの全体像 | `lean_canvas` | 標準 9 ブロックのリーンキャンバス |
-| 市場規模の入れ子（TAM/SAM/SOM） | `nested_circles` | 値は出典のあるものだけ |
-| 顧客・キーマンの声 | `testimonial` | 引用は実在の発言だけ |
-| 原因の構造（カテゴリ別の洗い出し） | `fishbone` | カテゴリ 2〜6・原因は各 4 まで |
-| コスト内訳の推移 | `vbars_stacked`(charts) | `references/charts.md` 参照 |
+| Positioning relative to competitors (2 axes) | `posmap` | For a "classification" of quadrants, use `matrix` (illustrations) |
+| A phase × duration timeline | `gantt` | Milestones (◆) can be placed too |
+| Team/organizational hierarchy | `orgchart` | Up to 8 leaves and depth 3. Split it if you exceed that |
+| The overall shape of a business model | `lean_canvas` | Standard 9-block Lean Canvas |
+| Nested market-size circles (TAM/SAM/SOM) | `nested_circles` | Only use values that have a source |
+| Voice of the customer or key stakeholders | `testimonial` | Only quote things that were actually said |
+| Structure of causes (broken out by category) | `fishbone` | 2–6 categories, up to 4 causes each |
+| Cost breakdown over time | `vbars_stacked` (charts) | See `references/charts.md` |
 
-## posmap — ポジショニングマップ
+## posmap — positioning map
 
 ```python
 d.posmap(x, y, w, h, points,
-         x_axis=("低", "高"),     # 横軸の両端ラベル (左, 右)
-         y_axis=("低", "高"),     # 縦軸の両端ラベル (下, 上)
-         highlight=None,          # 強調するラベル（文字列かリスト。例 "自社"）
-         highlight_color=None,    # 強調色（既定 success）
-         size=10, bubble=0.72)    # バブルの直径（インチ）
+         x_axis=("低", "高"),     # horizontal axis end labels (left, right)
+         y_axis=("低", "高"),     # vertical axis end labels (bottom, top)
+         highlight=None,          # label(s) to highlight (string or list, e.g. "自社")
+         highlight_color=None,    # highlight color (default success)
+         size=10, bubble=0.72)    # bubble diameter (inches)
 ```
 
-- `points` は `(ラベル, px, py)`。**px / py は 0〜1 の相対座標**（0=左/下、1=右/上）。
-- 左右の軸端ラベルは白い箱で軸の延長線上に置く。幅はラベルの文字数から自動確保。
-- バブルどうしを近づけすぎると `audit_overlaps` が拾う。座標を離すこと。
+- `points` is `(label, px, py)`. **px / py are relative coordinates from 0 to 1** (0=left/bottom,
+  1=right/top).
+- The left/right axis-end labels sit in white boxes on the axis's extension line. Their width is
+  sized automatically from the label's character count.
+- Placing bubbles too close together gets flagged by `audit_overlaps`. Keep the coordinates
+  apart.
 
 ```json
 { "type": "posmap", "x": 0.6, "y": 1.15, "w": 6.4, "h": 4.1,
@@ -43,21 +48,24 @@ d.posmap(x, y, w, h, points,
   "highlight": "自社" }
 ```
 
-## gantt — ガントチャート（線表）
+## gantt — Gantt chart (timeline)
 
 ```python
 d.gantt(x, y, w, h, columns, rows,
-        label_w=None,   # 左の行ラベル列の幅（既定は w の 2 割、最大 1.8）
-        colors=None,    # バーの色（リストで行ごと。既定 primary）
-        zebra=True)     # 偶数行に薄い縞
+        label_w=None,   # width of the left row-label column (default 20% of w, capped at 1.8)
+        colors=None,    # bar colors (list, per row; default primary)
+        zebra=True)     # light stripe on even rows
 ```
 
-- `columns` は期間の見出し（例 `["4月", "5月", "6月"]`）。
-- `rows` は `(行ラベル, 開始, 終了)` か `(行ラベル, 開始, 終了, バーのラベル)`。
-  開始・終了は**列単位の小数**で、0 が最初の列の左端、`len(columns)` が右端。
-- **開始 == 終了 の行はマイルストーン（◆）**になり、ラベルは右隣に出る。
-- バーのラベルは入る幅ならバーの中（白抜き）、入らなければ右隣（muted）。
-- 依存関係の矢印は表現しない。細かい依存を見せたい図は `table` で書く。
+- `columns` are the period headings (e.g. `["4月", "5月", "6月"]`).
+- `rows` is `(row label, start, end)` or `(row label, start, end, bar label)`.
+  Start/end are **decimal values in column units**, where 0 is the left edge of the first column
+  and `len(columns)` is the right edge.
+- **A row where start == end becomes a milestone (◆)**, with the label placed to its right.
+- The bar label goes inside the bar (in reverse text) if it fits, otherwise to the right
+  (muted color) if it doesn't.
+- Dependency arrows are not represented. If you need to show fine-grained dependencies, use a
+  `table` instead.
 
 ```json
 { "type": "gantt", "x": 0.5, "y": 1.2, "w": 9.0, "h": 3.6,
@@ -66,19 +74,20 @@ d.gantt(x, y, w, h, columns, rows,
            ["フェーズ1", 1.0, 2.5, "○○実施"]] }
 ```
 
-## orgchart — 体制図・組織図
+## orgchart — team/organization chart
 
 ```python
 d.orgchart(x, y, w, h, tree, size=10,
-           node_h=None,      # ノードの高さ（既定は深さから自動）
-           root_fill=None)   # ルートの塗り（既定 primary）
+           node_h=None,      # node height (default computed from depth)
+           root_fill=None)   # root fill color (default primary)
 ```
 
-- `tree` は `(ラベル, [子…])`。子は同じ形の入れ子・文字列・
-  `{"label": …, "children": […]}` のいずれでもよい。
-- ラベルを `"役割\n氏名"` の 2 行にすると典型的な体制図の見た目になる。
-- 列幅は葉の数で自動配分。**1 列 0.85in を切ると `ValueError`**。
-  葉が多い（8 超）・深い（4 層以上）木は、部門ごとに orgchart を並べて分割する。
+- `tree` is `(label, [children…])`. A child can be nested the same way, a plain string, or
+  `{"label": …, "children": […]}`.
+- Making the label a two-line `"role\nname"` gives the typical org-chart look.
+- Column width is auto-allocated by leaf count. **Below 0.85in per column raises `ValueError`.**
+  For trees with many leaves (over 8) or deep nesting (4+ levels), split into multiple
+  orgcharts, one per department.
 
 ```json
 { "type": "orgchart", "x": 0.7, "y": 1.2, "w": 8.6, "h": 3.6,
@@ -86,29 +95,33 @@ d.orgchart(x, y, w, h, tree, size=10,
            ["開発担当\n鈴木", [["○○担当\n高橋", []]]]]] }
 ```
 
-## lean_canvas — リーンキャンバス
+## lean_canvas — Lean Canvas
 
 ```python
 d.lean_canvas(x, y, w, h, blocks, size=9, title_size=9.5)
 ```
 
-- `blocks` はキー → 内容（文字列か文字列のリスト）の辞書。キーは 9 個:
-  `problem`（課題）/ `solution`（解決策）/ `key_metrics`（主要指標）/
-  `uvp`（独自の価値提案）/ `advantage`（圧倒的な優位性）/ `channels`（チャネル）/
-  `segments`（顧客セグメント）/ `cost`（コスト構造）/ `revenue`（収益の流れ）。
-- 無いキーのブロックは枠だけ描く。未知のキーは `ValueError`。
-- **各ブロック 2〜3 項目・1 項目 15 文字程度まで**に要約してから渡す。
-  9 ブロック全部に長文を入れると必ず溢れる（`audit_text_fit` が拾う）。
+- `blocks` is a dict mapping key → content (a string, or a list of strings). There are 9 keys:
+  `problem` / `solution` / `key_metrics` / `uvp` (unique value proposition) /
+  `advantage` (unfair advantage) / `channels` / `segments` (customer segments) /
+  `cost` (cost structure) / `revenue` (revenue streams).
+- A block whose key is missing is drawn with just an empty frame. An unknown key raises
+  `ValueError`.
+- **Summarize each block to 2–3 items, roughly 15 characters per item, before passing it in.**
+  Long text in all 9 blocks is guaranteed to overflow (caught by `audit_text_fit`).
 
-## nested_circles — 入れ子の円（TAM / SAM / SOM）
+## nested_circles — nested circles (TAM / SAM / SOM)
 
 ```python
 d.nested_circles(x, y, w, h, rings, size=10, colors=None)
 ```
 
-- `rings` は**外側から**順に `(ラベル, 値の表示)` か文字列。2 個以上。
-- 円は下端を揃えて重ね、右側に引き出し線でラベルと値を置く。
-- 値は出典のある数値にだけ使う（市場規模は「※〇〇調査より」を別途 label で添える）。
+- `rings` is ordered **from the outside in**: `(label, displayed value)` or a plain string. 2 or
+  more.
+- The circles are stacked with their bottoms aligned, with a leader line to the label and value
+  on the right.
+- Only use values that have a source (attach a separate label such as "※ per XX research" for
+  market size).
 
 ```json
 { "type": "nested_circles", "x": 0.7, "y": 1.2, "w": 8.6, "h": 4.0,
@@ -117,37 +130,41 @@ d.nested_circles(x, y, w, h, rings, size=10, colors=None)
             ["20XX年の獲得目標", "12億円"]] }
 ```
 
-## testimonial — 顧客・キーマンの声
+## testimonial — voice of the customer or key stakeholder
 
 ```python
 d.testimonial(x, y, w, h, quote, name,
-              role=None,      # 肩書（"会社名\n部署 役職" のように改行可）
-              points=None,    # 引用の下に置く箇条書きの補足
-              icon="person",  # 左のピクトグラム（illustrations の ICONS から）
+              role=None,      # title (can be multi-line, e.g. "company\ndept role")
+              points=None,    # bullet points to place below the quote
+              icon="person",  # pictogram on the left (from illustrations' ICONS)
               quote_size=13)
 ```
 
-- 左に人物ピクトグラムと氏名・肩書、右に引用文（“ ” 付き・primary 濃色）。
-- `points` を渡すと引用の下に区切り線と箇条書きが入る。
-- **引用は実在の発言にだけ使うこと。** ヒアリングやインタビューの記録が
-  ないのに「声」をでっち上げてはならない。
+- A person pictogram plus name/title on the left, the quote (in " " quotes, dark primary color)
+  on the right.
+- Passing `points` adds a divider line and bullets below the quote.
+- **Only use quotes from real statements.** Never fabricate a "voice" without an actual
+  interview or hearing record.
 
-## fishbone — 特性要因図（フィッシュボーン）
+## fishbone — cause-and-effect diagram (fishbone)
 
 ```python
 d.fishbone(x, y, w, h, problem, categories,
-           # problem: 右端の頭（特性）に置く問題事象
-           # categories: [(カテゴリ名, [原因, …]), …] 上下交互に配る
+           # problem: the issue placed at the head (right end, the effect)
+           # categories: [(category name, [cause, …]), …], distributed alternately above/below
            size=9,
-           head_w=None)    # 頭のボックス幅（既定は min(1.6, w×0.18)）
+           head_w=None)    # head box width (default min(1.6, w×0.18))
 ```
 
-- カテゴリは 2〜6 個、原因は 1 カテゴリ **4 個まで**（超えると `ValueError`）。
-  溢れる分は統合してから渡す。原因の当たりを付ける図で、網羅の証明図ではない。
-- Slides に斜め文字は置けないため、大骨の斜線だけ残して原因は水平の
-  箇条書きで沿わせる簡略形。教科書どおりの斜め小骨にはならない。
-- カテゴリ名は 4M（人・機械・方法・材料）などの分解基準に揃え、基準を
-  混ぜない（`audit_*` では検査できない。作る側の責任）。
+- Between 2 and 6 categories, with **up to 4** causes per category (exceeding it raises
+  `ValueError`). Consolidate any overflow before passing it in. This diagram is for identifying
+  likely causes, not proving exhaustive coverage.
+- Because Slides can't place diagonal text, only the spine's diagonal lines remain diagonal;
+  causes are laid out as horizontal bullet lists along them — a simplified form, not the
+  textbook diagonal "bones."
+- Align category names to a single breakdown framework (e.g. the 4 Ms: man, machine, method,
+  material) and don't mix frameworks (the `audit_*` checks can't catch this — it's the author's
+  responsibility).
 
 ```json
 { "type": "fishbone", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.0,
@@ -157,10 +174,10 @@ d.fishbone(x, y, w, h, problem, categories,
                  ["システム", ["手作業の転記", "システム間の二重入力"]]] }
 ```
 
-## 共通の注意
+## Common notes
 
-- 描いたら `audit_bounds` / `audit_overlaps` / `audit_text_fit` を必ず通す
-  （デッキ仕様経由なら `--dry-run` で自動的にかかる）。
-- どの図も「フレームワークの形」を提供するだけで、**中身の質は埋める側の責任**。
-  リーンキャンバスや posmap に根拠のない内容を置くと、形が立派なぶん
-  誤解を招きやすいことに注意。
+- After drawing, always run `audit_bounds` / `audit_overlaps` / `audit_text_fit`
+  (this happens automatically via `--dry-run` when going through a deck spec).
+- Every figure here only supplies the "shape of the framework" — **the quality of the content
+  is the author's responsibility.** Note that putting unsubstantiated content into a lean canvas
+  or posmap is especially misleading precisely because the shape looks so authoritative.

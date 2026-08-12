@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""ビジュアル QA で使ったローカル検証ファイル（サムネイル PNG など）を削除する。
+"""Delete local verification files used for visual QA (thumbnail PNGs, etc).
 
-    python scripts/cleanup_qa.py                 # out/qa と out/*/qa を削除
-    python scripts/cleanup_qa.py out/mydeck/qa   # 指定ディレクトリだけ削除
-    python scripts/cleanup_qa.py --dry-run       # 削除対象を表示するだけ
+    python scripts/cleanup_qa.py                 # delete out/qa and out/*/qa
+    python scripts/cleanup_qa.py out/mydeck/qa   # delete only the specified directory
+    python scripts/cleanup_qa.py --dry-run       # only show what would be deleted
 
-QA が終わったサムネイルは再取得できる一時ファイルなので、結果報告の前に
-このスクリプトで消す。誤爆防止のため、リポジトリの out/ 配下しか消さない。
+QA thumbnails are disposable temp files that can be refetched, so run this
+script to remove them before reporting results. To prevent accidental
+deletion, this only deletes things under the repo's out/ directory.
 """
 from __future__ import annotations
 
@@ -60,7 +61,7 @@ def main() -> int:
 
     removed = 0
     for target in targets:
-        # out/ 自体と out/ の外は対象外。QA 出力ディレクトリだけを消す
+        # out/ itself and anything outside out/ are excluded; only QA output directories are deleted
         if not target.startswith(out_real + os.sep):
             print(t("skip (outside out/): {path}", path=target), file=sys.stderr)
             continue

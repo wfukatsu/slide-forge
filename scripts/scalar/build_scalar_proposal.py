@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
-"""顧客課題起点の Scalar 製品提案デッキ（課題解決型・worked example）。
+"""Customer-challenge-driven Scalar product proposal deck (problem-solving type, worked example).
 
-構成は references/deck-outlines.md「課題解決型の提案」を Scalar 提案向けに
-具体化したもの（設計根拠は references/scalar/proposal-map.md）。このファイルは
-「製造業の基幹システムのデータ分断」を想定したサンプル案件で、実案件では
-冒頭の PROPOSAL データブロックをヒアリング結果で書き換えて再実行する。
+The structure concretizes the "problem-solving proposal" from
+references/deck-outlines.md for Scalar proposals (design rationale in
+references/scalar/proposal-map.md). This file is a sample deal assuming "data
+fragmentation in a manufacturer's core system"; for a real deal, rewrite the
+PROPOSAL data block at the top with hearing results and rerun.
 
-書き換え時の鉄則:
-- 顧客固有の数値（工数・件数・金額）はヒアリングで取れたものだけ書く。
-  取れていなければ書かない（〈 〉プレースホルダも残さない）
-- 期待効果の定量値は算定根拠を添えられるものだけ。無ければ定性で書き、
-  「定量は PoC で実測」と明示する
-- 事例・価格は references/scalar/research-2026-08.md 準拠（鮮度 3 ヶ月ルール）
+Ground rules when rewriting:
+- Only write customer-specific figures (effort, counts, amounts) that came from
+  actual hearings. If not obtained, don't write it (don't leave 〈 〉 placeholders either)
+- Only include quantified expected-effect figures that can be backed by a stated
+  basis. Otherwise state qualitatively and make explicit that "quantitative
+  figures will be measured during the PoC"
+- Case studies and pricing follow references/scalar/research-2026-08.md (3-month freshness rule)
 
-  実行: .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <URL>]
-  検査: .venv/bin/python scripts/scalar/build_scalar_proposal.py --dry-run
+  Run:    .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <URL>]
+  Check:  .venv/bin/python scripts/scalar/build_scalar_proposal.py --dry-run
 """
 from __future__ import annotations
 
@@ -40,8 +42,8 @@ register({
 
 TEMPLATE = os.path.join(REPO_DIR, "templates", "scalar-2026.json")
 
-# ============================================================ 提案データ
-# 実案件ではこのブロックだけを書き換える。図の座標や部品選びは下の描画側の仕事。
+# ============================================================ Proposal data
+# For a real deal, rewrite only this block. Figure coordinates and part selection are handled by the drawing code below.
 
 PROPOSAL = {
     "customer": "〈お客様名〉",
@@ -49,7 +51,7 @@ PROPOSAL = {
     "subtitle": "ScalarDB による「止めない」データ統合",
     "date": "2026年8月",
 
-    # エグゼクティブサマリ（状況 → 課題 → 答え。1 枚で意思決定できる粒度）
+    # Executive summary (situation -> complication -> resolution. Detailed enough for one-slide decision-making)
     "summary": {
         "situation": "受発注・在庫・会計が個別システムに分かれ、データ連携は夜間バッチと手作業の突合に依存している",
         "complication": "部門間のデータ不整合が常態化し、突合・二重入力の運用負荷が増え続け、新サービス開発も既存 DB の制約で停滞している",
@@ -61,7 +63,7 @@ PROPOSAL = {
         ],
     },
 
-    # 現状（ヒアリング結果を書く）
+    # Current state (write hearing results here)
     "current": {
         "systems": [("browser", "受発注管理\n(MySQL)"),
                     ("stack", "在庫管理\n(PostgreSQL)"),
@@ -70,7 +72,7 @@ PROPOSAL = {
         "so_what": "データの「正」がどこにも無く、突合作業が業務として固定化している",
     },
 
-    # 課題（3 点まで。ヒアリングで合意できた課題だけを書く）
+    # Challenges (up to 3 points. Only write challenges agreed on during hearings)
     "challenges": [
         ("二重入力・突合の運用負荷",
          "部門間で同じデータを入力し直し、月次で数字合わせの突合作業が発生している"),
@@ -79,7 +81,7 @@ PROPOSAL = {
         ("新サービス開発の停滞",
          "既存 DB 構成に手を入れられず、データを横断するサービスの企画が実現できない"),
     ],
-    # 課題の構造（見えている問題 / 根本原因）
+    # Structure of the challenge (visible problems / root causes)
     "iceberg": {
         "above": ["二重入力・突合工数", "月次締めの遅延", "開発案件の滞留"],
         "below": ["システムごとに DB が分断され、横断トランザクションの仕組みが無い",
@@ -87,7 +89,7 @@ PROPOSAL = {
                   "DB 刷新は業務停止リスクが大きく着手できない"],
     },
 
-    # 目指す姿とスコープ（To-Be と、やらないことの明示）
+    # Target state and scope (To-Be, and making explicit what's out of scope)
     "tobe": {
         "before": ["各システムが個別に更新され、整合は夜間バッチ頼み",
                    "横断データはCSV 突合で翌日以降に判明",
@@ -98,7 +100,7 @@ PROPOSAL = {
         "scope_out": "対象外: 既存システムの画面・業務ロジックの改修、DB 製品の入れ替え、全社データ分析基盤（本提案の範囲はデータ整合層の構築）",
     },
 
-    # 提案の中身（課題 → 打ち手 → 効果の対応表）
+    # Substance of the proposal (challenge -> solution -> effect mapping table)
     "mapping": [
         ("二重入力・突合の負荷", "複数 DB 横断の ACID トランザクション",
          "入力は 1 回になり、突合作業を廃止できる"),
@@ -108,7 +110,7 @@ PROPOSAL = {
          "既存 DB のまま横断データを扱う新規開発が可能に"),
     ],
 
-    # 比較（なぜこの打ち手か。「これでないといけない理由」）
+    # Comparison (why this solution — "the reason it has to be this")
     "alternatives": {
         "headers": ["評価軸", "全面刷新\n(DB 統合)", "連携バッチ\n増設", "ScalarDB\n(本提案)"],
         "rows": [
@@ -120,7 +122,7 @@ PROPOSAL = {
         ],
     },
 
-    # 期待効果（業務がどう変わるか。定量はヒアリング/実測が取れたものだけ）
+    # Expected effects (how work changes. Quantitative figures only where hearing/measurement supports them)
     "effects": {
         "before": ["朝一の突合作業から始まる", "月次締め後にようやく数字が確定",
                    "新規案件は「DB がネック」で保留"],
@@ -129,7 +131,7 @@ PROPOSAL = {
         "so_what": "削減工数などの定量効果は PoC で実測し、本導入の稟議に使える形でご報告する（公表事例では帳票業務 約1/5 の実績）",
     },
 
-    # 事例（公表事例のみ。research-2026-08.md 準拠）
+    # Case studies (published cases only. Follows research-2026-08.md)
     "cases": [
         ("エナジーソリューションズ (ENS)",
          "電力量 30 分値の管理に ScalarDB を採用。法定帳票業務を約 1/5 に削減"),
@@ -140,7 +142,7 @@ PROPOSAL = {
     ],
     "cases_source": "各社公表資料・Scalar 公式発表（2026年8月時点の調査、詳細は話者ノート参照）",
 
-    # 進め方（PoC の成功基準までがワンセット）
+    # Approach (the PoC and its success criteria are a single package)
     "journey": [
         ("PoC（2 ヶ月）", "対象業務 1 本で技術成立性と性能を実測"),
         ("設計（1 ヶ月）", "対象範囲・移行計画・運用設計を確定"),
@@ -159,9 +161,9 @@ PROPOSAL = {
         ],
     },
 
-    # システム構成（初期提案の標準 3 環境。クラウド既定は AWS）
-    # 図は examples/scalar-proposal-envs.drawio を drawio_export.py で PNG 化したもの。
-    # 顧客要件で書き換えたら再エクスポートする（drawio-diagrams スキル参照）
+    # System architecture (the standard 3-environment initial proposal. Default cloud is AWS)
+    # The figure is examples/scalar-proposal-envs.drawio, rendered to PNG via drawio_export.py.
+    # If rewritten for customer requirements, re-export it (see the drawio-diagrams skill)
     "architecture": {
         "diagram": os.path.join(REPO_DIR, "examples", "scalar-proposal-envs.png"),
         "drawio": "examples/scalar-proposal-envs.drawio",
@@ -192,7 +194,7 @@ PROPOSAL = {
         "source": "ScalarDB Cluster 価格: AWS Marketplace 公表値（2026年8月時点、Standard エディション）",
     },
 
-    # 体制（お客様側の負担も見えるように）
+    # Team structure (make the customer-side workload visible too)
     "team": ("ステアリングコミッティ\n(月次)",
              [("〈お客様〉PM\n業務部門・情シス", []),
               ("Scalar\nアーキテクト", []),
@@ -204,7 +206,7 @@ PROPOSAL = {
         ["開発パートナー", "アプリケーション実装、既存システムの改修影響調査"],
     ],
 
-    # 概算費用（費目と幅。確定値ではなく概算であることを明示）
+    # Estimated cost (line items and ranges. Make explicit these are estimates, not fixed values)
     "costs": {
         "rows": [
             ["PoC 支援", "2 ヶ月・Scalar エンジニア支援込み", "個別お見積り"],
@@ -216,20 +218,20 @@ PROPOSAL = {
         "source": "ScalarDB Cluster 価格: AWS Marketplace 公表値（2026年8月時点、Standard エディション）",
     },
 
-    # リスクと対策（先回りして潰す）
+    # Risks and mitigations (get ahead of objections)
     "risks": [
         ["既存システムへの影響", "既存 DB はそのまま。PoC は本番系と分離した環境で実施し、段階展開時も業務単位で並行稼働"],
         ["性能要件を満たせない", "PoC の成功基準に性能実測を含め、未達なら本導入に進まない（Go/No-Go を明示）"],
         ["運用・スキルの不安", "Scalar が設計〜構築を伴走。運用設計と引き継ぎまでを導入支援の範囲に含める"],
     ],
 
-    # 次のステップ（今日決めること → 直近のアクション）
+    # Next steps (what to decide today -> immediate action)
     "next": ["本日:\n課題認識の\nすり合わせ", "〜2 週間:\nPoC スコープ\n合意", "〜1 ヶ月:\nPoC 開始",
              "3 ヶ月後:\nGo/No-Go\n判断"],
 }
 
 
-# ============================================================ 描画
+# ============================================================ Drawing
 
 def draw_current(d: Canvas, cur: dict) -> None:
     d.icon_flow(1.1, 1.35, 7.8, cur["systems"], size=0.78, label_size=9.5,
@@ -247,7 +249,7 @@ def draw_challenges(d: Canvas, items: list) -> None:
 
 
 def draw_iceberg(d: Canvas, data: dict) -> None:
-    # 上側リストは iceberg の h*0.30-0.34 の領域に入る。3 行なら h>=3.7 が必要
+    # The upper list fits within the iceberg's h*0.30-0.34 area. For 3 lines, h>=3.7 is required
     d.iceberg(0.7, 1.1, 8.4, 3.75, data["above"], data["below"],
               above_title="表出している問題", below_title="共通の根本原因", size=10)
 
@@ -260,7 +262,7 @@ def draw_tobe(d: Canvas, tobe: dict) -> None:
 
 
 def draw_solution(d: Canvas, _p: dict) -> None:
-    """ScalarDB 統合トランザクション層の提案図。"""
+    """The proposal figure for the ScalarDB unified transaction layer."""
     ac = d.P.primary
     d.icon_row(1.5, 1.15, 7.0, [("browser", "受発注"), ("stack", "在庫"),
                                 ("chart", "会計"), ("bulb", "新サービス")],
@@ -323,8 +325,8 @@ def draw_architecture(d: Canvas, arch: dict) -> None:
 
 
 def draw_bom_services(d: Canvas, arch: dict) -> None:
-    # 環境名は「テスト\n（aidd-infra-test）」の 2 行に割る。1 行のままだと
-    # 列幅に対して折り返しの最終行が 1 字未満になり audit_text_fit が拾う
+    # Split the environment name into 2 lines like "テスト\n（aidd-infra-test）". If left as
+    # 1 line, the wrapped final line would be under 1 character relative to the column width, which audit_text_fit flags
     rows = [[e["name"].replace("（aidd", "\n（aidd"), e["purpose"], e["services"]]
             for e in arch["envs"]]
     d.table(0.6, 1.3, 8.8, ["環境", "役割", "主な構成サービス"], rows,
@@ -385,7 +387,7 @@ def draw_next(d: Canvas, steps: list) -> None:
 
 
 def print_bom(arch: dict) -> None:
-    """構成内訳（サービス一覧と Scalar 製品・数量・月額）をコンソールにも出す。"""
+    """Also print the Bill of Materials (service list plus Scalar products, quantity, and monthly cost) to the console."""
     print("\n" + t("=== Bill of Materials (BOM) ==="))
     print(t("[Cloud services ({cloud})]", cloud=arch["cloud"]))
     for e in arch["envs"]:
@@ -398,7 +400,7 @@ def print_bom(arch: dict) -> None:
     print(f"  {arch['monthly_note']}")
 
 
-# ============================================================ 組み立て
+# ============================================================ Assembly
 
 def main() -> int:
     p = argparse.ArgumentParser()
@@ -425,12 +427,12 @@ def main() -> int:
             audits += d.audit_connectors()
         problems.extend(f"{title[:14]}…: {m}" for m in audits)
 
-    # 0. 表紙
+    # 0. Cover
     deck.add_slide("COVER", title=f"{P['customer']}様向け\n{P['title']}",
                    subtitle=P["subtitle"], body=f"{P['date']}\n株式会社Scalar",
                    notes="実案件では customer / date を書き換える。")
 
-    # 1. エグゼクティブサマリ（結論先出し。この 1 枚で意思決定できる粒度）
+    # 1. Executive summary (conclusion first. Detailed enough for one-slide decision-making)
     ref = deck.add_slide(
         "TITLE_ONLY", title="エグゼクティブサマリ — 既存を止めずにデータ分断を解消する",
         notes="才流・HubSpot の提案書構成調査より: 決裁者は冒頭の要約しか読まない前提で、"
@@ -442,7 +444,7 @@ def main() -> int:
     problems.extend(f"サマリ: {m}" for m in
                     (d.audit_bounds() + d.audit_overlaps() + d.audit_text_fit()))
 
-    # 2. 課題の合意形成（解決策より先に置く）
+    # 2. Building agreement on the challenge (placed before the solution)
     drawn("背景と現状 — システムごとにデータが分断されている", draw_current, P["current"],
           notes="現状認識の合意が提案全体の前提。ヒアリング結果をそのまま書き、"
                 "推測で補わない。図の DB 名・システム名は実環境に合わせる。")
@@ -451,7 +453,7 @@ def main() -> int:
     drawn("課題の構造 — 3 つの問題は同じ根本原因から生じている", draw_iceberg, P["iceberg"],
           notes="対症療法（RPA で突合を自動化等）との差別化の土台になるスライド。")
 
-    # 3. ご提案
+    # 3. The proposal
     deck.add_slide("SECTION", title="ご提案", body="目指す姿と ScalarDB による解決策")
     drawn("目指す姿 — 既存システムを活かしたまま、数字が常に一致する状態へ",
           draw_tobe, P["tobe"],
@@ -475,7 +477,7 @@ def main() -> int:
                 "MVP 実質 3 ヶ月) / 大手放送局(公式 boilerplate 掲載)。"
                 "research-2026-08.md の鮮度 3 ヶ月ルールに従い再調査してから使う。")
 
-    # 4. 進め方
+    # 4. Approach
     deck.add_slide("SECTION", title="導入の進め方", body="スモールスタートで確実に")
     drawn("導入アプローチ — PoC で検証してから段階導入", draw_journey, P,
           notes="PoC は成功基準（Go/No-Go）までがワンセット（エンプラ IT 提案の定石）。")
@@ -503,7 +505,7 @@ def main() -> int:
     drawn("想定されるご懸念と対策", draw_risks, P["risks"],
           notes="リスクの先回り（才流 稟議書 8 項目）。顧客から出た懸念は必ずここに足す。")
 
-    # 5. クロージング
+    # 5. Closing
     drawn("次のステップ — 本日ご判断いただきたいこと", draw_next, P["next"],
           notes="次のアクションを明示して送りっぱなしにしない（HubSpot)。")
     deck.add_slide("CLOSING")

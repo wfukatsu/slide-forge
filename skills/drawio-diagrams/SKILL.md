@@ -10,6 +10,7 @@ description: >-
   "ネットワーク構成図", "緻密な構成図", "cloud architecture diagram",
   "data flow diagram", or when a diagram is too dense for native Slides shapes.
 ---
+*[日本語](SKILL.ja.md)*
 
 # draw.io Diagrams for Google Slides
 
@@ -26,7 +27,7 @@ description: >-
 - **Visual QA of the exported PNG is mandatory.** A wrong shape name
   (`resIcon` / `prIcon` / azure2 SVG path) renders as a plain colored square
   with no error — never guess names; look them up
-  (`references/drawio.md` § シェイプ名の調べ方).
+  (`references/drawio.md` § How to look up shape names).
 - **Deliverables are three**: the slide with the PNG inserted, the exported
   PNG, and the editable `.drawio` source. Upload the `.drawio` and PNG into
   the deck's Drive folder (`scripts/drive_folder.py upload`) so the user can

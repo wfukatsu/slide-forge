@@ -1,119 +1,140 @@
 ---
 description: >-
-  顧客訪問 1 回分の資料を一続きで作る: 台帳読み込み → フェーズと相手の確定 →
-  資料種別のルーティング → 内部情報の混入検査 → オフライン検証 → 生成と Drive 配置 →
-  ビジュアル QA → 台帳への書き戻しと活動計画の更新 → アクションプランの報告
-argument-hint: "<顧客名> [訪問の目的 / 相手 / フェーズ] [議事録やメモのパス]"
+  Build the materials for a single customer visit as one continuous flow:
+  read the ledger → determine phase and counterpart → route to the material
+  type → check for leaked internal information → offline validation →
+  generation and Drive placement → visual QA → write back to the ledger and
+  update the activity plan → report the action plan
+argument-hint: "<customer name> [visit purpose / counterpart / phase] [path to meeting notes or memo]"
 ---
 
-# /visit — 訪問資料パイプライン
+*[日本語](visit.ja.md)*
 
-`$ARGUMENTS` を出発点に、`scalar-ae-materials` スキルの流れを**途中で止めずに
-一続きで**実行する。作業ディレクトリは slide-forge ルート。
+# /visit — Visit Materials Pipeline
 
-判断の出典は `references/scalar/sales-playbook.md`。
+Starting from `$ARGUMENTS`, run the `scalar-ae-materials` skill flow through
+**in one continuous pass, without stopping**. The working directory is the
+slide-forge root.
 
-## Step 1: 台帳を読む
+The source of truth for decisions is `references/scalar/sales-playbook.md`.
+
+## Step 1: Read the ledger
 
 ```bash
-ls accounts/*/<顧客名>/account.json
+ls accounts/*/<customer name>/account.json
 .venv/bin/python scripts/scalar/account_ledger.py validate <account.json>
 .venv/bin/python scripts/scalar/account_ledger.py gaps <account.json>
 ```
 
-台帳が無ければ `/account <顧客名> new` を先に通す（このコマンドの中で実行してよい）。
-**台帳にある前提は聞かない。**
+If the ledger doesn't exist, run `/account <customer name> new` first (this
+may be run from within this command). **Don't ask about assumptions already
+in the ledger.**
 
-## Step 2: 不足だけをまとめて聞く（最大 1 往復）
+## Step 2: Ask about only what's missing, in one batch (at most 1 round)
 
-`AskUserQuestion` で 4 問まで。台帳とユーザーの指定で埋まっている項目は省く。
+Up to 4 questions via `AskUserQuestion`. Omit items already filled in by the
+ledger or the user's instructions.
 
-1. 誰に会うか（役職・部門・初対面か）
-2. この訪問で顧客から得たい一言は何か
-3. 社内で得たいもの（提案投資の承認 / 価格承認 / SA の稼働）はあるか
-4. 生成後にビジュアル QA を行うか（既定・推奨は実行する）
+1. Who will they meet (title, department, first meeting or not)
+2. What one statement do we want to get from the customer during this visit
+3. What do we want to get internally (approval for proposal investment /
+   price approval / SA staffing)
+4. Whether to run visual QA after generation (default/recommended is "yes")
 
-採用した前提を 1 行で明示してから進む。
+State the adopted assumptions in one line before proceeding.
 
-## Step 3: 資料種別を決めて構成を承認してもらう（ゲート・省略禁止）
+## Step 3: Decide the material type and get the composition approved (gate, do not skip)
 
-`scalar-ae-materials` の Step 2 のルーティング表で、フェーズ × 相手 × 目的から
-資料種別を選ぶ。**顧客向けと社内向けは必ず別ファイルにする。**
+Using `scalar-ae-materials`'s Step 2 routing table, pick the material type
+from phase × counterpart × purpose. **Customer-facing and internal materials
+must always be separate files.**
 
-本文で次を提示して承認を得る:
+Present the following in the body text and get approval:
 
-- 作る資料の一覧（種別・枚数・置き場フォルダ）
-- 各スライドのアクションタイトル
-- 委譲する先があればその旨（正式提案は `scalar-proposal-slides`、
-  3 マップは `b2b-account-maps`）
+- The list of materials to build (type, slide count, destination folder)
+- Each slide's action title
+- Any delegation targets, if applicable (formal proposals go to
+  `scalar-proposal-slides`, the 3 maps go to `b2b-account-maps`)
 
-**承認後は Step 8 の報告まで確認を挟まず通す。**
+**After approval, proceed through to the Step 8 report without further
+confirmation.**
 
-## Step 4: 内部情報の混入検査（顧客向け資料がある場合・省略禁止）
+## Step 4: Check for leaked internal information (if customer-facing materials exist; do not skip)
 
-生成前に仕様の本文を読み、`scalar-ae-materials` の Step 3 のチェックリストを通す
-（個人の影響力・賛否・未接触、競合の弱点、未確認事項の断定、出典のない数値、
-開示範囲外の価格・ロードマップ）。該当したら `90_社内` の資料へ移す。
+Before generation, read the spec body text and run it through the checklist
+in `scalar-ae-materials`'s Step 3 (individuals' influence, positions on the
+deal, uncontacted stakeholders, competitors' weaknesses, unconfirmed items
+stated as fact, figures without a source, pricing/roadmap outside the
+disclosure scope). Move anything that applies to the `90_社内` materials.
 
-## Step 5: 仕様を書いてオフライン検証する
+## Step 5: Write the spec and validate it offline
 
-台帳から作れるページは台帳から作る:
+Build any pages that can be built from the ledger, from the ledger:
 
 ```bash
 .venv/bin/python scripts/scalar/account_ledger.py slots <account.json> visit-plan \
-    --out out/<顧客名>/visit-plan.json
+    --out out/<customer name>/visit-plan.json
 .venv/bin/python scripts/render_slide_template.py --template visit-plan \
-    --data out/<顧客名>/visit-plan.json --out out/<顧客名>/visit-plan.slide.json
+    --data out/<customer name>/visit-plan.json --out out/<customer name>/visit-plan.slide.json
 ```
 
-`visit-plan` を作るには、先に台帳の `visits[]` へ `status: "planned"` の訪問
-（日付・相手・目的・問い 3〜4・想定反論 2〜3・紹介依頼）を書く。
+To build `visit-plan`, first write a visit with `status: "planned"` into the
+ledger's `visits[]` (date, counterpart, purpose, 3-4 questions, 2-3 expected
+objections, referral request).
 
 ```bash
-.venv/bin/python scripts/assemble_spec.py out/<顧客名>/*.slide.json \
-    --out out/<顧客名>/deck.json --title "<資料名>"
+.venv/bin/python scripts/assemble_spec.py out/<customer name>/*.slide.json \
+    --out out/<customer name>/deck.json --title "<material name>"
 .venv/bin/python scripts/build_deck.py --template templates/scalar-2026.json \
-    --spec out/<顧客名>/deck.json --dry-run --strict
+    --spec out/<customer name>/deck.json --dry-run --strict
 ```
 
-指摘はデータを直して解消する。テンプレートは直さない。
+Resolve any findings by fixing the data. Do not fix the template.
 
-## Step 6: 生成して正しいフォルダへ置く
+## Step 6: Generate and place in the correct folder
 
 ```bash
 .venv/bin/python scripts/scalar/account_workspace.py ensure --ledger <account.json> --json
 ```
 
-顧客提示用 → `01_顧客提示` / 顧客提案用 → `02_顧客提案` / 社内説明用 → `90_社内`。
-仕様 JSON と図のソースも同じフォルダにアップロードする。生成に失敗したら、
-作りかけを Drive から削除して作り直す。
+For customer presentation → `01_顧客提示` / for customer proposal →
+`02_顧客提案` / for internal explanation → `90_社内`. Also upload the spec
+JSON and diagram sources to the same folder. If generation fails, delete the
+partial deck from Drive and rebuild.
 
-## Step 7: ビジュアル QA と台帳への書き戻し
+## Step 7: Visual QA and writing back to the ledger
 
-- Step 2 で「実行する」を選んだ場合は `slide-qa` の手順で検査し、
-  最後に `.venv/bin/python scripts/cleanup_qa.py` を必ず実行する
-- スキップした場合は、報告に QA 未実施であることを明記する
+- If "run it" was chosen in Step 2, inspect using the `slide-qa` skill's
+  steps, and always run `.venv/bin/python scripts/cleanup_qa.py` at the end
+- If skipped, note explicitly in the report that QA was not performed
 
-続けて台帳へ書き戻す（**省略禁止**）:
+Then write back to the ledger (**do not skip**):
 
-1. `visits[]` に今回を追加（実施後は `status: "done"` と `heard` / `next`）
-2. 新しく分かったことを `facts[]` に `kind` つきで追加
-3. 満たしたゲートを `gates` に**顧客側の証拠つきで**記録
+1. Add this visit to `visits[]` (after it happens, `status: "done"` plus
+   `heard` / `next`)
+2. Add newly learned facts to `facts[]` with `kind` attached
+3. Record any gates that were satisfied in `gates`, **with evidence from the
+   customer side**
 
 ```bash
 .venv/bin/python scripts/scalar/build_account_plan.py <account.json> --carry-over
 ```
 
-活動計画の 2 回目以降は破壊的なので、先に
-`.venv/bin/python scripts/snapshot_version.py "<デッキ URL>"` で版を確保する。
+Since the second and later runs of the activity plan are destructive, first
+secure a version with
+`.venv/bin/python scripts/snapshot_version.py "<deck URL>"`.
 
-## Step 8: 報告
+## Step 8: Report
 
-1. **AE のアクションプラン** — 誰に・何を・いつまでに・何が取れたら完了か
-   （`out/account-plan/<顧客名>/action-plan.md`）
-2. 作った資料の名前・種別・URL・置いた Drive フォルダ
-3. 顧客提示用について、Step 4 の検査を通したことと、社内へ移した項目
-4. QA の結果、または QA 未実施の明記。検証ファイルを削除済みであること
-5. 社内承認を求める資料がある場合は、**判断を仰ぐ事項**を 1 行で
-   （継続 / 保留 / 撤退、値引きの対価、必要な稼働）
-6. 仕上げの確認: 確定する / 文言を直す / 資料を足す / 活動計画も見直す（`/account`）
+1. **The AE's action plan** — who, what, by when, what condition marks it
+   done (`out/account-plan/<customer name>/action-plan.md`)
+2. The name, type, URL, and Drive folder of each material produced
+3. For customer-facing materials, that the Step 4 check was passed, and what
+   was moved to internal
+4. QA results, or an explicit note that QA was not performed. That the
+   validation files have been deleted
+5. If there are materials requiring internal approval, **the decision being
+   requested**, in one line (continue / hold / withdraw, discount trade-off,
+   staffing required)
+6. Final check: finalize / fix wording / add materials / also review the
+   activity plan (`/account`)

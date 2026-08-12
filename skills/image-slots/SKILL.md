@@ -16,6 +16,7 @@ description: >-
   diagrams with shapes (google-slides-template's figure families), replacing
   pictures that are already in place, and visual verification (slide-qa).
 ---
+*[日本語](SKILL.ja.md)*
 
 # Fill Image Slots on an Existing Deck
 
@@ -50,7 +51,7 @@ from an installed plugin, `/path/to/slide-forge` on a local clone.
 |------|-----|
 | List the fillable frames (no API image calls, no changes) | `.venv/bin/python scripts/fill_image_slots.py <URL> --dry-run` |
 | Fill every empty frame | `.venv/bin/python scripts/fill_image_slots.py <URL>` |
-| One slide, explicit subject | `… <URL> --slide 3 --prompt "夜間のデータセンター"` |
+| One slide, explicit subject | `… <URL> --slide 3 --prompt "a data center at night"` |
 | Pick a frame when a slide has several | `… --slot 1` (0-based, in the order the survey lists them) |
 | Also use frames only *inferred* from the deck's own usage | `--include-inferred` (off by default — see below) |
 | Change the illustration style | `--style isometric` (`flat_vector` / `line_art` / `blueprint` / `paper` / `photo`) |
@@ -93,11 +94,12 @@ the deck is analyzed on the fly, so the skill works on **any** deck.
 ## What gets drawn
 
 The prompt defaults to the slide's **title** — its TITLE placeholder, or the
-topmost text if it has none — so a divider titled 第1章 データ基盤の刷新 asks for a
-picture about that. Body text is deliberately excluded: a slide's bullets read as
-「① 検証 ② 配布 ③ 反映」 and make a poor drawing instruction. Override per run with
-`--prompt`. A slide with **no text at all** is skipped with a message rather than
-guessed at — pass `--prompt` for those.
+topmost text if it has none — so a divider titled "Chapter 1: Rebuilding the
+Data Platform" asks for a picture about that. Body text is deliberately
+excluded: a slide's bullets read as "① Verify ② Distribute ③ Reflect" and make
+a poor drawing instruction. Override per run with `--prompt`. A slide with
+**no text at all** is skipped with a message rather than guessed at — pass
+`--prompt` for those.
 
 The picture is generated for the frame's shape: the closest aspect ratio the
 model supports, plus a prompt instruction naming the edges and percentage the

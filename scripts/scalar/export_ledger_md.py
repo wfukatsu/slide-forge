@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""台帳（account.json）を Markdown に丸ごと書き出す。
+"""Dump the entire ledger (account.json) to Markdown.
 
-デッキは 11 枚しか載らないが、台帳には 100 件を超えるファクトが入っている。
-その全部を人が読める形にするための出力。**台帳が正本**なので、この Markdown は
-毎回作り直す（手で直さない）。
+A deck can only hold 11 slides, but the ledger contains over 100 facts. This
+output makes all of it readable by a human. Since **the ledger is the source of
+truth**, this Markdown is regenerated every time (never hand-edited).
 
     .venv/bin/python scripts/scalar/export_ledger_md.py <account.json> --out <path.md>
 """
@@ -20,7 +20,7 @@ KIND_LABEL = {"said": "said — 顧客がそう言った",
               "observed": "observed — 文書・記録で確認した",
               "assumed": "assumed — こちらの推測"}
 
-# 表セルの `|` と改行は台帳側の共通ヘルパーでエスケープする（表が崩れるため）
+# `|` and newlines in table cells are escaped via the ledger's shared helper (to avoid breaking the table)
 _cell = L.md_cell
 
 

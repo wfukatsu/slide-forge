@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
-"""AWS / Google Cloud / Azure の公式アーキテクチャアイコンを取り込む。
+"""Fetches the official AWS / Google Cloud / Azure architecture icons.
 
-`download-cloud-icons.sh` の後継。違いは 3 つ。
+Successor to `download-cloud-icons.sh`. Three differences:
 
-1. **配布 URL をベンダーのページから解決する。** 版が上がっても追随できる
-   （旧スクリプトは URL 直書きで、AWS は 1 版、Azure は 3 版遅れていた）。
-2. **SVG を正本として置く。** 使うときに必要な解像度へ焼く（`cloud_icons.py`）。
-   旧スクリプトは Azure を 64px の PNG に焼いて捨てていたため、スライドに
-   貼ると粗かった。
-3. **マニフェスト `cloud-icons.json` を作る。** 名前で引けるようになる。
-   旧構成は 1,500 ファイルを `ls` で漁るしかなく、Azure は
-   `02390-icon-service-azure-sql.png` のような名前で引けなかった。
+1. **Resolves the distribution URL from each vendor's page.** Keeps up as
+   versions bump (the old script hardcoded URLs: AWS was 1 version behind,
+   Azure 3 versions behind).
+2. **Keeps SVG as the source of truth.** Rasterizes to the resolution needed
+   at use time (`cloud_icons.py`). The old script baked Azure down to 64px
+   PNGs and discarded the source, which looked blurry when pasted into
+   slides.
+3. **Builds the `cloud-icons.json` manifest.** Icons become lookup-able by
+   name. The old layout left you digging through 1,500 files with `ls`, and
+   Azure names like `02390-icon-service-azure-sql.png` weren't searchable.
 
-    python scripts/fetch_cloud_icons.py                 # 3 ベンダーとも取り込む
-    python scripts/fetch_cloud_icons.py --vendor azure  # 1 つだけ更新する
-    python scripts/fetch_cloud_icons.py --dry-run       # 取得せず URL だけ確かめる
+    python scripts/fetch_cloud_icons.py                 # fetch all 3 vendors
+    python scripts/fetch_cloud_icons.py --vendor azure  # update just one
+    python scripts/fetch_cloud_icons.py --dry-run       # resolve URLs only, no fetch
 
 Places icons under the repo's `assets/cloud-icons/` (single shared destination).
 
-ライセンス上の注意（`references/cloud-icons.md` に詳述）:
-アイコンは各ベンダーの資産で、アーキテクチャ図・研修資料・ドキュメントでの
-利用のみが許諾されている。**色の変更・回転・反転・縦横比の変更は禁止**。
-そのため本スクリプトは素材に一切手を加えず、そのまま置く。
+License note (see `references/cloud-icons.md` for details):
+icons are each vendor's asset, licensed only for use in architecture
+diagrams, training material, and documentation. **Recoloring, rotating,
+flipping, and changing the aspect ratio are prohibited.** This script
+therefore never modifies the assets — it places them as-is.
 """
 from __future__ import annotations
 
@@ -88,7 +91,8 @@ DESTS = [
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; gslides-skill/1.0)"}
 
-# 配布ページと、そこから ZIP の URL を拾う正規表現。ページが変わったらここだけ直す
+# Distribution page, and the regex that pulls the ZIP URL from it. If the
+# page changes, fix it only here
 SOURCES = {
     "aws": {
         "page": "https://aws.amazon.com/architecture/icons/",
@@ -102,9 +106,10 @@ SOURCES = {
         "fallback": None,
         "terms": "https://learn.microsoft.com/en-us/azure/architecture/icons/",
     },
-    # GCP はページが JS 描画で URL を拾えないため、公開されている 3 本を直接使う。
-    # core（現行デザイン・19 種）> category（53 種）> legacy（216 種・2021 年）の
-    # 優先順で重ねる
+    # GCP's page renders the URL via JS, so it can't be scraped; use the 3
+    # published packages directly instead. Layer them in priority order:
+    # core (current design, 19 icons) > category (53 icons) > legacy
+    # (216 icons, 2021)
     "gcp": {
         "page": "https://cloud.google.com/icons",
         "urls": [
@@ -116,7 +121,7 @@ SOURCES = {
     },
 }
 
-# GCP legacy はカテゴリを持たないため、サービス名から推定する
+# GCP legacy icons have no category, so infer one from the service name
 GCP_CATEGORY_RULES = [
     ("compute", ("compute_engine", "bare_metal", "gpu", "tpu", "vmware", "gce", "os_")),
     ("containers", ("kubernetes", "gke", "container", "anthos", "cloud_run", "artifact_registry", "kuberun")),
@@ -132,8 +137,9 @@ GCP_CATEGORY_RULES = [
     ("integration", ("apigee", "api", "connectors")),
 ]
 
-# 正式名称からは引けない通称。ここに書いたものが別名として引けるようになる
-# （例: 「Amazon Simple Storage Service」を s3 で引く）
+# Common names that can't be looked up from the official name. Entries here
+# become searchable aliases (e.g. looking up "Amazon Simple Storage Service"
+# via s3)
 ALIAS_HINTS = {
     "aws:simple-storage-service": ["s3", "Amazon S3"],
     "aws:simple-storage-service-glacier": ["glacier", "s3 glacier"],
@@ -167,13 +173,14 @@ ALIAS_HINTS = {
     "gcp:key-management-service": ["kms"],
 }
 
-# core パッケージと legacy パッケージで名前が違うため、同じ製品なのに 2 件に
-# なってしまうもの。左を消して右へ別名として吸収する
+# Names differ between the core and legacy packages, so the same product ends
+# up as two separate entries. Drop the left one and fold it into the right as
+# an alias
 GCP_SUPERSEDED = {
     "gcp:google-kubernetes-engine": "gcp:gke",
 }
 
-# 表示名を作るときに大文字のままにしたい語
+# Words to keep uppercase when building the display name
 ACRONYMS = {
     "ai", "api", "aws", "bi", "cdn", "cpu", "db", "dns", "dr", "ec2", "ecs", "efs",
     "eks", "gke", "gpu", "hpc", "iam", "id", "ids", "iot", "ip", "kms", "ml", "nat",
@@ -189,7 +196,7 @@ def fetch(url: str, timeout: int = 300) -> bytes:
 
 
 def resolve_zip_url(vendor: str) -> str:
-    """ベンダーのページから最新 ZIP の URL を拾う。"""
+    """Pulls the latest ZIP URL from the vendor's page."""
     src = SOURCES[vendor]
     html = fetch(src["page"], timeout=60).decode("utf-8", "replace")
     hits = re.findall(src["pattern"], html)
@@ -202,11 +209,11 @@ def resolve_zip_url(vendor: str) -> str:
             t("Could not find the {vendor} download URL on the page: {page}\n"
               "  The page layout may have changed; fix the pattern in SOURCES",
               vendor=vendor, page=src["page"]))
-    # 同じ URL が複数回出ることがあるので最初の 1 本
+    # The same URL can appear more than once; take the first one
     return sorted(set(hits))[0]
 
 
-# ---------- 名前の正規化 ----------
+# ---------- Name normalization ----------
 
 def slugify(name: str) -> str:
     s = re.sub(r"[_\s]+", "-", name.strip())
@@ -216,7 +223,7 @@ def slugify(name: str) -> str:
 
 
 def _tail_acronyms(name: str) -> list[str]:
-    """「Virtual private cloud VPC」のように末尾に付く略称を別名として拾う。"""
+    """Picks up trailing acronyms, like the "VPC" in "Virtual private cloud VPC", as aliases."""
     return [w for w in name.split() if 2 <= len(w) <= 5 and w.isupper()]
 
 
@@ -226,7 +233,7 @@ def titleize(slug: str) -> str:
 
 
 class Index:
-    """マニフェストを組み立てる。slug の衝突をここで解く。"""
+    """Builds the manifest. Slug collisions get resolved here."""
 
     def __init__(self):
         self.icons: dict[str, dict] = {}
@@ -235,7 +242,8 @@ class Index:
             prefer=False):
         key = f"{vendor}:{slug}"
         if key in self.icons and not prefer:
-            # 同名が来たら別名として吸収する（例: Resource アイコンとサービスアイコン）
+            # When the same name comes in again, fold it in as an alias
+            # (e.g. a Resource icon and a service icon)
             existing = self.icons[key]
             for a in (name, *aliases):
                 if a and a not in existing["aliases"]:
@@ -250,13 +258,13 @@ class Index:
         return key
 
 
-# ---------- ベンダーごとの取り込み ----------
+# ---------- Per-vendor ingestion ----------
 
 def collect_aws(root: str, idx: Index) -> None:
-    """Architecture-Service-Icons / Resource-Icons / Architecture-Group-Icons / Category-Icons。
+    """Architecture-Service-Icons / Resource-Icons / Architecture-Group-Icons / Category-Icons.
 
-    サービスアイコンは 16/32/48/64 の 4 サイズが SVG で入っているが、中身は
-    ベクタなので **64 のものだけ**を正本として採る。
+    Service icons ship as SVG in 4 sizes (16/32/48/64), but since they're
+    vector graphics, **only the 64 version** is taken as the source of truth.
     """
     def walk(pattern):
         for dirpath, _dirs, files in os.walk(root):
@@ -267,7 +275,7 @@ def collect_aws(root: str, idx: Index) -> None:
                 if pattern in p:
                     yield p
 
-    # サービス: .../Arch_<Category>/64/Arch_<Name>_64.svg
+    # Service: .../Arch_<Category>/64/Arch_<Name>_64.svg
     for p in walk("Architecture-Service-Icons"):
         parts = p.split(os.sep)
         if parts[-2] != "64":
@@ -278,7 +286,7 @@ def collect_aws(root: str, idx: Index) -> None:
         idx.add("aws", slugify(base), name=name.strip(), category=category,
                 kind="service", src_path=p, aliases=[name, slugify(name)])
 
-    # リソース: .../Res_<Category>/Res_<Name>_48.svg
+    # Resource: .../Res_<Category>/Res_<Name>_48.svg
     for p in walk("Resource-Icons"):
         parts = p.split(os.sep)
         category = slugify(parts[-2].replace("Res_", "")).replace("-", "_")
@@ -290,7 +298,7 @@ def collect_aws(root: str, idx: Index) -> None:
         idx.add("aws", slug, name=name.strip(), category=category, kind="resource",
                 src_path=p, aliases=[name])
 
-    # グループ（VPC・サブネット・リージョン等の枠）: <Name>_32.svg / <Name>_32_Dark.svg
+    # Group (frames for VPC, subnet, region, etc.): <Name>_32.svg / <Name>_32_Dark.svg
     for p in walk("Architecture-Group-Icons"):
         stem = os.path.basename(p)[:-4]
         dark = stem.endswith("_Dark")
@@ -302,7 +310,7 @@ def collect_aws(root: str, idx: Index) -> None:
                 category="groups", kind="group", src_path=p,
                 aliases=[name, "group " + name, *_tail_acronyms(name)])
 
-    # カテゴリ: Arch-Category_<Name>_32.svg（32 のディレクトリだけ採る）
+    # Category: Arch-Category_<Name>_32.svg (only the 32 directory is taken)
     for p in walk("Category-Icons"):
         if "_32" not in os.path.basename(os.path.dirname(p)):
             continue
@@ -321,7 +329,7 @@ def collect_azure(root: str, idx: Index) -> None:
                 continue
             category = slugify(os.path.basename(dirpath)).replace("-", "_")
             stem = f[:-4]
-            # 先頭の連番と icon-service / icon の接頭辞を落とす
+            # Strip the leading serial number and the icon-service/icon prefix
             name = re.sub(r"^\d+-icon-(service-)?", "", stem).replace("-", " ")
             base = re.sub(r"^Azure\s+", "", name, flags=re.I)
             slug = slugify(base)
@@ -333,7 +341,7 @@ def collect_azure(root: str, idx: Index) -> None:
 
 
 def collect_gcp(root: str, idx: Index, flavor: str) -> None:
-    """legacy: <service>/<service>.svg / core・category: <Name>/SVG/<file>.svg"""
+    """legacy: <service>/<service>.svg / core/category: <Name>/SVG/<file>.svg"""
     if flavor == "legacy":
         for entry in sorted(os.listdir(root)):
             d = os.path.join(root, entry)
@@ -350,7 +358,7 @@ def collect_gcp(root: str, idx: Index, flavor: str) -> None:
                     kind="service", src_path=svg, aliases=[entry])
         return
 
-    # core / category は「Unique Icons/<製品名>/SVG/<file>.svg」の形
+    # core / category follow the form "Unique Icons/<product name>/SVG/<file>.svg"
     for dirpath, _dirs, files in os.walk(root):
         if os.path.basename(dirpath) != "SVG":
             continue
@@ -358,7 +366,7 @@ def collect_gcp(root: str, idx: Index, flavor: str) -> None:
         svgs = [f for f in files if f.endswith(".svg") and not f.startswith("._")]
         if not svgs:
             continue
-        # "-color" 付き（フルカラー版）を優先する
+        # Prefer the "-color" suffixed (full-color) version
         svgs.sort(key=lambda f: (0 if "color" in f.lower() else 1, len(f)))
         name = product.replace("_", " ").strip()
         slug = slugify(name)
@@ -368,7 +376,7 @@ def collect_gcp(root: str, idx: Index, flavor: str) -> None:
             name = name + "（カテゴリ）"
         else:
             kind, category = "service", gcp_category(slug.replace("-", "_"))
-        # core は現行デザインなので legacy を上書きする
+        # core is the current design, so it overrides legacy
         idx.add("gcp", slug, name=name, category=category, kind=kind,
                 src_path=os.path.join(dirpath, svgs[0]),
                 aliases=[product], prefer=(flavor == "core"))
@@ -382,14 +390,14 @@ def gcp_category(service: str) -> str:
     return "other"
 
 
-# ---------- 書き出し ----------
+# ---------- Writing output ----------
 
 def render_check(svg_path: str) -> bool:
-    """cairosvg で焼けるか確かめる。焼けないものは PNG を併置する。"""
+    """Checks whether cairosvg can rasterize it. If not, places a PNG alongside it."""
     try:
         import cairosvg
     except Exception:
-        return True  # 判定できないときは素通りさせる
+        return True  # let it through when we can't tell
     try:
         cairosvg.svg2png(url=svg_path, write_to=io.BytesIO(), output_width=64,
                          output_height=64)
@@ -403,8 +411,9 @@ def write_assets(idx: Index, dests: list[str], sources: dict,
     stats = {"icons": 0, "png_fallback": 0}
     primary = dests[0]
 
-    # 今回取り込むベンダーの配下は作り直す（旧版の残骸を残さない）。
-    # 触らないベンダーは既存のマニフェストから引き継ぐ
+    # Rebuild the subtree for the vendors being fetched this run (don't leave
+    # old leftovers behind). Vendors we're not touching carry over from the
+    # existing manifest
     kept, kept_sources = {}, {}
     old_path = os.path.join(primary, "cloud-icons.json")
     if os.path.exists(old_path):
@@ -422,7 +431,8 @@ def write_assets(idx: Index, dests: list[str], sources: dict,
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         shutil.copyfile(meta["_src"], dst)
         if not render_check(dst):
-            # ベンダー同梱の PNG があれば拾う（無ければ諦めて svg のまま）
+            # Pick up a vendor-bundled PNG if one exists (otherwise give up
+            # and keep the svg)
             png_src = meta["_src"][:-4] + ".png"
             alt = os.path.join(os.path.dirname(os.path.dirname(meta["_src"])), "PNG")
             if not os.path.exists(png_src) and os.path.isdir(alt):
@@ -450,7 +460,7 @@ def write_assets(idx: Index, dests: list[str], sources: dict,
         json.dump(manifest, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
-    # 2 つめ以降のスキルへ複製する
+    # Copy to the second and subsequent skills
     for d in dests[1:]:
         if not os.path.isdir(os.path.dirname(d)):
             print(t("  skip: parent of {dest} does not exist; not copying", dest=d),
@@ -463,10 +473,10 @@ def write_assets(idx: Index, dests: list[str], sources: dict,
     return stats
 
 
-# ---------- メイン ----------
+# ---------- Main ----------
 
 def verify(dests: list[str]) -> int:
-    """配置済みの素材とマニフェストが食い違っていないか調べる。"""
+    """Checks whether the placed assets and the manifest have gone out of sync."""
     problems = []
     sets = []
     for root in dests:

@@ -1,187 +1,188 @@
-# スライドパターン カタログ（実物 43 種）
+*[日本語](slide-pattern-catalog.ja.md)*
+# Slide Pattern Catalog (43 real examples)
 
-`examples/slide-pattern-index.json` を実際に生成して 1 枚ずつ書き出した画像カタログ。
-**どのページが作れるかを見て選ぶ**ためのもので、組み方の規則そのものは
-[slide-patterns.md](slide-patterns.md)、図表部品の詳細は
-[patterns.md](patterns.md) / [charts.md](charts.md) / [diagrams.md](diagrams.md) にある。
+An image catalog built by actually rendering `examples/slide-pattern-index.json` and exporting it one slide at a time.
+It's meant for **choosing a page by looking at what can be built**; the layout rules themselves live in
+[slide-patterns.md](slide-patterns.md), and the details of figure components live in
+[patterns.md](patterns.md) / [charts.md](charts.md) / [diagrams.md](diagrams.md).
 
-各パターンの **figures** 行が、デッキ仕様（JSON）の `figures` にそのまま書く `type` 名。
+Each pattern's **figures** line is the exact `type` name you write into `figures` in the deck spec (JSON).
 
-> 画像はリポジトリにコミットしてある。パターンを追加・変更したときは、
-> 下のコマンドで作り直して画像ごとコミットし直すこと。
+> The images are committed to the repository. When you add or change a pattern,
+> rebuild with the commands below and commit the images along with it.
 
 ```bash
-# このカタログを作る（パターンを足したときも同じ手順）
+# Build this catalog (same steps when you add a pattern)
 .venv/bin/python scripts/build_deck.py \
     --template templates/scalar-2026.json --spec examples/slide-pattern-index.json
-.venv/bin/python scripts/fetch_thumbnails.py <生成された URL> --out out/patterns --size MEDIUM
+.venv/bin/python scripts/fetch_thumbnails.py <generated URL> --out out/patterns --size MEDIUM
 .venv/bin/python scripts/build_pattern_catalog.py --thumbs out/patterns
 ```
 
-| 分類 | 数 | 何を選ぶための章か |
+| Category | Count | What this chapter helps you choose |
 |---|---|---|
-| [1. 骨格 6 種](#1-骨格6種) | 6 | ページの組み方 |
-| [2. 構成ページ](#2-構成ページ) | 4 | デッキの骨組み |
-| [3. 定量ページ（推移・構成・増減）](#3-定量ページ推移構成増減) | 7 | 数字で主張する |
-| [4. 比較・評価ページ](#4-比較評価ページ) | 6 | 案を並べて選ばせる |
-| [5. 構造・論理ページ](#5-構造論理ページ) | 7 | 関係を図にする |
-| [6. 計画・体制ページ](#6-計画体制ページ) | 5 | 時間と人を示す |
-| [7. 定性・技術ページ](#7-定性技術ページ) | 5 | 数値以外で語る |
-| [8. 締め・付録ページ](#8-締め付録ページ) | 3 | 意思決定とその後 |
+| [1. 6 Skeletons](#1-6-skeletons) | 6 | How to lay out a page |
+| [2. Structural pages](#2-structural-pages) | 4 | The deck's framework |
+| [3. Quantitative pages (trend, composition, change)](#3-quantitative-pages-trend-composition-change) | 7 | Making a case with numbers |
+| [4. Comparison / evaluation pages](#4-comparison--evaluation-pages) | 6 | Putting options side by side for a decision |
+| [5. Structure / logic pages](#5-structure--logic-pages) | 7 | Turning relationships into a diagram |
+| [6. Planning / organization pages](#6-planning--organization-pages) | 5 | Showing time and people |
+| [7. Qualitative / technical pages](#7-qualitative--technical-pages) | 5 | Making a case without numbers |
+| [8. Closing / appendix pages](#8-closing--appendix-pages) | 3 | Decisions and what follows |
 
-> 「システム構成」だけはクラウドベンダーの公式アイコンを描くため、
-> 事前に `.venv/bin/python scripts/fetch_cloud_icons.py` が必要。
-> アイコンは再配布が許されないためリポジトリには含めていない
-> （[assets/cloud-icons/README.md](../assets/cloud-icons/README.md)）。
+> Only "System Architecture" draws official cloud vendor icons, so it requires
+> running `.venv/bin/python scripts/fetch_cloud_icons.py` beforehand.
+> The icons aren't included in the repository because redistribution isn't permitted
+> (see [assets/cloud-icons/README.md](../assets/cloud-icons/README.md)).
 
-## 1. 骨格 6 種
+## 1. 6 Skeletons
 
-ページの**組み方**そのもの。どの図を使うかより先に、この 6 種のどれで組むかを決める。
-標準は骨格B（左図＋右示唆）。座標は [slide-patterns.md](slide-patterns.md) の「骨格の標準座標」にそのまま使える値がある。
+The **layout** itself for a page. Before deciding which figure to use, decide which of these 6 skeletons to build with.
+The default is Skeleton B (figure left + kicker right). Coordinates you can use as-is are in "Skeleton standard coordinates" in [slide-patterns.md](slide-patterns.md).
 
-### 骨格A｜全幅 1 図
+### Skeleton A | Full-width single figure
 
-![骨格A｜全幅 1 図](images/slide-patterns/skeleton-a-full-width.png)
+![Skeleton A | Full-width single figure](images/slide-patterns/skeleton-a-full-width.png)
 
-示唆を置かず、図に全幅を使う。表や大きなツリーなど、要素が多くて縮めると読めない図に使う。
+No kicker; the figure uses the full width. Use this for figures with many elements — such as tables or large trees — that become unreadable when shrunk.
 
 **figures**: `governing_message` / `lead_in` / `table` / `source_note`
 
-### 骨格B｜左図＋右示唆
+### Skeleton B | Figure left + kicker right
 
-![骨格B｜左図＋右示唆](images/slide-patterns/skeleton-b-figure-left-kicker-right.png)
+![Skeleton B | Figure left + kicker right](images/slide-patterns/skeleton-b-figure-left-kicker-right.png)
 
-図を左 2/3、示唆を右 1/3 に置く。読者の視線が図 → 示唆の順に流れ、読み方を迷わない。
+Places the figure in the left 2/3 and the kicker in the right 1/3. The reader's eye flows figure → kicker, so there's no ambiguity about reading order.
 
 **figures**: `governing_message` / `lead_in` / `vbars` / `so_what` / `source_note`
 
-### 骨格C｜左右 2 図
+### Skeleton C | Two figures side by side
 
-![骨格C｜左右 2 図](images/slide-patterns/skeleton-c-two-figures.png)
+![Skeleton C | Two figures side by side](images/slide-patterns/skeleton-c-two-figures.png)
 
-同じ主張を支える 2 つの図を並置する。主張が 2 つになるなら 2 枚に割ること。
+Places two figures side by side that support the same claim. If you have two claims, split them across two slides instead.
 
 **figures**: `governing_message` / `lead_in` / `linechart` / `pie` / `source_note`
 
-### 骨格D｜上下 2 段
+### Skeleton D | Two rows, top and bottom
 
-![骨格D｜上下 2 段](images/slide-patterns/skeleton-d-two-rows.png)
+![Skeleton D | Two rows, top and bottom](images/slide-patterns/skeleton-d-two-rows.png)
 
-上段に全体の流れ、下段にその内訳や補足を置く。横長の図（工程・線表）に向く。
+Puts the overall flow in the top row and its breakdown or supplementary detail in the bottom row. Suits wide figures such as processes or timelines.
 
 **figures**: `governing_message` / `lead_in` / `flow` / `table` / `source_note`
 
-### 骨格E｜全幅の図＋下示唆帯
+### Skeleton E | Full-width figure + kicker band below
 
-![骨格E｜全幅の図＋下示唆帯](images/slide-patterns/skeleton-e-full-width-kicker-band.png)
+![Skeleton E | Full-width figure + kicker band below](images/slide-patterns/skeleton-e-full-width-kicker-band.png)
 
-4 象限やポジショニングなど、横幅を必要とする図。示唆は帯として下に敷く。
+For figures that need full width, such as four-quadrant charts or positioning maps. The kicker sits as a band underneath.
 
 **figures**: `governing_message` / `lead_in` / `matrix` / `so_what` / `source_note`
 
-### 骨格F｜文字のみ
+### Skeleton F | Text only
 
-![骨格F｜文字のみ](images/slide-patterns/skeleton-f-text-only.png)
+![Skeleton F | Text only](images/slide-patterns/skeleton-f-text-only.png)
 
-定義・前提・条件など、正確さが要る内容は無理に図にしない。表で構造化して示す。
+For content that needs precision — definitions, premises, conditions — don't force it into a figure. Structure it with a table instead.
 
 **figures**: `governing_message` / `lead_in` / `table` / `source_note`
 
-## 2. 構成ページ
+## 2. Structural pages
 
-デッキ全体の骨組みを作るページ。`storyline` と `ghost` は成果物であると同時に、清書前に論旨を検証する設計の道具でもある。
+Pages that build the deck's overall framework. `storyline` and `ghost` are both deliverables and design tools used to verify the argument before finalizing the deck.
 
-### エグゼクティブサマリー
+### Executive summary
 
-![エグゼクティブサマリー](images/slide-patterns/exec-summary.png)
+![Executive summary](images/slide-patterns/exec-summary.png)
 
-冒頭専用。SCR（状況 → 課題 → 答え）で、この 1 枚だけ読めば意思決定できる状態にする。論点は 5 個まで。
+Opening slide only. Use SCR (Situation → Complication → Resolution) so a decision can be made from this one slide alone. Keep it to at most 5 points.
 
-見出しの例: 「この 1 枚だけで意思決定できる」
+Example heading: "Make the decision from this one slide"
 
 **figures**: `exec_summary`
 
-### アジェンダ
+### Agenda
 
-![アジェンダ](images/slide-patterns/agenda.png)
+![Agenda](images/slide-patterns/agenda.png)
 
-章と枚数を先に示し、読者が全体量を把握できるようにする。行数が多いなら分野で割る。
+Shows the chapters and page counts up front so readers can grasp the overall scope. If there are many rows, split them by area.
 
-見出しの例: 「章と枚数を先に示して読者の負荷を下げる」
+Example heading: "Show chapters and page counts up front to lower the reader's load"
 
 **figures**: `table` / `source_note`
 
-### ストーリーライン
+### Storyline
 
-![ストーリーライン](images/slide-patterns/storyline.png)
+![Storyline](images/slide-patterns/storyline.png)
 
-章扉として使うと、読者が現在地を把握できる。設計時は論旨の検証にも使う。
+Used as chapter dividers so readers can track where they are. During design, also used to verify the argument.
 
-見出しの例: 「タイトルだけで論旨が通るかを示す」
+Example heading: "Show whether the argument holds up from the titles alone"
 
 **figures**: `lead_in` / `storyline`
 
-### ゴーストデッキ
+### Ghost deck
 
-![ゴーストデッキ](images/slide-patterns/ghost-deck.png)
+![Ghost deck](images/slide-patterns/ghost-deck.png)
 
-成果物ではなく設計の道具。「未取得」が残ったまま清書に入らないための点検表。
+Not a deliverable — a design tool. A checklist to catch "not yet obtained" items before they slip into the final deck.
 
-見出しの例: 「清書前に骨子とデータの当てを確かめる」
+Example heading: "Confirm the outline and data sources before finalizing"
 
 **figures**: `lead_in` / `ghost`
 
-## 3. 定量ページ（推移・構成・増減）
+## 3. Quantitative pages (trend, composition, change)
 
-数字で主張するページ。**すべて出典行が要る**（`source_note` は空出典で `ValueError`）。二重軸・基線ずらしは部品が拒否する。
+Pages that make a case with numbers. **All of them require a source line** (`source_note` raises `ValueError` on an empty source). The components reject dual axes and truncated baselines.
 
-### 推移
+### Trend
 
-![推移](images/slide-patterns/trend.png)
+![Trend](images/slide-patterns/trend.png)
 
-時間の変化を見せる基本形。軸は 1 本（二重軸は作らない）。終端にだけ数値を添える。
+The basic form for showing change over time. A single axis only (no dual axes). Attach values only at the endpoint.
 
-見出しの例: 「営業利益率は 3 年連続で低下し中央値を下回った」
+Example heading: "Operating margin has fallen for three straight years, below the median"
 
 **figures**: `lead_in` / `linechart` / `so_what` / `source_note`
 
-### 増減分解
+### Waterfall breakdown
 
-![増減分解](images/slide-patterns/waterfall.png)
+![Waterfall breakdown](images/slide-patterns/waterfall.png)
 
-起点と終点の差を要因に分解する。合計が積算と合わないと部品がエラーで止める。
+Breaks down the difference between a starting and ending value into contributing factors. The component halts with an error if the total doesn't match the sum.
 
-見出しの例: 「差がどこで生まれたかを橋で渡す」
+Example heading: "Bridge across the gap to show where the difference came from"
 
 **figures**: `lead_in` / `waterfall` / `source_note`
 
-### 構成比
+### Composition (pie)
 
-![構成比](images/slide-patterns/composition-pie.png)
+![Composition (pie)](images/slide-patterns/composition-pie.png)
 
-全体に占める割合を示す。系列は 6 つまで。渡した順に時計回りで描く。
+Shows a share of the whole. Up to 6 series. Drawn clockwise in the order passed.
 
-見出しの例: 「削減余地の 8 割は受付・照合の 2 工程にある」
+Example heading: "80% of the reduction potential lies in the reception and reconciliation steps"
 
 **figures**: `lead_in` / `pie` / `so_what` / `source_note`
 
-### 内訳の推移
+### Stacked trend
 
-![内訳の推移](images/slide-patterns/stacked-trend.png)
+![Stacked trend](images/slide-patterns/stacked-trend.png)
 
-合計の推移と内訳を同時に見せる。内訳どうしの比較が主目的ならグループ縦棒を使う。
+Shows the trend of a total and its breakdown at the same time. If comparing the breakdown components against each other is the main point, use grouped vertical bars instead.
 
-見出しの例: 「総量が減る一方で体制費は微増する」
+Example heading: "The total volume is shrinking while staffing costs edge up slightly"
 
 **figures**: `lead_in` / `vbars_stacked` / `source_note`
 
-### 系列比較
+### Series comparison
 
-![系列比較](images/slide-patterns/grouped-comparison.png)
+![Series comparison](images/slide-patterns/grouped-comparison.png)
 
-同じカテゴリ内で 2〜3 系列を比べる。4 系列を超えるなら表に切り替える。
+Compares 2–3 series within the same category. If you have more than 4 series, switch to a table.
 
-見出しの例: 「どの四半期でも提案構成が工数を半減以下にする」
+Example heading: "The proposed composition cuts effort by more than half in every quarter"
 
 **figures**: `lead_in` / `vbars_grouped` / `source_note`
 
@@ -189,271 +190,271 @@
 
 ![KPI](images/slide-patterns/kpi.png)
 
-主指標を大きく 1〜2 つ、内訳は横棒で。数字を並べすぎると 1 つも残らない。
+One or two headline metrics shown large, with breakdowns as horizontal bars. Cramming in too many numbers means none of them stick.
 
-見出しの例: 「持ち帰る数字を絞り、内訳を横に添える」
+Example heading: "Narrow down the numbers to take away, and add the breakdown alongside"
 
 **figures**: `lead_in` / `metric` / `hbars` / `source_note`
 
-### 図表番号つき
+### Numbered exhibit
 
-![図表番号つき](images/slide-patterns/exhibit-numbered.png)
+![Numbered exhibit](images/slide-patterns/exhibit-numbered.png)
 
-枠と番号を付けると「図表 3 参照」で誘導できる。付録の図表一覧とも対応させる。
+Adding a frame and a number lets you point to it with "see Exhibit 3." Keep it in sync with the exhibit list in the appendix.
 
-見出しの例: 「本文・付録から参照されるページ」
+Example heading: "A page referenced from the body text and the appendix"
 
 **figures**: `lead_in` / `exhibit_frame` / `vbars` / `so_what` / `source_note`
 
-## 4. 比較・評価ページ
+## 4. Comparison / evaluation pages
 
-案を並べて選ばせるページ。2 案なら対置、3 案以上なら `comparison`、3 案前後 × 基準 4 前後なら評価マトリクス、正確さが要るなら表。
+Pages that put options side by side for a decision. For 2 options use a side-by-side layout; for 3 or more use `comparison`; for roughly 3 options × roughly 4 criteria use a rating matrix; when precision matters, use a table.
 
-### 2 案比較
+### Two-option comparison
 
-![2 案比較](images/slide-patterns/two-option-compare.png)
+![Two-option comparison](images/slide-patterns/two-option-compare.png)
 
-現行と提案を左右に対置する。2 案ならこれで足り、評価マトリクスは要らない。
+Puts the current state and the proposal side by side. This is enough for 2 options — no rating matrix needed.
 
 **figures**: `before_after` / `so_what` / `source_note`
 
-### 多案比較
+### Multi-option comparison
 
-![多案比較](images/slide-patterns/multi-option-comparison.png)
+![Multi-option comparison](images/slide-patterns/multi-option-comparison.png)
 
-矢印は「移り変わり」のときだけ置く。並列の比較に矢印を足すと、左から右へ進むという無い意味が生まれる。
+Only add arrows for "transitions." Adding arrows to a parallel comparison implies a left-to-right progression that doesn't actually exist.
 
-見出しの例: 「3 案以上を並列に置き、推奨を 1 つ示す」
+Example heading: "Lay out 3+ options side by side and point to a single recommendation"
 
 **figures**: `lead_in` / `comparison` / `so_what` / `source_note`
 
-### 多案 × 基準
+### Multiple options × criteria
 
-![多案 × 基準](images/slide-patterns/rating-matrix.png)
+![Multiple options × criteria](images/slide-patterns/rating-matrix.png)
 
-3 案前後 × 基準 4 前後が限度。ドット 4 つが最良。2 案なら対置図で足りる。
+Roughly 3 options × roughly 4 criteria is the practical limit. 4-dot ratings work best. For 2 options, a side-by-side layout is enough.
 
-見出しの例: 「ドット評価は白黒印刷でも判別できる」
+Example heading: "Dot ratings stay legible even in black-and-white printing"
 
 **figures**: `lead_in` / `rating_matrix` / `so_what` / `source_note`
 
-### ポジショニング
+### Positioning map
 
-![ポジショニング](images/slide-patterns/positioning-map.png)
+![Positioning map](images/slide-patterns/positioning-map.png)
 
-2 軸上の位置関係を見せる。4 象限への「分類」を見せたいなら `matrix` を使う。
+Shows relative position along two axes. If you want to show "classification" into four quadrants, use `matrix` instead.
 
-見出しの例: 「2 軸で競合との位置関係を示す」
+Example heading: "Show position relative to competitors on two axes"
 
 **figures**: `posmap` / `so_what`
 
-### 天秤
+### Balance
 
-![天秤](images/slide-patterns/balance.png)
+![Balance](images/slide-patterns/balance.png)
 
-2 案のトレードオフを重みとして見せる。定量比較ではなく、判断の傾きを示す図。
+Shows the trade-off between two options as weights. Not a quantitative comparison — a figure that shows which way the judgment tips.
 
 **figures**: `balance` / `source_note`
 
-### 仕様比較表
+### Spec comparison table
 
-![仕様比較表](images/slide-patterns/spec-table.png)
+![Spec comparison table](images/slide-patterns/spec-table.png)
 
-数値と条件を正確に並べる。図にすると精度が落ちる内容は表のままにする。
+Lines up numbers and conditions precisely. Keep content as a table when turning it into a figure would lose precision.
 
 **figures**: `table` / `source_note`
 
-## 5. 構造・論理ページ
+## 5. Structure / logic pages
 
-関係を図にするページ。数値ではなく**構造**が主張になる。
+Pages that turn relationships into a diagram. The claim is about **structure**, not numbers.
 
-### ロジックツリー
+### Logic tree
 
-![ロジックツリー](images/slide-patterns/logic-tree.png)
+![Logic tree](images/slide-patterns/logic-tree.png)
 
-論点を漏れなく重複なく分解する。深さ 4 超はエラー。MECE かどうかは描く側の責任。
+Breaks a question down with no gaps and no overlaps. A depth greater than 4 is an error. Whether it's truly MECE is the author's responsibility.
 
 **figures**: `mece_tree` / `source_note`
 
-### 階層と絞り込み
+### Hierarchy and narrowing
 
-![階層と絞り込み](images/slide-patterns/pyramid-funnel.png)
+![Hierarchy and narrowing](images/slide-patterns/pyramid-funnel.png)
 
-指標の階層（ピラミッド）と件数の減衰（ファネル）を並べる。
+Places a metric hierarchy (pyramid) alongside a decreasing count (funnel).
 
-見出しの例: 「指標の階層と件数の減衰」
+Example heading: "Metric hierarchy and decreasing counts"
 
 **figures**: `pyramid` / `funnel` / `source_note`
 
-### 積層
+### Layers
 
-![積層](images/slide-patterns/layers.png)
+![Layers](images/slide-patterns/layers.png)
 
-システムの責務を層で示す。層の順序そのものが主張になる。
+Shows a system's responsibilities as layers. The order of the layers itself is the claim.
 
 **figures**: `layers` / `source_note`
 
-### プロセス
+### Process
 
-![プロセス](images/slide-patterns/process-flow.png)
+![Process](images/slide-patterns/process-flow.png)
 
-工程の流れと段階を示す。`flow` / `steps` / `icon_flow` を粒度で使い分ける。
+Shows a process's flow and stages. Use `flow` / `steps` / `icon_flow` depending on the level of granularity.
 
 **figures**: `flow` / `steps` / `icon_flow` / `source_note`
 
-### 中心と放射
+### Hub and spokes
 
-![中心と放射](images/slide-patterns/hub-radial.png)
+![Hub and spokes](images/slide-patterns/hub-radial.png)
 
-1 つの基盤が複数業務を支える構図。放射の本数は 6 本前後まで。
+A structure where one foundation supports multiple lines of business. Keep the number of spokes to around 6 or fewer.
 
 **figures**: `hub` / `source_note`
 
-### 4 象限
+### Four quadrants
 
-![4 象限](images/slide-patterns/quadrant-matrix.png)
+![Four quadrants](images/slide-patterns/quadrant-matrix.png)
 
-施策を 2 軸で位置づけて優先順位を作る。競合との位置関係なら `posmap`。
+Positions initiatives on two axes to establish priority. For position relative to competitors, use `posmap` instead.
 
-見出しの例: 「施策を効果とコストで位置づける」
+Example heading: "Position initiatives by impact and cost"
 
 **figures**: `matrix` / `source_note`
 
-### 重なりと深層
+### Overlap and depth
 
-![重なりと深層](images/slide-patterns/venn-iceberg.png)
+![Overlap and depth](images/slide-patterns/venn-iceberg.png)
 
-条件の交わり（ベン図）と、表に出ない要因（氷山）を組み合わせる。
+Combines the overlap of conditions (Venn diagram) with factors that aren't visible on the surface (iceberg).
 
-見出しの例: 「条件の交わりと見えない要因」
+Example heading: "Overlapping conditions and hidden factors"
 
 **figures**: `venn` / `iceberg` / `source_note`
 
-## 6. 計画・体制ページ
+## 6. Planning / organization pages
 
-時間と人を示すページ。いつ・誰が・どの範囲かを扱う。
+Pages that show time and people — when, who, and what scope.
 
-### スケジュール
+### Schedule
 
-![スケジュール](images/slide-patterns/gantt-schedule.png)
+![Schedule](images/slide-patterns/gantt-schedule.png)
 
-工程を時間軸に並べる。段階移行など「止めない」計画の説明に向く。
+Lays out a process along a timeline. Well suited to explaining a "no downtime" plan such as a phased migration.
 
-見出しの例: 「2 段階移行で業務を止めない」
+Example heading: "Two-phase migration without stopping operations"
 
 **figures**: `gantt` / `source_note`
 
-### ロードマップ
+### Roadmap
 
-![ロードマップ](images/slide-patterns/roadmap.png)
+![Roadmap](images/slide-patterns/roadmap.png)
 
-段階の道のりを示す。`journey` は体験の起伏、`timeline` は時点の列。
+Shows a phased path forward. `journey` shows the ups and downs of an experience; `timeline` shows a sequence of points in time.
 
-見出しの例: 「段階の道のりと時系列」
+Example heading: "A phased path and a chronological sequence"
 
 **figures**: `journey` / `timeline`
 
-### 体制図
+### Org chart
 
-![体制図](images/slide-patterns/org-chart.png)
+![Org chart](images/slide-patterns/org-chart.png)
 
-責任者と役割を明示する。論点の分解は `mece_tree` で、体制はこちら。
+Makes owners and roles explicit. Breaking down a question is `mece_tree`'s job; this one handles the organization.
 
 **figures**: `orgchart` / `source_note`
 
-### 市場規模
+### Market sizing
 
-![市場規模](images/slide-patterns/market-sizing.png)
+![Market sizing](images/slide-patterns/market-sizing.png)
 
-対象範囲を入れ子で示す（TAM / SAM / SOM）。外側から順に渡す。
+Shows the target scope as nested circles (TAM / SAM / SOM). Pass them from the outside in.
 
 **figures**: `nested_circles` / `source_note`
 
-### リーンキャンバス
+### Lean canvas
 
-![リーンキャンバス](images/slide-patterns/lean-canvas.png)
+![Lean canvas](images/slide-patterns/lean-canvas.png)
 
-事業の全体像を 1 枚に収める。項目を埋めきれない段階では使わない。
+Fits the overall picture of a business onto one slide. Don't use it while you still can't fill in every field.
 
 **figures**: `lean_canvas`
 
-## 7. 定性・技術ページ
+## 7. Qualitative / technical pages
 
-数値以外で語るページ。引用・事例・構成図・コードなど。
+Pages that make their case without numbers — quotes, case studies, architecture diagrams, code, and the like.
 
-### 現場の声
+### Testimonial
 
-![現場の声](images/slide-patterns/testimonial.png)
+![Testimonial](images/slide-patterns/testimonial.png)
 
-数値では出ない痛点を引用で示す。定量ページの後ろに置くと効く。
+Shows pain points that don't show up in the numbers, through a quote. Works well placed right after a quantitative page.
 
 **figures**: `testimonial` / `source_note`
 
-### 事例カード
+### Case cards
 
-![事例カード](images/slide-patterns/case-cards.png)
+![Case cards](images/slide-patterns/case-cards.png)
 
-打ち手をカードで並べ、全体像を掴ませる。個々の詳細は付録へ。
+Lays out initiatives as cards so readers can grasp the overall picture. Put individual details in the appendix.
 
-見出しの例: 「打ち手を並べて全体像を掴ませる」
+Example heading: "Lay out initiatives as cards to convey the overall picture"
 
 **figures**: `asset_icon_cards` / `source_note`
 
-### システム構成
+### System architecture
 
-![システム構成](images/slide-patterns/cloud-architecture.png)
+![System architecture](images/slide-patterns/cloud-architecture.png)
 
-クラウド公式アイコンで配置を示す。**ベンダーアイコンの取得が必要**（下記参照）。
+Shows the layout using official cloud icons. **Requires fetching vendor icons** (see above).
 
 **figures**: `cloud_zone` / `cloud_icon_row` / `so_what` / `source_note`
 
-### コードサンプル
+### Code sample
 
-![コードサンプル](images/slide-patterns/code-sample.png)
+![Code sample](images/slide-patterns/code-sample.png)
 
-画面で読める分量まで削る。長いコードは付録に回し、本文には要点だけ置く。
+Trim it down to an amount that's readable on screen. Move long code to the appendix and keep only the key points in the body.
 
-見出しの例: 「実装の具体を示す」
+Example heading: "Show the specifics of the implementation"
 
 **figures**: `lead_in` / `code_block` / `cards` / `source_note`
 
-### ピクトグラム一覧
+### Pictogram grid
 
-![ピクトグラム一覧](images/slide-patterns/pictogram-grid.png)
+![Pictogram grid](images/slide-patterns/pictogram-grid.png)
 
-業務語彙をアイコンで整理する。用語集の代わりに冒頭へ置ける。
+Organizes business vocabulary with icons. Can be placed at the opening in place of a glossary.
 
 **figures**: `asset_icon_grid` / `source_note`
 
-## 8. 締め・付録ページ
+## 8. Closing / appendix pages
 
-意思決定と、その後を扱うページ。本編を薄く、付録を厚くするのが原則。
+Pages that handle decisions and what comes after. The principle is to keep the main body thin and the appendix thick.
 
-### 意思決定事項
+### Decisions
 
-![意思決定事項](images/slide-patterns/decisions.png)
+![Decisions](images/slide-patterns/decisions.png)
 
-何に Yes/No を言えばよいかを 1 枚に。会議の出口をここで定義する。
+Puts what needs a Yes/No answer onto one slide. Defines the exit point of the meeting right here.
 
 **figures**: `table` / `source_note`
 
-### 次のステップ
+### Next steps
 
-![次のステップ](images/slide-patterns/next-steps.png)
+![Next steps](images/slide-patterns/next-steps.png)
 
-誰がいつまでに何をするか。主語と期限の無い行は書かない。
+Who does what by when. Don't write a line that lacks a subject and a deadline.
 
 **figures**: `flow` / `table` / `source_note`
 
-### 付録
+### Appendix
 
-![付録](images/slide-patterns/appendix-index.png)
+![Appendix](images/slide-patterns/appendix-index.png)
 
-図表一覧で本文からの参照先を示す。`exhibit_frame` の番号と対応させる。
+An exhibit index showing where each is referenced from in the body. Keep it in sync with the numbering in `exhibit_frame`.
 
 **figures**: `table` / `source_note`
 
 ---
 
-画像は `examples/slide-pattern-index.json` の生成結果（`scalar-2026` テンプレート、MEDIUM サムネイル）。
-パターンを足すときは、そのスペックにページを 1 枚足してから上のコマンドで作り直す。
+The images are the rendered output of `examples/slide-pattern-index.json` (the `scalar-2026` template, MEDIUM thumbnails).
+When adding a pattern, add one page to that spec first, then rebuild with the commands above.

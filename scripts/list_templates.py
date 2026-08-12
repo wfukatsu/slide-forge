@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""登録済みテンプレートの一覧を出す。対話でテンプレートを選ばせるときの選択肢の材料。
+"""List registered templates. Supplies the choices for interactively selecting a template.
 
-AskUserQuestion の選択肢を手で書くとテンプレートを足したときに腐るので、
-`templates/*.json` から実データを読んで出す。`--json` は機械可読な形。
+Hand-writing the AskUserQuestion choices would go stale as soon as a template
+is added, so this reads the real data from `templates/*.json` and prints it.
+`--json` gives a machine-readable form.
 
     python scripts/list_templates.py
     python scripts/list_templates.py --json
@@ -50,7 +51,7 @@ def summarize(path: str) -> dict:
     page = t.get("pageSize", {}) or {}
     existing = t.get("existingSlideIds", []) or []
     derived = t.get("derivedFrom", "")
-    if isinstance(derived, dict):      # 派生元は文字列のことも dict のこともある
+    if isinstance(derived, dict):      # derivedFrom can be either a string or a dict
         derived = derived.get("presentationId", "")
     return {
         "id": t.get("name") or os.path.splitext(os.path.basename(path))[0],
@@ -97,7 +98,7 @@ def main() -> int:
         print("  " + t("roles: {roles}",
                        roles=", ".join(it["roleNames"]) or t("(unassigned)")))
         if it["rolesNote"]:
-            # ロールのメモは長いので 1 行目だけ。全文は --json か template.json を見る
+            # The roles note can be long, so show only the first sentence. See --json or template.json for the full text
             note = it["rolesNote"].split("。")[0]
             if len(note) < len(it["rolesNote"]):
                 note += t("... (see --json for the full text)")

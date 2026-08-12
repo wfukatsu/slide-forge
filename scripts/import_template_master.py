@@ -64,7 +64,8 @@ def import_one(drive, template_id: str, *, folder: str | None) -> None:
     url = f"https://docs.google.com/presentation/d/{pid}/edit"
     print(t("{id}: imported as {url}", id=template_id, url=url))
 
-    # 役割の割り当ては人が確認したもの。--reset-roles を付けないので保持される。
+    # Role assignments have been verified by a human. --reset-roles isn't
+    # passed, so they're kept.
     subprocess.run([sys.executable, str(ROOT / "scripts/inspect_template.py"), pid,
                     "--emit", str(reg_path), "--name", template_id],
                    cwd=ROOT, check=True)

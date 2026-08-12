@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""スライド上に図解を描くためのプリミティブ。
+"""Primitives for drawing diagrams on a slide.
 
-`build_deck.py` の `TemplateDeck` と組み合わせて使う。プレースホルダだけでは
-表現できない図（比較図、フロー、アーキテクチャ、バーチャート等）を、
-テンプレートの配色を使って描く。
+Used together with `TemplateDeck` from `build_deck.py`. Draws diagrams that
+placeholders alone can't express (comparison diagrams, flows, architecture,
+bar charts, etc.), using the template's color scheme.
 
     import sys; sys.path.insert(0, "<skill>/scripts")
     import importlib.util
@@ -17,24 +17,26 @@
     d.box(0.5, 1.2, 2.6, 0.9, "Inner Loop", fill=d.P.primary, color="#FFFFFF")
     d.arrow(3.2, 1.65, 4.0, 1.65)
 
-座標はすべてインチ。原点はスライド左上。
+All coordinates are in inches. The origin is the top-left of the slide.
 
-図形どうしを結ぶときは座標を手で書かず、次のいずれかを使う。端点がずれていても
-Slides API はエラーにしないため、手書きの座標は事故のもとになる。
+When connecting shapes to each other, don't write the coordinates by hand —
+use one of the following instead. The Slides API doesn't error out even if
+endpoints are misaligned, so hand-written coordinates are a common source of
+mistakes.
 
-    a = d.shape(1.0, 1.0, 1.6, 0.6, text="A")   # shape() は objectId を返す
+    a = d.shape(1.0, 1.0, 1.6, 0.6, text="A")   # shape() returns an objectId
     b = d.shape(4.0, 2.0, 1.6, 0.6, text="B")
-    d.connect(a, b)              # API のコネクタ。図形に紐づき、動かすと追従する
-    d.link(a, b)                 # 中心を結ぶ線と辺の交点を端点にする
-    d.line(..., free=True)       # 軸や引き出し線など、接しないのが正しい線
+    d.connect(a, b)              # API connector. Bound to the shapes; follows them when moved
+    d.link(a, b)                 # a line between centers, endpoints at the edge intersections
+    d.line(..., free=True)       # axes, leader lines, etc. — lines that correctly don't touch anything
 
-    for msg in d.audit_connectors():   # 浮いた線・埋まった線を座標の段階で拾う
+    for msg in d.audit_connectors():   # catch floating/buried lines at the coordinate stage
         print(msg)
 
-構造を正確に示す図はこのモジュール、概念を絵で示す「イメージ図」は
-`illustrations`（図形で描く）、`icons`（ブランドのアイコン素材）、
-`images`（AI 生成・手持ちの画像）が担当する。すべて Canvas のメソッドとして
-生えている。
+This module is for diagrams that accurately represent structure. "Illustrative
+diagrams" that depict a concept visually are handled by `illustrations`
+(drawn with shapes), `icons` (brand icon assets), and `images` (AI-generated
+or supplied images). All are exposed as Canvas methods.
 
     d.icon_flow(0.7, 1.2, 8.6, [("person", "利用者"), ("server", "API")])
     d.asset_icon_flow(0.7, 2.4, 8.6, [("job-seeker", "求職者"), ("interview", "面接")])
@@ -53,8 +55,8 @@ import unicodedata
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 from _i18n import t, register  # noqa: E402
-# 色ユーティリティは colors.py に移した。`from diagrams import lighten` のような
-# 既存の import を壊さないよう、ここから re-export している。
+# Color utilities were moved to colors.py. Re-exported from here so existing
+# imports like `from diagrams import lighten` keep working.
 from colors import (  # noqa: E402,F401
     Palette, contrast_ratio, darken, lighten, mix, readable_on, relative_luminance,
 )
@@ -119,21 +121,22 @@ register({
 })
 
 
-# ---------- 描画 ----------
+# ---------- Drawing ----------
 
-# オブジェクト ID をプロセス間で衝突させないためのランダムトークン
+# Random token to avoid object ID collisions across processes
 import uuid  # noqa: E402
 _RUN_TOKEN = uuid.uuid4().hex[:4]
 
-# createShape 直後の既定値（実測で確認）。ここと同じ値を指定するだけの
-# updateShapeProperties / updateParagraphStyle は送らずに済む。
-# batchUpdate の所要時間はリクエスト件数にほぼ比例するので、この省略が
-# そのまま生成時間の短縮になる（実デッキで約 19% 削減）。
+# Default values immediately after createShape (confirmed empirically). Lets us
+# skip sending updateShapeProperties / updateParagraphStyle calls that would
+# just set the same values. batchUpdate's duration is roughly proportional to
+# the number of requests, so this omission directly shortens generation time
+# (about 19% saved on a real deck).
 #
-#   TEXT_BOX 以外 … 塗り・枠はテーマ由来（NOT_RENDERED ではない）、
-#                    contentAlignment=MIDDLE、段落の alignment=CENTER
-#   TEXT_BOX     … 塗り・枠とも NOT_RENDERED、contentAlignment=TOP、
-#                    段落の alignment=START
+#   Other than TEXT_BOX ... fill/outline come from the theme (not NOT_RENDERED),
+#                            contentAlignment=MIDDLE, paragraph alignment=CENTER
+#   TEXT_BOX     ... both fill and outline are NOT_RENDERED, contentAlignment=TOP,
+#                    paragraph alignment=START
 _DEFAULT_VALIGN = {"TEXT_BOX": "TOP"}
 _DEFAULT_ALIGN = {"TEXT_BOX": "START"}
 
@@ -144,11 +147,11 @@ def _default_align(kind: str) -> str:
 
 class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
              ChartMixin, PatternMixin, PageMixin, EventMixin):
-    """1 枚のスライドに図形を描くための薄いラッパー。"""
+    """Thin wrapper for drawing shapes on a single slide."""
 
     _seq = 0
 
-    # コネクタの接続サイト（全シェイプ共通で 4 点）
+    # Connector connection sites (4 points, common to all shapes)
     SITE_TOP, SITE_LEFT, SITE_BOTTOM, SITE_RIGHT = 0, 1, 2, 3
 
     def __init__(self, deck, slide_id: str, template: dict):
@@ -159,33 +162,36 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         page = template.get("pageSize", {})
         self.page_w = page.get("widthInches", 10.0)
         self.page_h = page.get("heightInches", 5.625)
-        # 描いた図形の実座標。コネクタの接続先を自動で決めるために保持する
+        # Actual coordinates of drawn shapes. Kept so connector endpoints can be
+        # determined automatically.
         self.rects: dict[str, tuple] = {}
-        # 引いた線の記録。端点がどこにも接していないコネクタを検査で拾うために使う
+        # Record of drawn lines. Used by the audit to catch connectors whose
+        # endpoints don't touch anything.
         self.connectors: list[dict] = []
-        # 文字を持つ図形の記録。重なりと文字溢れの検査に使う
+        # Record of shapes that have text. Used to audit overlaps and text overflow.
         self.texts: dict[str, dict] = {}
-        # 塗りのある図形の記録。後から描かれると下の文字を覆い隠す
+        # Record of filled shapes. If drawn later, they can cover text underneath.
         self.solids: list[dict] = []
         self._seq = 0
 
     def _oid(self, prefix: str) -> str:
         Canvas._seq += 1
-        # _RUN_TOKEN はプロセスごとのランダム値。連番だけだと、既存デッキへ
-        # 別プロセスから 2 回目の描画を行ったとき dg*0001 から再採番して衝突する
+        # _RUN_TOKEN is a per-process random value. With a plain sequence number
+        # alone, a second drawing pass from a different process onto an existing
+        # deck would renumber starting from dg*0001 and collide.
         return f"dg{_RUN_TOKEN}{prefix}{Canvas._seq:04d}"
 
     def _elem_props(self, x, y, w, h, rotation: float = 0.0,
                     flip_x: bool = False, flip_y: bool = False):
-        """要素の位置と大きさ。rotation は度。中心を保ったまま回す。
+        """Element position and size. rotation is in degrees; rotates in place around the center.
 
-        Slides API に回転角のフィールドは無く、アフィン変換で表す。
+        The Slides API has no rotation-angle field, so it's expressed as an affine transform.
             x' = scaleX·x + shearX·y + translateX
             y' = shearY·x + scaleY·y + translateY
 
-        flip_x / flip_y は鏡像（scale を負にする）。RIGHT_TRIANGLE のように
-        左右非対称な図形で、4 隅どの向きの直角三角形も作れるようにするために要る。
-        rotation とは併用しない。
+        flip_x / flip_y produce a mirror image (negative scale). Needed for
+        left-right asymmetric shapes like RIGHT_TRIANGLE, so a right triangle
+        facing any of the 4 corners can be made. Not combined with rotation.
         """
         if (flip_x or flip_y) and not rotation:
             transform = {
@@ -222,7 +228,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     @staticmethod
     def _aabb(x, y, w, h, rotation: float = 0.0):
-        """回転後の外接矩形。当たり判定・検査はこちらを使う。"""
+        """Bounding box after rotation. Use this for hit testing and audits."""
         if not rotation:
             return (x, y, w, h)
         th = math.radians(rotation)
@@ -234,7 +240,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return {"solidFill": {"color": {"rgbColor": _auth.hex_to_rgb(hex_color)},
                               "alpha": alpha}}
 
-    # ---- 図形 ----
+    # ---- Shapes ----
 
     def shape(self, x, y, w, h, *, kind="RECTANGLE", fill=None, stroke=None,
               stroke_weight=1.0, dash="SOLID", text=None, color=None, size=11,
@@ -242,22 +248,26 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
               alpha: float = 1.0, rotation: float = 0.0,
               flip_x: bool = False, flip_y: bool = False,
               font: str | None = None) -> str:
-        """図形を描き、objectId を返す。fill=None で塗りなし。
+        """Draw a shape and return its objectId. fill=None means no fill.
 
-        dash は枠線の線種（SOLID / DASH / DOT / DASH_DOT …）。クラウドの
-        ゾーン枠のように「囲い」を示す矩形は破線にする。
+        dash is the outline's line style (SOLID / DASH / DOT / DASH_DOT, …). Use a
+        dashed rectangle for shapes indicating an "enclosure," like a cloud zone
+        boundary.
 
-        font はフォントファミリー（省略時 Noto Sans JP）。コードブロックには
-        "Roboto Mono" のような等幅フォントを指定する。
+        font is the font family (defaults to Noto Sans JP). For code blocks, specify
+        a monospace font such as "Roboto Mono".
 
-        alpha は塗りの不透明度（0〜1）。ベン図など重ねて見せる図で使う。
-        rotation は度。中心を保ったまま回す。回転した図形は外接矩形で記録するため、
-        検査（audit_*）の判定はやや保守的になる。
+        alpha is the fill opacity (0-1). Used for diagrams that show overlap, like
+        Venn diagrams.
+        rotation is in degrees; rotates in place around the center. Rotated shapes
+        are recorded by their bounding box, so audit (audit_*) checks become somewhat
+        conservative.
 
-        **回転した図形に text を入れてはいけない。** 文字も一緒に回るため、180 度なら
-        上下逆さま、45 度なら斜めに出る。台形や五角形を反転して使うときは、
-        図形は text 無しで描き、文字は別に label() で重ねること
-        （label(rotation=270) のような、意図して縦にする用途だけが例外）。
+        **Never put text in a rotated shape.** The text rotates along with it, so at
+        180 degrees it comes out upside down, and at 45 degrees it comes out at an
+        angle. When using a flipped trapezoid or pentagon, draw the shape without
+        text and overlay the text separately with label() (the only exception being
+        an intentionally vertical use like label(rotation=270)).
         """
         if text and rotation % 360 not in (0, 90, 270):
             print(t("  warn: text inside a shape rotated {rotation} degrees will "
@@ -289,8 +299,9 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             fields.append("outline")
         props["contentAlignment"] = valign
         fields.append("contentAlignment")
-        # 素の TEXT_BOX は既定で「塗りなし・枠なし・上寄せ」なので、その通りに
-        # 指定するリクエストは 1 件まるごと省ける（label() の大半がこれに当たる）
+        # A plain TEXT_BOX defaults to "no fill, no outline, top-aligned," so a
+        # request that just specifies the same thing can be skipped entirely (this
+        # covers most calls to label())
         if not (kind == "TEXT_BOX" and fill is None and stroke is None
                 and valign == _DEFAULT_VALIGN["TEXT_BOX"]):
             reqs.append({"updateShapeProperties": {
@@ -315,7 +326,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             if line_spacing:
                 pstyle["lineSpacing"] = line_spacing
                 pfields.append("lineSpacing")
-            # 行送りの指定がなく、揃えも既定どおりなら段落スタイルは触らなくてよい
+            # If no line spacing was given and alignment is already the default,
+            # the paragraph style doesn't need to be touched
             if line_spacing or align != _default_align(kind):
                 reqs.append({"updateParagraphStyle": {
                     "objectId": oid, "style": pstyle,
@@ -325,13 +337,15 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         self._seq += 1
         box = self._aabb(x, y, w, h, rotation)
         self.rects[oid] = (*box, kind)
-        # 半透明の塗りは下の文字を透かすので「隠している」とは扱わない
+        # A semi-transparent fill lets text underneath show through, so it isn't
+        # treated as "hiding" it
         if fill is not None and alpha >= 0.9:
             self.solids.append({"rect": box, "seq": self._seq,
                                 "name": (text or kind).replace("\n", " ")[:20]})
         if text:
-            # 回転した枠の中の文字は行送りの向きが変わり、外接矩形での判定が
-            # 当てにならない。90/270 度は幅と高さを入れ替えて評価する
+            # Text inside a rotated box has its line-flow direction changed, so
+            # judging by the bounding box isn't reliable. For 90/270 degrees,
+            # evaluate with width and height swapped
             trect = (box[0], box[1], h, w) if rotation % 180 == 90 else box
             self.texts[oid] = {"rect": trect, "kind": kind, "text": text,
                                "size": size, "ls": line_spacing or 100,
@@ -340,14 +354,14 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return oid
 
     def box(self, x, y, w, h, text=None, **kw) -> str:
-        """角丸の箱。既定は淡い面に primary の枠。"""
+        """Rounded box. Defaults to a pale fill with a primary-colored outline."""
         kw.setdefault("kind", "ROUND_RECTANGLE")
         kw.setdefault("fill", self.P.surface)
         kw.setdefault("stroke", self.P.border)
         return self.shape(x, y, w, h, text=text, **kw)
 
     def solid(self, x, y, w, h, text=None, **kw) -> str:
-        """塗りつぶしの箱（見出し用）。"""
+        """Filled box (for headings)."""
         kw.setdefault("kind", "ROUND_RECTANGLE")
         kw.setdefault("fill", self.P.primary)
         kw.setdefault("bold", True)
@@ -356,7 +370,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     def label(self, x, y, w, h, text, *, size=10, color=None, bold=False,
               align="START", valign="TOP", line_spacing=None, rotation=0,
               font=None) -> str:
-        """枠も塗りもないテキスト。rotation=270 で縦軸のラベルなどに使える。"""
+        """Text with no outline or fill. rotation=270 can be used for things like a vertical axis label."""
         return self.shape(x, y, w, h, kind="TEXT_BOX", fill=None, stroke=None,
                           text=text, size=size, color=color or self.P.text, bold=bold,
                           align=align, valign=valign, line_spacing=line_spacing,
@@ -364,29 +378,30 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     def band(self, x, y, w, h, *, fill=None, kind="ROUND_RECTANGLE",
              stroke=None) -> str:
-        """背景の帯。図のグループ化に使う。
+        """Background band. Used to group parts of a diagram.
 
-        `kind="RECTANGLE"` にすると直角の下地になる。表紙・章扉に敷く白カードの
-        ように、角丸だと元のテンプレートの図版と揃わない場面で使う。
+        `kind="RECTANGLE"` gives a square-cornered backdrop. Use it in cases where
+        rounded corners wouldn't match the original template artwork, such as a
+        white card laid under a cover page or section divider.
         """
         return self.shape(x, y, w, h, kind=kind,
                           fill=fill or self.P.surfaceAlt, stroke=stroke)
 
-    # ---- コードブロック ----
+    # ---- Code blocks ----
 
-    # VS Code Dark+ 風。濃色背景 CODE_BG 上でコントラスト比 4.5:1 以上を満たす
+    # VS Code Dark+ style. Satisfies a contrast ratio of 4.5:1 or higher against the dark CODE_BG background
     CODE_BG, CODE_FG = "#1F2933", "#E8ECF1"
     _CODE_STYLES = {
-        "comment": "#7DBA7D",   # コメント（緑）
-        "string":  "#E2A37E",   # 文字列（橙）
-        "keyword": "#6FB6EA",   # 予約語（青）
-        "number":  "#B5CEA8",   # 数値（淡緑）
-        "type":    "#56C9B4",   # 型・クラス（青緑）
-        "func":    "#DCDCAA",   # 関数・メソッド（黄）
-        "anno":    "#D19FD3",   # アノテーション・ディレクティブ（紫）
-        "prop":    "#9CDCFE",   # プロパティ名・フラグ（水色）
+        "comment": "#7DBA7D",   # comment (green)
+        "string":  "#E2A37E",   # string (orange)
+        "keyword": "#6FB6EA",   # keyword (blue)
+        "number":  "#B5CEA8",   # number (light green)
+        "type":    "#56C9B4",   # type/class (teal)
+        "func":    "#DCDCAA",   # function/method (yellow)
+        "anno":    "#D19FD3",   # annotation/directive (purple)
+        "prop":    "#9CDCFE",   # property name/flag (light blue)
     }
-    # 言語ごとの字句規則。上にあるものが優先（コメント・文字列を最優先に置く）
+    # Per-language lexical rules. Earlier entries take priority (comments and strings are placed first)
     _CODE_RULES = {
         "java": [
             ("comment", r"//[^\n]*"),
@@ -412,8 +427,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             ("keyword", r"\b(?:true|false|null)\b"),
             ("number", r"-?\b\d[\d.]*\b"),
         ],
-        # シェル。二重引用符の中身は素通しにして、SQL キーワードを拾えるようにする
-        # （TableStore の --statement "CREATE TABLE …" のため）
+        # Shell. Leave the contents of double quotes untouched so SQL keywords can
+        # still be picked up (for TableStore's --statement "CREATE TABLE …")
         "bash": [
             ("comment", r"#[^\n]*"),
             ("string", r"'[^'\n]*'"),
@@ -426,8 +441,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     @classmethod
     def _highlight(cls, code: str, lang: str):
-        """(start, end, hex) のリスト。インデックスは UTF-16 単位と一致する
-        （BMP 外の文字を含むコードは想定しない）。"""
+        """List of (start, end, hex). Indices match UTF-16 units (code containing
+        characters outside the BMP is not expected)."""
         rules = cls._CODE_RULES.get(lang)
         if not rules:
             return []
@@ -446,14 +461,15 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     def code_block(self, x, y, w, h, code, *, lang="java", size=7.5,
                    line_spacing=104, bg=None, fg=None,
                    font="Roboto Mono") -> str:
-        """シンタックスハイライト付きのコードパネル。
+        """Code panel with syntax highlighting.
 
-        lang は _CODE_RULES のキー（java / graphql / json / bash）。未知の言語は
-        単色で描く。高さの見積もりは実効行高（fontSize × lineSpacing × 約1.45）で
-        行うこと。
+        lang is a key into _CODE_RULES (java / graphql / json / bash). Unknown
+        languages are drawn in a single color. Estimate height using the effective
+        line height (fontSize × lineSpacing × about 1.45).
         """
-        # 角は直角にする（角丸だと 1 行目・最終行のインデントが角に食われて
-        # 見え、他のカード類の直角規約とも揃わない）
+        # Keep the corners square (rounded corners would visually eat into the
+        # indentation of the first and last lines, and wouldn't match the
+        # square-corner convention used by other cards)
         oid = self.shape(x, y, w, h, kind="RECTANGLE",
                          fill=bg or self.CODE_BG, stroke=None, text=code,
                          size=size, color=fg or self.CODE_FG, align="START",
@@ -468,21 +484,24 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 "fields": "foregroundColor"}})
         return oid
 
-    # ---- 線・矢印 ----
+    # ---- Lines and arrows ----
 
     def line(self, x1, y1, x2, y2, *, color=None, weight=1.25,
              end_arrow="NONE", start_arrow="NONE", dashed=False,
              free=False, _anchored=False) -> str:
-        """座標を直接指定して線を引く。
+        """Draw a line by specifying coordinates directly.
 
-        図形と図形を結ぶなら connect()（API で接続）か link()（端点を辺に合わせる）
-        を使うこと。こちらは端点が図形からずれていても API は何も言わない。
-        free=True は「どの図形にも接しないのが正しい線」の明示（軸・区切り線など）。
+        To connect two shapes, use connect() (API-level connection) or link()
+        (snaps endpoints to the edge). This method won't complain even if the
+        endpoints are offset from the shapes.
+        free=True explicitly marks "a line that correctly doesn't touch any shape"
+        (axes, dividers, etc.).
         """
         oid = self._oid("l")
-        # STRAIGHT の線は、要素の矩形の「左上 → 右下」に引かれる。
-        # 任意の方向を表すため、外接矩形に正規化した上で軸ごとに反転させる。
-        # 反転しないと矢印の頭が意図と逆側に付く。
+        # A STRAIGHT line is drawn from the element rectangle's "top-left to
+        # bottom-right." To represent an arbitrary direction, normalize to the
+        # bounding box and then flip per axis. Without the flip, the arrowhead
+        # ends up on the opposite side from what was intended.
         x, y = min(x1, x2), min(y1, y2)
         w, h = max(abs(x2 - x1), 0.001), max(abs(y2 - y1), 0.001)
         sx = -1 if x2 < x1 else 1
@@ -521,7 +540,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         kw.setdefault("end_arrow", "FILL_ARROW")
         return self.line(x1, y1, x2, y2, **kw)
 
-    # ---- 図形に接続するコネクタ ----
+    # ---- Connectors that attach to shapes ----
 
     @staticmethod
     def _center(rect):
@@ -540,7 +559,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     @classmethod
     def _facing_site(cls, src, dst):
-        """src から見て dst のある向きの接続サイトを返す。"""
+        """Return the connection site on the side facing dst, as seen from src."""
         ax, ay = cls._center(src)
         bx, by = cls._center(dst)
         dx, dy = bx - ax, by - ay
@@ -549,9 +568,11 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return cls.SITE_BOTTOM if dy > 0 else cls.SITE_TOP
 
     def edge_point(self, rect_or_id, toward, *, gap=0.0):
-        """矩形の中心から toward(=(x, y)) に向かう線が、辺と交わる点を返す。
+        """Return the point where a line from the rectangle's center toward
+        toward(=(x, y)) crosses the edge.
 
-        gap を指定すると、その分だけ外側に離す（矢印の頭が枠線に食い込まない）。
+        If gap is given, offset outward by that amount (so the arrowhead doesn't
+        dig into the outline).
         """
         rect = self.rects.get(rect_or_id) if isinstance(rect_or_id, str) else rect_or_id
         if rect is None:
@@ -574,14 +595,15 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     def connect(self, src, dst, *, color=None, weight=1.4, dashed=False,
                 end_arrow="FILL_ARROW", start_arrow="NONE",
                 category="STRAIGHT", start_site=None, end_site=None) -> str:
-        """2つの図形を **API のコネクタとして接続する**。
+        """Connect two shapes **as an API-level connector**.
 
-        src / dst は shape() などが返した objectId。Google Slides 側で図形に
-        紐づくため、後から図形を動かしても線が追従する。接続サイトは
-        位置関係から自動で決まる（0=上 1=左 2=下 3=右）。
+        src / dst are objectIds returned by shape() or similar. Because they're
+        bound to the shapes on the Google Slides side, the line follows if a shape
+        is moved later. The connection site is chosen automatically from the
+        relative position (0=top 1=left 2=bottom 3=right).
 
-        category="BENT" にするとエルボー（直角折れ）になる。1対多のファンアウトは
-        BENT のほうが経路が交差しにくい。
+        category="BENT" produces an elbow (right-angle bend). For one-to-many
+        fan-out, BENT routes are less likely to cross each other.
         """
         ra, rb = self.rects.get(src), self.rects.get(dst)
         if ra is None or rb is None:
@@ -592,8 +614,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         p2 = self._site_point(rb, e_site)
 
         oid = self._oid("c")
-        # 接続を設定すると API 側が位置を決めるが、接続が効かなかった場合に
-        # 線が原点に残らないよう、初期形状もサイト間の実座標で作っておく
+        # Setting a connection lets the API side determine the position, but in
+        # case the connection doesn't take effect, also create the initial shape
+        # at the actual coordinates between the sites so the line doesn't end up
+        # stuck at the origin
         x, y = min(p1[0], p2[0]), min(p1[1], p2[1])
         w = max(abs(p2[0] - p1[0]), 0.001)
         h = max(abs(p2[1] - p1[1]), 0.001)
@@ -631,16 +655,16 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                                 "seq": self._seq})
         return oid
 
-    # ---- コネクタの自己点検 ----
+    # ---- Connector self-checks ----
 
-    # 判定のしきい値（インチ）
-    CONN_REACH = 0.22       # これ以上どの図形からも離れていたら「接続されていない」
-    CONN_BURY = 0.06        # これ以上図形の内側に入っていたら「埋まっている」
-    CONN_CONTAINER = 6.0    # 面積がこれを超える図形は容器とみなし判定から外す
+    # Judgment thresholds (inches)
+    CONN_REACH = 0.22       # farther than this from any shape counts as "not connected"
+    CONN_BURY = 0.06        # deeper than this inside a shape counts as "buried"
+    CONN_CONTAINER = 6.0    # shapes with area beyond this are treated as containers and excluded from the check
 
     @staticmethod
     def _dist_to_rect(px, py, rect):
-        """点から矩形の境界までの符号つき距離。負なら内側（食い込み量）。"""
+        """Signed distance from a point to the rectangle's boundary. Negative means inside (the amount of overlap)."""
         x, y, w, h = rect[:4]
         dx = max(x - px, 0.0, px - (x + w))
         dy = max(y - py, 0.0, py - (y + h))
@@ -649,17 +673,21 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return -min(px - x, (x + w) - px, py - y, (y + h) - py)
 
     def audit_connectors(self) -> list[str]:
-        """端点が図形に接していないコネクタを列挙する。問題が無ければ空リスト。
+        """Enumerate connectors whose endpoints don't touch a shape. Returns an
+        empty list if there's no problem.
 
-        Slides API は線の座標をそのまま受け取るだけで、図形との位置関係を検証しない。
-        そのため「矢印が浮いている」「枠に食い込んでいる」は生成してサムネイルを
-        見るまで気づけない。これを座標の段階で拾う。
+        The Slides API just takes line coordinates as given and doesn't validate
+        their position relative to shapes. So "the arrow is floating" or "it's
+        buried in the outline" wouldn't be noticed until the deck is generated and
+        the thumbnail is checked. This catches it at the coordinate stage instead.
 
-        判定から外すもの:
-          - free=True を付けた線（軸・目盛り・引き出し線など、接しないのが正しい）
-          - connect() / link() で引いた線（定義上、図形に接している）
-          - テキストボックス（見える境界が無い）
-          - 面積の大きい図形（ゾーンなどの容器。矢印が中を通るのは正常）
+        Excluded from the check:
+          - lines marked free=True (axes, tick marks, leader lines, etc., where not
+            touching is correct)
+          - lines drawn with connect() / link() (touch a shape by definition)
+          - text boxes (no visible boundary)
+          - shapes with a large area (containers like zones; it's normal for an
+            arrow to pass through them)
         """
         targets = [r for r in self.rects.values()
                    if r[4] != "TEXT_BOX" and r[2] * r[3] <= self.CONN_CONTAINER]
@@ -683,14 +711,15 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                                  endpoint=name, depth=-near))
         return out
 
-    # 重なり・文字溢れの判定しきい値
-    OVERLAP_MIN = 0.010     # これ以上の面積(in^2)が重なっていたら報告する
-    OVERLAP_RATIO = 0.06    # 小さい方の面積に対する重なり比率の下限
-    # 線が文字の中を通る長さ(in)。矢印の先端が字の縁を掠るのは正常なので、
-    # これを超えて「中を走っている」ものだけを拾う
+    # Thresholds for overlap / text-overflow checks
+    OVERLAP_MIN = 0.010     # report if the overlapping area (in^2) is at least this much
+    OVERLAP_RATIO = 0.06    # lower bound on the overlap ratio relative to the smaller area
+    # Length (in) of a line running through text. It's normal for an arrowhead's
+    # tip to graze the edge of a character, so only catch lines that "run through"
+    # more than this
     LINE_CROSS_MIN = 0.06
-    TEXT_SLACK = 0.04       # 文字の必要高さに対して許す余裕(in)
-    LINE_EM = 1.45          # Noto Sans JP の行高（フォントサイズに対する倍率）
+    TEXT_SLACK = 0.04       # allowance (in) against the text's required height
+    LINE_EM = 1.45          # Noto Sans JP line height (multiplier relative to font size)
 
     @staticmethod
     def _em(t):
@@ -704,9 +733,11 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     @staticmethod
     def _segment_in_rect(p1, p2, rect) -> float:
-        """線分のうち矩形の内側にある長さ(in)を返す。接するだけなら 0。
+        """Return the length (in) of the segment that lies inside the rectangle.
+        0 if it merely touches.
 
-        Liang-Barsky でパラメータ t の範囲へ切り詰め、残った区間の長さを測る。
+        Clips to the parameter t range using Liang-Barsky, and measures the length
+        of the remaining interval.
         """
         x, y, w, h = rect
         dx, dy = p2[0] - p1[0], p2[1] - p1[1]
@@ -715,7 +746,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                      (-dy, p1[1] - y), (dy, y + h - p1[1])):
             if p == 0:
                 if q < 0:
-                    return 0.0     # 辺に平行で、外側を走っている
+                    return 0.0     # parallel to the edge, running outside
                 continue
             r = q / p
             if p < 0:
@@ -736,17 +767,18 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 and inner[0] + inner[2] <= outer[0] + outer[2] + slack
                 and inner[1] + inner[3] <= outer[1] + outer[3] + slack)
 
-    # Slides のテキスト枠の既定インセット（左右 0.1in）。ここを引かずに幅で割ると
-    # 「1 行に入る文字数」を 1〜2 字多く見積もり、実際には折り返しているのに
-    # 検査が素通りする。
+    # Slides' default text-box inset (0.1in on each side). Dividing by the width
+    # without subtracting this overestimates "characters per line" by 1-2
+    # characters, so the check passes through text that actually wraps.
     #
-    # 縦方向のインセット（0.05in）は**引かない**。Slides は枠から縦に溢れた文字を
-    # 切り取らずそのまま描くため、引くと 1 行のラベルが軒並み誤検知になる
-    # （実測: 0.24in の枠に 9.5pt の 1 行は問題なく出る）。
+    # The vertical inset (0.05in) is **not** subtracted. Slides draws text that
+    # overflows the box vertically without clipping it, so subtracting it would
+    # make single-line labels false-positive across the board (measured: a single
+    # line at 9.5pt renders fine in a 0.24in box).
     TEXT_INSET_X = 0.10
 
     def _text_lines(self, m):
-        """折り返しを見込んだ行数と、1 行に入る文字数を返す。"""
+        """Return the number of lines accounting for wrapping, and the number of characters that fit per line."""
         w = max(m["rect"][2] - self.TEXT_INSET_X * 2, 0.01)
         per = (w * 72.0) / m["size"]
         if per <= 0:
@@ -758,21 +790,24 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return n, per
 
     def _ink_rect(self, m):
-        """実際に文字（または塗り）が占める矩形。
+        """The rectangle actually occupied by the text (or the fill).
 
-        塗りのある図形は矩形全体が不透明。塗りの無いラベルは、文字が実際に載る
-        範囲だけを見る。枠は広くても中央寄せの短い文字なら隣とぶつからないため。
+        A filled shape is opaque across its whole rectangle. An unfilled label only
+        looks at the range the text actually occupies, since even with a wide box,
+        short centered text won't collide with its neighbor.
         """
         if m["fill"]:
             return tuple(m["rect"])
         return self._glyph_rect(m)
 
     def _glyph_rect(self, m):
-        """文字そのものが載る矩形。塗りの有無は見ない。
+        """The rectangle the characters themselves occupy. Doesn't look at fill.
 
-        塗りのある図形でも、線が中を横切って**文字に重なる**かどうかは枠ではなく
-        字の位置で決まる。_ink_rect は塗り図形を不透明な板として扱う（隠れの判定に
-        要る）ので、字の範囲だけが要る検査はこちらを使う。
+        Even for a filled shape, whether a line crossing through it **overlaps the
+        text** is determined by the character positions, not the box. _ink_rect
+        treats a filled shape as an opaque panel (needed for the hidden-text
+        check), so use this one instead for checks that only need the character
+        range.
         """
         x, y, w, h = m["rect"]
         lines, per = self._text_lines(m)
@@ -790,19 +825,22 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return (x, y, tw, th)
 
     def audit_overlaps(self) -> list[str]:
-        """文字が隠れている／ぶつかっている箇所を報告する。
+        """Report places where text is hidden or colliding.
 
-        Slides は後から作った要素を上に描く。したがって
+        Slides draws elements created later on top. So:
 
-        1. **隠れ** … ある文字より後に描かれた不透明な図形が、その文字に
-           かぶさっている。バナーやゾーンが直前のブロックに潜り込む典型がこれ。
-        2. **衝突** … 塗りの無いラベルどうしが、実際の文字の範囲でぶつかっている。
-        3. **線が字を貫く** … コネクタや矢印が、文字の上を走っている。線には
-           描画順が無く（塗り図形として記録されない）1 と 2 のどちらにも
-           掛からないため、独立して見る必要がある。
+        1. **Hidden** ... an opaque shape drawn after some text covers that text.
+           The typical case is a banner or zone that creeps into the block right
+           before it.
+        2. **Collision** ... unfilled labels colliding with each other, judged by
+           the actual character range.
+        3. **A line piercing text** ... a connector or arrow running across text.
+           Lines have no draw order (they're not recorded as filled shapes) and
+           fall under neither 1 nor 2, so they need to be checked separately.
 
-        枠ではなく「文字が実際に載る範囲」で判定するため、余白の広いラベルが
-        隣に少しかかっているだけでは報告しない。
+        Judged by "the range the text actually occupies" rather than the box, so a
+        label with generous padding that only slightly overlaps its neighbor isn't
+        reported.
         """
         items = sorted(self.texts.values(), key=lambda m: m["seq"])
         out, seen = [], set()
@@ -812,7 +850,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 seen.add(key)
                 out.append(msg)
 
-        # 1. 後から描かれた塗り図形が文字を覆う
+        # 1. A filled shape drawn later covers the text
         for a in items:
             ra = self._ink_rect(a)
             ta = a["text"].replace("\n", " ")[:20]
@@ -829,7 +867,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                          area=area, text=ta, cover=sol["name"]),
                        ("hide", ta, sol["name"]))
 
-        # 2. 塗りの無いラベルどうしの衝突
+        # 2. Collision between unfilled labels
         labels = [m for m in items if not m["fill"]]
         for i, a in enumerate(labels):
             ra = self._ink_rect(a)
@@ -846,12 +884,13 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 record(t("Text labels collide ({area:.3f}in²): \"{a}\" and \"{b}\"",
                          area=area, a=ta, b=tb), ("hit", *sorted((ta, tb))))
 
-        # 3. 線・矢印が文字の上を走る
+        # 3. Lines/arrows running across text
         #
-        # 線を引いてからその上に塗り図形を置く描き方は珍しくない（hub() は中心から
-        # 各ノードの中心へ線を伸ばし、後からノードの箱を被せる）。この場合、線は
-        # 塗りに隠れて見えないので defect ではない。線より後に描かれた不透明な
-        # 図形がその文字を覆っているなら、報告しない。
+        # It's not uncommon to draw a line first and then place a filled shape on
+        # top of it (hub() extends lines from the center to each node's center, and
+        # then overlays the node boxes afterward). In this case, the line is hidden
+        # under the fill and isn't a defect. If an opaque shape drawn after the
+        # line covers that text, don't report it.
         for a in items:
             ga = self._glyph_rect(a)
             if ga[2] <= 0 or ga[3] <= 0:
@@ -869,13 +908,14 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                        ("cross", ta, conn["oid"]))
         return out
 
-    BOUNDS_SLACK = 0.02     # この量までのはみ出しは許す（丸め誤差）
+    BOUNDS_SLACK = 0.02     # allow overflow up to this amount (rounding error)
 
     def audit_bounds(self) -> list[str]:
-        """スライドの外へ出た図形・線を報告する。
+        """Report shapes/lines that go outside the slide.
 
-        図の部品は与えられた枠から自分で座標を計算するため、枠の中に収まっていても
-        中身が外へ突き抜けることがある（比率のかけ違い）。図形単位で見ないと拾えない。
+        Diagram components compute their own coordinates from a given bounding box,
+        so even if the box itself fits, the contents inside it can poke outside
+        (a ratio miscalculation). This can only be caught by checking per shape.
         """
         out = []
         s = self.BOUNDS_SLACK
@@ -902,17 +942,19 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                                  "({x:.2f}, {y:.2f})", x=p[0], y=p[1]))
         return out
 
-    ORPHAN_EM = 1.0     # 折り返しの最終行がこれ以下なら「1文字だけこぼれた」とみなす
+    ORPHAN_EM = 1.0     # if the wrapped last line is at or below this, treat it as "a single stray character"
 
     def audit_text_fit(self) -> list[str]:
-        """枠に収まらない文字と、みっともない折り返しを報告する。
+        """Report text that doesn't fit its box, and ugly line wraps.
 
-        1. **溢れ** … 1 行に入る文字数を「幅(pt) ÷ フォントサイズ(pt)」で見積もり、
-           必要な行数から必要な高さを出して、宣言した高さと比べる。溢れた文字は
-           切れて見える。
-        2. **孤立行** … 折り返した結果、最後の行に 1 文字しか残らない状態。
-           「…デプロ / イ」のような割れ方は、収まってはいるが明らかに不格好。
-           枠を数 mm 広げるか文言を詰めれば消える。
+        1. **Overflow** ... estimate characters per line as "width(pt) ÷
+           fontSize(pt)", derive the required height from the number of lines
+           needed, and compare it to the declared height. Overflowing text appears
+           clipped.
+        2. **Orphan line** ... a case where wrapping leaves only 1 character on the
+           last line. A break like "...Deplo / y" fits within the box but is
+           clearly ugly. Widening the box by a few mm, or tightening the wording,
+           fixes it.
         """
         out = []
         for m in self.texts.values():
@@ -940,11 +982,13 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     def link(self, src, dst, *, gap=0.04, color=None, weight=1.4, dashed=False,
              end_arrow="FILL_ARROW", start_arrow="NONE") -> str:
-        """2つの図形を、**辺のちょうど上を端点にした直線**で結ぶ。
+        """Connect two shapes with a straight line **whose endpoints sit exactly
+        on the edges**.
 
-        中心どうしを結ぶ線が辺と交わる点を計算するので、斜めの位置関係でも
-        端点が図形にぴったり触れる。API の接続サイト（上下左右の4点）に
-        スナップさせたくない場合はこちら。
+        Computes the point where a line between the centers crosses each edge, so
+        even at a diagonal, the endpoints touch the shapes exactly. Use this when
+        you don't want to snap to the API's connection sites (the 4 points top,
+        bottom, left, right).
         """
         ra = self.rects.get(src) if isinstance(src, str) else src
         rb = self.rects.get(dst) if isinstance(dst, str) else dst
@@ -957,19 +1001,21 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                          start_arrow=start_arrow, _anchored=True)
 
     def arrow_shape(self, x, y, w, h, *, fill=None, text=None, **kw) -> str:
-        """太い矢印（工程の流れなど）。"""
+        """Thick arrow (for things like a process flow)."""
         return self.shape(x, y, w, h, kind="RIGHT_ARROW",
                           fill=fill or lighten(self.P.primary, 0.75), stroke=None,
                           text=text, **kw)
 
-    # ---- 複合パーツ ----
+    # ---- Composite parts ----
 
     def cards(self, x, y, w, h, items, *, gap=0.22, fill=None, stroke=None,
               title_size=12, body_size=10, accent=None):
-        """横並びのカード。items は (見出し, 本文) のリスト。戻り値は下端 y。
+        """Side-by-side cards. items is a list of (heading, body) pairs. Returns
+        the bottom edge y.
 
-        上端に直線のアクセントバーを重ねるため、角は丸めない（RECTANGLE）。
-        角丸の縁と直線バーの端が噛み合わず、不揃いに見えるため。
+        Corners are not rounded (RECTANGLE), because a straight accent bar is
+        overlaid at the top edge. A rounded corner and the straight bar's edge
+        wouldn't line up and would look uneven.
         """
         n = len(items)
         cw = (w - gap * (n - 1)) / n
@@ -985,24 +1031,25 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             self.label(cx + 0.14, y + 0.16, cw - 0.28, 0.34, head,
                        size=title_size, bold=True, align="START", color=self.P.text)
             if body:
-                # 本文は見出しの直下から。固定で 0.7 引くと h が小さいとき本文が
-                # ほぼ潰れて文字が切れる
+                # Body text starts right below the heading. Subtracting a fixed
+                # 0.7 would nearly crush the body and clip its text when h is small
                 self.label(cx + 0.14, y + 0.50, cw - 0.28, h - 0.58, body,
                            size=body_size, align="START", color=self.P.muted,
                            line_spacing=130)
-        return y + h        # 積み上げ規約：戻り値は描画領域の下端 y
+        return y + h        # stacking convention: return the bottom edge y of the drawn area
 
     def hbars(self, x, y, w, rows, *, row_h=0.46, gap=0.2, label_w=2.4,
               value_w=1.5, max_value=None, colors=None):
-        """横棒グラフ。rows は (ラベル, 数値, 表示文字列) のリスト。戻り値は下端 y。
+        """Horizontal bar chart. rows is a list of (label, value, display string).
+        Returns the bottom edge y.
 
-        出典のある数値にだけ使うこと。
+        Use only for values that have a cited source.
         """
         if not rows:
             raise ValueError(t("hbars: rows is empty"))
         mx = max_value if max_value is not None else max(r[1] for r in rows)
         if mx <= 0:
-            mx = 1.0  # 全行 0 のときは空のトラックだけ描く（ゼロ除算回避）
+            mx = 1.0  # when every row is 0, draw only an empty track (avoids division by zero)
         track_x = x + label_w
         track_w = w - label_w - value_w
         for i, (name, value, caption) in enumerate(rows):
@@ -1021,11 +1068,11 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     def metric(self, x, y, w, h, value, caption, *, color=None, value_size=26,
                caption_size=10):
-        """大きな数値＋説明の組。戻り値は下端 y。出典のある数値にだけ使うこと。"""
+        """A large value plus caption. Returns the bottom edge y. Use only for values that have a cited source."""
         c = color or self.P.primary
         self.shape(x, y, w, h, kind="ROUND_RECTANGLE",
                    fill=lighten(c, 0.9), stroke=lighten(c, 0.55))
-        # 枠が低いときは数値を縮める。固定サイズだと説明とぶつかる
+        # Shrink the value when the box is short. A fixed size would collide with the caption
         vh = h * 0.52
         vs = min(value_size, vh * 72.0 / self.LINE_EM)
         self.label(x + 0.1, y + 0.08, w - 0.2, vh, value, size=vs,
@@ -1036,7 +1083,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return y + h
 
     def flow(self, x, y, w, h, steps, *, gap=0.34, fill=None, color=None, size=11):
-        """左から右への工程フロー。steps は文字列のリスト。戻り値は下端 y。"""
+        """Left-to-right process flow. steps is a list of strings. Returns the bottom edge y."""
         n = len(steps)
         bw = (w - gap * (n - 1)) / n
         for i, s in enumerate(steps):

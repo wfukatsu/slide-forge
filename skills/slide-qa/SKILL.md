@@ -16,6 +16,8 @@ description: >-
   (exporting a verified deck to .pptx is the pptx-export skill).
 ---
 
+*[日本語](SKILL.ja.md)*
+
 # Visual QA for Generated Slides (thumbnail-based)
 
 ## Important

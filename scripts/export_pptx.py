@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""生成済み Google Slides デッキを PowerPoint (.pptx) にエクスポートする。
+"""Export a generated Google Slides deck to PowerPoint (.pptx).
 
-    python scripts/export_pptx.py <URL または ID> [--out <path.pptx>]
-    python scripts/export_pptx.py <URL> --folder <Drive フォルダ URL/ID>
+    python scripts/export_pptx.py <URL or ID> [--out <path.pptx>]
+    python scripts/export_pptx.py <URL> --folder <Drive folder URL/ID>
 
-Drive API の files.export で .pptx を書き出す。見た目は Slides で生成した
-とおりに保たれるが、エクスポートは**その時点のスナップショット**であり、
-デッキを再生成したら再エクスポートが必要。
+Writes the .pptx via the Drive API's files.export. The appearance is
+preserved exactly as generated in Slides, but the export is **a snapshot at
+that point in time** — regenerating the deck requires re-exporting.
 
-- files.export には 10MB 制限がある。超えた場合は exportLinks 経由で
-  自動的に取得し直す（画像・図版の多いデッキでも失敗しない）
-- --out 省略時は out/pptx/<デッキ名>.pptx に保存する
-- --folder を渡すと、書き出した .pptx を同じ Drive フォルダにも
-  アップロードして仕様・図版ソースと並べて保管する（Drive フォルダルール）
+- files.export has a 10MB limit. If exceeded, it automatically falls back to
+  fetching via exportLinks (so decks with many images/diagrams don't fail)
+- if --out is omitted, saves to out/pptx/<deck name>.pptx
+- passing --folder also uploads the exported .pptx to the same Drive folder,
+  alongside the spec and diagram sources (per the Drive folder convention)
 """
 from __future__ import annotations
 
@@ -50,18 +50,19 @@ PPTX_MIME = "application/vnd.openxmlformats-officedocument.presentationml.presen
 
 
 def safe_name(name: str) -> str:
-    """デッキ名をファイル名に使える形へ落とす（日本語はそのまま残す）。"""
+    """Turns the deck name into something usable as a filename (keeps Japanese as-is)."""
     cleaned = re.sub(r'[\\/:*?"<>|\s]+', "_", name).strip("_")
     return cleaned[:80] or "deck"
 
 
 def _is_export_size_limit(e: HttpError) -> bool:
-    """10MB 超で files.export が断られたかを判定する。
+    """Determines whether files.export was rejected for exceeding 10MB.
 
-    サイズ超過は HTTP 403 + reason "exportSizeLimitExceeded" で返る。
-    403/404 の権限・ID 間違いまでフォールバックに流すと、原因が
-    exportLinks 側の別エラーにすり替わって分かりにくくなるため、
-    ここで厳密に見分ける。
+    A size-limit rejection comes back as HTTP 403 with reason
+    "exportSizeLimitExceeded". If 403/404s from permission errors or a wrong
+    ID were also routed to the fallback, the real cause would get masked by a
+    different error on the exportLinks side, making it hard to diagnose — so
+    this checks strictly.
     """
     status = getattr(e, "status_code", None) \
         or getattr(getattr(e, "resp", None), "status", None)
@@ -70,12 +71,13 @@ def _is_export_size_limit(e: HttpError) -> bool:
     for d in getattr(e, "error_details", None) or []:
         if isinstance(d, dict) and d.get("reason") == "exportSizeLimitExceeded":
             return True
-    # 古い googleapiclient は error_details を持たないのでレスポンス本文で判定
+    # Older googleapiclient versions don't have error_details, so fall back
+    # to checking the response body
     return b"exportSizeLimitExceeded" in (getattr(e, "content", b"") or b"")
 
 
 def _export_via_link(drive, creds, pres_id: str, path: str) -> None:
-    """10MB 超のデッキ向けフォールバック。exportLinks の URL から直接取得する。"""
+    """Fallback for decks over 10MB: fetches directly from the exportLinks URL."""
     from google.auth.transport.requests import AuthorizedSession
 
     meta = drive.files().get(fileId=pres_id, fields="exportLinks",
@@ -84,8 +86,8 @@ def _export_via_link(drive, creds, pres_id: str, path: str) -> None:
     if not link:
         raise SystemExit(t("exportLinks has no PPTX URL (possibly missing permissions)"))
     session = AuthorizedSession(creds)
-    # 途中で切れても壊れた .pptx を最終パスに残さないよう、一時ファイルに
-    # 書き切ってから os.replace で置く
+    # Write to a temp file first and move it into place with os.replace, so an
+    # interrupted download doesn't leave a broken .pptx at the final path
     tmp = path + ".part"
     try:
         with session.get(link, stream=True) as r:
@@ -101,7 +103,8 @@ def _export_via_link(drive, creds, pres_id: str, path: str) -> None:
 
 def export_pptx(drive, creds, pres_id: str, path: str) -> None:
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
-    # exportLinks 側と同じく、一時ファイル経由で書いて成功時だけ最終パスへ置く
+    # Same as the exportLinks path: write via a temp file and move it to the
+    # final path only on success
     tmp = path + ".part"
     try:
         req = drive.files().export_media(fileId=pres_id, mimeType=PPTX_MIME)
@@ -113,7 +116,7 @@ def export_pptx(drive, creds, pres_id: str, path: str) -> None:
         os.replace(tmp, path)
         return
     except HttpError as e:
-        # フォールバックはサイズ超過に限定。権限不足や ID 間違いはここで落とす
+        # Only fall back for the size limit; permission errors or a wrong ID raise here
         if not _is_export_size_limit(e):
             status = getattr(e, "status_code", None) \
                 or getattr(getattr(e, "resp", None), "status", None)

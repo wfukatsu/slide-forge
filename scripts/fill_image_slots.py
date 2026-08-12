@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
-"""既存デッキの空いている画像枠に、AI 生成した画像を入れる。
+"""Fills the empty image slots of an existing deck with AI-generated images.
 
-デッキ仕様から生成するときは build_deck.py が枠へ入れてくれる（x/y/w/h を
-省略する）。こちらは**もう出来ているデッキ**が対象で、表紙や章扉の絵が
-空のまま残っているものに後から絵を入れる。
+When generating from a deck spec, build_deck.py fills the slots for you (by
+omitting x/y/w/h). This script instead targets a **deck that already
+exists**, adding pictures after the fact to slots — like a cover or
+chapter-divider image — that were left empty.
 
-    一覧:   python scripts/fill_image_slots.py <URL> --dry-run
-    実行:   python scripts/fill_image_slots.py <URL>
-    指定:   python scripts/fill_image_slots.py <URL> --slide 1 --prompt "夜間のビル"
+    list:  python scripts/fill_image_slots.py <URL> --dry-run
+    run:   python scripts/fill_image_slots.py <URL>
+    pick:  python scripts/fill_image_slots.py <URL> --slide 1 --prompt "夜間のビル"
 
-枠の探し方は inspect_template.py と同じだが、**テンプレートが宣言した枠**
-（PICTURE 系プレースホルダ / 中身の無い image）だけを既定の対象にする。
-「他のスライドが同じ位置に絵を置いている」という推測由来の枠は、デッキ全体に
-かけると本文領域まで埋めてしまうため --include-inferred を付けたときだけ使う。
+Slot discovery works the same as inspect_template.py, but by default only
+targets **slots the template declares** (PICTURE-family placeholders / empty
+images). Slots inferred from "another slide places a picture at this same
+position" are only used with --include-inferred, since running that over
+the whole deck would end up filling in body-text areas too.
 
-**既に画像が載っている枠は触らない。** 何を描くかはスライドの**見出し**から
-起こすので、見出しの無いスライドには --prompt が要る。
+**Slots that already have a picture are left untouched.** What gets drawn is
+derived from the slide's **heading**, so a slide without a heading needs
+--prompt.
 
-デッキを直接書き換えるため、実行前に scripts/snapshot_version.py で複製を取ること。
+This rewrites the deck directly, so take a copy with
+scripts/snapshot_version.py before running it.
 """
 from __future__ import annotations
 
@@ -60,7 +64,8 @@ register({
         "スライド {n} はありません（このデッキは {total} 枚）",
 })
 
-# 枠と見なす重なり具合。既にある画像がこの割合を超えて枠に被っていれば「埋まっている」
+# Overlap ratio that counts as a match. If an existing image covers a slot
+# by more than this fraction, the slot counts as "occupied"
 OCCUPIED = 0.5
 
 
@@ -73,10 +78,11 @@ def _overlap(a: dict, b: dict) -> float:
 
 def slide_slots(slide: dict, layouts_by_id: dict, *,
                 inferred: bool = False) -> list[dict]:
-    """このスライドで絵を入れられる枠を返す。
+    """Returns the slots on this slide where a picture can be placed.
 
-    スライド自身に置かれた空の枠（PICTURE プレースホルダ・中身の無い image）を
-    優先する。無ければレイアウト側の imageSlots を使う。
+    Prefers empty slots placed directly on the slide itself (PICTURE
+    placeholders, or an image element with no content). Falls back to the
+    layout's imageSlots if there are none.
     """
     slots = []
     for el in slide.get("pageElements", []):
@@ -92,15 +98,16 @@ def slide_slots(slide: dict, layouts_by_id: dict, *,
     lid = (slide.get("slideProperties") or {}).get("layoutObjectId")
     slots = list((layouts_by_id.get(lid) or {}).get("imageSlots") or [])
     if not inferred:
-        # source="sample" は「他のスライドが同じ位置に絵を置いている」という
-        # 推測であって、テンプレートが宣言した枠ではない。デッキ全体にかけると
-        # 本文領域を絵で埋めてしまうので、明示的に求められたときだけ使う
+        # source="sample" is an inference — "another slide places a picture
+        # at this same position" — not a slot the template actually
+        # declares. Running it over the whole deck would fill body-text
+        # areas with pictures, so only use it when explicitly requested
         slots = [s for s in slots if s.get("source") != "sample"]
     return slots
 
 
 def existing_images(slide: dict) -> list[dict]:
-    """このスライドに既に載っている画像の矩形。"""
+    """Rectangles of the images already placed on this slide."""
     return [it.geometry(el) for el in slide.get("pageElements", [])
             if "image" in el and not it.is_empty_image(el)]
 
@@ -116,12 +123,13 @@ def _element_text(el: dict) -> str:
 
 
 def slide_text(slide: dict) -> str:
-    """このスライドの見出しを返す。
+    """Returns this slide's heading.
 
-    本文まで混ぜると「① 検証 ② 配布 …」のような箇条書きがそのまま絵の指示に
-    なってしまう。見出しはそのスライドが何の話かを一言で表しているので、
-    絵の題材としてはこちらだけを使う。TITLE プレースホルダがあればそれ、
-    無ければ一番上にある文字。
+    Mixing in body text would turn bullet points like "① Validate
+    ② Distribute …" directly into the drawing prompt. The heading sums up
+    what the slide is about in one line, so only that is used as the subject
+    for the picture. Uses the TITLE placeholder if there is one; otherwise
+    the topmost text.
     """
     els = slide.get("pageElements", [])
     for el in els:
@@ -135,13 +143,15 @@ def slide_text(slide: dict) -> str:
 
 
 def prompt_for(slide: dict, given: str | None) -> str | None:
-    """このスライドに描く絵の指示。--prompt が無ければ文字から起こす。"""
+    """The instruction for what to draw on this slide. Derived from the
+    slide's text if --prompt isn't given."""
     if given:
         return given
     text = slide_text(slide)
     if not text:
         return None
-    # 長い本文をそのまま渡すと絵が説明的になりすぎるので頭だけ使う
+    # Passing long body text as-is makes the picture too literal, so only
+    # use the beginning
     return text[:120]
 
 
@@ -179,8 +189,9 @@ def main() -> int:
         with open(args.template, encoding="utf-8") as f:
             template = json.load(f)
     else:
-        # 登録済みテンプレートが無くても動くよう、そのデッキ自身から作る。
-        # 配色（生成プロンプトに載る）とレイアウトの枠がここで揃う
+        # Built from the deck itself so this works even without a
+        # registered template. This is where the palette (which feeds the
+        # generation prompt) and the layout's slots come from
         template = it.build_template(pres, pres.get("title", "deck"))
     layouts_by_id = {l["layoutId"]: l for l in template.get("layouts", {}).values()}
 
@@ -233,8 +244,10 @@ def main() -> int:
 
     print(t("{n} slots to fill", n=len(jobs)))
     if args.prompt and len(jobs) > 1:
-        # 生成のキャッシュキーは (モデル, スタイル, 比率, プロンプト全文) なので、
-        # 同じ形の枠には同じ絵が入る。気づかずに全ページ同じ絵になるのを防ぐ
+        # The generation cache key is (model, style, aspect ratio, full
+        # prompt text), so slots of the same shape get the same picture.
+        # This note prevents every page silently ending up with the same
+        # image
         print(t("  note: one --prompt for {n} frames of the same shape draws "
                 "the same picture in each; use --slide to vary them",
                 n=len(jobs)))
@@ -242,8 +255,9 @@ def main() -> int:
     for slide_id, n, slot, prompt in jobs:
         print(t("  slide {n}: generating…", n=n))
         d = Canvas(deck, slide_id, template)
-        # x/y/w/h は枠のもの。ai_image が枠の比に最も近い比率で描き、
-        # 残りの差は cover の切り取りで埋める
+        # x/y/w/h belong to the slot. ai_image draws at whichever ratio
+        # comes closest to the slot's aspect ratio, and covers the
+        # remaining difference with a crop
         d.ai_image(slot["x"], slot["y"], slot["w"], slot["h"], prompt,
                    style=args.style, force=args.force)
     url = deck.commit()

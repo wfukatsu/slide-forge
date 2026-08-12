@@ -1,40 +1,42 @@
+*[日本語](GEMINI.ja.md)*
+
 # slide-forge Project Guidelines for Antigravity
 
-このリポジトリは、Google Slides デッキ生成・インフォグラフィックス作成・Visual QA・PPTX変換・スプレッドシート作成のための統合エンジン（`slide-forge`）です。
+This repository is an integrated engine (`slide-forge`) for Google Slides deck generation, infographic creation, visual QA, PPTX conversion, and spreadsheet generation.
 
-## 1. 実行環境ルール
+## 1. Runtime rules
 
-- **Python バージョン / venv**:
-  スクリプトを実行する際は、必ずプロジェクト直下の仮想環境 `.venv/bin/python` を使用してください。
+- **Python version / venv**:
+  When running scripts, always use the virtual environment at the project root, `.venv/bin/python`.
   ```bash
   .venv/bin/python scripts/<script_name>.py [args]
   ```
-- **言語設定**:
-  スクリプトの出力言語を日本語にする場合は、環境変数 `GSLIDES_LANG=ja` を設定してください。
-- **設定・認証情報**:
-  OAuth認証情報 (`config/credentials.json`, `config/token.json`) や Gemini API キー (`config/gemini_api_key` または `GEMINI_API_KEY`) を使用します。認証エラーが発生した場合は、プロンプトの指示に従って再認証スクリプトを実行します。
+- **Language setting**:
+  To make script output Japanese, set the environment variable `GSLIDES_LANG=ja`.
+- **Configuration / credentials**:
+  Uses OAuth credentials (`config/credentials.json`, `config/token.json`) and a Gemini API key (`config/gemini_api_key` or `GEMINI_API_KEY`). If an authentication error occurs, run the re-authentication script as directed by the prompt.
 
-## 2. スキルの活用
+## 2. Using skills
 
-スライド作成・編集・検証などのタスク依頼を受信した場合は、`.agents/skills/` 内にある該当スキルの `SKILL.md` を読み込み、その手順に従って実行してください。
+When a task request involves creating, editing, or validating slides, load the relevant skill's `SKILL.md` under `.agents/skills/` and follow its procedure.
 
-| タスク / 目的 | 使用する Skill (`.agents/skills/`) |
+| Task / purpose | Skill to use (`.agents/skills/`) |
 |---|---|
-| デッキ生成を一連の流れで一括実行（パイプライン） | `forge` |
-| 登録テンプレート/マスターを使ったスライド作成 | `google-slides-template` |
-| ゼロからのスライド生成（マスター無し） | `google-slides` |
-| 新規マスターテンプレートの作成・登録 | `template-forge` |
-| 再利用可能な 1 枚ものコンテンツテンプレートの作成・登録 | `slide-template-creator` |
-| Scalar 社製品・提案スライドの作成 | `scalar-product-slides`, `scalar-proposal-slides` |
-| 顧客ごとの活動計画・訪問資料（AE の営業活動） | `scalar-account-plan`, `scalar-ae-materials` |
-| Account Planning Session（年次の組織図・商談棚卸しデッキ） | `scalar-account-planning-session` |
-| B2B 商談の関与者マップ・ディスカバリーマップ作成 | `b2b-account-maps` |
-| draw.io による密なアーキテクチャ図作成 | `drawio-diagrams` |
-| 画像枠の自動埋め込み (AI画像生成含む) | `image-slots` |
-| サムネイルベースの視覚的検証（Visual QA） | `slide-qa` |
-| PowerPoint (`.pptx`) 形式へのエクスポート | `pptx-export` |
-| 見積もり明細などのスプレッドシート生成 | `spreadsheets` |
+| Run the whole deck-generation flow in one pass (pipeline) | `forge` |
+| Create a deck from a registered template/master | `google-slides-template` |
+| Generate a deck from scratch (no master) | `google-slides` |
+| Create/register a new master template | `template-forge` |
+| Create/register a reusable single-slide content template | `slide-template-creator` |
+| Create Scalar product/proposal slides | `scalar-product-slides`, `scalar-proposal-slides` |
+| Per-customer activity plan / visit materials (AE sales activity) | `scalar-account-plan`, `scalar-ae-materials` |
+| Account Planning Session (annual org-chart / deal-stocktake deck) | `scalar-account-planning-session` |
+| Create B2B deal stakeholder maps / discovery maps | `b2b-account-maps` |
+| Create dense architecture diagrams with draw.io | `drawio-diagrams` |
+| Automatically fill image frames (including AI image generation) | `image-slots` |
+| Thumbnail-based visual QA | `slide-qa` |
+| Export to PowerPoint (`.pptx`) format | `pptx-export` |
+| Generate spreadsheets such as line-item estimates | `spreadsheets` |
 
-## 3. インタラクティブ質問
+## 3. Interactive questions
 
-前提条件のヒアリングや、Visual QAの実施有無、PPTX書き出しの要否などを確認する際は、Antigravity の `ask_question` ツールを積極的に活用してユーザーに選択肢を提示してください。
+When confirming prerequisites, whether to run visual QA, or whether PPTX export is needed, make active use of Antigravity's `ask_question` tool to present choices to the user.

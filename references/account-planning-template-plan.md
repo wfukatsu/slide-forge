@@ -1,35 +1,43 @@
-# Account Planning ページテンプレート作成計画
+*[日本語](account-planning-template-plan.ja.md)*
 
-`references/account-planning-session.md` のページ群（先行実装
-`scripts/scalar/build_account_planning.py` の `LAYOUT` が定義する 47 ページ）を
-slide-forge で再現するための、ページテンプレート（`slide-templates/`）の
-設計・実装計画。
+# Account Planning Page Template Implementation Plan
 
-## 1. 目的とスコープ
+Design and implementation plan for the page templates (`slide-templates/`)
+needed to reproduce, in slide-forge, the pages from
+`references/account-planning-session.md` (the 47 pages defined by `LAYOUT`
+in the existing implementation `scripts/scalar/build_account_planning.py`).
 
-**目的**: Account Planning Session の各ページを、顧客データを差し込むだけで
-生成できる再利用可能なテンプレートとして登録する。さらに、**適用するスライド
-マスターのデザインが変わってもテンプレート側を書き換えずに追従させる。**
+## 1. Purpose and Scope
 
-**スコープに含む**: `slide-templates/account-planning/` パックの新規テンプレート
-34 件（§4）、既存テンプレートの再利用判定、マスター追従の設計契約、検証手順。
+**Purpose**: register each page of the Account Planning Session as a
+reusable template that can be generated just by plugging in customer data.
+Furthermore, **make it track changes to the applied slide master's design
+without rewriting the template side.**
 
-> 実装の先行例: ある企業グループ向けの Account Planning デッキは
-> `scripts/scalar/build_account_planning.py` が台帳から直接組んでいる。
-> テンプレート化はまだだが、**各ページの座標・列幅・スロット構成は実生成と
-> ビジュアル QA を通した実測値**なので、テンプレートを起こすときはそこから
-> 写す。ゼロから座標を決め直さない。
+**In scope**: the 34 new templates in the `slide-templates/account-planning/`
+pack (§4), the reuse decisions for existing templates, the design contract
+for tracking the master, and the validation procedure.
 
-**スコープに含まない**: スライドマスター（`templates/`）の作成 → `template-forge`。
-デッキ生成そのもの → `google-slides-template`。台帳の設計 → `scalar-account-plan`。
+> Existing implementation reference: for one corporate group, the Account
+> Planning deck is assembled directly from the ledger by
+> `scripts/scalar/build_account_planning.py`. It isn't templated yet, but
+> **each page's coordinates, column widths, and slot composition are
+> measured values that have been through real generation and visual QA**,
+> so copy from there when building the templates. Don't redecide the
+> coordinates from scratch.
 
-## 2. マスターのデザインに追従させる設計
+**Out of scope**: creating the slide master (`templates/`) → `template-forge`.
+Deck generation itself → `google-slides-template`. Ledger design →
+`scalar-account-plan`.
 
-ここが本計画の中心。追従には性質の違う 3 つの層があり、それぞれ実現方法が違う。
+## 2. Design for Tracking the Master's Design
 
-### 2.1 現行機構でどこまで自動追従するか
+This is the core of this plan. Tracking involves 3 layers of differing
+nature, each with a different way of achieving it.
 
-slide-forge の分業は既にこうなっている:
+### 2.1 How Far the Current Mechanism Auto-Tracks
+
+slide-forge's division of labor already looks like this:
 
 ```
  template.json          assemble_spec.py        build_deck.py --template <master>
@@ -39,21 +47,22 @@ slide-forge の分業は既にこうなっている:
   色は意味で指定                                   フォント
 ```
 
-`scripts/colors.py` の `Palette` は、**適用されたマスターの colorScheme から**
-図解用の色を組み立てる:
+`scripts/colors.py`'s `Palette` builds diagram colors **from the applied
+master's colorScheme**:
 
-| トークン | 由来 |
+| Token | Derived from |
 |---|---|
 | `primary` | `accent5` |
 | `success` / `danger` / `info` / `warning` | `accent1` / `accent2` / `accent3` / `accent4` |
 | `text` / `muted` | `dark1` / `dark2` |
 | `page` / `surfaceAlt` | `light1` / `light2` |
-| `surface` / `border` | `primary` からの派生（明度演算） |
-| `series(n)` | 上記からの固定順の系列色 |
+| `surface` / `border` | Derived from `primary` (lightness computation) |
+| `series(n)` | Fixed-order series colors derived from the above |
 
-**つまり L1（色・フォント）は、テンプレートが意味トークンだけを使っていれば
-自動で追従する。** マスターを差し替える操作は `build_deck.py --template` の
-引数を変えるだけで、テンプレートには一切触らない。
+**In other words, L1 (color/typeface) auto-tracks as long as the template
+uses only semantic tokens.** Swapping the master is just a matter of
+changing the `build_deck.py --template` argument — the template itself is
+never touched.
 
 ```bash
 # 同じ spec を別マスターで生成する
@@ -62,27 +71,30 @@ slide-forge の分業は既にこうなっている:
 .venv/bin/python scripts/build_deck.py --template templates/aixdevops.json    --spec out/ap/spec.json --dry-run --strict
 ```
 
-### 2.2 追従の 3 層
+### 2.2 The 3 Layers of Tracking
 
-| 層 | 何が変わるか | 実現方法 | 状態 |
+| Layer | What changes | How it's achieved | Status |
 |---|---|---|---|
-| **L1 色・書体** | ブランド色、文字色、系列色、フォント | `Palette` の意味トークン経由で自動 | **実装済み** |
-| **L2 レイアウト選択** | 表紙・中扉など、マスター固有レイアウトに載せる | `slide.layout` で選択。`compatibleLayouts` は**宣言のみで検証されない**（`scripts/` のどこからも参照されていない） | 部分的 |
-| **L3 座標・密度** | ヘッダ／フッタ装飾の厚みが違うマスターで図の上下端を変える | `masterProfiles`（下記の提案） | **未実装 / 本計画で追加** |
+| **L1 color / typeface** | Brand color, text color, series colors, font | Automatic via `Palette`'s semantic tokens | **Implemented** |
+| **L2 layout selection** | Placing covers, section dividers, etc. onto master-specific layouts | Selected via `slide.layout`. `compatibleLayouts` is **declaration-only and not validated** (not referenced anywhere in `scripts/`) | Partial |
+| **L3 coordinates / density** | Shifting a figure's top/bottom edge for masters whose header/footer decoration thickness differs | `masterProfiles` (proposed below) | **Not implemented / added by this plan** |
 
-### 2.3 L1・L2 で守る規約（全テンプレート必須）
+### 2.3 Rules to Follow for L1/L2 (Required for All Templates)
 
-- `slide.layout` は原則 `BLANK`。マスター固有レイアウトを使うのは、そのページ
-  がマスターの装飾（表紙・中扉）に依存する場合だけ。その場合は
-  `compatibleLayouts` に対応マスターのレイアウト名を列挙する。ただしこのキーは
-  現状**人間向けの宣言でしかなく、ツールは検証しない**。実際の互換性は §2.5 の
-  マスター横断検証で担保する。
-- **ブランド RGB のハードコード禁止。** `#0B5FFF` のような直値を
-  `template.json` に書かない。Canvas プリミティブに意味トークンを渡す。
-- **マスターのオブジェクト ID を参照しない。** `g1b3a74d17bb_0_0` のような ID を
-  テンプレートに書かない。
-- ページサイズは 10 × 5.625 in（16:9）を前提にする。
-- 安全域は `references/layout-contract.md` の実測値に従う:
+- `slide.layout` should, in principle, be `BLANK`. Use a master-specific
+  layout only when the page depends on the master's decoration (cover,
+  section divider). In that case, list the corresponding master's layout
+  names in `compatibleLayouts`. Note that this key is currently **only a
+  declaration for humans and isn't validated by tooling**; actual
+  compatibility is guaranteed by the cross-master validation in §2.5.
+- **No hardcoding brand RGB values.** Don't write a literal value like
+  `#0B5FFF` into `template.json`. Pass semantic tokens to the Canvas
+  primitives.
+- **Don't reference the master's object IDs.** Don't write an ID like
+  `g1b3a74d17bb_0_0` into the template.
+- Assume a page size of 10 × 5.625in (16:9).
+- Follow the measured values in `references/layout-contract.md` for the
+  safe area:
 
   ```
   X0 = 0.5   W = 9.0   XE = 9.5
@@ -93,22 +105,27 @@ slide-forge の分業は既にこうなっている:
   y 5.197 以降   マスターのロゴ・フッター領域。触らない
   ```
 
-- タイトルは全角換算 30.5 文字以内（`deckkit.em()` で測れる）。2 行になると
-  `DY0` を越えて図と重なる — 最も多い崩れ方。
-- 日本語と英語の両方で代表文字列を検証する。日本語の方が全角幅で先に溢れる。
-- **表の列幅は 0.45in（32pt）以上。** Slides API は 32pt 未満の列を
-  `updateTableColumnProperties` で拒否する。`--dry-run` では検出できず、実生成
-  で初めて 400 が返る。番号列のような細い列を作るときに踏む。
+- Keep the title within 30.5 full-width-equivalent characters (measurable
+  with `deckkit.em()`). If it wraps to 2 lines, it exceeds `DY0` and
+  overlaps the figure — the most common failure mode.
+- Validate representative strings in both Japanese and English. Japanese
+  overflows first because of its full-width character width.
+- **Table column widths must be 0.45in (32pt) or more.** The Slides API
+  rejects columns under 32pt via `updateTableColumnProperties`. This can't
+  be caught by `--dry-run` — the 400 only comes back at real generation.
+  This is hit when creating a narrow column such as a number column.
 
-`slide_templates.py` の検証にこの下限が入るまでは、テンプレート側で
-`colWidths` の合計と幅から実寸を出して自分で検査すること
-（`scripts/scalar/build_account_planning.py` の `table()` が実装例）。
+Until this lower bound is added to `slide_templates.py`'s validation,
+compute the actual size yourself from `colWidths`'s total and width and
+check it on the template side (`scripts/scalar/build_account_planning.py`'s
+`table()` is a reference implementation).
 
-### 2.4 L3 の提案: `masterProfiles`
+### 2.4 L3 Proposal: `masterProfiles`
 
-同じ 10 × 5.625 in でも、マスターによって上部の装飾帯やフッターの厚みが違う。
-現行スキーマは 1 テンプレート = 1 ジオメトリなので、装飾が厚いマスターでは図が
-食い込む。これを吸収するために、**後方互換の追加キー**を提案する。
+Even at the same 10 × 5.625in, the thickness of the top decoration band or
+footer differs by master. Since the current schema is 1 template = 1
+geometry, figures get squeezed on masters with thick decoration. To absorb
+this, we propose a **backward-compatible additional key**.
 
 ```jsonc
 {
@@ -128,32 +145,35 @@ slide-forge の分業は既にこうなっている:
 }
 ```
 
-必要な変更:
+Required changes:
 
-| ファイル | 変更内容 |
+| File | Change |
 |---|---|
-| `scripts/slide_templates.py` | `render_template(template, data, master=None)` に引数追加。`masterProfiles[master]` を `slide` に深いマージしてからスロット解決する。`master` 未指定なら現行と完全に同じ挙動 |
-| `scripts/render_slide_template.py` | `--master <name>` を追加（省略時は既定ジオメトリ） |
-| `scripts/validate_slide_templates.py` | 宣言された全プロファイルについてレンダリング → `build_deck.py --dry-run --strict` を実施。未登録マスター名、既定に存在しない figure インデックスへの参照はエラー |
-| `references/template-schema.md` | `masterProfiles` の節を追加 |
+| `scripts/slide_templates.py` | Add an argument to `render_template(template, data, master=None)`. Deep-merge `masterProfiles[master]` into `slide` before resolving slots. If `master` is unspecified, behavior is exactly the same as today |
+| `scripts/render_slide_template.py` | Add `--master <name>` (default geometry if omitted) |
+| `scripts/validate_slide_templates.py` | For every declared profile, render → run `build_deck.py --dry-run --strict`. An unregistered master name or a reference to a figure index that doesn't exist in the default is an error |
+| `references/template-schema.md` | Add a `masterProfiles` section |
 
-設計上の制約:
+Design constraints:
 
-- `masterProfiles` は **ジオメトリと密度パラメータ（`x` / `y` / `w` / `h` /
-  `size` / `rowH` / `colWidths`）に限定する。** figure の追加・削除・型変更は
-  認めない。認めるとテンプレートが分岐して保守できなくなる。
-- 色は書けない（L1 で自動追従するため、書く必要がない）。
-- プロファイルを持たないマスターでは既定ジオメトリが使われる。
+- `masterProfiles` is **limited to geometry and density parameters**
+  (`x` / `y` / `w` / `h` / `size` / `rowH` / `colWidths`). Adding, removing,
+  or changing the type of a figure is not allowed. Allowing it would branch
+  the template and make it unmaintainable.
+- Colors can't be written (there's no need — they auto-track via L1).
+- For a master without a profile, the default geometry is used.
 
-**代替案（L3 を実装しない場合）**: 全テンプレートを最も装飾の厚いマスターの
-安全域に合わせて作る。実装コストはゼロだが、装飾の薄いマスターで余白が過剰に
-なる。34 テンプレートすべてに効くので、F2 で実装する価値がある（§6）。
+**Alternative (if L3 isn't implemented)**: build every template to fit the
+safe area of the master with the thickest decoration. Implementation cost
+is zero, but masters with thin decoration end up with excess margin. Since
+this affects all 34 templates, it's worth implementing in F2 (§6).
 
-### 2.5 マスター横断の検証を CI 的に回す
+### 2.5 Running Cross-Master Validation Like CI
 
-`validate_slide_templates.py` は `--deck-template` で**検証に使うマスターを
-差し替えられる**（既定は `templates/blank-16x9.json`）。マスター追従の回帰は
-この 1 本で回せる。
+`validate_slide_templates.py` lets you **swap the master used for
+validation** via `--deck-template` (default is `templates/blank-16x9.json`).
+Regression testing of master tracking can be run entirely with this one
+tool.
 
 ```bash
 # パック全体を、マスターを変えながら検証する
@@ -164,304 +184,361 @@ for m in blank-16x9 scalar-2026 corporate aixdevops; do
 done
 ```
 
-**dry-run が通ることは「崩れていない」ことの証明ではない。** 実生成 →
-サムネイル目視（`slide-qa`）まで通して初めて完了とする。少なくとも
-`scalar-2026` と、色調が最も遠いマスター 1 つで目視する。
+**Passing dry-run is not proof that nothing is broken.** Only count it done
+once you've gone all the way through real generation → visual thumbnail
+inspection (`slide-qa`). Inspect visually with at least `scalar-2026` and
+one master whose color tone is furthest away.
 
-## 3. 既存資産の再利用判定
+## 3. Reuse Decisions for Existing Assets
 
-新規 ID を作る前に必ず確認する:
+Always check before creating a new ID:
 
 ```bash
 .venv/bin/python scripts/list_slide_templates.py
 .venv/bin/python scripts/list_slide_templates.py --tag account
 ```
 
-| AP ページ | 既存候補 | 判定 |
+| AP page | Existing candidate | Verdict |
 |---|---|---|
-| SWOT Analysis | `marketing-analysis/swot-analysis` | **そのまま再利用** |
-| Influence Map | `b2b-sales/influence-map`, `influence-map-org` | **そのまま再利用**。組織階層が取れているなら `-org` |
-| Action Plan | `scalar-ae/action-plan` | **そのまま再利用**。列が S.M.A.R.T. と対応するか確認のみ |
-| Prioritization（2 軸） | `marketing-analysis/positioning-map` | **要検証**。バブル径＝3 年ポテンシャル金額が表現できれば再利用、できなければ `prioritization-matrix` を新規 |
-| Blueprint Summary | `scalar-ae/challenge-hypothesis` | **新規**。課題仮説 1 枚とは項目数が違いすぎる（15 欄 vs 5 欄） |
-| Vision/Strategy for Growth | `scalar-ae/win-plan` | **新規**。win-plan は個別案件の勝ち筋、こちらはアカウント 3 年の成長ビジョン |
-| Challenges & Risk | `scalar-ae/bant-risk` | **新規**。BANT の 4 軸に限定されない汎用の課題×緩和策。bant-risk は置き換えない |
-| 3 Year Execution Plan | `scalar-ae/activity-timeline` | **新規**。activity-timeline は過去の活動履歴、こちらは未来 3 年のマイルストーン |
-| Account Health | — | 新規 |
-| Strategy Map | `b2b-sales/discovery-map-tree` | **要検証**。階層ツリーのプリミティブが流用できる可能性。テンプレートは新規 |
+| SWOT Analysis | `marketing-analysis/swot-analysis` | **Reuse as-is** |
+| Influence Map | `b2b-sales/influence-map`, `influence-map-org` | **Reuse as-is**. Use `-org` if the org hierarchy is available |
+| Action Plan | `scalar-ae/action-plan` | **Reuse as-is**. Only need to confirm the columns correspond to S.M.A.R.T. |
+| Prioritization (2-axis) | `marketing-analysis/positioning-map` | **Needs verification**. Reuse if bubble diameter = 3-year potential amount can be expressed; otherwise create `prioritization-matrix` new |
+| Blueprint Summary | `scalar-ae/challenge-hypothesis` | **New**. Too different in item count from a single challenge-hypothesis page (15 fields vs. 5 fields) |
+| Vision/Strategy for Growth | `scalar-ae/win-plan` | **New**. win-plan is the winning path for an individual deal; this is the account's 3-year growth vision |
+| Challenges & Risk | `scalar-ae/bant-risk` | **New**. Generic challenge × mitigation not limited to the 4 BANT axes. Doesn't replace bant-risk |
+| 3 Year Execution Plan | `scalar-ae/activity-timeline` | **New**. activity-timeline is past activity history; this is the 3-year future milestones |
+| Account Health | — | New |
+| Strategy Map | `b2b-sales/discovery-map-tree` | **Needs verification**. The hierarchical-tree primitive might be reusable. The template itself is new |
 
-判定基準: 「同じ問いに、同じ視覚文法で答えるか」。答えが Yes なら再利用、
-スロットか視覚構造が実質的に違うときだけ新規 ID を作る。
+Decision criterion: "does it answer the same question with the same visual
+grammar?" If yes, reuse; create a new ID only when the slots or visual
+structure are substantively different.
 
-## 4. 新規テンプレート仕様（34 件）
+## 4. New Template Specifications (34 items)
 
-パック名: `account-planning`。全件 `schemaVersion: 1`、`status: experimental`、
-`compatibleLayouts: ["BLANK"]` を既定とする。
+Pack name: `account-planning`. Default `schemaVersion: 1`,
+`status: experimental`, `compatibleLayouts: ["BLANK"]` for all items.
 
-全テンプレート共通のスロット:
+Slots common to all templates:
 
-| スロット | 型 | 必須 | 説明 |
+| Slot | Type | Required | Description |
 |---|---|---|---|
-| `title` | `string` (≤70) | ○ | 結論を書くタイトル。トピック名を置かない |
-| `source` | `string` (≤160) | 数値を含む場合 ○ | 出典・期間・単位・為替前提 |
+| `title` | `string` (≤70) | ○ | A title stating the conclusion. Don't put a topic name |
+| `source` | `string` (≤160) | ○ if numbers are included | Source, period, unit, FX assumption |
 
-### P0 — Session 資料の 9 枚を成立させる（9 件）
+### P0 — Making the Session Materials' 9 Pages Work (9 items)
 
-#### 4.1 `corporate-overview` — 企業概要
-- 答える問い: この顧客はどんな会社で、経営として何を課題にしているか
+#### 4.1 `corporate-overview` — Corporate Overview
+- Question answered: what kind of company is this customer, and what
+  challenges does management face?
 - `inferenceLevel`: `descriptive`
-- スキル骨格: D（上下 2 段）。上段にプロファイル＋事業概要、下段に経営課題
-- スロット: `profile` `tuple[]`（項目名・値、4〜8）／ `description` `string`
-  (≤240)／ `challenges` `string[]`（3〜5、各 ≤80）／ `competitors` `string[]`
-  （0〜6）／ `exec_quotes` `tuple[]`（発言者・発言、0〜3）
-- guardrails: 経営層の発言は出典（決算説明会・記事など）と時期を明示する／
-  プロファイル欄だけ埋まった状態は未完成
+- Skeleton: D (upper/lower 2 rows). Profile + business overview on top,
+  management challenges below
+- Slots: `profile` `tuple[]` (item name, value; 4–8) / `description`
+  `string` (≤240) / `challenges` `string[]` (3–5, each ≤80) /
+  `competitors` `string[]` (0–6) / `exec_quotes` `tuple[]` (speaker,
+  statement; 0–3)
+- guardrails: state the source (earnings call, article, etc.) and timing
+  for executive statements / a state where only the profile fields are
+  filled in is incomplete
 
-#### 4.2 `strategy-map` — 顧客の経営戦略マップ
-- 答える問い: 顧客の Goal / Strategy / Tactic / Initiative はどう連なっているか
+#### 4.2 `strategy-map` — Customer Management Strategy Map
+- Question answered: how does the customer's Goal / Strategy / Tactic /
+  Initiative chain together?
 - `inferenceLevel`: `strategic`
-- 骨格: A（全幅）。3〜4 層の階層ツリー、各ノードに要求元ロールのラベル
-- スロット: `layers` `string[]`（層名、3〜4）／ `nodes` `array`（[層 index,
-  ラベル, 要求元ロール, 確度]、6〜24）／ `edges` `array`（[親 index, 子 index]）
-- guardrails: 仮説ノードは `確度 = "hypothesis"` にして視覚的に区別する／
-  イニシアチブは顧客の公開情報か発言に紐づくもののみ `confirmed`
-- 依存: 階層ツリーのプリミティブ（`discovery-map-tree` の流用可否を先に検証）
+- Skeleton: A (full width). A 3–4 layer hierarchical tree, each node
+  labeled with the requesting role
+- Slots: `layers` `string[]` (layer names, 3–4) / `nodes` `array`
+  ([layer index, label, requesting role, confidence]; 6–24) / `edges`
+  `array` ([parent index, child index])
+- guardrails: set hypothesis nodes to `confidence = "hypothesis"` so
+  they're visually distinguished / mark an initiative `confirmed` only when
+  it's tied to the customer's public information or their own statement
+- Dependency: the hierarchical-tree primitive (verify whether
+  `discovery-map-tree` can be reused first)
 
-#### 4.3 `footprint-heatmap` — 導入状況ヒートマップ
-- 答える問い: レイヤごとに今どこまで入っていて、3 年後どこまで狙うのか
+#### 4.3 `footprint-heatmap` — Adoption Status Heatmap
+- Question answered: how far in are we per layer today, and how far are we
+  targeting 3 years out?
 - `inferenceLevel`: `descriptive`
-- 骨格: A。行＝レイヤ、列＝現状 → 3 年後（矢印）、イニシアチブ紐付け、競合メモ
-- スロット: `rows` `array`（[レイヤ名, 現状 0-2, 3年後 0-2, イニシアチブ番号列,
-  メモ]、4〜10）／ `legend` `string[3]`（既定: 全社標準 / 足がかりあり / 未進出）
-- guardrails: 3 値は 全社標準 / 足がかりあり・伸長中 / ほぼ未進出 の 3 段階のみ／
-  評価は社内の製品担当・SC への照会で裏を取る
+- Skeleton: A. Rows = layer, columns = current state → 3 years out
+  (arrow), initiative linkage, competitor notes
+- Slots: `rows` `array` ([layer name, current 0–2, 3 years out 0–2, list of
+  initiative numbers, notes]; 4–10) / `legend` `string[3]` (default:
+  company-wide standard / has a foothold / no penetration)
+- guardrails: the 3 values are only company-wide standard / has a foothold
+  and growing / almost no penetration / verify the rating with internal
+  product owners / SCs
 
-#### 4.4 `initiative-solution-alignment` — イニシアチブ × ソリューション
-- 答える問い: 顧客のどのイニシアチブに、自社の何がどう効くのか
+#### 4.4 `initiative-solution-alignment` — Initiatives × Solutions
+- Question answered: which of our capabilities addresses which of the
+  customer's initiatives, and how?
 - `inferenceLevel`: `strategic`
-- 骨格: A。3 段の帯（顧客イニシアチブ → 提供価値 → 主要商談機会）を縦に対応
-- スロット: `initiatives` `string[]`（3〜6、各 ≤40）／ `capabilities`
-  `string[][]`（イニシアチブごとの提供価値、各 1〜3）／ `opportunities`
-  `string[][]`（同、各 0〜3）
-- guardrails: 製品名だけの列は不可。顧客課題に対応する価値を書く
+- Skeleton: A. 3 vertically-aligned bands (customer initiatives → value
+  delivered → key deal opportunities)
+- Slots: `initiatives` `string[]` (3–6, each ≤40) / `capabilities`
+  `string[][]` (value delivered per initiative, each 1–3) /
+  `opportunities` `string[][]` (same, each 0–3)
+- guardrails: a column that's just a product name isn't allowed. Write the
+  value that addresses the customer's challenge
 
-#### 4.5 `blueprint-map` — 提案テーマ一覧
-- 答える問い: 狙うテーマは何で、いくらで、いつか
+#### 4.5 `blueprint-map` — Proposed Theme List
+- Question answered: what themes are we targeting, for how much, and when?
 - `inferenceLevel`: `strategic`
-- 骨格: F（表のみ）
-- スロット: `headers` 固定（テーマ名 / 顧客課題 / ソリューション案 / 製品 /
-  なぜ自社か / 時期 / 金額）／ `rows` `string[][]`（3〜7 行、7 列、各セル ≤60）
-- guardrails: 顧客課題が空の行は載せない／金額は単位と根拠を `source` に書く／
-  Close はテーマの合意成立であって受注ではない
+- Skeleton: F (table only)
+- Slots: `headers` fixed (theme name / customer challenge / proposed
+  solution / product / why us / timing / amount) / `rows` `string[][]`
+  (3–7 rows, 7 columns, each cell ≤60)
+- guardrails: don't include a row with an empty customer challenge / write
+  the amount's unit and basis in `source` / Close means the theme is
+  agreed, not that the deal is won
 
-#### 4.6 `initiative-prioritization` — 優先順位スコア表
-- 答える問い: どのイニシアチブから取りにいくのか、その根拠は何か
+#### 4.6 `initiative-prioritization` — Priority Score Table
+- Question answered: which initiative do we pursue first, and on what
+  basis?
 - `inferenceLevel`: `strategic`
-- 骨格: F
-- スロット: `headers` 固定（イニシアチブ / 目的・期待価値 / 意思決定ステージ /
-  キーパーソン / 自社のアライン / 3 年ポテンシャル / 顧客側優先度）／ `rows`
-  `string[][]`（3〜7 行、7 列）
-- guardrails: キーパーソンはスポンサー・影響者・決裁者を役割付きで書く／
-  顧客側優先度は顧客の発言に基づく場合のみ「高」を付ける／社内限定
+- Skeleton: F
+- Slots: `headers` fixed (initiative / purpose & expected value /
+  decision-making stage / key person / our alignment / 3-year potential /
+  customer-side priority) / `rows` `string[][]` (3–7 rows, 7 columns)
+- guardrails: write key people as sponsor / influencer / decision-maker
+  with their role / only mark customer-side priority as "high" when it's
+  based on the customer's own statement / internal only
 
-#### 4.7 `execution-roadmap` — 3 年実行計画
-- 答える問い: 3 年で、いつ何を起こすのか
+#### 4.7 `execution-roadmap` — 3 Year Execution Plan
+- Question answered: over 3 years, what happens when?
 - `inferenceLevel`: `predictive`
-- 骨格: A。横軸に期（12 四半期または 3 年）、行にテーマ、マイルストーンを配置
-- スロット: `periods` `string[]`（4〜12）／ `tracks` `string[]`（2〜6）／
-  `milestones` `array`（[track index, period index, ラベル, 種別]）
-- 種別: イベント / 役員招聘 / インサイト / 共同検討 / ロードマップ策定 /
-  案件クローズ
-- guardrails: 予測であって確定ではない旨をスライド上に残す
+- Skeleton: A. Period (12 quarters or 3 years) on the horizontal axis,
+  themes as rows, with milestones placed on them
+- Slots: `periods` `string[]` (4–12) / `tracks` `string[]` (2–6) /
+  `milestones` `array` ([track index, period index, label, type])
+- Types: event / executive visit / insight / joint study / roadmap
+  development / deal close
+- guardrails: leave a note on the slide that this is a projection, not a
+  confirmed plan
 
-#### 4.8 `account-strategy-summary` — 3 年アカウント戦略サマリー
-- 答える問い: 現状から 3 年後へ、何をどこまで動かすのか
+#### 4.8 `account-strategy-summary` — 3 Year Account Strategy Summary
+- Question answered: from the current state to 3 years out, what moves and
+  how far?
 - `inferenceLevel`: `strategic`
-- 骨格: D。上段に 3 年戦略ステートメントと主要変革テーマ、下段に現状 / 3 年後の
-  対比
-- スロット: `strategy_statement` `string` (≤200)／ `themes` `string[]`（2〜5）／
-  `dimensions` `string[]`（3〜5、既定: 売上 / 顧客満足 / エンゲージメント /
-  フットプリント）／ `current` `string[][]`（`matchLength: dimensions`）／
-  `target` `string[][]`（同）
-- guardrails: **`current` と `target` は同じ項目立て・同じ順序でなければならない**
-  （`matchLength` で強制）
+- Skeleton: D. The 3-year strategy statement and key transformation themes
+  on top, current state / 3-years-out comparison below
+- Slots: `strategy_statement` `string` (≤200) / `themes` `string[]` (2–5) /
+  `dimensions` `string[]` (3–5, default: revenue / customer satisfaction /
+  engagement / footprint) / `current` `string[][]` (`matchLength:
+  dimensions`) / `target` `string[][]` (same)
+- guardrails: **`current` and `target` must use the same set of items in
+  the same order** (enforced via `matchLength`)
 
-#### 4.9 `management-asks` — 経営への依頼事項
-- 答える問い: 経営層に何をしてほしいのか、それで何が動くのか
+#### 4.9 `management-asks` — Asks to Management
+- Question answered: what do we want from management, and what does it
+  unlock?
 - `inferenceLevel`: `strategic`
-- 骨格: F
-- スロット: `headers` 固定（依頼先 / 依頼内容 / なぜ必要か / 期待される成果 /
-  期限）／ `rows` `string[][]`（1〜5 行、5 列）
-- guardrails: 期待成果が空の行は Ask として成立しない／社内限定
+- Skeleton: F
+- Slots: `headers` fixed (requested of / request content / why it's needed
+  / expected outcome / deadline) / `rows` `string[][]` (1–5 rows, 5
+  columns)
+- guardrails: a row with an empty expected outcome doesn't qualify as an
+  Ask / internal only
 
-### P1 — Plan Document を埋める（7 件）
+### P1 — Filling In the Plan Document (7 items)
 
-#### 4.10 `account-health` — アカウント健全性
-- 4 側面 × 5 指標のスコアカード＋四半期トレンド。骨格 B
-- スロット: `dimensions` `string[4]`／ `metrics` `string[4][5]`／ `scores`
-  `integer[4][5]`（1〜3）／ `trend` `array`（[四半期, 総合スコア]、2〜8）
-- guardrails: 全指標が中央値で並ぶ評価は評価をしていない／判定基準は別ページに置く
+#### 4.10 `account-health` — Account Health
+- A scorecard of 4 dimensions × 5 metrics, plus a quarterly trend.
+  Skeleton B
+- Slots: `dimensions` `string[4]` / `metrics` `string[4][5]` / `scores`
+  `integer[4][5]` (1–3) / `trend` `array` ([quarter, overall score]; 2–8)
+- guardrails: a rating where every metric lands on the median isn't really
+  a rating / put the rating criteria on a separate page
 
-#### 4.11 `tam-sow-analysis` — TAM と SOW
-- カテゴリ別 TAM と SOW のベースライン／目標。骨格 B（左に棒、右に読み筋）
-- スロット: `categories` `string[]`（2〜6）／ `tam` `number[]`
-  (`matchLength: categories`)／ `sow_baseline` `number[]`／ `sow_target`
-  `number[]`／ `annual_revenue` `string`／ `it_spend` `string`
-- guardrails: TAM は推計。実 IT 予算の開示があれば置き換え、その旨を `source` に
+#### 4.11 `tam-sow-analysis` — TAM and SOW
+- TAM by category and SOW baseline/target. Skeleton B (bars on the left,
+  narrative on the right)
+- Slots: `categories` `string[]` (2–6) / `tam` `number[]` (`matchLength:
+  categories`) / `sow_baseline` `number[]` / `sow_target` `number[]` /
+  `annual_revenue` `string` / `it_spend` `string`
+- guardrails: TAM is an estimate. Replace it if the actual IT budget is
+  disclosed, and note that in `source`
 
-#### 4.12 `historical-spend` — 過去実績
-- 過去 3 年の製品別実績。骨格 B（積み上げ棒＋読み筋）
-- スロット: `periods` `string[]`（2〜5）／ `series` `array`（[製品名, 値列]、
-  1〜6、値列は `matchLength: periods`）／ `recurring_note` `string`
-- guardrails: 年額換算のサブスクリプション額を一括売上と足し合わせない
+#### 4.12 `historical-spend` — Historical Spend
+- Past 3 years of results by product. Skeleton B (stacked bars +
+  narrative)
+- Slots: `periods` `string[]` (2–5) / `series` `array` ([product name,
+  value series]; 1–6, value series `matchLength: periods`) /
+  `recurring_note` `string`
+- guardrails: don't add annualized subscription amounts together with
+  one-time revenue
 
-#### 4.13 `growth-vision` — 成長ビジョン
-- 4 領域の記述。骨格 F または C
-- スロット: `areas` `tuple[]`（[領域名, 記述]、3〜5、記述 ≤200）
-- 既定の領域名: 顧客の変革目標へのアライン / 自社重点領域のポジショニング /
-  フットプリント拡張 / Executive Engagement
+#### 4.13 `growth-vision` — Growth Vision
+- Description across 4 areas. Skeleton F or C
+- Slots: `areas` `tuple[]` ([area name, description]; 3–5, description
+  ≤200)
+- Default area names: alignment with the customer's transformation goals /
+  positioning of our focus areas / footprint expansion / Executive
+  Engagement
 
-#### 4.14 `blueprint-summary` — テーマ詳細 1 枚
-- 1 テーマの 15 欄。骨格 F（3×5 のセルグリッド）
-- スロット: `blueprint_name` `string`／ `cells` `tuple[]`（[欄名, 内容]、
-  固定 15 件）
-- 欄: 顧客の変革課題 / ソリューション概要 / 製品・重点施策 / 差別化要因 /
-  ベネフィット / 関与ロール / 重点施策 / パートナー / 参照事例 / 開始日 /
-  クローズ予定 / 事業側スポンサー / IT スポンサー / 対象事業部 / 現行パイプ・
-  3 年ポテンシャル・競合
-- guardrails: Close はテーマ合意の成立であり受注ではない／ステージが進むほど
-  記述の精度を上げる
+#### 4.14 `blueprint-summary` — Single-Page Theme Detail
+- 15 fields for one theme. Skeleton F (3×5 cell grid)
+- Slots: `blueprint_name` `string` / `cells` `tuple[]` ([field name,
+  content]; fixed at 15 items)
+- Fields: customer transformation challenge / solution overview / product
+  & key initiative / differentiator / benefit / roles involved / key
+  initiative / partner / reference case / start date / expected close /
+  business sponsor / IT sponsor / target business unit / current pipeline
+  · 3-year potential · competitors
+- guardrails: Close means the theme is agreed, not that the deal is won /
+  raise the precision of the description as the stage advances
 
-#### 4.15 `exec-engagement-plan` — 役員エンゲージメント計画
-- 骨格 F。列: レベル / 顧客側役員 / 自社側役員 / 頻度・実施日 / 現状とゴール
-- `rows` `string[][]`（2〜8 行、5 列）
-- guardrails: 実名を含む。社内限定。顧客・パートナーに渡さない
+#### 4.15 `exec-engagement-plan` — Executive Engagement Plan
+- Skeleton F. Columns: level / customer-side executive / our-side
+  executive / frequency & date / current state and goal
+- `rows` `string[][]` (2–8 rows, 5 columns)
+- guardrails: contains real names. Internal only. Don't hand it to the
+  customer or partners
 
-#### 4.16 `event-plan` — イベント計画
-- 骨格 F。列: イベント / 時期 / 対象顧客 / 自社側キーパーソン / 得たい成果
-- `rows` `string[][]`（2〜8 行、5 列）
+#### 4.16 `event-plan` — Event Plan
+- Skeleton F. Columns: event / timing / target customer / our-side key
+  person / desired outcome
+- `rows` `string[][]` (2–8 rows, 5 columns)
 
-### P0b — 元資料との突き合わせで追加（15 件）
+### P0b — Added by Cross-Checking Against the Source Material (15 items)
 
-初版の 23 ページを `FY17_AP_Template_Training_Public.pptx` と 1 ページずつ
-突き合わせて見つかった不足分。先行実装では
-`scripts/scalar/build_account_planning.py` に実装済みで、**そのページ定義が
-テンプレート化するときの参照ジオメトリになる**。
+Gaps found by cross-checking the first version's 23 pages against
+`FY17_AP_Template_Training_Public.pptx` page by page. Already implemented
+in the existing implementation `scripts/scalar/build_account_planning.py`,
+and **that page definition becomes the reference geometry when
+templating**.
 
-| ID | 元資料 | 何を足すか |
+| ID | Source | What it adds |
 |---|---|---|
-| `customer-initiatives` | S44 | イニシアチブ × **顧客側オーナー** × 目的・アウトカム × **緊迫性を生む要因** |
-| `customer-programs` | S45 | イニシアチブとテーマの間の**顧客プログラム / プロジェクト層**。実在する名前で書く |
-| `strategy-map-step2` | S38 / S41 | Step 1 と**同じマップの上に**提案テーマを重ねる。`outcome_tree` に 4 段目を足すだけで済む |
-| `objective-sheet` | S60 / S99 | テーマごとの Customer Benefit / 当社の貢献 ＋ **年ごとの「結果」**（活動ではない） |
-| `challenge-requirement` | S77 / S105 | Challenge / Requirement / Owner / **期日** / Outcome |
-| `health-criteria` | S31 / S32 | Account Health の各段階の判定基準。スコアだけでは検証できない |
-| `financial-trends` | S81 | 顧客の業績推移と同業比較。`metric` ×3 ＋ `hbars` |
-| `engagement-timeline` | S59 / S98 | **週単位 8 週**の線表。半期の `gantt` では次の関門に間に合うか判断できない |
-| `scalar-footprint` | S84 | 製品 4 つ（ScalarDB / Saga / Analytics / ScalarDL）を `layers`、ソリューション 4 つ（AI 駆動開発 / RAG / AI 向けデータカタログ / マルチクラウド基盤）を `cards` で並べ、**提示状況**を添える |
-| `group-orgchart` | S80 | 顧客グループの公式組織図に当社の接点を重ねる |
-| `itsub-orgchart` | S84 | IT 子会社の公式組織図。**接点のない部署が見えることが価値** |
-| `deal-portfolio` | S45 | グループ会社別の商談ポートフォリオ（`mece_tree`） |
-| `company-stakeholders` | S27 | グループ会社別の関与者（`comparison`）。名刺のみは接触に数えない |
-| `subsidiary-mapping` | S84 | システム子会社 ↔ グループ各社の担当マッピング（`comparison`）。横断組織と会社別実装部隊を分ける |
-| `deal-detail` | S51 / S52 | 商談 1 件の全体像（`cards` 6 枚）。商談ごとの章の本体 |
+| `customer-initiatives` | S44 | Initiative × **customer-side owner** × purpose/outcome × **the factor creating urgency** |
+| `customer-programs` | S45 | The **customer's program / project layer** between initiatives and themes. Write it with real names |
+| `strategy-map-step2` | S38 / S41 | Overlay proposed themes **onto the same map as Step 1**. Just add a 4th tier to `outcome_tree` |
+| `objective-sheet` | S60 / S99 | Per-theme Customer Benefit / our contribution + **the "result" per year** (not the activity) |
+| `challenge-requirement` | S77 / S105 | Challenge / Requirement / Owner / **due date** / Outcome |
+| `health-criteria` | S31 / S32 | The rating criteria for each Account Health stage. A score alone can't be verified |
+| `financial-trends` | S81 | The customer's performance trend and peer comparison. `metric` ×3 + `hbars` |
+| `engagement-timeline` | S59 / S98 | An **8-week, weekly-granularity** timeline. A half-yearly `gantt` can't tell you whether you'll make the next gate in time |
+| `scalar-footprint` | S84 | Line up the 4 products (ScalarDB / Saga / Analytics / ScalarDL) as `layers` and the 4 solutions (AI-driven development / RAG / AI-oriented data catalog / multi-cloud foundation) as `cards`, with the **presentation status** attached |
+| `group-orgchart` | S80 | Overlay our touchpoints onto the customer group's official org chart |
+| `itsub-orgchart` | S84 | The IT subsidiary's official org chart. **The value is in seeing which departments have no touchpoint** |
+| `deal-portfolio` | S45 | Deal portfolio by group company (`mece_tree`) |
+| `company-stakeholders` | S27 | Stakeholders by group company (`comparison`). Business-card-only contacts don't count as engaged |
+| `subsidiary-mapping` | S84 | IT subsidiary ↔ each group company's ownership mapping (`comparison`). Separates cross-cutting organizations from per-company implementation teams |
+| `deal-detail` | S51 / S52 | The overview of a single deal (6 `cards`). The body of each deal's chapter |
 
-あわせて既存ページに足した欄:
+Fields also added to existing pages:
 
-- **Heatmap**: 紐づくイニシアチブ番号と「競合・前提」列（S26）。ドットだけでは
-  評価の根拠が書けないので `rating_matrix` を `table` に置き換えた
-- **Executive Engagement Plan**: **当社側の役員カウンターパート**列（S64）。
-  空欄なら空欄と書く。Management Asks への起票がそこから出る
-- **Action Plan**: 割当日と期日（S62）。テーマ番号で Blueprint に紐づける
-- **Management Asks**: 期日
-- **TAM & SOW**: 顧客の年間収益と主要競合（S22 / S69）
-- **Corporate Overview**: 主要競合（S80 の KEY COMPETITORS）
-- **Blueprint Summary**: 1 テーマ 1 ページ。まとめて 1 枚にしない
+- **Heatmap**: the linked initiative number and a "competitor / assumption"
+  column (S26). Since dots alone can't carry the rationale for the rating,
+  `rating_matrix` was replaced with `table`
+- **Executive Engagement Plan**: an **our-side executive counterpart**
+  column (S64). If it's blank, write it as blank — that's where filing a
+  Management Ask comes from
+- **Action Plan**: assigned date and due date (S62). Tied to the Blueprint
+  by theme number
+- **Management Asks**: due date
+- **TAM & SOW**: the customer's annual revenue and key competitors (S22 /
+  S69)
+- **Corporate Overview**: key competitors (S80's KEY COMPETITORS)
+- **Blueprint Summary**: one theme per page. Don't combine them onto one
+  page
 
-### P0c — 表から図への置き換え
+### P0c — Replacing Tables with Diagrams
 
-表が続くとページの見た目が同じになり、要点が沈む。**表は「登録簿」（担当と
-期日があり後から追跡するもの）と「判定基準」だけに残す。** 対応表は
-`references/account-planning-session.md` §9.4「表を使ってよい場所」。
+A run of tables makes every page look the same and buries the point.
+**Keep tables only for "ledgers" (something with an owner and a due date
+that's tracked afterward) and "rating criteria."** The mapping table is in
+`references/account-planning-session.md` §9.4, "Where Tables Are Allowed."
 
-先行実装では 20 表 → 8 表に減らし、次の図に置き換えた:
-`orgchart` / `outcome_tree` / `mece_tree` / `layers` / `gantt` / `timeline` /
-`nested_circles` / `hbars` / `cards` / `journey` / `before_after` /
-`influence_graph`。テンプレート化するときも同じ割り当てを使う。
+The existing implementation went from 20 tables → 8 tables, replaced with
+the following diagrams: `orgchart` / `outcome_tree` / `mece_tree` /
+`layers` / `gantt` / `timeline` / `nested_circles` / `hbars` / `cards` /
+`journey` / `before_after` / `influence_graph`. Use the same assignment
+when templating.
 
-**公式組織図は必ず一次情報から取る。** 顧客の IR / 会社情報ページにある
-組織図（PDF・PNG）を読み、当社の接点を重ねる。台帳の肩書きだけで組織図を
-描き起こすと、接点のない部署が図から消えてしまい、**空白が見えないという
-一番大事な情報を失う**。
+**Always take the official org chart from primary sources.** Read the org
+chart (PDF/PNG) on the customer's IR / company-information page and
+overlay our touchpoints. Drawing up an org chart from ledger titles alone
+makes departments with no touchpoint disappear from the diagram, **losing
+the single most important piece of information: seeing the blank spots.**
 
-意図的に採らなかったもの: **Create / Evolve / Protect 分類**（S47）は
-フットプリントが全レイヤ 0 のあいだ全部 Create にしかならず縮退する。
-**Appendix の空テンプレート集**（S79）は生成スクリプトがあるため不要。
+Deliberately not adopted: the **Create / Evolve / Protect classification**
+(S47) degenerates to all-Create while the footprint is 0 across every
+layer. The **Appendix's collection of blank templates** (S79) is
+unnecessary since a generation script exists.
 
-### P2 — あると議論が速い（3 件）
+### P2 — Speeds Up Discussion If Present (3 items)
 
-#### 4.17 `flight-plan` — フライトプラン
-- 横軸＝クローズ時期、縦軸＝金額、バブル＝テーマ、色＝ステータス。骨格 A
-- スロット: `bubbles` `array`（[テーマ名, 期 index, 金額, ステータス]、2〜10）／
-  `periods` `string[]`／ `statuses` `string[3]`
-- guardrails: 予測。確定案件と区別できる凡例を必ず置く
+#### 4.17 `flight-plan` — Flight Plan
+- Horizontal axis = close timing, vertical axis = amount, bubble = theme,
+  color = status. Skeleton A
+- Slots: `bubbles` `array` ([theme name, period index, amount, status];
+  2–10) / `periods` `string[]` / `statuses` `string[3]`
+- guardrails: a projection. Always include a legend that distinguishes it
+  from confirmed deals
 
-#### 4.18 `revenue-projection` — 3 年財務見通し
-- 骨格 B。年別・カテゴリ別のポテンシャル
-- guardrails: 年額換算値は別集計。前提（為替・期・単位）を `source` に明記
+#### 4.18 `revenue-projection` — 3 Year Financial Projections
+- Skeleton B. Potential by year and by category
+- guardrails: tally annualized values separately. State the assumptions
+  (FX, period, unit) explicitly in `source`
 
-#### 4.19 `risk-mitigation` — 課題とリスク緩和
-- 骨格 F。列: 課題 / 影響 / 緩和策 / 担当
-- `rows` `string[][]`（2〜8 行、4 列）
-- guardrails: `scalar-ae/bant-risk` を置き換えない。BANT に収まるリスクは
-  そちらを使う
+#### 4.19 `risk-mitigation` — Challenges and Risk Mitigation
+- Skeleton F. Columns: challenge / impact / mitigation / owner
+- `rows` `string[][]` (2–8 rows, 4 columns)
+- guardrails: doesn't replace `scalar-ae/bant-risk`. Use that one for risks
+  that fit within BANT
 
-## 5. 新規プリミティブの判定
+## 5. Deciding on New Primitives
 
-`scripts/patterns.py` / `pages.py` / `charts.py` / `illustrations.py` に既にある
-ものを優先する。**新規プリミティブを足すのは 3 条件をすべて満たすときだけ**:
-同じ低レベル描画が複数テンプレートで繰り返される、ドメイン入力に関数レベルの
-検証が要る、1 テンプレートと独立に名前を付けて再利用できる。
+Prefer what already exists in `scripts/patterns.py` / `pages.py` /
+`charts.py` / `illustrations.py`. **Only add a new primitive when all 3
+conditions hold**: the same low-level drawing repeats across multiple
+templates, the domain input needs function-level validation, and it can be
+named and reused independently of any one template.
 
-| 候補 | 使うテンプレート | 判定 |
+| Candidate | Templates using it | Verdict |
 |---|---|---|
-| 階層ツリー（層ラベル付き） | `strategy-map` | `discovery-map-tree` の実装を先に読む。流用可なら新規不要 |
-| 3 値ヒートマップ行（現状→将来の矢印付き） | `footprint-heatmap` | **新規候補**。2 テンプレート以上で使う見込みが立ってから追加 |
-| 現状 / 目標の対比パネル | `account-strategy-summary`, `growth-vision` | **新規候補**。2 件で使うので条件を満たす |
-| バブルチャート（3 変数＋カテゴリ色） | `flight-plan`, （`positioning-map` 拡張） | **要調査**。`positioning-map` の実装で足りる可能性 |
-| セルグリッド（欄名＋内容の格子） | `blueprint-summary` | 1 件のみ。`table` で代替できるか先に試す |
+| Hierarchical tree (with layer labels) | `strategy-map` | Read `discovery-map-tree`'s implementation first. Not needed as new if reusable |
+| 3-value heatmap row (with current→future arrow) | `footprint-heatmap` | **New candidate**. Add once there's a prospect of use in 2+ templates |
+| Current/target comparison panel | `account-strategy-summary`, `growth-vision` | **New candidate**. Condition is met since it's used by 2 items |
+| Bubble chart (3 variables + category color) | `flight-plan`, (`positioning-map` extension) | **Needs investigation**. `positioning-map`'s implementation may already suffice |
+| Cell grid (field name + content lattice) | `blueprint-summary` | Only 1 item. Try substituting `table` first |
 
-## 6. 実装フェーズ
+## 6. Implementation Phases
 
-| フェーズ | 内容 | 成果 |
+| Phase | Content | Outcome |
 |---|---|---|
-| **F0** 調査 | `discovery-map-tree` / `positioning-map` / `action-plan` の実装を読み、流用可否を確定。§3 の「要検証」を解消 | 再利用判定表の確定版 |
-| **F1** P0 テンプレート 9 件 | 表・帯・対比パネル系（4.4〜4.6、4.8、4.9）から着手。図解系（4.2、4.3、4.7）は F0 の結論待ち | Session 資料 9 枚が生成できる |
-| **F2** L3 `masterProfiles` | §2.4 の 4 ファイル変更。F1 の 9 件を最初のプロファイル対象にする | マスター差分をテンプレートで吸収できる |
-| **F3** P1 テンプレート 7 件 | Plan Document 側 | Appendix が埋まる |
-| **F4** P2 テンプレート 3 件 | Flight Plan など | 議論用の可視化がそろう |
-| **F5** カタログとドキュメント | パックカタログを生成し、`skills/scalar-account-planning-session/SKILL.md` から参照を張る | 運用に載る |
+| **F0** Investigation | Read the implementations of `discovery-map-tree` / `positioning-map` / `action-plan` and settle whether they're reusable. Resolve the "needs verification" items in §3 | A finalized reuse-decision table |
+| **F1** 9 P0 templates | Start with the table/band/comparison-panel group (4.4–4.6, 4.8, 4.9). The diagram group (4.2, 4.3, 4.7) waits on F0's conclusion | The Session Materials' 9 pages can be generated |
+| **F2** L3 `masterProfiles` | The 4 file changes in §2.4. Make F1's 9 items the first profile targets | Master differences can be absorbed by the template |
+| **F3** 7 P1 templates | Plan Document side | Fills in the Appendix |
+| **F4** 3 P2 templates | Flight Plan, etc. | Visualizations for discussion are complete |
+| **F5** Catalog and documentation | Generate the pack catalog and link to it from `skills/scalar-account-planning-session/SKILL.md` | Goes into operational use |
 
-F1 と F2 は独立。F2 を待たずに F1 を出せる（既定ジオメトリだけで動く）。
+F1 and F2 are independent. F1 can ship without waiting for F2 (it works
+with just the default geometry).
 
-## 7. 受け入れ基準
+## 7. Acceptance Criteria
 
-各テンプレートは、以下をすべて満たして初めて `status` を `experimental` から
-上げる。
+Each template only has its `status` raised above `experimental` once all
+of the following are satisfied.
 
-- [ ] `scripts/validate_slide_templates.py --id <id>` が指摘ゼロで通る
-- [ ] `example.json` が全必須スロットを埋め、宣言した上限内に収まる
-- [ ] `example.json` の `source` に **サンプルデータである旨が明記**されている
-- [ ] 数値を含むテンプレートに `source` スロットがある
-- [ ] `answers`（答える問い）と `inferenceLevel` が宣言されている
-- [ ] `guardrails` に、そのページで最も起きやすい誤読が書かれている
-- [ ] スロットの最小・最大で生成しても崩れない（境界値テスト）
-- [ ] 日本語・英語の代表文字列の両方で崩れない
-- [ ] `scalar-2026` と、色調が最も遠いマスター 1 つの **両方**でサムネイル目視
-      を通す（文字あふれ / 重なり / コントラスト / フッター衝突）
-- [ ] ブランド RGB 直値とマスターオブジェクト ID を含まない（grep で確認）
+- [ ] `scripts/validate_slide_templates.py --id <id>` passes with zero findings
+- [ ] `example.json` fills every required slot and stays within the declared limits
+- [ ] `example.json`'s `source` **explicitly states that it's sample data**
+- [ ] A template that includes numbers has a `source` slot
+- [ ] `answers` (the question answered) and `inferenceLevel` are declared
+- [ ] `guardrails` states the most likely misreading for that page
+- [ ] Doesn't break when generated at the slot's minimum or maximum (boundary test)
+- [ ] Doesn't break with representative strings in either Japanese or English
+- [ ] Passes visual thumbnail inspection on **both** `scalar-2026` and one
+      master whose color tone is furthest away (text overflow / overlap /
+      contrast / footer collision)
+- [ ] Contains no literal brand RGB values or master object IDs (confirm with grep)
 
-## 8. 検証手順
+## 8. Verification Procedure
 
 ```bash
 # 単体
@@ -489,37 +566,41 @@ done
 .venv/bin/python scripts/cleanup_qa.py
 ```
 
-崩れを見つけたら **生成物ではなくテンプレート・example・共有プリミティブを
-直して再生成する。** 生成されたスライドを手で直さない。
+When you find a break, **fix the template, the example, or the shared
+primitive — not the generated output — and regenerate.** Don't hand-fix
+the generated slides.
 
-## 9. 安全性
+## 9. Safety
 
-- `account-planning` パックには、`initiative-prioritization`、
-  `exec-engagement-plan`、`management-asks`、`account-health`、`risk-mitigation`
-  のように **個人の実名と、その人物に対する社内判断**を含むページがある。
-  これらの `guardrails` に「社内資料。顧客・パートナーに渡さない」を必ず書く。
-- 顧客データは `accounts/` 配下に置く。`accounts/` は Git 管理外。テンプレートの
-  `example.json` に実在顧客のデータを入れない。
-- `example.json` は必ず架空データとし、`source` でサンプルであることを宣言する。
+- The `account-planning` pack has pages such as
+  `initiative-prioritization`, `exec-engagement-plan`, `management-asks`,
+  `account-health`, and `risk-mitigation` that contain **an individual's
+  real name and internal judgments about that person**. Always write
+  "Internal material. Don't hand it to the customer or partners." in these
+  pages' `guardrails`.
+- Customer data lives under `accounts/`. `accounts/` is outside Git's
+  control. Don't put real customer data into a template's `example.json`.
+- Always make `example.json` fictional data, and declare via `source` that
+  it's a sample.
 
-## 10. 未決事項
+## 10. Open Issues
 
-| # | 論点 | 決める人 | 期限の目安 |
+| # | Issue | Who decides | Rough deadline |
 |---|---|---|---|
-| 1 | `masterProfiles`（L3）を実装するか、最厚マスターに合わせる代替案で済ませるか | — | F1 完了時 |
-| 2 | `positioning-map` を Prioritization 2 軸に流用できるか（バブル径＝金額） | — | F0 |
-| 3 | `discovery-map-tree` の階層プリミティブを `strategy-map` に流用できるか | — | F0 |
-| 4 | Session 資料の既定ページ数を 9 で固定するか、アカウント規模で可変にするか | — | F1 |
-| 5 | `account-planning` パックを `scalar-ae` に統合するか、独立パックのままにするか | — | F5 |
-| 6 | `compatibleLayouts` を validator で強制するか、宣言のままにするか | — | F2 |
+| 1 | Whether to implement `masterProfiles` (L3), or settle for the alternative of fitting to the thickest master | — | On F1 completion |
+| 2 | Whether `positioning-map` can be reused for the Prioritization 2-axis (bubble diameter = amount) | — | F0 |
+| 3 | Whether `discovery-map-tree`'s hierarchical primitive can be reused for `strategy-map` | — | F0 |
+| 4 | Whether to fix the Session Materials' default page count at 9, or make it variable by account size | — | F1 |
+| 5 | Whether to fold the `account-planning` pack into `scalar-ae`, or keep it as an independent pack | — | F5 |
+| 6 | Whether to enforce `compatibleLayouts` with the validator, or leave it declaration-only | — | F2 |
 
-## 11. 参照
+## 11. References
 
-- `references/account-planning-session.md` — 手順とページ定義
-- `skills/slide-template-creator/SKILL.md` — テンプレート作成のワークフロー
-- `skills/slide-template-creator/references/template-schema.md` — スキーマ
-- `skills/slide-template-creator/references/design-rules.md` — 骨格・密度・出典
-- `references/layout-contract.md` — 座標の実測値と安全域
-- `references/slide-patterns.md` — 骨格 A〜F の定義
-- `scripts/colors.py` — `Palette`（マスター colorScheme → 意味トークン）
-- `scripts/scalar/build_account_planning.py` — 実装済みのページ定義（参照ジオメトリ）
+- `references/account-planning-session.md` — the procedure and page definitions
+- `skills/slide-template-creator/SKILL.md` — the template-creation workflow
+- `skills/slide-template-creator/references/template-schema.md` — the schema
+- `skills/slide-template-creator/references/design-rules.md` — skeleton, density, sources
+- `references/layout-contract.md` — measured coordinates and safe area
+- `references/slide-patterns.md` — the definitions of skeletons A–F
+- `scripts/colors.py` — `Palette` (master colorScheme → semantic tokens)
+- `scripts/scalar/build_account_planning.py` — the implemented page definitions (reference geometry)
