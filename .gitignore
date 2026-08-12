@@ -38,6 +38,8 @@ templates/masters/*
 !templates/masters/README.md
 references/images/slide-patterns/*
 !references/images/slide-patterns/.gitkeep
+references/images/slide-templates/*
+!references/images/slide-templates/.gitkeep
 
 # macOS
 .DS_Store

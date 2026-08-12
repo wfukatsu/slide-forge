@@ -165,6 +165,7 @@ not fully usable until you have run the steps below that you need.
 | `assets/cloud-icons/` | AWS / Google Cloud / Azure do not permit redistribution | [4](#4-cloud-vendor-icons-only-for-cloud-architecture-figures) |
 | `templates/masters/*.pptx` | 6–8MB each; the master has to live in *your* Drive to be copied | [5](#5-slide-masters-for-the-copy-mode-templates) |
 | `references/images/slide-patterns/*.png` | ~2MB, and reproducible from the spec at any time | [6](#6-slide-pattern-catalog-images) |
+| `references/images/slide-templates/*.png` | ~2.4MB, and reproducible from `slide-templates/` at any time | [6](#6-slide-pattern-catalog-images) |
 
 ### 1. Python environment
 
@@ -294,6 +295,14 @@ cloud-architecture patterns, the vendor icons (step 4). Until you run it the
 catalog's images show as broken links; the pattern names, what each is for, and
 the `figures` type names are all readable without them.
 
+The slide-template catalog
+([`references/slide-template-catalog.md`](references/slide-template-catalog.md),
+images under `references/images/slide-templates/`) works the same way: build
+each pack's catalog spec with `scripts/build_slide_template_catalog.py`,
+generate the deck, fetch thumbnails, and run
+`scripts/build_template_catalog_doc.py` — the regeneration commands are at the
+top of that document.
+
 ### 7. Optional: AI image generation
 
 For `scripts/images.py`, set `GEMINI_API_KEY` or save the key to
@@ -372,6 +381,12 @@ Which page shapes can this build? See
 | 計画・体制ページ | 5 | Time and people |
 | 定性・技術ページ | 5 | Everything that isn't a number |
 | 締め・付録ページ | 3 | The decision and what follows |
+
+Beyond these page patterns, `slide-templates/` registers 37 ready-made
+one-page templates in five packs (marketing-analysis, b2b-sales, scalar-ae,
+planning, analysis). Each is catalogued with a rendered image, the question it
+answers, and its guardrails in
+[`references/slide-template-catalog.md`](references/slide-template-catalog.md).
 
 ## Examples
 
