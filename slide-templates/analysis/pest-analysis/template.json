@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "pest-analysis",
+  "displayName": "PEST分析",
+  "pack": "analysis",
+  "category": "macro",
+  "description": "政治・経済・社会・技術のマクロ環境要因を並べ、事業への外部影響を整理する",
+  "answers": ["自社の事業環境を動かす外部要因は何か"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "political": {"type": "string[]", "required": true, "minItems": 1, "maxItems": 4, "maxLength": 24},
+    "economic": {"type": "string[]", "required": true, "minItems": 1, "maxItems": 4, "maxLength": 24},
+    "social": {"type": "string[]", "required": true, "minItems": 1, "maxItems": 4, "maxLength": 24},
+    "technological": {"type": "string[]", "required": true, "minItems": 1, "maxItems": 4, "maxLength": 24},
+    "insight": {"type": "string", "required": true, "maxLength": 44},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "自社の事業に影響しうる外部要因だけを載せる（一般ニュースの羅列にしない）",
+    "事実（施行済みの規制・公表統計）と見込み（審議中・兆し）を区別し、見込みには時期を付す",
+    "機会か脅威かの判定はここでしない（判定は SWOT へ渡す。このスライドは環境の記述に徹する）",
+    "4 象限とも 1 件以上。空の象限は「調べていない」と読まれる",
+    "各要因の出典を source にまとめて書く（官報・統計・調査レポート名）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "comparison", "x": 0.5, "y": 1.0, "w": 9.0, "h": 2.8, "size": 9.5,
+       "columns": [
+         ["政治（P）", {"$slot": "political"}],
+         ["経済（E）", {"$slot": "economic"}],
+         ["社会（S）", {"$slot": "social"}],
+         ["技術（T）", {"$slot": "technological"}]
+       ]},
+      {"type": "so_what", "x": 0.5, "y": 3.92, "w": 9.0, "h": 0.82, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.87, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

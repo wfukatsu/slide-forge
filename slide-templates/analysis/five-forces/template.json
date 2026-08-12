@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "five-forces",
+  "displayName": "5フォース分析",
+  "pack": "analysis",
+  "category": "macro",
+  "description": "業界の競争構造を 5 つの力（業界内競争・新規参入・代替品・買い手・売り手）で評価する",
+  "answers": ["この業界の競争圧力はどこから来ていて、どの程度強いのか"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "rivalry": {"type": "string", "required": true, "maxLength": 36},
+    "entrants": {"type": "string", "required": true, "maxLength": 40},
+    "substitutes": {"type": "string", "required": true, "maxLength": 40},
+    "buyers": {"type": "string", "required": true, "maxLength": 36},
+    "suppliers": {"type": "string", "required": true, "maxLength": 36},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "各力は「強 / 中 / 弱：根拠」の形で書く（評価だけ・根拠だけにしない）。title が結論（どの力が収益性を最も圧迫するか）を担う",
+    "どの業界（市場の範囲）の話かを title か source に明記する。範囲が変わると評価も変わる",
+    "5 つの力は業界構造の記述。自社固有の強み・弱みは書かない（swot-analysis へ）",
+    "評価は評価者の判断を含む。評価の根拠資料と評価日を source に書く",
+    "中央（業界内の競争）は他の 4 つの力の結果でもある。因果の矢印はこの図では主張しない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "cards", "x": 3.4, "y": 1.05, "w": 3.2, "h": 1.03, "titleSize": 10.5, "bodySize": 9,
+       "items": [["新規参入の脅威", {"$slot": "entrants"}]]},
+      {"type": "cards", "x": 0.5, "y": 2.18, "w": 2.85, "h": 1.03, "titleSize": 10.5, "bodySize": 9,
+       "items": [["売り手の交渉力", {"$slot": "suppliers"}]]},
+      {"type": "cards", "x": 3.57, "y": 2.18, "w": 2.86, "h": 1.03, "titleSize": 10.5, "bodySize": 9,
+       "items": [["業界内の競争", {"$slot": "rivalry"}]]},
+      {"type": "cards", "x": 6.65, "y": 2.18, "w": 2.85, "h": 1.03, "titleSize": 10.5, "bodySize": 9,
+       "items": [["買い手の交渉力", {"$slot": "buyers"}]]},
+      {"type": "cards", "x": 3.4, "y": 3.31, "w": 3.2, "h": 1.03, "titleSize": 10.5, "bodySize": 9,
+       "items": [["代替品の脅威", {"$slot": "substitutes"}]]},
+      {"type": "source_note", "x": 0.5, "y": 4.87, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

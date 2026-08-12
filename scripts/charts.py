@@ -79,6 +79,11 @@ register({
     "Run pip install cairosvg (or brew install librsvg)":
         "円グラフのラスタライズに失敗しました。"
         "pip install cairosvg（または brew install librsvg）を実行してください",
+    "pareto takes 3 to 10 items, got {n}. Fold the tail into \"other\"":
+        "pareto の項目は 3〜10 個です（{n} 個が渡されました）。"
+        "下位は「その他」に畳んでください",
+    "pareto needs positive values (item '{name}' is {v})":
+        "pareto の値は正の数です（項目「{name}」が {v}）",
 })
 
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -655,3 +660,109 @@ class ChartMixin:
             if os.path.exists(tmp):
                 os.unlink(tmp)
         return path
+
+    # ---- パレート図 ----
+
+    # 「その他」は 1 つの要因ではないので、大きさに関係なく末尾に置く
+    PARETO_OTHER = {"その他", "other"}
+
+    def pareto(self, x, y, w, h, items, *, unit="", size=9.5, threshold=80,
+               axis_w=0.6) -> float:
+        """パレート図（構成比の棒 + 累積構成比の折れ線）。戻り値は下端 y。
+
+        items は (ラベル, 数値)。値の大きい順に自動で並べ替える（「その他」
+        だけは大きさに関係なく末尾）。二重軸は作れない規約（linechart 参照）
+        に合わせ、棒も線も **構成比（%）** の 1 本の軸に載せる。棒の中には
+        実数値、線の点には累積 % をラベルする。threshold（既定 80。0 で
+        非表示）の高さに破線を引き、上位の少数要因で大半を説明できるかを
+        見せる。件数・金額など合計に意味がある量にだけ使うこと。出典必須。
+        """
+        norm = []
+        for it in items:
+            name, v = it[0], it[1]
+            if not isinstance(v, (int, float)) or v <= 0:
+                raise ValueError(t("pareto needs positive values "
+                                   "(item '{name}' is {v})", name=name, v=v))
+            norm.append((str(name), float(v)))
+        n = len(norm)
+        if not 3 <= n <= 10:
+            raise ValueError(t("pareto takes 3 to 10 items, got {n}. "
+                               "Fold the tail into \"other\"", n=n))
+        head = [p for p in norm if p[0].lower() not in self.PARETO_OTHER]
+        tail = [p for p in norm if p[0].lower() in self.PARETO_OTHER]
+        head.sort(key=lambda p: -p[1])
+        norm = head + tail
+        total = sum(v for _, v in norm)
+        shares = [v / total * 100 for _, v in norm]
+        cums, acc = [], 0.0
+        for s in shares:
+            acc += s
+            cums.append(acc)
+
+        lab_h = 0.30
+        val_h = 0.30          # 100% の点の累積ラベルが領域からはみ出ない高さ
+        ticks = [f"{p}%" for p in (0, 25, 50, 75, 100)]
+        need_w = max(self._em(s) for s in ticks) * 8.5 / 72.0 * 1.2 + 0.30
+        axis_w = max(axis_w, need_w)
+        px0, pw = x + axis_w, w - axis_w
+        py0 = y + val_h
+        ph = h - val_h - lab_h
+        if ph < 0.8 or pw < 1.5:
+            raise ValueError(t("w={w} h={h} leaves no room for the plot area",
+                               w=w, h=h))
+
+        def ypos(pct):
+            return py0 + ph - pct / 100.0 * ph
+
+        for g, tick in enumerate(ticks):
+            gy = ypos(g * 25)
+            self.line(px0, gy, px0 + pw, gy,
+                      color=self.P.border if g == 0 else lighten(self.P.border, 0.5),
+                      weight=1.0 if g == 0 else 0.75, dashed=g > 0, free=True)
+            self.label(x, gy - 0.10, axis_w - 0.08, 0.2, tick, size=8.5,
+                       align="END", valign="MIDDLE", color=self.P.muted)
+        if threshold:
+            ty = ypos(threshold)
+            self.line(px0, ty, px0 + pw, ty, color=self.P.danger,
+                      weight=1.2, dashed=True, free=True)
+            self.label(px0 + pw - 0.72, ty - 0.22, 0.72, 0.18,
+                       f"{_fmt(threshold)}%", size=8, bold=True,
+                       align="END", valign="BOTTOM", color=self.P.danger)
+
+        cell = pw / n
+        bw = cell * 0.62
+        base_y = py0 + ph
+        line_c = self.P.info
+        xs = [px0 + (i + 0.5) * cell for i in range(n)]
+        for i, (name, v) in enumerate(norm):
+            bx = px0 + i * cell + (cell - bw) / 2
+            bh = ph * shares[i] / 100.0
+            if bh > 0.005:
+                self.shape(bx, base_y - bh, bw, bh, kind="RECTANGLE",
+                           fill=self.P.primary, stroke=None)
+            # 実数値は棒の中の上端に。棒の外に出すと累積線・累積 % と衝突する
+            if bh >= 0.26:
+                self.label(bx, base_y - bh + 0.02, bw, 0.2, _fmt(v) + unit,
+                           size=8.5, bold=True, align="CENTER", valign="TOP",
+                           color=readable_on(self.P.primary))
+            self.label(px0 + i * cell, base_y + 0.04, cell, lab_h - 0.04,
+                       name, size=size, align="CENTER", valign="TOP",
+                       color=self.P.text)
+        for i in range(n - 1):
+            self.line(xs[i], ypos(cums[i]), xs[i + 1], ypos(cums[i + 1]),
+                      color=line_c, weight=2.0, free=True)
+        mr = 0.05
+        for i in range(n):
+            self.shape(xs[i] - mr, ypos(cums[i]) - mr, mr * 2, mr * 2,
+                       kind="ELLIPSE", fill=line_c, stroke=self.P.white,
+                       stroke_weight=1.0)
+            # 累積 % は点の上に。グリッドや線に重なって読めなくなるので
+            # 下地を敷く（linechart の end_values と同じ手当て）
+            txt = f"{cums[i]:.0f}%"
+            tw = self._em(txt) * 8.5 / 72.0 + 0.10
+            ly = ypos(cums[i]) - 0.26
+            self.shape(xs[i] - tw / 2, ly, tw, 0.18, kind="RECTANGLE",
+                       fill=self.P.page, stroke=None)
+            self.label(xs[i] - 0.4, ly, 0.8, 0.18, txt, size=8.5, bold=True,
+                       align="CENTER", valign="MIDDLE", color=line_c)
+        return y + h

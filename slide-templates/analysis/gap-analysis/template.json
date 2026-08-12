@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "gap-analysis",
+  "displayName": "ギャップ分析（As-Is / To-Be）",
+  "pack": "analysis",
+  "category": "gap",
+  "description": "現状（As-Is）とあるべき姿（To-Be）を対で示し、埋めるべき課題を定義する",
+  "answers": ["現状とあるべき姿の差はどこにあり、何を課題として設定するか"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "asis": {"type": "string[]", "required": true, "minItems": 2, "maxItems": 4, "maxLength": 26},
+    "tobe": {"type": "string[]", "required": true, "minItems": 2, "maxItems": 4, "maxLength": 26},
+    "gaps": {
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "maxLength": 14},
+          {"type": "string", "maxLength": 34}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "As-Is は確認された事実、To-Be は合意された目標。未合意の願望を To-Be に置くなら title で仮説と明示する",
+    "asis と tobe は同じ観点を同じ順に並べる（行の対応で差分が読めるように）",
+    "gaps は「差分の説明」ではなく「埋めるべき課題」として書く（何をどうすべき状態にするか）。課題カードがこのスライドの結論を担う",
+    "打ち手（How）の詳細はこのスライドに書かない。課題の優先順位付けは priority-matrix へ",
+    "To-Be の数値目標には根拠（ベンチマーク・経営目標）を source に書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "before_after", "x": 0.5, "y": 1.0, "w": 9.0, "h": 1.9, "size": 10, "before": {"$slot": "asis"}, "after": {"$slot": "tobe"}, "beforeTitle": "As-Is（現状）", "afterTitle": "To-Be（あるべき姿）"},
+      {"type": "cards", "x": 0.5, "y": 3.05, "w": 9.0, "h": 1.25, "items": {"$slot": "gaps"}},
+      {"type": "source_note", "x": 0.5, "y": 4.87, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

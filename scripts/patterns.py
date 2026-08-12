@@ -61,6 +61,14 @@ register({
     "Row '{name}': the span ({start}-{end}) must be within 0-{ncols}":
         "行「{name}」の期間 ({start}〜{end}) は 0〜{ncols} で指定します",
     "w={w} leaves no room for the labels": "w={w} ではラベル領域が確保できません",
+    "fishbone takes 2 to 6 categories, got {n}":
+        "fishbone のカテゴリは 2〜6 個です（{n} 個が渡されました）",
+    "fishbone: category '{name}' has {n} causes; 4 or fewer fit. "
+    "Merge or move the rest to an appendix":
+        "fishbone: カテゴリ「{name}」の原因が {n} 個あります。載るのは 4 個まで"
+        "です。統合するか、残りは補足資料に回してください",
+    "fishbone: category '{name}' needs at least 1 cause":
+        "fishbone: カテゴリ「{name}」には原因が最低 1 個必要です",
 })
 
 # lean_canvas のブロック定義。(キー, 見出し) を標準のリーンキャンバスの並びで持つ
@@ -701,4 +709,89 @@ class PatternMixin:
         if more:
             self.label(x, y + h - note_h, w, note_h, more, size=size - 1,
                        color=self.P.muted, align="START", valign="MIDDLE")
+        return y + h
+
+    # ---- 特性要因図（フィッシュボーン） ----
+
+    def fishbone(self, x, y, w, h, problem, categories, *, size=9,
+                 head_w=None) -> float:
+        """特性要因図（フィッシュボーン）。戻り値は下端 y。
+
+        `problem` は右端の頭（特性）、`categories` は `(カテゴリ名, [原因…])`
+        のリスト。上下交互（0,2,4… が上段、1,3,5… が下段）に大骨を配る。
+        カテゴリは 2〜6 個、原因は 1 カテゴリ 4 個まで。溢れる分は事前に
+        統合してから渡すこと（フィッシュボーンは網羅の証明図ではなく、
+        原因の当たりを付ける図）。
+
+        Slides に斜め文字は置けないので、教科書どおりの斜め小骨には
+        しない。大骨の斜線だけ残し、原因は水平の箇条書きで大骨に沿わせる
+        （読みやすさ優先の簡略形）。
+        """
+        n = len(categories)
+        if not 2 <= n <= 6:
+            raise ValueError(t("fishbone takes 2 to 6 categories, got {n}", n=n))
+        norm = []
+        for c in categories:
+            name, causes = (c["label"], c["causes"]) if isinstance(c, dict) \
+                else (c[0], c[1])
+            causes = list(causes)
+            if not causes:
+                raise ValueError(t(
+                    "fishbone: category '{name}' needs at least 1 cause",
+                    name=name))
+            if len(causes) > 4:
+                raise ValueError(t(
+                    "fishbone: category '{name}' has {n} causes; 4 or fewer "
+                    "fit. Merge or move the rest to an appendix",
+                    name=name, n=len(causes)))
+            norm.append((str(name), causes))
+
+        cy = y + h / 2
+        hw = head_w if head_w is not None else min(1.6, w * 0.18)
+        hh = min(0.86, h * 0.30)
+        # 背骨。頭のボックスに刺さる位置まで引く
+        self.line(x, cy, x + w - hw, cy, color=self.P.primary, weight=2.5,
+                  free=True)
+        self.shape(x + w - hw, cy - hh / 2, hw, hh, kind="RECTANGLE",
+                   fill=self.P.primary, stroke=None, text=problem,
+                   size=size + 1.5, bold=True, color=readable_on(self.P.primary),
+                   line_spacing=110)
+
+        top = [c for i, c in enumerate(norm) if i % 2 == 0]
+        bottom = [c for i, c in enumerate(norm) if i % 2 == 1]
+        usable_w = w - hw - 0.3
+        cat_h = 0.34
+        for row, cats in (("top", top), ("bottom", bottom)):
+            if not cats:
+                continue
+            sw = usable_w / len(cats)
+            for i, (name, causes) in enumerate(cats):
+                bx = x + i * sw + 0.08
+                bw = sw - 0.3
+                if row == "top":
+                    by = y
+                    txt_y = y + cat_h + 0.06
+                    txt_h = cy - y - cat_h - 0.24
+                    txt_valign = "TOP"
+                else:
+                    by = y + h - cat_h
+                    txt_h = (y + h - cat_h) - cy - 0.24
+                    txt_y = by - 0.06 - txt_h
+                    txt_valign = "BOTTOM"
+                self.shape(bx, by, bw, cat_h, kind="RECTANGLE",
+                           fill=self.P.surface, stroke=self.P.border,
+                           text=name, size=size, bold=True, color=self.P.text)
+                # 大骨。箱の右端から背骨へ、頭側へ倒して刺す。原因の箇条書きは
+                # 右 0.5in を空けて置く（骨の通り道と文字が交差しないように）
+                sx = bx + bw - 0.15
+                ex = min(bx + bw + 0.35, x + w - hw - 0.1)
+                sy = by + cat_h if row == "top" else by
+                self.line(sx, sy, ex, cy, color=lighten(self.P.primary, 0.45),
+                          weight=1.6, free=True)
+                if txt_h > 0.2:
+                    self.label(bx, txt_y, max(0.8, bw - 0.5), txt_h,
+                               "\n".join(f"・{c}" for c in causes),
+                               size=size - 0.5, align="START",
+                               valign=txt_valign, color=self.P.muted,
+                               line_spacing=125)
         return y + h

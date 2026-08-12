@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "pareto-analysis",
+  "displayName": "パレート図",
+  "pack": "analysis",
+  "category": "cause",
+  "description": "要因別の件数・金額と累積構成比を重ね、どの要因から潰すべきかを示す",
+  "answers": ["少数の要因が全体の大半を占めているか。どこから手を付けるべきか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 10,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "maxLength": 10},
+          {"type": "number", "minimum": 0}
+        ]
+      }
+    },
+    "unit": {"type": "string", "default": "件", "maxLength": 6},
+    "insight": {"type": "string", "required": true, "maxLength": 44},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "値の大きい順に自動で並ぶ（「その他」だけは常に末尾）。渡す順序に意味は持たせない",
+    "合計に意味のある量（件数・金額・時間）だけ使う。率や指数を混ぜない",
+    "集計期間と母数を source に明記する",
+    "80% の破線は目安。上位に集中していない（累積線が直線に近い）ときは「集中していない」こと自体が発見で、無理に上位対策と結論しない",
+    "「その他」が最大になるような分類は粒度が粗すぎる。分類を見直してから使う"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "pareto", "x": 0.6, "y": 1.05, "w": 8.8, "h": 2.8, "items": {"$slot": "items"}, "unit": {"$slot": "unit"}},
+      {"type": "so_what", "x": 0.5, "y": 3.97, "w": 9.0, "h": 0.82, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.87, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

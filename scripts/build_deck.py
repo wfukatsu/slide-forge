@@ -618,6 +618,7 @@ class TemplateDeck:
         bodies: list | None = None,
         notes: str | None = None,
         index: int | None = None,
+        title_font_size: float | None = None,
         body_font_size: float | None = None,
         body_line_spacing: float | None = None,
         body_space_above: float | None = None,
@@ -697,6 +698,19 @@ class TemplateDeck:
             self.requests.append(
                 {"insertText": {"objectId": ph_ids[name], "text": text}}
             )
+
+        # タイトルの既定サイズはテンプレートによっては 1 行 20 文字程度しか
+        # 入らない。長いアクションタイトルは titleFontSize で縮めて 1 行に収める
+        if title_font_size is not None and title is not None:
+            slot = title_slot or "TITLE"
+            if slot in ph_ids:
+                self.requests.append({"updateTextStyle": {
+                    "objectId": ph_ids[slot],
+                    "style": {"fontSize": {"magnitude": title_font_size,
+                                           "unit": "PT"}},
+                    "textRange": {"type": "ALL"},
+                    "fields": "fontSize",
+                }})
 
         # 本文は行ごとに役割・行内強調を持ちうるので、範囲を数えながら組み立てる
         body_spans: dict[str, list[dict]] = {}
@@ -1105,6 +1119,7 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "vbars_stacked": ("vbars_stacked", ["x", "y", "w", "h", "categories", "series"]),
     "linechart":     ("linechart",     ["x", "y", "w", "h", "labels", "series"]),
     "pie":           ("pie",           ["x", "y", "size", "items"]),
+    "pareto":        ("pareto",        ["x", "y", "w", "h", "items"]),
     # ビジネスフレームワーク図（patterns.py・図形だけで描く。ネットワーク不要）
     "posmap":         ("posmap",         ["x", "y", "w", "h", "points"]),
     "gantt":          ("gantt",          ["x", "y", "w", "h", "columns", "rows"]),
@@ -1112,6 +1127,8 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "lean_canvas":    ("lean_canvas",    ["x", "y", "w", "h", "blocks"]),
     "nested_circles": ("nested_circles", ["x", "y", "w", "h", "rings"]),
     "testimonial":    ("testimonial",    ["x", "y", "w", "h", "quote", "name"]),
+    "fishbone":       ("fishbone",       ["x", "y", "w", "h", "problem",
+                                          "categories"]),
     # イベント案内図（events.py・図形だけで描く。ネットワーク不要）
     "event_mode_badge": ("event_mode_badge", ["x", "y", "mode"]),
     "event_overview":   ("event_overview",   ["x", "y", "w", "rows"]),
@@ -1622,6 +1639,7 @@ def build_from_spec(deck: TemplateDeck, spec: dict) -> list[str]:
             body=s.get("body"),
             bodies=s.get("bodies"),
             notes=s.get("notes"),
+            title_font_size=s.get("titleFontSize", defaults.get("titleFontSize")),
             body_font_size=s.get("bodyFontSize", defaults.get("bodyFontSize")),
             body_line_spacing=s.get("bodyLineSpacing", defaults.get("bodyLineSpacing")),
             body_space_above=s.get("bodySpaceAbove", defaults.get("bodySpaceAbove")),
