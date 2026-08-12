@@ -234,8 +234,8 @@ class PatternMixin:
                     cs = size - 1
                     mx = track_x + start * cu
                     # 枠の左右インセット(0.10×2)を足さないと、字の実寸ちょうどの
-                    # 枠になって折り返す
-                    need = self._em(caption) * cs / 72.0 + 0.24
+                    # 枠になって折り返す。太字ぶんの 1.1 倍はバー内ラベルと同じ
+                    need = self._em(caption) * cs / 72.0 * 1.1 + 0.24
                     room = (track_x + track_w) - (mx + ms / 2 + 0.06)
                     bg = self.P.surfaceAlt if (zebra and i % 2) else self.P.page
                     if room >= need:

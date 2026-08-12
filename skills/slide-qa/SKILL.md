@@ -88,6 +88,10 @@ Minimum checklist (the full table with fixes is in `references/validation.md`):
 - [ ] Arrows do not cross unrelated shapes and each attaches to the
       *semantically* correct shape — coordinate audits cannot judge meaning
 - [ ] Labels do not overlap arrows or rules; body-text contrast ≥ 4.5:1
+- [ ] Labels next to markers (●, ◆, bar ends) have visible breathing room —
+      cramped vertical spacing is invisible to the coordinate audits
+- [ ] Table column alignment matches the content: short uniform values (年,
+      年月, ID) centered, numbers right, sentences left
 - [ ] **Squint test**: the first thing that draws the eye is the page's main
       message; otherwise the emphasis (fill, bold, color) is wrong
 

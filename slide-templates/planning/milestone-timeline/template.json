@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "milestone-timeline",
+  "displayName": "マイルストーン年表",
+  "pack": "planning",
+  "category": "schedule",
+  "description": "横一本の時間軸に節目を等間隔で並べ、次の引き返し点を示す",
+  "answers": ["節目がどう並んでいて、次に動くべき時点はいつか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "milestones": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "maxLength": 10},
+          {"type": "string", "maxLength": 16}
+        ]
+      }
+    },
+    "insight": {"type": "string", "required": true, "maxLength": 160},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "節目は 6 件まで。時間軸は等間隔で、期間の長短は表現しない（長短を見せたい計画は gantt-schedule を使う）",
+    "未来の節目は予定であることを source に明記する",
+    "時点ラベルは 10 字以内（例: 2026/09）。粒度を揃える"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "timeline", "x": 0.5, "y": 1.35, "w": 9.0, "rowH": 1.15,
+       "items": {"$slot": "milestones"}},
+      {"type": "so_what", "x": 0.5, "y": 3.1, "w": 9.0, "h": 1.4, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

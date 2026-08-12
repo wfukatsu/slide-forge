@@ -352,6 +352,49 @@
       ],
       "status": "stable",
       "version": 1
+    },
+    {
+      "id": "gantt-schedule",
+      "displayName": "ガントチャート（線表）",
+      "pack": "planning",
+      "category": "schedule",
+      "path": "planning/gantt-schedule/template.json",
+      "tags": [
+        "gantt",
+        "schedule",
+        "plan",
+        "timeline"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "chronology",
+      "displayName": "年表",
+      "pack": "planning",
+      "category": "history",
+      "path": "planning/chronology/template.json",
+      "tags": [
+        "chronology",
+        "history",
+        "timeline"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "milestone-timeline",
+      "displayName": "マイルストーン年表",
+      "pack": "planning",
+      "category": "schedule",
+      "path": "planning/milestone-timeline/template.json",
+      "tags": [
+        "milestone",
+        "timeline",
+        "roadmap"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

@@ -39,9 +39,18 @@ brand color in a portable template.
 - Title: conclusion, not a topic label; no more than two lines.
 - Body: 12pt or larger where practical.
 - Tables: roughly ten rows maximum; split rather than shrink.
+- Table column alignment is semantic — set `aligns` explicitly instead of
+  trusting the primitive default (first col START, rest CENTER): short uniform
+  values (年, 年月, ID) → CENTER, numbers → END, sentences → START.
+- Text next to a marker (●, ◆, bar end) needs visible breathing room; center
+  the label vertically in its box (`valign: MIDDLE`) rather than letting it
+  hug the marker.
 - Use declared slot limits to prevent category and label overload.
 - Validate representative Japanese and English strings when the template is
-  intended for both languages.
+  intended for both languages. ASCII-heavy bold labels ("Go/No-Go") are wider
+  than the width estimator assumes — they are the first thing to test in
+  thumbnails, because the offline audit shares the estimator with the renderer
+  and cannot see the wrap.
 
 ## Sources and inference
 
