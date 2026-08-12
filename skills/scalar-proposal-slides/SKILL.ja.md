@@ -17,144 +17,136 @@ description: >-
 
 *[English](SKILL.md)*
 
-# Scalar Solution Proposal Slides
+# Scalar ソリューション提案スライド
 
-Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running
-from an installed plugin, `/path/to/slide-forge` on a local clone
-(literal `cd` paths below assume the local clone).
+作業ディレクトリ: slide-forge ルート — インストール済みプラグインから実行する場合は
+`${CLAUDE_PLUGIN_ROOT}`、ローカルクローンでは `/path/to/slide-forge`
+（以下に書く `cd` のパスはローカルクローンを前提とする）。
 
-## Important
+## 重要事項
 
-- **Prerequisite skill**: `google-slides-template` (same repo) — auth, the
-  shared venv, the `scalar-2026` template, drawing API, and QA tooling. This
-  skill owns only what is proposal-specific: the hearing checklist, the
-  challenge→product mapping, and the proposal deck structure.
-- **The customer's challenges drive everything.** A proposal without agreed
-  challenges is a product intro — route it to `scalar-product-slides`. Collect
-  hearing material (minutes, notes, RFP) before designing slides; what is not
-  known must surface as "本日確認したい" on the deck, never as a guess.
-- **Never fabricate customer-specific numbers.** Quantified effects need a
-  calculation basis from the hearing; otherwise write qualitative effects and
-  route quantification to the PoC ("PoC で実測し稟議材料にする"). Public case
-  numbers (ENS 約1/5 など) are usable with sources.
-- **Every initial proposal includes an architecture diagram and a BOM.** The
-  standard topology is 3 environments — 開発（ローカル）/ テスト
-  (aidd-infra-test) / ステージング (aidd-infra-staging) — on **AWS by default**
-  (rebuild the same role split on GCP/Azure only if the customer specifies).
-  After composing the architecture, output the cloud-service list and the
-  Scalar product list with quantities (and monthly license cost when
-  quantities are not specified) — on the deck AND as a list in the final
-  report (proposal-map.md §6).
-- **Check the constraints before proposing** —
-  `references/scalar/proposal-map.md` §4 (cases where ScalarDB/DL does not
-  fit). Do not force a challenge onto a Scalar product; saying so is part of
-  proposal quality.
-- **Research freshness**: facts come from `references/scalar/research-2026-08.md`
-  and `references/scalar/proposal-map.md` (§3/§5 dated 2026-08-05). Both follow
-  the **3-month rule** — re-research via parallel agents if stale (Phase 2 of
-  the scalar-product-slides SKILL.md describes the agent setup).
-- **Shared rules with the sibling skills** (see google-slides-template
-  SKILL.md): Drive folder per deck (`scripts/drive_folder.py`), version
-  snapshot before in-place edits (`scripts/snapshot_version.py`), visual QA
-  via the `slide-qa` skill — chosen at intake, default run, QA files deleted
-  with `scripts/cleanup_qa.py` when done — and interactive intake conventions
-  (`references/interactive-intake.md` sections 0, 3, 4, 5).
+- **前提スキル**: `google-slides-template`（同一リポジトリ） — 認証、共有 venv、
+  `scalar-2026` テンプレート、描画 API、QA ツールを提供する。本スキルが持つのは
+  提案固有の部分 — ヒアリングチェックリスト、課題→製品マッピング、
+  提案デッキ構成 — のみである。
+- **すべては顧客の課題から始まる。** 課題合意のない提案は製品紹介にすぎない —
+  その場合は `scalar-product-slides` に回す。スライドを設計する前にヒアリング材料
+  （議事録・メモ・RFP）を集める。分かっていないことは推測ではなく
+  「本日確認したい」としてデッキ上に出す。
+- **顧客固有の数値を捏造してはならない。** 効果の定量化にはヒアリングに基づく
+  算定根拠が必要である。無ければ定性的な効果に留め、定量化は PoC に回す
+  （"PoC で実測し稟議材料にする"）。公開事例の数値（ENS 約1/5 など）は
+  出典つきなら使える。
+- **初回提案には必ずアーキテクチャ図と BOM を含める。** 標準トポロジーは
+  3 環境 — 開発（ローカル）/ テスト (aidd-infra-test) / ステージング
+  (aidd-infra-staging) — で、**既定は AWS**（顧客の指定がある場合のみ GCP/Azure で
+  同じ役割分担を組み直す）。アーキテクチャを構成したら、クラウドサービス一覧と
+  Scalar 製品一覧を数量つきで（数量が未指定の場合は月額ライセンス費用も）出力する —
+  デッキ上と、最終報告のリスト（proposal-map.md §6）の両方に。
+- **提案する前に制約を確認する** —
+  `references/scalar/proposal-map.md` §4（ScalarDB/DL が適さないケース）。
+  課題を Scalar 製品に無理に当てはめない。適さないと言うことも提案品質の
+  一部である。
+- **調査の鮮度**: 事実は `references/scalar/research-2026-08.md` と
+  `references/scalar/proposal-map.md`（§3/§5 は 2026-08-05 付）から取る。どちらも
+  **3 か月ルール**に従う — 古ければ並列エージェントで再調査する
+  （エージェントの構成は scalar-product-slides の SKILL.md の Phase 2 に記載）。
+- **姉妹スキルと共通のルール**（google-slides-template の SKILL.md 参照）:
+  デッキごとの Drive フォルダ（`scripts/drive_folder.py`）、インプレース編集前の
+  バージョンスナップショット（`scripts/snapshot_version.py`）、`slide-qa` スキルに
+  よるビジュアル QA — インテイク時に実行有無を選び、既定は実行、終了後に
+  `scripts/cleanup_qa.py` で QA ファイルを削除 — と、対話インテイクの作法
+  （`references/interactive-intake.md` セクション 0, 3, 4, 5）。
 
-## Quick Reference
+## クイックリファレンス
 
-| Task | Use |
+| やること | 使うもの |
 |------|-----|
-| Hearing checklist / proposal structure / challenge→product map / constraints / pricing / standard environments + BOM | `references/scalar/proposal-map.md` |
-| Proposal deck builder (worked example, 23 slides incl. architecture + BOM) | `scripts/scalar/build_scalar_proposal.py` |
-| Environment diagram source (3 environments, AWS) | `examples/scalar-proposal-envs.drawio` → PNG via `scripts/drawio_export.py` |
-| Researched company/product facts + pitfalls | `references/scalar/research-2026-08.md` |
-| Section ordering rationale (problem-solving outline) | `references/deck-outlines.md` |
-| Run | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <Drive URL>]` |
-| Validate first (no API calls) | same command with `--dry-run` — runs the coordinate and text-fit audits without creating a deck |
+| ヒアリングチェックリスト / 提案構成 / 課題→製品マップ / 制約 / 価格 / 標準環境 + BOM | `references/scalar/proposal-map.md` |
+| 提案デッキビルダー（実例。アーキテクチャ + BOM 込み 23 スライド） | `scripts/scalar/build_scalar_proposal.py` |
+| 環境図の元データ（3 環境、AWS） | `examples/scalar-proposal-envs.drawio` → `scripts/drawio_export.py` で PNG 化 |
+| 調査済みの会社・製品の事実 + 落とし穴 | `references/scalar/research-2026-08.md` |
+| セクション順の根拠（課題解決型アウトライン） | `references/deck-outlines.md` |
+| 実行 | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <Drive URL>]` |
+| まず検証（API 呼び出しなし） | 同じコマンドに `--dry-run` — デッキを作らずに座標とテキスト収まりの検査を実行 |
 
-## Phase 1: Collect the challenges and settle premises
+## Phase 1: 課題材料を集め、前提を確定させる
 
-Follow `references/interactive-intake.md` sections 0/3/4/5. Ask in one batch:
+`references/interactive-intake.md` のセクション 0/3/4/5 に従う。1 バッチで聞く:
 
-| # | header | Question | Options |
+| # | header | 質問 | 選択肢 |
 |---|---|---|---|
 | 1 | 課題の材料 | 顧客課題の材料はありますか? | 議事録・ヒアリングメモを渡す(ファイル/貼り付け) / 口頭でこれから説明 / まだ無い(ヒアリング項目の提示から始める) |
 | 2 | 課題カテゴリ | 主な課題はどれに近いですか? | proposal-map.md §3 の A〜H から材料に合いそうな 3 つ + その他(複数選択可) |
 | 3 | 提案の段階 | どの段階の提案ですか? | 初回提案(課題合意が主目的) / PoC 提案(スコープ・成功基準まで) / 本導入提案(費用・体制を確定粒度で) |
 | 4 | 決裁者 | 主な読み手は? | 経営層・決裁者 / 情報システム部門 / 業務部門 / 混合 |
 
-- Material first: if minutes/notes exist, **read them before asking Q2** and
-  pre-select the likely categories in the option descriptions.
-- If nothing is known yet, present the hearing checklist
-  (proposal-map.md §1) as the deliverable instead of forcing a deck.
-- Second round if unspecified: output Drive folder, cover date, language,
-  cloud (default AWS — state the adopted default instead of asking when
-  the customer's cloud is unknown), and whether to run visual QA after
-  generation (default and recommended: run; skipping means the deck ships
-  unverified).
-- **Do not ask about** diagram composition, coordinates, colors, or which
-  part draws which section — that is fixed by the worked example and
-  design conventions.
+- 材料が先: 議事録・メモがあれば **Q2 を聞く前に読み**、ありそうなカテゴリを
+  選択肢の description で事前に選んでおく。
+- まだ何も分かっていない場合は、デッキを無理に作らず、ヒアリングチェックリスト
+  （proposal-map.md §1）を成果物として提示する。
+- 未指定なら 2 ラウンド目で聞く: 出力先 Drive フォルダ、表紙の日付、言語、
+  クラウド（既定は AWS — 顧客のクラウドが不明なときは質問せず、採用した既定を
+  明示する）、生成後にビジュアル QA を実行するか（既定かつ推奨は実行。
+  スキップするとデッキは未検証のまま納品される）。
+- **聞いてはならないこと**: 図の構成、座標、色、どの部品がどのセクションを
+  描くか — 実例とデザイン規約で固定されている。
 
-Then **present the slide outline (page count + each slide's action title,
-challenge→product mapping made explicit) and get approval before generating**
-(the outline gate of interactive-intake.md §3).
+その後、**スライドアウトライン（ページ数 + 各スライドのアクションタイトル、
+課題→製品マッピングを明示）を提示し、生成前に承認を得る**
+（interactive-intake.md §3 のアウトラインゲート）。
 
-## Phase 2: Map challenges to products
+## Phase 2: 課題を製品にマッピングする
 
-1. Classify each agreed challenge into proposal-map.md §3 categories (A–H);
-   pull the product/feature line and the public cases from the same row.
-2. Check §4 (unsuitable cases) — direct-write bypass, DB-specific features,
-   OLAP-only workloads, "改ざん防止" wording, Community-edition gaps. Surface
-   any hit as a risk-slide item or descope it honestly.
-3. Verify freshness (3-month rule) of §3/§5 and research-2026-08.md; re-run
-   research agents if stale, and check the pitfall list at the end of
-   research-2026-08.md before writing slides.
+1. 合意した各課題を proposal-map.md §3 のカテゴリ（A–H）に分類し、同じ行から
+   製品・機能の行と公開事例を引く。
+2. §4（適さないケース）を確認する — 直接書き込みによるバイパス、DB 固有機能、
+   OLAP 専用ワークロード、「改ざん防止」という表現、Community エディションの
+   不足。該当があればリスクスライドの項目として出すか、正直にスコープ外にする。
+3. §3/§5 と research-2026-08.md の鮮度（3 か月ルール）を確認する。古ければ
+   調査エージェントを再実行し、スライドを書く前に research-2026-08.md 末尾の
+   落とし穴リストを確認する。
 
-## Phase 2.5: Compose the architecture and BOM
+## Phase 2.5: アーキテクチャと BOM を構成する
 
-1. Start from the standard 3-environment topology (proposal-map.md §6):
+1. 標準の 3 環境トポロジー（proposal-map.md §6）から始める:
    開発（ローカル, Community・無料）→ テスト aidd-infra-test（Cluster 1 Pod）→
-   ステージング aidd-infra-staging（Cluster 3 Pod）, AWS by default. Adjust
-   environment names, sizes, and the production environment to the hearing.
-2. Author the diagram from `examples/scalar-proposal-envs.drawio` (edit →
-   `scripts/drawio_export.py` → Read the PNG; drawio-diagrams skill rules
-   apply: verified shape names only, visual check mandatory).
-3. Derive the BOM: per environment, the cloud services and the Scalar
-   products with quantities; compute monthly license cost with the §6 formula
-   when quantities are not customer-specified. Premium features or ScalarDL
-   change the unit prices (§5/§6).
-4. **When the customer needs an editable estimate** (明細付きの見積もり) —
-   typical for 本導入提案, or when the user asks — build it from the BOM with
-   the `spreadsheets` skill (Excel / Google Spreadsheet, real formulas for
-   quantities × unit prices and tax) into the deck's Drive folder. The cost
-   slide keeps the summary; the spreadsheet carries the line items, and the
-   two totals must match.
+   ステージング aidd-infra-staging（Cluster 3 Pod）、既定は AWS。環境名・サイズ・
+   本番環境はヒアリングに合わせて調整する。
+2. 図は `examples/scalar-proposal-envs.drawio` から作る（編集 →
+   `scripts/drawio_export.py` → PNG を Read。drawio-diagrams スキルのルールが
+   適用される: 検証済みシェイプ名のみ使用、目視確認は必須）。
+3. BOM を導出する: 環境ごとに、クラウドサービスと Scalar 製品を数量つきで挙げる。
+   数量が顧客指定でない場合は §6 の計算式で月額ライセンス費用を算出する。
+   Premium 機能や ScalarDL は単価が変わる（§5/§6）。
+4. **顧客が編集可能な見積もりを必要とする場合**（明細付きの見積もり） —
+   本導入提案で典型、またはユーザーが求めたとき — `spreadsheets` スキルで
+   BOM から作成し（Excel / Google スプレッドシート、数量 × 単価と税の実数式入り）、
+   デッキの Drive フォルダに入れる。費用スライドはサマリーを保持し、明細は
+   スプレッドシートが担う。両者の合計は一致していなければならない。
 
-## Phase 3: Build the deck
+## Phase 3: デッキを組む
 
-`scripts/scalar/build_scalar_proposal.py` is a worked example (fictional
-manufacturing scenario, 23 slides incl. architecture + BOM) that encodes the
-standard structure —
-proposal-map.md §2 has the section-by-section rationale. To build a real
-proposal, rewrite only the `PROPOSAL` dict at the top of the script
-(customer, summary, challenges, mapping, alternatives, effects, cases,
-journey, gantt, team, costs, risks, next) with hearing results, keeping:
+`scripts/scalar/build_scalar_proposal.py` は標準構成を体現した実例
+（架空の製造業シナリオ、アーキテクチャ + BOM 込み 23 スライド）である —
+セクションごとの根拠は proposal-map.md §2 にある。実際の提案を作るには、
+スクリプト冒頭の `PROPOSAL` dict
+（customer, summary, challenges, mapping, alternatives, effects, cases,
+journey, gantt, team, costs, risks, next）だけをヒアリング結果で書き換え、
+以下を守る:
 
-- Challenge slides ≤ 3 items, same order and wording as the mapping table
-- The alternatives table's comparison axes rewritten to the customer's actual
-  KBF (what they will evaluate proposals on)
-- Cases picked from the mapped categories (§3), with sources in speaker notes
-- Cost figures only from §5 with `source_note`; anything else stays
-  "個別お見積り"
-- Dense architecture diagrams (10+ nodes, cloud-specific) → author with the
-  `drawio-diagrams` skill and insert as an image instead of the built-in
-  solution diagram
+- 課題スライドは 3 項目以内、順序と文言はマッピング表と揃える
+- 代替案比較表の比較軸は、顧客の実際の KBF（提案を何で評価するか）に書き換える
+- 事例はマッピングしたカテゴリ（§3）から選び、出典はスピーカーノートに入れる
+- 費用の数値は §5 のもののみを `source_note` つきで使う。それ以外は
+  「個別お見積り」のままにする
+- 密度の高いアーキテクチャ図（10 ノード以上、クラウド固有）→ `drawio-diagrams`
+  スキルで作図し、組み込みのソリューション図の代わりに画像として挿入する
 
-Design conventions are shared with scalar-product-slides: action titles,
-square corners on accent-bar cards, pictograms from `illustrations`.
+デザイン規約は scalar-product-slides と共通: アクションタイトル、アクセントバー
+付きカードは角を丸めない、ピクトグラムは `illustrations` から。
 
-## Phase 4: Generate and QA
+## Phase 4: 生成と QA
 
 ```bash
 cd /path/to/slide-forge
@@ -162,28 +154,29 @@ cd /path/to/slide-forge
 .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <URL>]
 ```
 
-1. The script prints "audit:" lines from `audit_*` on every drawn slide.
-   **If any audit fires, fix the data/spec and rebuild** (delete the old deck
-   from Drive first; rebuilding changes the URL — tell the user).
-2. **If the user chose visual QA (the default)**, run the `slide-qa` skill:
-   fetch every page with `scripts/fetch_thumbnails.py`, inspect with Read,
-   and delete the local QA files with `scripts/cleanup_qa.py` when done.
-   If QA was skipped, state so in the report and offer `slide-qa` later.
-3. Content QA specific to proposals: no customer-specific number without a
-   hearing basis, no case/price without a source note, challenge wording
-   consistent across slides 3 / 7 (整理と対応表), scope-out line present.
-4. In the final report, alongside the deck/folder URLs, include the BOM
-   lists (cloud services per environment; Scalar products with quantity and
-   monthly cost) — the builder prints them as `=== Bill of Materials (BOM) ===`.
-5. Offer follow-ups via `AskUserQuestion` (interactive-intake.md §4):
-   finalize / adjust wording / swap cases / add-remove sections.
+1. スクリプトは描画した全スライドで `audit_*` の "audit:" 行を出力する。
+   **いずれかの検査が発火したら、データ・仕様を直して再ビルドする**
+   （先に旧デッキを Drive から削除する。再ビルドすると URL が変わる —
+   ユーザーに伝える）。
+2. **ユーザーがビジュアル QA を選んだ場合（既定）**、`slide-qa` スキルを実行する:
+   `scripts/fetch_thumbnails.py` で全ページを取得し、Read で検査し、終了後に
+   `scripts/cleanup_qa.py` でローカルの QA ファイルを削除する。
+   QA をスキップした場合は報告にその旨を明記し、後で `slide-qa` を提案する。
+3. 提案固有のコンテンツ QA: ヒアリング根拠のない顧客固有の数値がないこと、
+   出典注記のない事例・価格がないこと、課題の文言がスライド 3 / 7（整理と対応表）で
+   一致していること、スコープ外の明記があること。
+4. 最終報告には、デッキ / フォルダの URL と併せて BOM のリスト（環境ごとの
+   クラウドサービス。Scalar 製品は数量と月額費用つき）を含める — ビルダーが
+   `=== Bill of Materials (BOM) ===` として出力する。
+5. `AskUserQuestion` で後続を提案する（interactive-intake.md §4）:
+   確定 / 文言調整 / 事例差し替え / セクション追加・削除。
 
-## File layout
+## ファイル構成
 
-| Path | Role |
+| パス | 役割 |
 |------|------|
-| `scripts/scalar/build_scalar_proposal.py` | Proposal deck builder (worked example; rewrite `PROPOSAL` per customer) |
-| `references/scalar/proposal-map.md` | Hearing items, proposal structure + rationale, challenge→product map, constraints, pricing |
-| `references/scalar/research-2026-08.md` | Company/product facts, cases, slide pitfalls (shared with scalar-product-slides) |
-| `examples/scalar-proposal-envs.drawio` / `.png` | 3-environment architecture diagram source and export (rewrite per customer) |
-| `templates/scalar-2026.json` | Scalar 2026 template |
+| `scripts/scalar/build_scalar_proposal.py` | 提案デッキビルダー（実例。顧客ごとに `PROPOSAL` を書き換える） |
+| `references/scalar/proposal-map.md` | ヒアリング項目、提案構成とその根拠、課題→製品マップ、制約、価格 |
+| `references/scalar/research-2026-08.md` | 会社・製品の事実、事例、スライドの落とし穴（scalar-product-slides と共有） |
+| `examples/scalar-proposal-envs.drawio` / `.png` | 3 環境アーキテクチャ図の元データと書き出し（顧客ごとに書き換える） |
+| `templates/scalar-2026.json` | Scalar 2026 テンプレート |
