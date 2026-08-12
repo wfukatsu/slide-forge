@@ -76,8 +76,11 @@ def main() -> int:
     args = p.parse_args()
 
     mod, slides = vl.load_deck_module(args.deck)
-    template = (json.load(open(args.template, encoding="utf-8")) if args.template
-                else getattr(mod, "TEMPLATE", None))
+    if args.template:
+        with open(args.template, encoding="utf-8") as f:
+            template = json.load(f)
+    else:
+        template = getattr(mod, "TEMPLATE", None)
     if template is None:
         raise SystemExit(t("specify --template or define TEMPLATE in "
                            "the deck"))

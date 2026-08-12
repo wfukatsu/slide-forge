@@ -443,7 +443,9 @@ def main() -> int:
         pres = deck.slides.presentations().get(
             presentationId=deck.presentation_id, fields="slides.objectId").execute()
         ids = [s["objectId"] for s in pres.get("slides", [])]
-        assert len(ids) == 12, t("Expected 12 bundled slides, got {n}", n=len(ids))
+        # assert は python -O で消えるので、明示的に検査する
+        if len(ids) != 12:
+            raise RuntimeError(t("Expected 12 bundled slides, got {n}", n=len(ids)))
         for pos in DROP_KEPT_POSITIONS:
             deck.requests.append({"deleteObject": {"objectId": ids[pos]}})
 

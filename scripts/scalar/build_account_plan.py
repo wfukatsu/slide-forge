@@ -61,13 +61,10 @@ class BuildError(RuntimeError):
 
 def cover_slide(ledger: dict) -> dict:
     meta = ledger.get("meta") or {}
-    stage = meta.get("stage")
-    stage_label = (f"フェーズ {stage} — {ledger_mod.STAGES[stage]}"
-                   if stage in ledger_mod.STAGES else "フェーズ 不明")
     return {
         "layout": "COVER",
         "title": f"{meta.get('customer', '')} 活動計画",
-        "subtitle": (f"{meta.get('opportunity', '')} / {stage_label} / "
+        "subtitle": (f"{meta.get('opportunity', '')} / {ledger_mod._stage_label(ledger)} / "
                      f"{meta.get('forecast', '')} / "
                      f"{meta.get('updatedAt', ledger_mod.today())} 時点 — 社内資料"),
     }

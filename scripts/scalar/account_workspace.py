@@ -151,6 +151,16 @@ def _cmd_ensure(args) -> int:
     if args.ledger:
         ledger = ledger_mod.load(args.ledger)
         meta = ledger.get("meta") or {}
+        # 引数と台帳の meta が食い違ったまま進めると、別顧客のフォルダ ID を
+        # 台帳に書き込んでしまう。台帳が正本なので、黙って引数側を採らない
+        for opt, given, recorded in (("--ae", ae, meta.get("ae")),
+                                     ("--customer", customer, meta.get("customer"))):
+            if given and recorded and given != recorded:
+                print(f"ERROR: {opt} {given!r} が台帳の meta {recorded!r} と"
+                      f"食い違っています。正はこの台帳です: {args.ledger}\n"
+                      f"  {opt} を外して実行するか、台帳の meta を直してください",
+                      file=sys.stderr)
+                return 1
         ae = ae or meta.get("ae")
         customer = customer or meta.get("customer")
     if not ae or not customer:

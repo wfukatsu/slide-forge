@@ -410,7 +410,7 @@ def main() -> int:
     P = PROPOSAL
     template = bd.load_template(TEMPLATE)
     if args.dry_run:
-        deck = bd.DryRunDeck()
+        deck = bd.DryRunDeck(template)
     else:
         deck = bd.TemplateDeck.create(
             template, title=f"{P['customer']}様向け {P['title']}", folder=args.folder)

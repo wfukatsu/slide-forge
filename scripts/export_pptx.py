@@ -32,8 +32,11 @@ from _i18n import t, register  # noqa: E402
 register({
     "exportLinks has no PPTX URL (possibly missing permissions)":
         "exportLinks に PPTX の URL がありません（権限不足の可能性）",
-    "files.export failed ({err}); retrying via exportLinks...":
-        "files.export が失敗（{err}）。exportLinks 経由で再取得します...",
+    "the deck exceeds the files.export size limit; retrying via exportLinks...":
+        "デッキが files.export のサイズ上限を超えています。"
+        "exportLinks 経由で再取得します...",
+    "files.export failed with HTTP {code}: {err}":
+        "files.export が HTTP {code} で失敗しました: {err}",
     "Export a Google Slides deck as .pptx":
         "Google Slides デッキを .pptx に書き出す",
     "presentation URL or ID": "プレゼンテーションの URL または ID",
@@ -52,6 +55,25 @@ def safe_name(name: str) -> str:
     return cleaned[:80] or "deck"
 
 
+def _is_export_size_limit(e: HttpError) -> bool:
+    """10MB 超で files.export が断られたかを判定する。
+
+    サイズ超過は HTTP 403 + reason "exportSizeLimitExceeded" で返る。
+    403/404 の権限・ID 間違いまでフォールバックに流すと、原因が
+    exportLinks 側の別エラーにすり替わって分かりにくくなるため、
+    ここで厳密に見分ける。
+    """
+    status = getattr(e, "status_code", None) \
+        or getattr(getattr(e, "resp", None), "status", None)
+    if status != 403:
+        return False
+    for d in getattr(e, "error_details", None) or []:
+        if isinstance(d, dict) and d.get("reason") == "exportSizeLimitExceeded":
+            return True
+    # 古い googleapiclient は error_details を持たないのでレスポンス本文で判定
+    return b"exportSizeLimitExceeded" in (getattr(e, "content", b"") or b"")
+
+
 def _export_via_link(drive, creds, pres_id: str, path: str) -> None:
     """10MB 超のデッキ向けフォールバック。exportLinks の URL から直接取得する。"""
     from google.auth.transport.requests import AuthorizedSession
@@ -62,29 +84,47 @@ def _export_via_link(drive, creds, pres_id: str, path: str) -> None:
     if not link:
         raise SystemExit(t("exportLinks has no PPTX URL (possibly missing permissions)"))
     session = AuthorizedSession(creds)
-    with session.get(link, stream=True) as r:
-        r.raise_for_status()
-        with open(path, "wb") as f:
-            for chunk in r.iter_content(1 << 20):
-                f.write(chunk)
+    # 途中で切れても壊れた .pptx を最終パスに残さないよう、一時ファイルに
+    # 書き切ってから os.replace で置く
+    tmp = path + ".part"
+    try:
+        with session.get(link, stream=True) as r:
+            r.raise_for_status()
+            with open(tmp, "wb") as f:
+                for chunk in r.iter_content(1 << 20):
+                    f.write(chunk)
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
 
 
 def export_pptx(drive, creds, pres_id: str, path: str) -> None:
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    # exportLinks 側と同じく、一時ファイル経由で書いて成功時だけ最終パスへ置く
+    tmp = path + ".part"
     try:
         req = drive.files().export_media(fileId=pres_id, mimeType=PPTX_MIME)
-        with open(path, "wb") as f:
+        with open(tmp, "wb") as f:
             dl = MediaIoBaseDownload(f, req)
             done = False
             while not done:
                 _, done = dl.next_chunk()
+        os.replace(tmp, path)
+        return
     except HttpError as e:
-        if os.path.exists(path):
-            os.remove(path)
-        print(t("files.export failed ({err}); retrying via exportLinks...",
-                err=e.status_code if hasattr(e, "status_code") else e),
-              file=sys.stderr)
-        _export_via_link(drive, creds, pres_id, path)
+        # フォールバックはサイズ超過に限定。権限不足や ID 間違いはここで落とす
+        if not _is_export_size_limit(e):
+            status = getattr(e, "status_code", None) \
+                or getattr(getattr(e, "resp", None), "status", None)
+            raise SystemExit(t("files.export failed with HTTP {code}: {err}",
+                               code=status or "?", err=e))
+        print(t("the deck exceeds the files.export size limit; retrying via "
+                "exportLinks..."), file=sys.stderr)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+    _export_via_link(drive, creds, pres_id, path)
 
 
 def main() -> int:

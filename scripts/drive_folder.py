@@ -31,6 +31,11 @@ register({
     "Reusing existing folder: {name}": "既存フォルダを再利用: {name}",
     "Created folder: {name}": "フォルダを作成: {name}",
     "  skip (file not found): {path}": "  skip（ファイルなし）: {path}",
+    "  error: {n} files named '{name}' exist in the folder; cannot decide "
+    "which one to update. Remove the duplicates or update the file by its ID.":
+        "  error: フォルダに同名ファイル '{name}' が {n} 件あり、どれを更新"
+        "すべきか決められません。重複を整理するか、ファイル ID を指定して"
+        "更新してください。",
     "  updated: {name}": "  更新: {name}",
     "  added: {name}": "  追加: {name}",
     "  moved: {name}": "  移動: {name}",
@@ -118,12 +123,24 @@ def cmd_upload(drive, folder: str, paths: list[str]) -> int:
         name = os.path.basename(path)
         mime = mimetypes.guess_type(path)[0] or "application/octet-stream"
         media = MediaFileUpload(path, mimetype=mime, resumable=False)
+        # 同名の**サブフォルダ**を更新先に拾うと、フォルダをファイルで
+        # 上書きしようとして壊れるため、フォルダは検索から除外する
         hits = drive.files().list(
             q=(f"name = '{_escape(name)}' and '{fid}' in parents "
+               f"and mimeType != '{FOLDER_MIME}' "
                "and trashed = false"),
             fields="files(id)", pageSize=5,
             supportsAllDrives=True, includeItemsFromAllDrives=True,
         ).execute().get("files", [])
+        if len(hits) > 1:
+            # どれを更新すべきか決められないまま update すると別ファイルを
+            # 上書きしかねない。ここで止めて整理を促す
+            print(t("  error: {n} files named '{name}' exist in the folder; "
+                    "cannot decide which one to update. Remove the duplicates "
+                    "or update the file by its ID.", n=len(hits), name=name),
+                  file=sys.stderr)
+            failed = True
+            continue
         if hits:
             drive.files().update(
                 fileId=hits[0]["id"], media_body=media, fields="id",

@@ -190,6 +190,11 @@ CHECKPOINTS: tuple[tuple[int, str, str, str], ...] = (
 _DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
+def _is_date(value: Any) -> bool:
+    """YYYY-MM-DD の文字列か。文字列以外を _DATE_RE.match に渡して落ちないための入口。"""
+    return isinstance(value, str) and bool(_DATE_RE.match(value))
+
+
 # ----------------------------------------------------------------- 入出力
 
 def today() -> str:
@@ -280,13 +285,16 @@ def validate(ledger: dict) -> list[str]:
         if not isinstance(meta.get(key), str) or not meta[key].strip():
             _problem(out, f"meta.{key}", "必須です")
     stage = meta.get("stage")
-    if stage not in STAGES:
+    # bool は int のサブクラスなので `True in STAGES` が通ってしまう（True == 1）。明示的に弾く
+    if isinstance(stage, bool) or stage not in STAGES:
         _problem(out, "meta.stage", f"0〜6 である必要があります（現在: {stage!r}）")
     forecast = meta.get("forecast")
     if forecast not in FORECASTS:
         _problem(out, "meta.forecast", f"{' / '.join(FORECASTS)} のいずれか（現在: {forecast!r}）")
     close = meta.get("closeDate") or ""
-    if close and not _DATE_RE.match(close):
+    if not isinstance(close, str):
+        _problem(out, "meta.closeDate", '日付は "YYYY-MM-DD" の文字列で書いてください')
+    elif close and not _DATE_RE.match(close):
         _problem(out, "meta.closeDate", "YYYY-MM-DD 形式で書きます")
 
     for i, fact in enumerate(_as_list(ledger.get("facts"))):
@@ -360,6 +368,30 @@ def validate(ledger: dict) -> list[str]:
         if item.get("status") == "met" and not str(item.get("evidence", "")).strip():
             _problem(out, where, "met には顧客側の証拠が必須です（社内の合意は証拠になりません）")
 
+    # risks / partners は export_ledger_md.render() が dict 前提で表にする。
+    # ここを通しておかないと「validate OK なのに書き出しで落ちる」台帳ができる
+    risks = ledger.get("risks")
+    if risks is not None and not isinstance(risks, list):
+        _problem(out, "risks", "配列である必要があります")
+    for i, risk in enumerate(_as_list(risks)):
+        where = f"risks[{i}]"
+        if not isinstance(risk, dict):
+            _problem(out, where, "オブジェクトである必要があります")
+            continue
+        if not str(risk.get("what", "")).strip():
+            _problem(out, where, "what が空です（何がリスクか書けない行は載せない）")
+
+    partners = ledger.get("partners")
+    if partners is not None and not isinstance(partners, list):
+        _problem(out, "partners", "配列である必要があります")
+    for i, partner in enumerate(_as_list(partners)):
+        where = f"partners[{i}]"
+        if not isinstance(partner, dict):
+            _problem(out, where, "オブジェクトである必要があります")
+            continue
+        if not str(partner.get("name", "")).strip():
+            _problem(out, where, "name が空です")
+
     for i, action in enumerate(_as_list(ledger.get("actions"))):
         where = f"actions[{i}]"
         if not isinstance(action, dict):
@@ -372,7 +404,9 @@ def validate(ledger: dict) -> list[str]:
         if status not in ACTION_STATUS:
             _problem(out, where, f"status は {' / '.join(ACTION_STATUS)} のいずれか")
         due = action.get("due") or ""
-        if due and not _DATE_RE.match(due):
+        if not isinstance(due, str):
+            _problem(out, where, 'due は "YYYY-MM-DD" の文字列で書いてください')
+        elif due and not _DATE_RE.match(due):
             _problem(out, where, "due は YYYY-MM-DD 形式で書きます")
         elif not due and status == "open":
             _problem(out, where,
@@ -385,7 +419,9 @@ def validate(ledger: dict) -> list[str]:
             _problem(out, where, "オブジェクトである必要があります")
             continue
         date = visit.get("date") or ""
-        if not _DATE_RE.match(date):
+        if not isinstance(date, str):
+            _problem(out, where, 'date は "YYYY-MM-DD" の文字列で書いてください')
+        elif not _DATE_RE.match(date):
             _problem(out, where, "date は YYYY-MM-DD 形式で書きます")
         if visit.get("status") not in ("planned", "done"):
             _problem(out, where, "status は planned / done のいずれか")
@@ -539,7 +575,7 @@ def overdue(ledger: dict, *, on: str | None = None) -> list[dict]:
     day = on or today()
     return [a for a in _as_list(ledger.get("actions"))
             if isinstance(a, dict) and a.get("status") == "open"
-            and _DATE_RE.match(a.get("due") or "") and a["due"] < day]
+            and _is_date(a.get("due")) and a["due"] < day]
 
 
 # ------------------------------------------------------------- スロット生成
@@ -649,7 +685,11 @@ def _page_bant_risk(ledger: dict) -> dict | None:
     weak = [label for key, label in BANT_KEYS
             if (bant.get(key) or {}).get("level") != "ok"]
     if weak:
-        insight = f"{'・'.join(l.split()[0] for l in weak)} が未確定。{(ledger.get('meta') or {}).get('forecast')} 以上には上げない。"
+        insight = f"{'・'.join(l.split()[0] for l in weak)} が未確定。"
+        forecast = (ledger.get("meta") or {}).get("forecast")
+        # forecast 未設定の台帳で「None 以上には上げない」と出さない
+        if forecast:
+            insight += f"{forecast} 以上には上げない。"
     else:
         insight = "4 項目とも根拠つきで ok。Commit の条件を満たしている。"
     return {
@@ -698,7 +738,7 @@ def _page_action_plan(ledger: dict) -> dict | None:
 
 
 def _action_title(rows: list[list[str]]) -> str:
-    dues = sorted(r[3] for r in rows if _DATE_RE.match(r[3]))
+    dues = sorted(r[3] for r in rows if _is_date(r[3]))
     if dues:
         return f"直近の期限は {dues[0]}。この {len(rows)} 件が片付くまでステージは上げない"
     return f"未確認を潰す {len(rows)} 件。まず期限を入れる"
@@ -729,7 +769,7 @@ def _page_activity_timeline(ledger: dict) -> dict | None:
 
 
 def _md(date: str) -> str:
-    return date[5:].replace("-", "/") if _DATE_RE.match(date) else date
+    return date[5:].replace("-", "/") if _is_date(date) else date
 
 
 def _timeline_title(visits: list[dict], ledger: dict) -> str:
@@ -890,7 +930,9 @@ def _page_visit_plan(ledger: dict) -> dict | None:
                if isinstance(v, dict) and v.get("status") == "planned"]
     if not planned:
         return None
-    visit = sorted(planned, key=lambda v: v.get("date") or "")[0]
+    # 日付が空だと空文字が sort で先頭に来て「次回訪問」を乗っ取る。日付ありを優先する
+    visit = sorted(planned, key=lambda v: (not _is_date(v.get("date")),
+                                           str(v.get("date") or "")))[0]
     questions = [_fit(q, 44) for q in _as_list(visit.get("questions"))][:4]
     objections = [[_fit(o[0], 20), _fit(o[1], 52)]
                   for o in _as_list(visit.get("objections"))
@@ -965,6 +1007,17 @@ def available_pages(ledger: dict) -> list[str]:
 
 # ------------------------------------------------------------ Markdown 出力
 
+def md_cell(value: Any) -> str:
+    """Markdown 表のセルに入れて安全な形にする。
+
+    `|` は列の区切り、改行は行の区切りとして解釈されるので、そのまま埋め込むと
+    表が崩れる。ここと export_ledger_md.py の両方がこのヘルパーを使う。
+    """
+    s = "" if value is None else str(value)
+    return (s.replace("|", "\\|")
+             .replace("\r\n", "<br>").replace("\n", "<br>").replace("\r", "<br>"))
+
+
 def action_markdown(ledger: dict) -> str:
     """CRM の Next Action に貼れる形。期限順、期限切れには ⚠ を付ける。"""
     meta = ledger.get("meta") or {}
@@ -985,11 +1038,11 @@ def action_markdown(ledger: dict) -> str:
     ]
     for action in open_actions:
         due = action.get("due") or "未定"
-        if _DATE_RE.match(due) and due < day:
+        if _is_date(due) and due < day:
             due = f"⚠ {due}"
-        lines.append("| " + " | ".join([
-            str(action.get("what", "")), str(action.get("why", "")),
-            str(action.get("whom", "")), due, str(action.get("doneWhen", "")),
+        lines.append("| " + " | ".join(md_cell(c) for c in [
+            action.get("what", ""), action.get("why", ""),
+            action.get("whom", ""), due, action.get("doneWhen", ""),
         ]) + " |")
     if not open_actions:
         lines.append("| （未完了のアクションなし） | | | | |")
@@ -1007,6 +1060,18 @@ def action_markdown(ledger: dict) -> str:
 
 
 # -------------------------------------------------------------------- CLI
+
+def _ensure_valid(ledger: dict) -> bool:
+    """派生コマンド（gaps / actions / slots）の入口検査。
+
+    壊れた台帳を gaps() や to_slot_data() に渡すと途中でクラッシュするので、
+    validate コマンドと同じく問題を全件 stderr に出して止める。
+    """
+    problems = validate(ledger)
+    for problem in problems:
+        print(f"ERROR: {problem}", file=sys.stderr)
+    return not problems
+
 
 def _cmd_validate(args) -> int:
     ledger = load(args.path)
@@ -1026,6 +1091,8 @@ def _cmd_validate(args) -> int:
 
 def _cmd_gaps(args) -> int:
     ledger = load(args.path)
+    if not _ensure_valid(ledger):
+        return 1
     found = gaps(ledger)
     if args.json:
         print(json.dumps(found, ensure_ascii=False, indent=2))
@@ -1041,6 +1108,8 @@ def _cmd_gaps(args) -> int:
 
 def _cmd_actions(args) -> int:
     ledger = load(args.path)
+    if not _ensure_valid(ledger):
+        return 1
     if args.carry_over:
         carry_over(ledger)
         save(ledger, args.path)
@@ -1056,6 +1125,8 @@ def _cmd_actions(args) -> int:
 
 def _cmd_slots(args) -> int:
     ledger = load(args.path)
+    if not _ensure_valid(ledger):
+        return 1
     data = to_slot_data(ledger, args.page)
     if data is None:
         print(f"材料が足りません: {args.page}", file=sys.stderr)
