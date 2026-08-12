@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "fishbone-diagram",
+  "displayName": "特性要因図（フィッシュボーン）",
+  "pack": "analysis",
+  "category": "cause",
+  "description": "問題事象に対する原因の仮説をカテゴリ別に洗い出し、検証の当たりを付ける",
+  "answers": ["この問題の原因はどの系統にあり、どこから検証すべきか"],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "problem": {"type": "string", "required": true, "maxLength": 20},
+    "categories": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 6,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "maxLength": 8},
+          {"type": "string[]", "minItems": 1, "maxItems": 4, "maxLength": 22}
+        ]
+      }
+    },
+    "insight": {"type": "string", "required": true, "maxLength": 44},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "カテゴリは 4M（人・機械・方法・材料）やプロセス名など、1 つの基準で揃える。基準を混ぜない",
+    "原因は各カテゴリ 4 個まで。溢れたら統合するか補足資料へ回す（網羅の証明図ではない）",
+    "載るのは「原因の仮説」。真因の特定は why-why かデータ検証で行い、検証済みの原因だけ太字等で区別しない（この図では全て同格）",
+    "problem は測定可能な事象で書く（「品質が悪い」ではなく「月次不良率 3% 超」）",
+    "insight には次に検証する原因と検証方法を書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "fishbone", "x": 0.5, "y": 1.0, "w": 9.0, "h": 2.7, "problem": {"$slot": "problem"}, "categories": {"$slot": "categories"}},
+      {"type": "so_what", "x": 0.5, "y": 3.82, "w": 9.0, "h": 0.92, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

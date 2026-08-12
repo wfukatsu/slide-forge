@@ -242,8 +242,8 @@ API はリンクを付けても色を変えないため、これが無いとク�
 | ブランドのアイコン | `asset_icon` `asset_icon_row` `asset_icon_flow` `asset_icon_grid` `asset_icon_cards` |
 | クラウドアイコン | `cloud_icon` `cloud_icon_row` `cloud_icon_flow` `cloud_icon_grid` `cloud_zone` |
 | 構造図 | `band` `cards` `flow` `hbars` `metric` |
-| 表・グラフ | `table` `vbars` `vbars_grouped` `vbars_stacked` `linechart` `pie` |
-| フレームワーク図 | `posmap` `gantt` `orgchart` `lean_canvas` `nested_circles` `testimonial` |
+| 表・グラフ | `table` `vbars` `vbars_grouped` `vbars_stacked` `linechart` `pie` `pareto` |
+| フレームワーク図 | `posmap` `gantt` `orgchart` `lean_canvas` `nested_circles` `testimonial` `fishbone` |
 | イベント案内 | `event_mode_badge` `event_overview` `event_timetable` `event_speakers` `event_access` |
 | ページ部品 | `governing_message` `lead_in` `so_what` `source_note` `exhibit_frame` |
 | 分析図・設計図 | `mece_tree` `waterfall` `rating_matrix` `exec_summary` `storyline` `ghost` |

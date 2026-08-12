@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "priority-matrix",
+  "displayName": "課題優先順位マトリクス",
+  "pack": "analysis",
+  "category": "priority",
+  "description": "課題を効果と実行容易性の 2 軸に置き、どこから着手すべきかを示す",
+  "answers": ["洗い出した課題のうち、どれから着手すべきか"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 8,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "maxLength": 10},
+          {"type": "number", "minimum": 0, "maximum": 1},
+          {"type": "number", "minimum": 0, "maximum": 1}
+        ]
+      }
+    },
+    "highlight": {"type": "string[]", "default": [], "maxItems": 3, "maxLength": 10},
+    "xAxis": {"type": "string[]", "default": ["実行が難しい", "実行しやすい"], "minItems": 2, "maxItems": 2, "maxLength": 12},
+    "yAxis": {"type": "string[]", "default": ["効果小", "効果大"], "minItems": 2, "maxItems": 2, "maxLength": 12},
+    "insight": {"type": "string", "required": true, "maxLength": 44},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "items は [課題名, x, y]。x / y は 0〜1 の相対値（0=左/下、1=右/上）。評価の根拠（効果試算・工数見積）と評価者・評価日を source に書く",
+    "課題名はバブル（直径 0.8in ≒ 4 字/行）に入る長さで。5 字以上は「権限申請\\n自動化」のように改行位置を \\n で明示する",
+    "右上（実行しやすい × 効果大）が最優先。ただし座標は主観評価になりがちなので、位置の議論より「順序」の合意に使う",
+    "バブルが重なると読めない。課題は 8 件まで、近い課題は統合する",
+    "highlight は着手を決めた課題だけに使う（強調が多いと何も強調されない）",
+    "課題の中身（何を解決するか）はこのスライドでは説明しない。gap-analysis や logic-tree で定義してから持ち込む"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "posmap", "x": 1.3, "y": 0.95, "w": 7.4, "h": 2.95, "bubble": 0.8, "points": {"$slot": "items"}, "xAxis": {"$slot": "xAxis"}, "yAxis": {"$slot": "yAxis"}, "highlight": {"$slot": "highlight"}},
+      {"type": "so_what", "x": 0.5, "y": 4.0, "w": 9.0, "h": 0.82, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.87, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

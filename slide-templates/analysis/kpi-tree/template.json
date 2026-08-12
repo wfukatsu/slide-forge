@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "kpi-tree",
+  "displayName": "KPIツリー",
+  "pack": "analysis",
+  "category": "structure",
+  "description": "KGI を構成指標に分解し、目標未達（または達成）がどの指標に起因するかを示す",
+  "answers": ["目標と実績の差は、どの構成指標から生まれているのか"],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "tree": {"type": "array", "required": true, "minItems": 2, "maxItems": 2},
+    "insight": {"type": "string", "required": true, "maxLength": 88},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "根は KGI 1 つ。ノードのラベルは「指標名\\n実績値」（目標比を見せるなら「実績 / 目標」）で書く",
+    "親子は四則演算で説明できる関係だけにする（売上 = 新規 + 既存、新規 = リード × 転換率 …）。説明できない要素は載せない",
+    "数値はすべて出典必須。期間・集計定義を source に書く",
+    "葉は 5 個まで（2 行ラベルのノード高 0.46in を確保しているため）。指標が多いときはボトルネックの枝だけ展開し、他は上位で畳む",
+    "insight には「どの指標が差の主因か」を定量で書く（例: 未達 △12% のうち △9% は商談化率）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "mece_tree", "x": 0.5, "y": 1.0, "w": 9.0, "h": 2.55, "nodeH": 0.46, "tree": {"$slot": "tree"}},
+      {"type": "so_what", "x": 0.5, "y": 3.66, "w": 9.0, "h": 1.1, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "logic-tree",
+  "displayName": "ロジックツリー",
+  "pack": "analysis",
+  "category": "structure",
+  "description": "論点を MECE に分解し、どこに問題（または打ち手）があるかを構造で示す",
+  "answers": ["この問題はどんな要素に分解でき、どこが効いているのか"],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "tree": {"type": "array", "required": true, "minItems": 2, "maxItems": 2},
+    "insight": {"type": "string", "required": true, "maxLength": 88},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "tree は [ラベル, [子…]] の入れ子。子は同じ形か文字列。深さ 4 超・列幅不足は描画時にエラーになる",
+    "葉は 5 個まで（ノード高 0.46in を確保しているため）。それ以上は木を分割して 2 枚にする",
+    "MECE（漏れなく・重複なく）は部品では保証されない。1 階層 1 基準で分解の切り口を揃えること",
+    "Why ツリー（原因の分解）と How ツリー（打ち手の分解）を 1 本の木に混ぜない",
+    "insight には「どの枝が効いているか」と、その判断根拠を書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "mece_tree", "x": 0.5, "y": 1.0, "w": 9.0, "h": 2.55, "nodeH": 0.46, "tree": {"$slot": "tree"}},
+      {"type": "so_what", "x": 0.5, "y": 3.66, "w": 9.0, "h": 1.1, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

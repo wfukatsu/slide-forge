@@ -395,6 +395,151 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "logic-tree",
+      "displayName": "ロジックツリー",
+      "pack": "analysis",
+      "category": "structure",
+      "path": "analysis/logic-tree/template.json",
+      "tags": [
+        "logic-tree",
+        "mece",
+        "issue",
+        "diagnosis"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "kpi-tree",
+      "displayName": "KPIツリー",
+      "pack": "analysis",
+      "category": "structure",
+      "path": "analysis/kpi-tree/template.json",
+      "tags": [
+        "kpi",
+        "kgi",
+        "metrics",
+        "diagnosis"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "why-why",
+      "displayName": "なぜなぜ分析",
+      "pack": "analysis",
+      "category": "cause",
+      "path": "analysis/why-why/template.json",
+      "tags": [
+        "why-why",
+        "root-cause",
+        "five-whys"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "fishbone-diagram",
+      "displayName": "特性要因図（フィッシュボーン）",
+      "pack": "analysis",
+      "category": "cause",
+      "path": "analysis/fishbone-diagram/template.json",
+      "tags": [
+        "fishbone",
+        "ishikawa",
+        "root-cause"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "pareto-analysis",
+      "displayName": "パレート図",
+      "pack": "analysis",
+      "category": "cause",
+      "path": "analysis/pareto-analysis/template.json",
+      "tags": [
+        "pareto",
+        "80-20",
+        "prioritization"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "gap-analysis",
+      "displayName": "ギャップ分析（As-Is / To-Be）",
+      "pack": "analysis",
+      "category": "gap",
+      "path": "analysis/gap-analysis/template.json",
+      "tags": [
+        "gap",
+        "as-is",
+        "to-be",
+        "issue"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "process-painpoints",
+      "displayName": "業務フローとペインポイント",
+      "pack": "analysis",
+      "category": "process",
+      "path": "analysis/process-painpoints/template.json",
+      "tags": [
+        "process",
+        "pain-point",
+        "as-is",
+        "workflow"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "pest-analysis",
+      "displayName": "PEST分析",
+      "pack": "analysis",
+      "category": "macro",
+      "path": "analysis/pest-analysis/template.json",
+      "tags": [
+        "pest",
+        "macro",
+        "environment"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "five-forces",
+      "displayName": "5フォース分析",
+      "pack": "analysis",
+      "category": "macro",
+      "path": "analysis/five-forces/template.json",
+      "tags": [
+        "five-forces",
+        "porter",
+        "industry"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "priority-matrix",
+      "displayName": "課題優先順位マトリクス",
+      "pack": "analysis",
+      "category": "priority",
+      "path": "analysis/priority-matrix/template.json",
+      "tags": [
+        "priority",
+        "impact",
+        "effort",
+        "matrix"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

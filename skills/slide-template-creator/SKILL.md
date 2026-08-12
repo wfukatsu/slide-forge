@@ -24,6 +24,7 @@ Run all commands from the slide-forge repository root. Use `.venv/bin/python`.
 | Request | Route |
 |---|---|
 | Create or update a reusable one-slide content pattern | this skill |
+| Analysis-framework templates (PEST, logic tree, Pareto, …) | `analysis-template-creator` |
 | Create brand colors, fonts, logo, master, or layouts | `template-forge` |
 | Generate a complete deck | `google-slides` / `google-slides-template` |
 | Verify generated slides visually | `slide-qa` |
