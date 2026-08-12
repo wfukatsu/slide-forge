@@ -812,7 +812,7 @@ def main() -> int:
 
     template = bd.load_template(TEMPLATE)
     if args.dry_run:
-        deck = bd.DryRunDeck()
+        deck = bd.DryRunDeck(template)
     else:
         deck = bd.TemplateDeck.create(template, title=TITLE, folder=args.folder)
     problems: list[str] = []

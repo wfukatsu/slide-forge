@@ -127,6 +127,16 @@ Drive の階層は初回だけルートを聞いて作る（以降は `config/sa
 取り込み、**期限だけをユーザーに決めてもらう**（期限は AE の約束であって、
 こちらが決めるものではない）。
 
+`--carry-over` は次の 2 コマンドのフラグ（どちらも台帳を書き換えてから出力する）:
+
+```bash
+# アクションプランの Markdown を出すついでに取り込む
+.venv/bin/python scripts/scalar/account_ledger.py actions <account.json> --carry-over
+
+# デッキ生成（§5）のついでに取り込む
+.venv/bin/python scripts/scalar/build_account_plan.py <account.json> --carry-over
+```
+
 前回の未完了アクションはそのまま繰り越される。期限切れは検証で警告が出る。
 
 ### 5. 活動計画デッキを作る / 更新する

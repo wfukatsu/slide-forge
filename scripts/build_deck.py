@@ -36,6 +36,15 @@ register({
         "({attempt}/{attempts})",
     "template copy": "テンプレートの複製",
     "rename": "デッキ名の変更",
+    "no response was received for {what} ({err}); the write may already have "
+    "been applied. Check whether the deck was updated before rerunning: {url}":
+        "{what} の応答を受け取れませんでした（{err}）。書き込みはサーバー側で"
+        "適用済みの可能性があります。デッキが更新済みかを確認してから"
+        "再実行してください: {url}",
+    "Generation failed; a partially built deck remains: {url} — delete it "
+    "manually if it is not needed":
+        "生成に失敗しました。作成途中のデッキが残っています: {url} — "
+        "不要なら手で削除してください",
     "replace the contents of this existing deck (URL or ID) instead of "
     "creating a new one; the deck URL stays the same":
         "新規作成せず、既存デッキ（URL または ID）の中身を差し替える。"
@@ -288,12 +297,19 @@ def normalize_body_lines(value) -> list[tuple[str, str | None]]:
 _RUN_TOKEN = uuid.uuid4().hex[:4]
 
 
-def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0):
+def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0,
+           idempotent: bool = True, url: str | None = None):
     """一時的な 5xx / 429 を吸収して API 呼び出しを繰り返す。
 
     枚数の多いテンプレートの `files.copy` は、混んでいるときに 500 Internal Error を
     返すことが実際にある。1 回で諦めると生成が丸ごと落ちるので指数バックオフで粘る。
     HttpError 以外に、socket timeout 等のネットワーク例外（OSError）も再試行する。
+
+    ただし **非冪等な書き込み（batchUpdate）は idempotent=False で呼ぶこと**。
+    タイムアウト（OSError）はサーバー側では適用済みで応答だけが失われた可能性が
+    あり、無条件に再送すると二重適用や 400 でデッキが半壊する。その場合は
+    再試行せず、確認を促す明確なエラーで止める（url にデッキ URL を渡す）。
+    HTTP 5xx / 429 は「適用されていない」ことが分かるので従来どおり再試行する。
     """
     import time
     from googleapiclient.errors import HttpError
@@ -302,6 +318,12 @@ def _retry(call, *, what: str, attempts: int = 4, base_delay: float = 3.0):
         try:
             return call()
         except (HttpError, OSError) as e:
+            if isinstance(e, OSError) and not idempotent:
+                raise RuntimeError(t(
+                    "no response was received for {what} ({err}); the write "
+                    "may already have been applied. Check whether the deck "
+                    "was updated before rerunning: {url}",
+                    what=what, err=e, url=url or "?")) from e
             code = getattr(getattr(e, "resp", None), "status", None)
             retryable = isinstance(e, OSError) or code in (429, 500, 502, 503, 504)
             if not retryable or i == attempts - 1:
@@ -348,7 +370,7 @@ def _batches(requests: list[dict], max_requests: int = MAX_REQUESTS_PER_BATCH,
 
 
 def load_template(path: str) -> dict:
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -373,6 +395,12 @@ class TemplateDeck:
         # (objectId, x, y, w, h)。createImage は比率を保つため、枠ぴったりに
         # 敷きたい画像は commit 後に transform を上書きして直す
         self.image_fixups: list[tuple] = []
+        # --into のタイトル変更は commit 成功後まで遅延する（open() 参照）
+        self.pending_title: str | None = None
+
+    @property
+    def url(self) -> str:
+        return f"https://docs.google.com/presentation/d/{self.presentation_id}/edit"
 
     # ---------- 生成 ----------
 
@@ -453,11 +481,10 @@ class TemplateDeck:
         print(t("  replacing an existing deck: {n} slides will be removed",
                 n=removed))
         if title:
-            _retry(
-                lambda: drive.files().update(
-                    fileId=pid, body={"name": title}, fields="id",
-                    supportsAllDrives=True).execute(),
-                what=t("rename"))
+            # ここで files.update すると、生成が失敗したとき「中身は旧のまま
+            # タイトルだけ新しい」デッキが残る。リネームは記憶だけして、
+            # commit() が中身の差し替えに成功してから投げる
+            deck.pending_title = title
         return deck
 
     def _present_slide_ids(self) -> list[str]:
@@ -518,10 +545,20 @@ class TemplateDeck:
     def _print_pre_edit_revision(self) -> None:
         """差し戻せるように、編集前のリビジョンを表示する。取れなければ警告だけ。"""
         try:
-            revisions = self.drive.revisions().list(
-                fileId=self.presentation_id,
-                fields="revisions(id,modifiedTime)", pageSize=1000,
-            ).execute().get("revisions", [])
+            # 1000 リビジョンを超えるデッキでも最新を取り逃さないよう、
+            # snapshot_version.py と同じ方式で全ページたどる
+            revisions: list[dict] = []
+            token = None
+            while True:
+                res = self.drive.revisions().list(
+                    fileId=self.presentation_id,
+                    fields="nextPageToken,revisions(id,modifiedTime)",
+                    pageSize=1000, pageToken=token,
+                ).execute()
+                revisions.extend(res.get("revisions", []))
+                token = res.get("nextPageToken")
+                if not token:
+                    break
         except Exception as exc:                       # noqa: BLE001 — 情報表示のみ
             print(t("  warn: could not read the revision history ({err}); "
                     "snapshot the deck before replacing it", err=exc),
@@ -905,22 +942,33 @@ class TemplateDeck:
                 if n_img:
                     print(f"  images uploaded: {n_img}")
             for n, chunk in enumerate(_batches(self.requests, chunk_size), 1):
+                # batchUpdate は非冪等。応答消失時の再送は半壊の元なので止める
                 _retry(
                     lambda: self.slides.presentations().batchUpdate(
                         presentationId=self.presentation_id, body={"requests": chunk}
                     ).execute(),
-                    what=f"batchUpdate ({len(chunk)} requests)")
+                    what=f"batchUpdate ({len(chunk)} requests)",
+                    idempotent=False, url=self.url)
                 print(f"  batch {n}: {len(chunk)} requests")
             self.requests = []
             if self._notes or self.image_fixups:
                 self._post_pass()
+            # --into のリネームは中身の差し替えが成功してから行う（open() 参照）
+            if self.pending_title:
+                _retry(
+                    lambda: self.drive.files().update(
+                        fileId=self.presentation_id,
+                        body={"name": self.pending_title}, fields="id",
+                        supportsAllDrives=True).execute(),
+                    what=t("rename"))
+                self.pending_title = None
         finally:
             # Slides は挿入時に画像を中へコピーする。batchUpdate が失敗した場合も、
             # 「リンクを知る全員が閲覧可」で共有した一時アップロードを残さないよう
             # 必ずここで畳む
             if self.assets is not None:
                 self.assets.cleanup()
-        return f"https://docs.google.com/presentation/d/{self.presentation_id}/edit"
+        return self.url
 
     def _post_pass(self) -> None:
         """スライド作成後にしか分からない情報を使う 2 回目の batchUpdate。
@@ -987,11 +1035,13 @@ class TemplateDeck:
             n_img += 1
 
         if reqs:
+            # batchUpdate は非冪等。応答消失時の再送は半壊の元なので止める
             _retry(
                 lambda: self.slides.presentations().batchUpdate(
                     presentationId=self.presentation_id, body={"requests": reqs}
                 ).execute(),
-                what=f"batchUpdate (post pass, {len(reqs)} requests)")
+                what=f"batchUpdate (post pass, {len(reqs)} requests)",
+                idempotent=False, url=self.url)
             if n_notes:
                 print(f"  speaker notes: {n_notes} slides")
             if n_img:
@@ -1615,7 +1665,7 @@ def main() -> int:
     args = p.parse_args()
 
     template = load_template(args.template)
-    with open(args.spec) as f:
+    with open(args.spec, encoding="utf-8") as f:
         spec = json.load(f)
 
     # 検証より先に、レイアウトが持つ画像枠を座標へ解決しておく
@@ -1682,11 +1732,21 @@ def main() -> int:
             template, title=title, folder=args.folder,
             keep_existing=args.keep_existing,
         )
-    warnings = build_from_spec(deck, spec)
-    if not args.no_page_numbers:
-        n = deck.add_page_numbers()
-        print(f"  page numbers: {n} slides")
-    url = deck.commit()
+    try:
+        warnings = build_from_spec(deck, spec)
+        if not args.no_page_numbers:
+            n = deck.add_page_numbers()
+            print(f"  page numbers: {n} slides")
+        url = deck.commit()
+    except Exception:
+        # files.copy 済みのデッキを黙って孤児化させない。自動削除はしない
+        # （削除事故の教訓から、破壊的操作をこちらから増やさない方針）。
+        # --into は既存デッキの差し替えなので案内不要
+        if not args.into:
+            print(t("Generation failed; a partially built deck remains: "
+                    "{url} — delete it manually if it is not needed",
+                    url=deck.url), file=sys.stderr)
+        raise
     print(f"Done! {len(deck.slide_ids)} slides created.")
     if warnings:
         print("\n" + t("Figure audit found {n} findings:", n=len(warnings)),

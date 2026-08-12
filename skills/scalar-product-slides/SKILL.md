@@ -65,8 +65,9 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
 | Researched facts and pitfalls | `references/scalar/research-2026-08.md` |
 | Run | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/<script>.py [--folder <Drive URL>]` |
 
-Both scripts accept a single CLI flag: `--folder <Drive folder URL>` (optional;
-when omitted the deck is created directly in My Drive).
+Both scripts accept two CLI flags: `--folder <Drive folder URL>` (optional;
+when omitted the deck is created directly in My Drive) and `--dry-run`
+(validate offline without calling the API).
 
 ## Phase 1: Settle the deck type and premises interactively
 

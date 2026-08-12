@@ -407,15 +407,13 @@ def print_bom(arch: dict) -> None:
 
 # ============================================================ 組み立て
 
-def build(deck, template, dry: bool = False) -> list[str]:
+def build(deck, template) -> list[str]:
     P = PROPOSAL
     problems: list[str] = []
 
     def drawn(title, fn, *fn_args, notes=None, connectors=False):
         ref = deck.add_slide("TITLE_ONLY", title=title, notes=notes)
         d = Canvas(deck, ref["slideId"], template)
-        if dry:
-            d.deck.dry = True
         fn(d, *fn_args)
         audits = d.audit_bounds() + d.audit_overlaps() + d.audit_text_fit()
         if connectors:
@@ -522,12 +520,12 @@ def main() -> int:
     template = bd.load_template(TEMPLATE)
     P = PROPOSAL
     if args.dry_run:
-        deck = bd.DryRunDeck()
+        deck = bd.DryRunDeck(template)
     else:
         deck = bd.TemplateDeck.create(
             template, title=f"{P['customer']}様向け {P['title']}", folder=args.folder)
 
-    problems = build(deck, template, dry=args.dry_run)
+    problems = build(deck, template)
     for m in problems:
         print(t("  audit: {message}", message=m))
 

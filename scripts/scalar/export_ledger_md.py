@@ -20,6 +20,9 @@ KIND_LABEL = {"said": "said — 顧客がそう言った",
               "observed": "observed — 文書・記録で確認した",
               "assumed": "assumed — こちらの推測"}
 
+# 表セルの `|` と改行は台帳側の共通ヘルパーでエスケープする（表が崩れるため）
+_cell = L.md_cell
+
 
 def render(ledger: dict) -> str:
     meta = ledger.get("meta") or {}
@@ -37,11 +40,11 @@ def render(ledger: dict) -> str:
     w("| 項目 | 値 |")
     w("|---|---|")
     w(f"| ステージ | {stage} — {L.STAGES.get(stage,'不明')} |")
-    w(f"| フォーキャスト | {meta.get('forecast','')} |")
-    w(f"| 想定 TCV | {meta.get('amount') or '未確定'} |")
-    w(f"| 決定予定日 | {meta.get('closeDate') or '未確定'} |")
+    w(f"| フォーキャスト | {_cell(meta.get('forecast',''))} |")
+    w(f"| 想定 TCV | {_cell(meta.get('amount') or '未確定')} |")
+    w(f"| 決定予定日 | {_cell(meta.get('closeDate') or '未確定')} |")
     for k, v in (meta.get("decks") or {}).items():
-        w(f"| デッキ: {k} | {v} |")
+        w(f"| デッキ: {_cell(k)} | {_cell(v)} |")
     w("")
 
     w("## 2. ゲート（フェーズ移行条件）\n")
@@ -49,8 +52,8 @@ def render(ledger: dict) -> str:
     w("|---|---|---|---|")
     for gid, item in (ledger.get("gates") or {}).items():
         label = L.GATE_SHORT.get(gid, gid)
-        w(f"| `{gid}` {label} | **{item.get('status','')}** | "
-          f"{item.get('evidence') or '未取得'} | {item.get('owner','')} |")
+        w(f"| `{gid}` {label} | **{_cell(item.get('status',''))}** | "
+          f"{_cell(item.get('evidence') or '未取得')} | {_cell(item.get('owner',''))} |")
     w("")
 
     w("## 3. BANT\n")
@@ -58,7 +61,7 @@ def render(ledger: dict) -> str:
     w("|---|---|---|")
     for key, label in L.BANT_KEYS:
         it = (ledger.get("bant") or {}).get(key) or {}
-        w(f"| {label} | **{it.get('level','')}** | {it.get('note') or '未確認'} |")
+        w(f"| {label} | **{_cell(it.get('level',''))}** | {_cell(it.get('note') or '未確認')} |")
     w("")
 
     w("## 4. ディスカバリー（MEDDPICC ＋ なぜ今か）\n")
@@ -66,8 +69,8 @@ def render(ledger: dict) -> str:
     w("|---|---|---|---|")
     for key, label in L.DISCOVERY_KEYS:
         it = (ledger.get("discovery") or {}).get(key) or {}
-        w(f"| {label} | **{it.get('status','')}** | {it.get('note') or '—'} | "
-          f"{it.get('evidence') or '—'} |")
+        w(f"| {label} | **{_cell(it.get('status',''))}** | {_cell(it.get('note') or '—')} | "
+          f"{_cell(it.get('evidence') or '—')} |")
     w("")
 
     people = [p for p in (ledger.get("people") or []) if isinstance(p, dict)]
@@ -75,10 +78,10 @@ def render(ledger: dict) -> str:
     w("| 氏名 | 所属・肩書 | 役割 | 影響力 | 賛否 | 接触 | 根拠 |")
     w("|---|---|---|---|---|---|---|")
     for p in people:
-        w(f"| {p.get('name','')} | {p.get('fullTitle') or p.get('title','')} | "
-          f"{p.get('role','')} | {L._band(p.get('influence'))} | "
-          f"{L._stance(p.get('stance'))} | {p.get('met') or '未接触'} | "
-          f"{p.get('evidence','')} |")
+        w(f"| {_cell(p.get('name',''))} | {_cell(p.get('fullTitle') or p.get('title',''))} | "
+          f"{_cell(p.get('role',''))} | {L._band(p.get('influence'))} | "
+          f"{L._stance(p.get('stance'))} | {_cell(p.get('met') or '未接触')} | "
+          f"{_cell(p.get('evidence',''))} |")
     w("")
     w("> 全接点（60 名超）は `関与者一覧.md` にある。ここは勘定系の意思決定に直接効く分だけ。\n")
 
@@ -90,21 +93,21 @@ def render(ledger: dict) -> str:
         w("| 段 | 起きていること | 裏付け |")
         w("|---|---|---|")
         for row in pain.get("evidence") or []:
-            w("| " + " | ".join(str(c) for c in row) + " |")
+            w("| " + " | ".join(_cell(c) for c in row) + " |")
         w("")
 
     w("## 7. リスクと打ち手\n")
     w("| リスク | コントロールする次の行動 |")
     w("|---|---|")
     for r in ledger.get("risks") or []:
-        w(f"| {r.get('what','')} | {r.get('control') or '**未定**'} |")
+        w(f"| {_cell(r.get('what',''))} | {_cell(r.get('control') or '**未定**')} |")
     w("")
 
     w("## 8. パートナー・関係ベンダー\n")
     w("| 名前 | 役割 | 位置づけ |")
     w("|---|---|---|")
     for p in ledger.get("partners") or []:
-        w(f"| {p.get('name','')} | {p.get('role','')} | {p.get('why','')} |")
+        w(f"| {_cell(p.get('name',''))} | {_cell(p.get('role',''))} | {_cell(p.get('why',''))} |")
     w("")
 
     win = ledger.get("winPlan") or {}
@@ -123,8 +126,9 @@ def render(ledger: dict) -> str:
     w("| # | やること | なぜ必要か | 相手 | 期限 | 完了条件 |")
     w("|---|---|---|---|---|---|")
     for i, a in enumerate(live, 1):
-        w(f"| {i} | {a.get('what','')} | {a.get('why','')} | {a.get('whom','')} | "
-          f"{a.get('due') or '**未定**'} | {a.get('doneWhen','')} |")
+        w(f"| {i} | {_cell(a.get('what',''))} | {_cell(a.get('why',''))} | "
+          f"{_cell(a.get('whom',''))} | {_cell(a.get('due') or '**未定**')} | "
+          f"{_cell(a.get('doneWhen',''))} |")
     w("")
 
     visits = sorted([v for v in (ledger.get("visits") or []) if isinstance(v, dict)],
@@ -133,9 +137,10 @@ def render(ledger: dict) -> str:
     w("| 日付 | 状態 | 会った相手 | 当社 | 目的 | 得たこと | 次の一手 |")
     w("|---|---|---|---|---|---|---|")
     for v in visits:
-        w(f"| {v.get('date','')} | {v.get('status','')} | {v.get('attendees','')} | "
-          f"{v.get('ours','')} | {v.get('purpose','')} | {v.get('heard') or '—'} | "
-          f"{v.get('next') or '—'} |")
+        w(f"| {_cell(v.get('date',''))} | {_cell(v.get('status',''))} | "
+          f"{_cell(v.get('attendees',''))} | {_cell(v.get('ours',''))} | "
+          f"{_cell(v.get('purpose',''))} | {_cell(v.get('heard') or '—')} | "
+          f"{_cell(v.get('next') or '—')} |")
     w("")
 
     facts = [f for f in (ledger.get("facts") or []) if isinstance(f, dict)]
@@ -148,7 +153,7 @@ def render(ledger: dict) -> str:
         w("| 日付 | 誰が / どこで | 内容 |")
         w("|---|---|---|")
         for f in rows:
-            w(f"| {f.get('date','')} | {f.get('who','')} | {f.get('text','')} |")
+            w(f"| {_cell(f.get('date',''))} | {_cell(f.get('who',''))} | {_cell(f.get('text',''))} |")
         w("")
 
     gaps = L.gaps(ledger)
@@ -156,7 +161,8 @@ def render(ledger: dict) -> str:
     w("| # | 問い | やること | 相手 | 完了条件 |")
     w("|---|---|---|---|---|")
     for g in gaps:
-        w(f"| {g['id']} | {g['question']} | {g['what']} | {g['whom']} | {g['doneWhen']} |")
+        w(f"| {g['id']} | {_cell(g['question'])} | {_cell(g['what'])} | "
+          f"{_cell(g['whom'])} | {_cell(g['doneWhen'])} |")
     w("")
     return "\n".join(o) + "\n"
 

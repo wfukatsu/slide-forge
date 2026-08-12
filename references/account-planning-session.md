@@ -379,8 +379,9 @@ Influence Map、Account Health）と Blueprint Summary を回す。
 ## 8. Step 6 — slide-forge での生成
 
 `scripts/scalar/build_account_planning.py` が台帳から 2 本のデッキ仕様を出す。
-Plan Document（34 ページ）と APS レビュー用（9 ページ + Appendix）は同じページ
-定義を共有するので、**1 つ直せば両方に反映される**。
+Plan Document と APS レビュー用（本編 9 ページ + Appendix）は同じページ定義を
+共有するので、**1 つ直せば両方に反映される**。枚数は固定ではなく、`deals` の
+件数と `meta.dealExtraPages` / `meta.skipPages` で変わる（§9）。
 
 **入力は `accounts/<AE>/<顧客>/aps.json`。** スクリプトは図の種類・座標・書式
 （`LAYOUT`）だけを持ち、文字列はすべて aps.json から読む。顧客名も実名も
@@ -390,11 +391,16 @@ Plan Document（34 ページ）と APS レビュー用（9 ページ + Appendix�
 
 ```jsonc
 {
-  "meta":     { "title": …, "subtitle": …, "planTitle": …, "reviewTitle": … },
+  "meta":     { "title": …, "subtitle": …, "planTitle": …, "reviewTitle": …,
+                "dealExtraPages":  { "<商談 id>": ["objective-ledger", …] },  // 任意
+                "reviewDealPages": ["deal-1", …],                             // 任意
+                "skipPages":       ["card-orgchart", …] },                    // 任意
   "sections": { "A": {"title":…, "body":…}, "B": …, "C": …, "E": …, "APX": … },
-  "deals":    [ { "id":"1", "company":…, "name":…, "challenge":…, "solution":…,
-                  "diff":…, "people":…, "itsub":…, "deal":…,
+  "deals":    [ { "id":"1", "company":…, "name":…, "initiative":…,
+                  "challenge":…, "solution":…, "diff":…,
+                  "people":…, "itsub":…, "deal":…,
                   "amount":…, "period":…, "stage":… } ],
+  "dealSource": "商談カード共通の出典行",
   "pages":    { "<ページ id>": { "title":…, "lead":…, "source":…,
                                  "figures": [ {内容だけ}, … ] } }
 }
@@ -403,6 +409,21 @@ Plan Document（34 ページ）と APS レビュー用（9 ページ + Appendix�
 `pages.<id>.figures` は `LAYOUT[<id>]` の図の並びと 1 対 1 で対応する
 （`governing_message` / `lead_in` / `source_note` は `title` / `lead` / `source`
 から取るので figures には並べない）。数が合わなければ組み立て時にエラーになる。
+
+- `deals[].id` は**文字列**で書く（数値はエラー）。商談番号は ①〜⑳ の丸数字で
+  表示され、それ以降は `(21)` の形式になる。`amount` / `period` はどちらかが
+  空でもよい（区切り文字だけが残ることはない）。
+- `meta.dealExtraPages`（任意）: 商談 ID → その商談の章に追加するページ ID の列
+  （`objective-ledger` など）。どの商談に付録を足すかは顧客ごとの判断なので
+  aps.json が持つ。
+- `meta.reviewDealPages`（任意）: 役員レビュー Appendix の商談枠（`REVIEW_APPENDIX`
+  の `"@deal-pages"`）に展開するページ ID の列（`deal-<商談番号>` や商談付録
+  ページ）。どの商談を役員レビューに載せるかも aps.json が持つ。
+- `meta.skipPages`（任意）: 顧客に合わないページをデッキから外す。リストなら
+  **両方**のデッキから、`{"plan": […], "review": […]}` なら指定したデッキから
+  だけ外す。知らないページ ID・デッキ名は組み立て時にエラー。`deal-<商談番号>`
+  で商談章にも効き、章の中身が全部 skip されると中扉ごと消える。両方のデッキで
+  skip したページは `pages` からデータを消してよい。
 
 ```bash
 # 1. aps.json から 2 本の仕様を組む
@@ -448,26 +469,38 @@ done
 
 ## 9. ページ一覧（マスター表）
 
-Plan Document の 35 ページ。「レビュー」列の ○ が APS レビュー用 9 ページ、
-それ以外は Appendix に回る。「#」は顧客イニシアチブ番号（§9.1）。
+Plan Document の本文 43 ページ（`PLAN_A` 28 / `PLAN_B` 4 / `PLAN_C` 7 /
+`PLAN_E` 4）の一覧。デッキ全体では、これに表紙・章の中扉 4 枚と商談ごとの章
+（§9.3。商談ごとに中扉 + 全体像 1 枚、必要なら `meta.dealExtraPages` のページ）
+が加わるので、**枚数は `deals` の件数と `meta.skipPages` で変わる**。
+
+APS レビュー用は 表紙 + 本編 9 ページ（「レビュー」列の ○ = `REVIEW_MAIN`）+
+Appendix（中扉 + 「Appendix」のページ 22 枚 + `meta.reviewDealPages` の商談
+ページ。3c は本編と Appendix の両方に載る）。
 
 **表は「登録簿」と「判定基準」だけに残し、それ以外は図で表す**（§9.4）。
-商談ごとの章（§9.2.1）は下表に含まない。
+商談ごとの章の本体（中扉と全体像）は下表に含まない。19・20 は商談章の付録
+として `meta.dealExtraPages` で足すページ（`LAYOUT` の `blueprint-ledger` /
+`blueprint-aidd`、`objective-ledger` / `objective-aidd`）で、役員レビューには
+`meta.reviewDealPages` に挙げた場合だけ載る。
 
 | # | ページ | 形 | Phase | レビュー | 元資料 |
 |---|---|---|---|---|---|
 | 1 | グループ体制と当社の接点 | orgchart | A | Appendix | S80 |
 | 2a | 事業会社の組織と当社の接点（法人ごとに 1 枚） | orgchart | A | Appendix | S84 |
 | 2b | システム子会社の組織と当社の接点 | orgchart | A | Appendix | S84 |
+| 2c | システム子会社 ↔ 各社の担当マッピング | comparison | A | Appendix | S84 |
+| 2d | グループ会社別の商談ポートフォリオ | mece_tree | A | ○ | S45 |
+| 2e | グループ会社別の関与者 | comparison | A | Appendix | S27 |
 | 3 | Financial Trends | metric + hbars | A | Appendix | S81 |
 | 3b | 中期経営計画の構造 | mece_tree | A | Appendix | S15 |
-| 3c | 中計と提案の紐付け | mece_tree | A | ○ | S43 / S46 |
+| 3c | 中計と提案の紐付け | mece_tree | A | ○ + Appendix | S43 / S46 |
 | 4 | SWOT Analysis | matrix | A | Appendix | S13 |
 | 5 | Strategy Map (Step 1) | outcome_tree | A | — | S15 |
-| 6 | Strategy Map (Step 2) | outcome_tree | A/B | ○ | S38 / S41 |
+| 6 | Strategy Map (Step 2) | outcome_tree | A/B | — | S38 / S41 |
 | 6b | 法人別の役員層と接触状況 | comparison | A | Appendix | S27 |
 | 6c | 会うべき人と手がかり | 表 | A | Appendix | S27 |
-| 7 | Customer Business Initiatives | cards | A | ○ | S44 |
+| 7 | Customer Business Initiatives | cards | A | Appendix | S44 |
 | 8 | Customer Programs / Projects | gantt | A | Appendix | S45 |
 | 9 | Historical Spend | hbars | A | — | S18 |
 | 10 | Scalar Footprint | layers + cards | A | Appendix | S84 |
@@ -481,8 +514,8 @@ Plan Document の 35 ページ。「レビュー」列の ○ が APS レビュ�
 | 16 | Vision / Strategy for Growth | comparison | A | — | S33 |
 | 17 | Initiative Alignment | mece_tree | B | — | S43 / S46 |
 | 18 | Blueprint Map | **表** | B | ○ | S49 |
-| 19 | Blueprint Summary（テーマごと） | cards ×2 段 | B | — | S51 |
-| 20 | Objective（テーマごと） | cards + journey | B | Appendix | S60 / S99 |
+| 19 | Blueprint Summary（テーマごと） | cards ×2 段 | B | reviewDealPages 次第 | S51 |
+| 20 | Objective（テーマごと） | cards + journey | B | reviewDealPages 次第 | S60 / S99 |
 | 21 | Prioritization（スコア） | **表** | C | — | S55 |
 | 22 | Prioritization（2 軸） | posmap | C | ○ | S56 |
 | 23 | 3 Year Execution Plan | gantt | C | ○ | S57 |
@@ -506,8 +539,8 @@ Prioritization・Action Plan で**同じ番号を参照**する。番号がな�
 **番号はグループ会社順に振る。** 同じ会社の商談が隣り合うので、会社単位の
 話をするときにページをまたいで拾い直さなくて済む。
 
-番号・会社・担当組織・金額は `build_account_planning.py` の `DEALS` で
-一元管理し、全ページと商談ごとの章がそこから引く。
+番号・会社・担当組織・金額は aps.json の `deals` 配列で一元管理し、全ページと
+商談ごとの章がそこから引く（スクリプトは文字列を持たない。§8）。
 
 ### 9.1.1 中期経営計画への紐付け
 
@@ -532,13 +565,13 @@ Prioritization・Action Plan で**同じ番号を参照**する。番号がな�
 | グループ会社別の関与者 | `comparison` | 会社ごとに誰を押さえ、誰が名刺どまりか |
 | システム子会社 ↔ 各社の担当マッピング | `comparison` | 横断組織と会社別実装部隊の区別 |
 
-**システム子会社は全社に関係するので、必ず別立てで扱う。** 金融グループの
-金融グループの IT 子会社は、会社ごとに担当本部が分かれる一方、技術統括や
-AI 推進のような横断組織を持つ。横断組織を押さえていても会社別の実装部隊に
+**システム子会社は全社に関係するので、必ず別立てで扱う。** 事業会社を複数
+持つグループの IT 子会社は、会社ごとに担当本部が分かれる一方、技術統括や
+AI 推進のような横断組織を持つことが多い。横断組織を押さえていても会社別の実装部隊に
 入れていなければ案件は動かない。**この区別が見えるように、公式組織図を
 会社別に読み替えたページを置く。**
 
-### 9.2.2 会うべき人を探す
+### 9.2.1 会うべき人を探す
 
 アカウントプランは会った人の記録ではなく、**次に誰に会うべきかを出す仕組み**
 でもある。台帳だけを見ていると既に会えている人の周りしか出てこない。
@@ -562,7 +595,7 @@ AI 推進のような横断組織を持つ。横断組織を押さえていて�
 7. **個人的な関係（元上司・友人・派閥）は公開情報ではない。** 出典行で分け、
    その記述が入った資料は社外に出さない
 
-### 9.2.1 商談ごとの章立て
+### 9.3 商談ごとの章立て
 
 商談の詳細は、全体の分析に混ぜず**商談ごとに章を切る**。各章は:
 

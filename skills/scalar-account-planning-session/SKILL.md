@@ -246,8 +246,31 @@ done
 
 **材料が足りないページは自動で落ちない。** 活動計画デッキは材料の無いページを
 黙って外すが、APS は `aps.json` に無いページ ID を並びが参照していると
-組み立て時にエラーで止まる。ページを減らすときは `aps.json` と
-`build_account_planning.py` の並び（`PLAN_A` / `REVIEW_*`）の両方を直す。
+組み立て時にエラーで止まる。
+
+**ページを減らすときは `aps.json` の `meta.skipPages` が第一の手段。**
+スクリプトの並び（`PLAN_A` / `REVIEW_*`）を直すのは、全顧客共通で
+ページ構成を変えるときだけ。
+
+- ページ ID のリストなら**両方のデッキ**から、`{"plan": [...], "review": [...]}`
+  なら**指定したデッキだけ**から外す
+- 商談章にも効く（`deal-<商談番号>`）。章の中身が全部 skip されると
+  **中扉ごと落ちる**
+- 存在しないページ ID や不正なデッキ名は `ValueError` で止まる
+  （タイポを黙って無視しない）
+- 両方のデッキで skip したページは `pages` からデータを消してもよい
+  （残しておけば、外した判断は戻せる）
+
+**顧客ごとの構成判断も `aps.json` の `meta` が持つ**（スクリプトにハードコード
+しない）:
+
+| キー | 何を決めるか | 例 |
+|---|---|---|
+| `meta.dealExtraPages` | 商談章の中扉の後ろに足す付録ページ（商談 ID → ページ ID 列） | `{"1": ["objective-ledger"]}` |
+| `meta.reviewDealPages` | 役員レビュー Appendix に載せる商談ページの ID 列 | `["deal-1", "deal-3", "objective-ledger"]` |
+
+ページ ID は役割の総称（`bank-orgchart` / `securities-orgchart` /
+`itsub-orgchart` / `itsub-mapping` など）で、顧客名は入らない。
 
 `--into` の禁則（テンプレート原本を差し替え先にしない等）は
 [`scalar-account-plan`](../scalar-account-plan/SKILL.md) §5 と同じ。

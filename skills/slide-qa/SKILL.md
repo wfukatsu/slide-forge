@@ -98,10 +98,20 @@ identify defects → fix the spec / deck module (originating skill)
   → offline check (free) → regenerate → re-fetch only the affected pages → confirm
 ```
 
-- Regeneration creates a new presentation and URL. **Delete the superseded
-  version from Drive first** — the user holds exactly one URL, the latest.
+- For decks generated as **new presentations**, regeneration creates a new
+  presentation and URL. **Delete the superseded version from Drive first** —
+  the user holds exactly one URL, the latest.
+- **Exception — in-place (`--into`) decks.** Decks whose contract is a stable
+  URL — the `scalar-account-plan` activity plan, the two
+  `scalar-account-planning-session` decks, and Spreadsheets updated via the
+  `spreadsheets` skill — are fixed by regenerating **into the same deck**
+  (`build_deck.py --into` / the builder's in-place update), after
+  `scripts/snapshot_version.py` records the pre-edit revision.
+  **Never delete a deck whose URL has been shared** — the URL *is* the
+  deliverable, and deleting it breaks every link the user has handed out.
 - Never patch the artifact; fix the source and rebuild (faster, reproducible).
-- Delete intermediate decks created during verification from Drive as well.
+- Delete intermediate decks created during verification from Drive as well
+  (this too applies only to new-presentation decks, never to `--into` targets).
 
 ## Phase 4: Clean up and report
 

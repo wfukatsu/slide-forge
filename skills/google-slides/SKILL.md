@@ -21,7 +21,7 @@ description: >-
   - User has a template/master URL, or wants text flowed into an existing corporate layout → `google-slides-template` skill
   - Scalar company/product/use-case decks → `scalar-product-slides` skill
   - Dense cloud architecture / data-flow / network diagrams (nested containers, 10+ nodes) → author them with the `drawio-diagrams` skill (draw.io → PNG → insert); simple concept figures stay on `diagrams.py`
-  - Authoring PPTX files from scratch → `document-skills:pptx` (exporting a deck generated here to `.pptx` → `pptx-export` skill); Slidev → `slidev` skill
+  - Authoring PPTX files from scratch → `document-skills:pptx` (exporting a deck generated here to `.pptx` → `pptx-export` skill)
   - A bare "make slides" request uses this skill only when a Google Drive / Google Slides context is explicit
 - **Working directory**: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running from an installed plugin, `/path/to/slide-forge` on a local clone. All commands below run from there (literal paths assume the local clone).
 - **Auth** is centralized in `scripts/_auth.py`. It finds `credentials.json` / `token.json` in: `$GSLIDES_CONFIG_DIR` → `config/` at the repo root (canonical) → the old skill layout (transitional fallback). Never write per-script inline auth.
@@ -65,13 +65,23 @@ description: >-
    .venv/bin/python -c "import googleapiclient; print('ok')"
    ```
 
-   If broken or missing, recreate the shared venv and relink:
+   If broken or missing, rebuild the shared venv and re-link. If
+   `~/.claude/venvs/gslides-requirements.txt` does not exist, seed it from the
+   repo's `requirements.txt` first (the repo file is a record, not the actual
+   install source — to add a dependency, edit
+   `~/.claude/venvs/gslides-requirements.txt`):
 
    ```bash
+   [ -f ~/.claude/venvs/gslides-requirements.txt ] || \
+     cp /path/to/slide-forge/requirements.txt ~/.claude/venvs/gslides-requirements.txt
    python3 -m venv ~/.claude/venvs/gslides
-   ~/.claude/venvs/gslides/bin/pip install -U -r requirements.txt
-   ln -sfn ~/.claude/venvs/gslides /path/to/slide-forge/.venv
+   ~/.claude/venvs/gslides/bin/pip install -U -r ~/.claude/venvs/gslides-requirements.txt
+   rm -rf /path/to/slide-forge/.venv
+   ln -s ~/.claude/venvs/gslides /path/to/slide-forge/.venv
    ```
+
+   Create the symlink with an **absolute path** — where the directory itself is
+   a symlink, relative links fail to resolve.
 
 2. **Credentials** — confirm `config/credentials.json` exists (OAuth 2.0 Desktop client; Slides API and Drive API enabled in the GCP project). `config/token.json` is created on first run via a browser auth flow. If `credentials.json` is missing, stop and ask the user to place it — do not generate or run anything until it is confirmed.
 

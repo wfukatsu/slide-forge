@@ -32,6 +32,7 @@ description: >-
 | 訪問 1 回分の資料一式 | このスキル |
 | 社内の承認・リソース獲得（WPS / Deal Desk / 稟議） | このスキル |
 | 顧客ごとの活動計画（常設・追記型） | `scalar-account-plan` |
+| 年次の Account Planning Session（組織図・商談棚卸しのデッキ） | `scalar-account-planning-session` |
 | 正式提案書・見積 | `scalar-proposal-slides` + `spreadsheets` |
 | 関与者マップ・ディスカバリーマップ | `b2b-account-maps` |
 | Scalar の会社・製品紹介（顧客固有でない） | `scalar-product-slides` |
