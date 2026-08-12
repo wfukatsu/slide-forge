@@ -155,17 +155,15 @@ All commands run from the slide-forge root: the clone directory for Codex or a
 local Claude setup, and `${CLAUDE_PLUGIN_ROOT}` for a Claude plugin install.
 
 **Some things are generated on your machine rather than committed** — the
-vendor cloud icons, the slide masters, and the pattern catalog images. They are
-large (a master is 6–8MB), machine-specific, or not ours to redistribute, so
-the repository ships the means to produce them instead of the files. A clone is
-not fully usable until you have run the steps below that you need.
+vendor cloud icons and the slide masters. They are large (a master is 6–8MB),
+machine-specific, or not ours to redistribute, so the repository ships the
+means to produce them instead of the files. A clone is not fully usable until
+you have run the steps below that you need.
 
 | Generated here | Why not committed | Step |
 |---|---|---|
 | `assets/cloud-icons/` | AWS / Google Cloud / Azure do not permit redistribution | [4](#4-cloud-vendor-icons-only-for-cloud-architecture-figures) |
 | `templates/masters/*.pptx` | 6–8MB each; the master has to live in *your* Drive to be copied | [5](#5-slide-masters-for-the-copy-mode-templates) |
-| `references/images/slide-patterns/*.png` | ~2MB, and reproducible from the spec at any time | [6](#6-slide-pattern-catalog-images) |
-| `references/images/slide-templates/*.png` | ~2.4MB, and reproducible from `slide-templates/` at any time | [6](#6-slide-pattern-catalog-images) |
 
 ### 1. Python environment
 
@@ -279,9 +277,10 @@ templates offer. See [`templates/masters/README.md`](templates/masters/README.md
 ### 6. Slide pattern catalog images
 
 [`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.md)
-shows all 43 page patterns as rendered images. The text is committed; the
-images (~2MB) are not, because they are reproducible from
-`examples/slide-pattern-index.json` at any time. Generate them once:
+shows all 43 page patterns as rendered images. Both the text and the images
+(~2MB, under `references/images/slide-patterns/`) are committed, so a bare
+clone reads with pictures. When a pattern is added or its rendering changes,
+regenerate the catalog and commit the images with it:
 
 ```bash
 .venv/bin/python scripts/build_deck.py \
@@ -290,18 +289,16 @@ images (~2MB) are not, because they are reproducible from
 .venv/bin/python scripts/build_pattern_catalog.py --thumbs out/patterns
 ```
 
-This needs a working `scalar-2026` master (step 5) and, for the three
-cloud-architecture patterns, the vendor icons (step 4). Until you run it the
-catalog's images show as broken links; the pattern names, what each is for, and
-the `figures` type names are all readable without them.
+Regeneration needs a working `scalar-2026` master (step 5) and, for the three
+cloud-architecture patterns, the vendor icons (step 4).
 
 The slide-template catalog
 ([`references/slide-template-catalog.md`](references/slide-template-catalog.md),
-images under `references/images/slide-templates/`) works the same way: build
-each pack's catalog spec with `scripts/build_slide_template_catalog.py`,
-generate the deck, fetch thumbnails, and run
-`scripts/build_template_catalog_doc.py` — the regeneration commands are at the
-top of that document.
+images under `references/images/slide-templates/`, also committed) works the
+same way: build each pack's catalog spec with
+`scripts/build_slide_template_catalog.py`, generate the deck, fetch
+thumbnails, and run `scripts/build_template_catalog_doc.py` — the regeneration
+commands are at the top of that document.
 
 ### 7. Optional: AI image generation
 
