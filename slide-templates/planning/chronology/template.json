@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "chronology",
+  "displayName": "年表",
+  "pack": "planning",
+  "category": "history",
+  "description": "時期と出来事を縦に並べた年表で、現在に至る経緯を示す",
+  "answers": ["これまで何が起き、どういう経緯で現在の状態に至ったか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "events": {"type": "string[][]", "required": true, "minItems": 4, "maxItems": 9, "maxLength": 44},
+    "insight": {"type": "string", "required": true, "maxLength": 120},
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "出来事の列には事実だけを書く。解釈・評価は「示唆」に分離する",
+    "時期の粒度を揃える（年なら年、年月なら年月で統一する）",
+    "行は 9 件まで。それ以前の経緯は束ねるか、載せる期間を絞る",
+    "空白期間に意味があるなら、行を省略せず「変化なし」と書いて見せる"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "table", "x": 0.5, "y": 1.1, "w": 6.1,
+       "headers": ["時期", "出来事"],
+       "rows": {"$slot": "events"},
+       "colWidths": [1.1, 5.0], "aligns": ["CENTER", "START"], "size": 9.5, "rowH": 0.36},
+      {"type": "so_what", "x": 6.8, "y": 1.35, "w": 2.7, "h": 2.9, "text": {"$slot": "insight"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

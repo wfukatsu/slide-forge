@@ -845,8 +845,11 @@ class IllustrationMixin:
         for i, it in enumerate(items):
             when, head = it if isinstance(it, (tuple, list)) else ("", it)
             cx = x + i * cell + cell / 2
+            # TOP だと文字が枠の下端（●のすぐ上）に寄って詰まって見える。
+            # 縦中央にすると●との間隔がちょうどよい
             self.label(cx - cell / 2, y, cell, 0.24, when, size=size,
-                       align="CENTER", valign="TOP", color=self.P.muted, bold=True)
+                       align="CENTER", valign="MIDDLE", color=self.P.muted,
+                       bold=True)
             self.shape(cx - 0.08, line_y - 0.08, 0.16, 0.16, kind="ELLIPSE",
                        fill=self.P.primary, stroke=None)
             self.label(cx - cell / 2 + 0.06, line_y + 0.16, cell - 0.12,

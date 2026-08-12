@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "gantt-schedule",
+  "displayName": "ガントチャート（線表）",
+  "pack": "planning",
+  "category": "schedule",
+  "description": "期間 × 作業の線表で、並行して走る作業と節目（マイルストーン）を示す",
+  "answers": ["いつ・何が並行して走り、次の節目はいつか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "columns": {"type": "string[]", "required": true, "minItems": 3, "maxItems": 8, "maxLength": 8},
+    "tasks": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 8,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "maxLength": 16},
+          {"type": "number", "minimum": 0, "maximum": 8},
+          {"type": "number", "minimum": 0, "maximum": 8},
+          {"type": "string", "maxLength": 20}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "開始・終了は列単位の小数（0 が最初の列の左端、列数が右端）。列数を超える値は生成時にエラーになる",
+    "開始 == 終了 の行はマイルストーン（◆）として描かれる。バーにしたい行は幅を持たせる",
+    "依存関係の矢印は表現しない。前後関係を細かく見せたい計画は table で書く",
+    "行は 8 件まで。細かいタスクは束ねて、1 行 1 ワークストリームにする",
+    "計画値と実績を混ぜない。予定の線表は source に計画時点を明記する"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "gantt", "x": 0.5, "y": 1.15, "w": 9.0, "h": 3.4,
+       "columns": {"$slot": "columns"}, "rows": {"$slot": "tasks"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

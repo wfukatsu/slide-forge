@@ -141,6 +141,8 @@ Seeing every page is the ideal; with many slides, prioritize:
 | Arrow endpoints | Meant A→B but actually attached A→C | The audits only prove *a* connection exists. Verify the meaning by eye |
 | Panel widths | Rightmost panel too narrow, text overflows | Redistribute widths. Move content to a full-width card below |
 | Labels | Overlapping arrows or rules, unreadable | Push outward (`align` START/END) |
+| Labels next to markers (●, ◆, bars) | Text sits flush against the marker — cramped vertical spacing the coordinate audits cannot see | Center the text vertically in its box (`valign: MIDDLE`); check the gap at LARGE size |
+| Table column alignment | Short uniform values (年, 年月, ID) left-aligned look ragged; sentences centered look scattered | `aligns`: CENTER for short uniform values, END for numbers, START for sentences — the primitive default (first col START, rest CENTER) is not always right |
 | Colors | Pale text on pale background, weak contrast | Use `readable_on()`. Body text needs ≥ 4.5:1 |
 | Footer | Your drawing overlaps the master's logo/copyright | Keep above `DY1` |
 | Whitespace | Figure hugs the top, large empty band below | Increase block heights to use the vertical space |
