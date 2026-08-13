@@ -31,7 +31,8 @@ I18N = ROOT / "references/i18n/slide-template-catalog.en.json"
 IMG_DIR = ROOT / "references/images/slide-templates"
 IMG_REL = "images/slide-templates"
 
-PACK_ORDER = ["marketing-analysis", "b2b-sales", "scalar-ae", "planning", "analysis"]
+PACK_ORDER = ["marketing-analysis", "b2b-sales", "scalar-ae", "planning", "analysis",
+              "read-alone"]
 
 PACK_INTRO_JA = {
     "marketing-analysis": (
@@ -63,6 +64,13 @@ PACK_INTRO_JA = {
         "定量絞り込み（パレート図）、ギャップ・業務フロー、外部環境（PEST / 5 フォース）、"
         "優先順位づけまでを揃えている。current-state-analysis スキルが使う。",
     ),
+    "read-alone": (
+        "読み物パック",
+        "1 枚で読み切れる高密度スライド（外資コンサル型の配布資料）のページ群。"
+        "ガバニングメッセージ・リード文・エビデンス・示唆・出典を 1 枚に収める。"
+        "全テンプレートが `$density` バリアントを持ち、同じファイルから "
+        "print（配布・印刷）と presentation（登壇）の 2 密度で描画できる。",
+    ),
 }
 
 INFERENCE_LABEL = {
@@ -84,11 +92,11 @@ REGEN_FENCE = {
     "ja": [
         "```bash",
         "# このカタログを作り直す（テンプレートを追加したときも同じ手順）",
-        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis; do",
+        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis read-alone; do",
         "  .venv/bin/python scripts/build_slide_template_catalog.py \\",
         "      --pack $pack --out out/template-catalog/$pack.json",
         "done",
-        "# 5 つの spec の slides を 1 つに結合して build_deck.py で生成し、",
+        "# 6 つの spec の slides を 1 つに結合して build_deck.py で生成し、",
         "# fetch_thumbnails.py の PNG を references/images/slide-templates/<id>.png に配置",
         ".venv/bin/python scripts/build_template_catalog_doc.py",
         "```",
@@ -96,11 +104,11 @@ REGEN_FENCE = {
     "en": [
         "```bash",
         "# Rebuild this catalog (same steps when adding a template)",
-        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis; do",
+        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis read-alone; do",
         "  .venv/bin/python scripts/build_slide_template_catalog.py \\",
         "      --pack $pack --out out/template-catalog/$pack.json",
         "done",
-        "# Merge the 5 specs' slides into one deck, generate with build_deck.py,",
+        "# Merge the 6 specs' slides into one deck, generate with build_deck.py,",
         "# then place the fetch_thumbnails.py PNGs at references/images/slide-templates/<id>.png",
         ".venv/bin/python scripts/build_template_catalog_doc.py",
         "```",
@@ -188,6 +196,12 @@ def render_template(t: dict, lang: str, i18n: dict) -> list[str]:
     level = INFERENCE_LABEL[lang].get(t.get("inferenceLevel", ""), t.get("inferenceLevel", ""))
     if level:
         meta.append(f"{inference_label}: {level}")
+    if '"$density"' in json.dumps(t):
+        default = t.get("defaultDensity", "print")
+        if lang == "ja":
+            meta.append(f"**densities**: print / presentation（既定 {default}）")
+        else:
+            meta.append(f"**densities**: print / presentation (default {default})")
     if t.get("_status"):
         meta.append(f"**status**: {t['_status']}")
     lines += ["  \n".join(meta), ""]

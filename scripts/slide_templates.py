@@ -16,6 +16,9 @@ class SlideTemplateError(ValueError):
     pass
 
 
+DENSITIES = ("print", "presentation")
+
+
 def _read_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -71,11 +74,81 @@ def load_template(template_id: str) -> tuple[dict, Path]:
     return _read_json(path), path
 
 
-def load_example(template_id: str) -> tuple[dict, Path]:
+def load_example(template_id: str, density: str | None = None) -> tuple[dict, Path]:
     template, path = load_template(template_id)
-    example_name = template.get("example", "example.json")
+    example_name = None
+    examples = template.get("examples")
+    if density is not None and isinstance(examples, dict):
+        example_name = examples.get(density)
+    if example_name is None:
+        example_name = template.get("example", "example.json")
     example_path = path.parent / example_name
     return _read_json(example_path), example_path
+
+
+def _is_density_scalar(value: Any) -> bool:
+    return isinstance(value, (str, int, float, bool))
+
+
+def _check_density_branch(name: str, value: Any) -> None:
+    # A branch may only hold scalars or flat arrays of scalars: both densities
+    # must share the identical figure skeleton and slot mapping, so the resolved
+    # template stays an ordinary schemaVersion-1 template.
+    if _is_density_scalar(value):
+        return
+    if isinstance(value, list) and all(_is_density_scalar(item) for item in value):
+        return
+    raise SlideTemplateError(
+        f"$density.{name} must be a scalar or an array of scalars")
+
+
+def _walk_density(node: Any, density: str | None, found: list[bool]) -> Any:
+    if isinstance(node, dict):
+        if "$density" in node:
+            found[0] = True
+            if len(node) != 1:
+                siblings = ", ".join(sorted(set(node) - {"$density"}))
+                raise SlideTemplateError(
+                    f"$density object must have no sibling keys, found: {siblings}")
+            branches = node["$density"]
+            if not isinstance(branches, dict) or set(branches) != set(DENSITIES):
+                raise SlideTemplateError(
+                    f"$density must carry exactly the keys: {', '.join(DENSITIES)}")
+            for name, value in branches.items():
+                _check_density_branch(name, value)
+            return branches[density] if density is not None else node
+        return {key: _walk_density(value, density, found) for key, value in node.items()}
+    if isinstance(node, list):
+        return [_walk_density(value, density, found) for value in node]
+    return node
+
+
+def declared_densities(template: dict) -> tuple[str, ...]:
+    """The densities a template can resolve to: DENSITIES if it uses any
+    `$density` token, else empty. Raises on malformed tokens."""
+    found = [False]
+    _walk_density(template, None, found)
+    return DENSITIES if found[0] else ()
+
+
+def resolve_density(template: dict, density: str) -> dict:
+    """Replace every `$density` token with its branch for the given density."""
+    if density not in DENSITIES:
+        raise SlideTemplateError(
+            f"unknown density: {density!r} (expected one of {', '.join(DENSITIES)})")
+    found = [False]
+    return _walk_density(template, density, found)
+
+
+def _apply_density(template: dict, density: str | None) -> dict:
+    if not declared_densities(template):
+        return template                    # density is a no-op without tokens
+    if density is None:
+        density = template.get("defaultDensity")
+        if density not in DENSITIES:
+            raise SlideTemplateError(
+                "template uses $density but declares no valid defaultDensity")
+    return resolve_density(template, density)
 
 
 def _is_number(value: Any) -> bool:
@@ -349,7 +422,10 @@ def _render_node(node: Any, values: dict) -> Any:
     return node
 
 
-def render_template(template: dict, data: dict) -> dict:
+def render_template(template: dict, data: dict, *, density: str | None = None) -> dict:
+    # Resolve density before anything reads a constraint value: pre-resolution
+    # a densitized maxItems is a dict and would crash the comparisons.
+    template = _apply_density(template, density)
     problems = validate_input(template, data)
     if problems:
         raise SlideTemplateError("; ".join(problems))
@@ -389,6 +465,27 @@ def validate_template_record(template: dict, entry: dict, path: Path) -> list[st
     if level is not None and level not in INFERENCE_LEVELS:
         problems.append(f"{path}: inferenceLevel must be one of "
                         f"{', '.join(sorted(INFERENCE_LEVELS))}")
+    try:
+        densities = declared_densities(template)
+    except SlideTemplateError as exc:
+        problems.append(f"{path}: {exc}")
+        densities = ()
+    default_density = template.get("defaultDensity")
+    if densities and default_density not in DENSITIES:
+        problems.append(f"{path}: templates with $density must declare "
+                        f"defaultDensity as one of {', '.join(DENSITIES)}")
+    if not densities and default_density is not None:
+        problems.append(f"{path}: defaultDensity is declared but the template "
+                        f"has no $density tokens")
+    examples = template.get("examples")
+    if examples is not None:
+        if not densities:
+            problems.append(f"{path}: examples requires $density tokens")
+        elif (not isinstance(examples, dict)
+                or not set(examples) <= set(DENSITIES)
+                or not all(isinstance(v, str) and v for v in examples.values())):
+            problems.append(f"{path}: examples must map densities "
+                            f"({', '.join(DENSITIES)}) to file names")
     slots = template.get("slots")
     slide = template.get("slide")
     if not isinstance(slots, dict):

@@ -46,6 +46,13 @@ cost breakdown as a spreadsheet). Don't ask about items the user has already
 specified or has left to your discretion ("おまかせ") — instead, state the
 adopted assumptions in one line.
 
+The 用途 (Purpose) answer also fixes the **template density**: 提案書 / 社内共有
+→ `print`, 登壇 → `presentation`. Pass it as `--density` to every
+`render_slide_template.py` call for templates that declare `$density` variants
+(e.g. the `read-alone` pack); when the master has no Proposal/Presentation
+category, ask the reduced two-option form (投影用 / 印刷・配布用) instead of
+skipping the question.
+
 ## Step 3: Outline approval gate (do not skip)
 
 Present the slide count, layout, and each slide's action title in the body

@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "one-page-brief",
+  "displayName": "ワンページブリーフ",
+  "pack": "read-alone",
+  "category": "summary",
+  "description": "図表・比較表・示唆・決定事項・出典を 1 枚に収める、パック中最も高密度な 1 枚もの決裁資料",
+  "answers": ["この 1 枚だけで決裁者が判断と決定事項を確認できるか"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "exhibitNumber": {"type": "integer", "default": 1, "minimum": 1, "maximum": 99},
+    "exhibitTitle": {"type": "string", "required": true, "maxLength": 30},
+    "bars": {"type": "array", "required": true, "minItems": 2,
+             "maxItems": {"$density": {"print": 6, "presentation": 4}},
+             "items": {"type": "tuple", "fields": [
+               {"type": "string", "maxLength": {"$density": {"print": 5, "presentation": 6}}},
+               {"type": "number", "minimum": 0}]}},
+    "unit": {"type": "string", "default": "", "maxLength": 8},
+    "headers": {"type": "string[]", "required": true, "minItems": 2, "maxItems": 3,
+                "maxLength": 8},
+    "rows": {"type": "string[][]", "required": true, "minItems": 3,
+             "maxItems": {"$density": {"print": 5, "presentation": 3}},
+             "maxLength": {"$density": {"print": 16, "presentation": 12}}},
+    "implication": {"type": "string", "required": true,
+                    "maxLength": {"$density": {"print": 55, "presentation": 28}}},
+    "decisions": {"type": "string[][]", "required": true, "minItems": 1, "maxItems": 2,
+                  "maxLength": {"$density": {"print": 22, "presentation": 16}}},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "この 1 枚は決裁の最終確認用。図表と表は本編の要約であり、初出の数字を置かない",
+    "決定事項は Yes/No を言える形で書き、期限を添える。「検討を継続」を決定事項にしない",
+    "詰め込むのは情報であって文字ではない。表のセルは体言止めで短く保つ"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "exhibit_frame", "x": 0.5, "y": 1.48, "w": 4.4, "h": 2.2,
+       "number": {"$slot": "exhibitNumber"}, "title": {"$slot": "exhibitTitle"}},
+      {"type": "vbars", "x": 0.78, "y": 1.97, "w": 3.84, "h": 1.5,
+       "items": {"$slot": "bars"}, "unit": {"$slot": "unit"}},
+      {"type": "table", "x": 5.1, "y": 1.48, "w": 4.4,
+       "headers": {"$slot": "headers"}, "rows": {"$slot": "rows"},
+       "size": {"$density": {"print": 9, "presentation": 10.5}},
+       "rowH": {"$density": {"print": 0.34, "presentation": 0.5}}},
+      {"type": "so_what", "x": 0.5, "y": 3.76, "w": 4.4, "h": 1.06,
+       "label": "So What", "text": {"$slot": "implication"},
+       "size": {"$density": {"print": 9, "presentation": 10}}},
+      {"type": "table", "x": 5.1, "y": 3.76, "w": 4.4,
+       "headers": ["決めていただくこと", "期限"],
+       "rows": {"$slot": "decisions"}, "colWidths": [2.5, 1],
+       "aligns": ["START", "CENTER"], "headerH": 0.3,
+       "size": {"$density": {"print": 8.5, "presentation": 9.5}},
+       "rowH": 0.34},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

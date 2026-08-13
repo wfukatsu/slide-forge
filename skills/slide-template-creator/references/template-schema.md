@@ -6,6 +6,7 @@
 - Template record
 - Slot types
 - Slot references
+- Density variants
 - Example data
 
 ## Registry
@@ -44,7 +45,8 @@ Required keys:
 | `slide` | one ordinary slide-forge slide object |
 
 Recommended keys: `answers`, `inferenceLevel`, `compatibleLayouts`, `guardrails`,
-and `example`.
+and `example`. Templates using `$density` tokens additionally declare
+`defaultDensity` and may declare `examples` (see Density variants).
 
 `inferenceLevel` is one of `strategic`, `descriptive`, `diagnostic`,
 `predictive`, or `causal`.
@@ -140,8 +142,50 @@ Every declared slot must appear in `slide`, and every referenced slot must be
 declared. An optional slot used by `slide` needs a `default`, otherwise nothing
 can fill it. Extra input keys and unresolved references are errors.
 
+## Density variants
+
+A template can carry two densities in one file — `print` (dense, read-alone
+handout) and `presentation` (sparse, projected) — with the inline token:
+
+```json
+{"$density": {"print": 9, "presentation": 11}}
+```
+
+The token is legal anywhere a *value* appears: slot constraint values
+(`maxItems`, `maxLength`, …) and figure parameter values (`size`, `rowH`,
+`h`, …) alike. The renderer resolves every token to the chosen branch before
+any validation runs, so the resolved form is an ordinary template.
+
+Rules:
+
+- A token must carry exactly the keys `print` and `presentation`, and the
+  `$density` object may have no sibling keys (mirroring `$slot` strictness).
+- A branch value may only be a scalar or a flat array of scalars — never a
+  `$slot` object, a figure object, or anything with a `type` key. Both
+  densities share the identical figure skeleton and slot mapping; only sizes,
+  coordinates, caps, and label text differ.
+- Any template containing at least one token **must** declare a top-level
+  `"defaultDensity": "print" | "presentation"` — the density used when the
+  caller does not choose one, and the form the catalog shows. Declaring
+  `defaultDensity` without tokens is an error.
+- Density selection is a silent no-op on templates without tokens, so a deck
+  build can pass the chosen density to every templated slide uniformly.
+
+CLI: `render_slide_template.py --density print|presentation` picks the
+variant; `validate_slide_templates.py` renders and audits **both** variants of
+every template that declares them.
+
 ## Example data
 
 Keep `example.json` beside `template.json`. It must fill every required slot and
 remain within declared limits. For numeric examples, make `source` explicitly
 say that the values are samples and must be replaced.
+
+When one example cannot satisfy both densities' caps, declare a per-density
+map next to `example` (keys must be densities; `example.json` stays the
+default-density canonical form):
+
+```json
+"example": "example.json",
+"examples": {"print": "example.json", "presentation": "example.presentation.json"}
+```

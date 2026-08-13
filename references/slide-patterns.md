@@ -105,6 +105,12 @@ handout. Build two decks if you need both.
 
 The handout-side conventions (density, how to use implications, anti-patterns) are collected in `examples/read-alone-guide.json`.
 
+This table is also encoded as machine-readable `$density` variants in the
+`read-alone` template pack (`slide-templates/read-alone/`): each of its
+templates renders as `print` (the dense read-alone form) or `presentation`
+(the sparse stage form) from the same file — pass `--density` to
+`render_slide_template.py`, or let the intake's 用途 answer choose it.
+
 ## Design Rationale (2026-08 research)
 
 Sources: [Deckary: Consulting Slide Standards](https://deckary.com/blog/consulting-slide-standards),

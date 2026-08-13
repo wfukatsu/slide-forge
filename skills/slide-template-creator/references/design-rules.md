@@ -37,8 +37,15 @@ brand color in a portable template.
 ## Density and text
 
 - Title: conclusion, not a topic label; no more than two lines.
-- Body: 12pt or larger where practical.
+- Body: 12pt or larger where practical. This applies to the presentation
+  density; a `print` density variant (read-alone handout) may go down to
+  9–10pt body / 7.5pt source line.
 - Tables: roughly ten rows maximum; split rather than shrink.
+- When a template declares `$density` variants (see template-schema.md), size
+  the two densities from this baseline: **print** ≈ 9–10pt table text, up to
+  7–8 rows under a lead-in, longer slot caps; **presentation** ≈ 11–12pt,
+   4–5 rows, roughly 60% of the print character caps. Keep the figure skeleton
+  identical — only sizes, row heights, caps, and coordinates may differ.
 - Table column alignment is semantic — set `aligns` explicitly instead of
   trusting the primitive default (first col START, rest CENTER): short uniform
   values (年, 年月, ID) → CENTER, numbers → END, sentences → START.

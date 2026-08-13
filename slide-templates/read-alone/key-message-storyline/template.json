@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "key-message-storyline",
+  "displayName": "ストーリーライン",
+  "pack": "read-alone",
+  "category": "summary",
+  "description": "本編のアクションタイトルを順に並べ、タイトルだけで論旨が通ることを 1 枚で示す横の論理",
+  "answers": ["タイトルだけを読んで話の筋が通っているか"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "messages": {"type": "string[]", "required": true, "minItems": 4,
+                 "maxItems": {"$density": {"print": 8, "presentation": 5}},
+                 "maxLength": {"$density": {"print": 40, "presentation": 26}}},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "各行は本編スライドのアクションタイトルと一致させる。要約で書き換えない",
+    "ここで論旨が途切れるならスライドを作る前に構成を直す",
+    "各行は「何が言えるか」の主張形で書く。「〜について」の目次形にしない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "storyline", "x": 0.5, "y": 1.6, "w": 9.0,
+       "titles": {"$slot": "messages"},
+       "size": {"$density": {"print": 10, "presentation": 11}},
+       "rowH": {"$density": {"print": 0.4, "presentation": 0.52}}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

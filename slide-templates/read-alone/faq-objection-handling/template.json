@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "id": "faq-objection-handling",
+  "displayName": "想定問答",
+  "pack": "read-alone",
+  "category": "qa",
+  "description": "承認会議で想定される反論と根拠つきの回答を対で並べ、質疑を先回りして潰す 1 枚",
+  "answers": ["想定される反論にどう答えるか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "headers": {"type": "string[]", "minItems": 2, "maxItems": 2, "maxLength": 12,
+                "default": ["想定される懸念", "回答（根拠つき）"]},
+    "qa": {"type": "string[][]", "required": true, "minItems": 3,
+           "maxItems": {"$density": {"print": 5, "presentation": 3}},
+           "maxLength": {"$density": {"print": 50, "presentation": 30}}},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "回答には必ず根拠（本編の図表番号・付録・試験結果など）を添える",
+    "答えられない懸念は残す。ごまかした回答は資料全体の信頼を壊す",
+    "懸念は実際に出そうなものに絞る。自作自演の弱い反論を並べない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "table", "x": 0.5, "y": 1.62, "w": 9.0,
+       "headers": {"$slot": "headers"}, "rows": {"$slot": "qa"},
+       "colWidths": [2, 3], "aligns": ["START", "START"],
+       "size": {"$density": {"print": 9, "presentation": 11}},
+       "rowH": {"$density": {"print": 0.55, "presentation": 0.7}}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

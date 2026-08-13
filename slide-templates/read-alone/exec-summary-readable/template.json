@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "exec-summary-readable",
+  "displayName": "エグゼクティブサマリー",
+  "pack": "read-alone",
+  "category": "summary",
+  "description": "状況→課題→答えの 3 段と支える論点で、最初の 1 枚だけで意思決定できる状態にする",
+  "answers": ["この資料は結局何を決めてほしいのか"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "situation": {"type": "string", "required": true,
+                  "maxLength": {"$density": {"print": 80, "presentation": 48}}},
+    "complication": {"type": "string", "required": true,
+                     "maxLength": {"$density": {"print": 80, "presentation": 48}}},
+    "resolution": {"type": "string", "required": true,
+                   "maxLength": {"$density": {"print": 80, "presentation": 48}}},
+    "points": {"type": "string[]", "default": [],
+               "maxItems": {"$density": {"print": 4, "presentation": 3}},
+               "maxLength": {"$density": {"print": 46, "presentation": 28}}},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "この 1 枚だけで意思決定できることが条件。本編は答えの裏付けに回す",
+    "答えの段は結論を数値つきで書く。「検討する」で終わらせない",
+    "支える論点が 5 つを超えるなら本編の章立てから見直す"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "exec_summary", "x": 0.5, "y": 1.1, "w": 9.0,
+       "h": {"$density": {"print": 3.6, "presentation": 3.3}},
+       "size": {"$density": {"print": 10.5, "presentation": 12}},
+       "situation": {"$slot": "situation"}, "complication": {"$slot": "complication"},
+       "resolution": {"$slot": "resolution"}, "points": {"$slot": "points"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

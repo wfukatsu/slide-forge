@@ -5,14 +5,17 @@ import argparse
 import json
 from pathlib import Path
 
-from slide_templates import (SlideTemplateError, load_example, load_template,
-                             render_template, template_entries)
+from slide_templates import (DENSITIES, SlideTemplateError, load_example,
+                             load_template, render_template, template_entries)
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Build a deck spec catalog from slide templates")
     ap.add_argument("--pack", required=True)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--density", choices=DENSITIES,
+                    help="density variant to render (default: each template's "
+                         "defaultDensity; ignored by templates without $density)")
     args = ap.parse_args()
     entries = template_entries(pack=args.pack)
     if not entries:
@@ -20,8 +23,8 @@ def main() -> int:
     slides = []
     for entry in entries:
         template, _ = load_template(entry["id"])
-        example, _ = load_example(entry["id"])
-        slides.append(render_template(template, example))
+        example, _ = load_example(entry["id"], args.density)
+        slides.append(render_template(template, example, density=args.density))
     spec = {"title": f"{args.pack} slide templates", "slides": slides}
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
