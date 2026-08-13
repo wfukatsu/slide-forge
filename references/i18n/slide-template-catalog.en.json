@@ -24,6 +24,11 @@
    "name": "Current-State Analysis Pack",
    "intro": "Pages built from consulting current-state analysis and issue-identification frameworks. Covers structural decomposition (logic tree / KPI tree), root cause (why-why / fishbone diagram), quantitative narrowing (Pareto chart), gap and process flow, external environment (PEST / Five Forces), and prioritization. Used by the current-state-analysis skill.",
    "short": "Pages built from consulting current-state analysis and issue-identification frameworks"
+  },
+  "read-alone": {
+   "name": "Read-Alone Pack",
+   "intro": "Pages of high-density slides that can be read to completion on a single page (consulting-firm-style handouts). Each fits a governing message, lead-in, evidence, implication, and source onto one slide. Every template carries $density variants, so the same file renders at two densities: print (handout) and presentation (stage).",
+   "short": "Pages of high-density slides that can be read to completion on a single page"
   }
  },
  "templates": {
@@ -442,6 +447,94 @@
     "Overlapping bubbles become unreadable. Limit to 8 issues, and merge issues that sit close together",
     "Use highlight only for issues we've decided to act on (too much emphasis emphasizes nothing)",
     "This slide does not explain the substance of each issue (what it solves). Define that in gap-analysis or logic-tree before bringing it here"
+   ],
+   "inference": "Strategic (evaluation and direction-setting)"
+  },
+  "claim-evidence-table": {
+   "displayName": "Claim and Evidence Table",
+   "description": "The standard read-alone form: claim, supporting evidence table, implication, and source, all closed on one page",
+   "answers": "Which facts support this claim?",
+   "guardrails": [
+    "Write the title as \"what can be said\" in two lines or fewer; never as a caption describing the table",
+    "Keep the implication within what the table shows. Never restate the title or introduce new information",
+    "Never show a number without a source. Cut any row you cannot source"
+   ],
+   "inference": "Descriptive (organizing facts)"
+  },
+  "exhibit-analysis": {
+   "displayName": "Exhibit and Implication",
+   "description": "Puts a chart inside a numbered exhibit frame with the reading on the right, making one page referable from the body and appendix",
+   "answers": "What can be read from this exhibit?",
+   "guardrails": [
+    "The exhibit number exists for cross-reference from the body and appendix; sequential numbering is the author's responsibility",
+    "Keep the implication within what the chart shows; never add information that is not in the figure",
+    "Bar chart baselines are fixed at zero. Never exaggerate an axis to inflate a difference"
+   ],
+   "inference": "Diagnostic (identifying factors and structure)"
+  },
+  "exec-summary-readable": {
+   "displayName": "Executive Summary",
+   "description": "Situation, complication, and resolution in three tiers plus supporting points, so the first page alone enables a decision",
+   "answers": "What, in the end, is this document asking the reader to decide?",
+   "guardrails": [
+    "The condition is that this one page alone enables the decision; the body serves as supporting evidence",
+    "Write the resolution tier as a conclusion with numbers; never end on \"to be considered\"",
+    "If the supporting points exceed five, rework the body's chapter structure instead"
+   ],
+   "inference": "Strategic (evaluation and direction-setting)"
+  },
+  "conclusion-rationale-implication": {
+   "displayName": "Conclusion, Rationale, and So What",
+   "description": "Leads with the conclusion, then rationale cards and the next action (So What), read as a one-page pyramid",
+   "answers": "What is the conclusion, why does it hold, and what happens next?",
+   "guardrails": [
+    "Put the conclusion in the title; never make the reader reach the end of the body to find it",
+    "Limit the rationale to 3-4 non-overlapping points; split to another slide beyond five",
+    "So What states the next action; never a restatement of the rationale or the title"
+   ],
+   "inference": "Strategic (evaluation and direction-setting)"
+  },
+  "dense-comparison-table": {
+   "displayName": "Option Comparison Matrix",
+   "description": "Compares options in a dot-rating matrix and shows the recommendation with its reasoning on one page",
+   "answers": "Which option is best, and why recommend it?",
+   "guardrails": [
+    "Limit criteria to those that affect the decision; never pad with filler criteria",
+    "Always state the basis for the scoring (quotes, evaluation sessions) in the source",
+    "Write the recommendation as an overall judgment that concedes weaknesses; never disguise it as a clean sweep"
+   ],
+   "inference": "Diagnostic (identifying factors and structure)"
+  },
+  "key-message-storyline": {
+   "displayName": "Storyline",
+   "description": "Lines up the body's action titles in order — the horizontal logic — showing on one page that the titles alone carry the argument",
+   "answers": "Does the argument hold when reading only the titles?",
+   "guardrails": [
+    "Each row must match the action title of its body slide; never rewrite as a summary",
+    "If the argument breaks here, fix the structure before building the slides",
+    "Write each row as a claim (\"what can be said\"); never as a table-of-contents topic"
+   ],
+   "inference": "Strategic (evaluation and direction-setting)"
+  },
+  "faq-objection-handling": {
+   "displayName": "Anticipated Q&A",
+   "description": "Pairs the objections expected at the approval meeting with sourced answers, preempting the Q&A on one page",
+   "answers": "How will we answer the expected objections?",
+   "guardrails": [
+    "Every answer must carry its basis (exhibit numbers, appendix, test results)",
+    "Leave unanswerable concerns visible; a glossed-over answer destroys the document's credibility",
+    "Limit concerns to ones that will actually come up; never stage weak strawman objections"
+   ],
+   "inference": "Descriptive (organizing facts)"
+  },
+  "one-page-brief": {
+   "displayName": "One-Page Brief",
+   "description": "The densest page in the pack: exhibit chart, comparison table, implication, decision items, and source, all on one approval-ready page",
+   "answers": "Can the approver confirm the judgment and the decision items from this one page alone?",
+   "guardrails": [
+    "This page is the final check for approval. The exhibit and table summarize the body; never introduce a first-appearance number here",
+    "Write decision items so Yes/No can be said, with a deadline. \"Continue considering\" is not a decision item",
+    "Pack in information, not text. Keep table cells short and nominal"
    ],
    "inference": "Strategic (evaluation and direction-setting)"
   }

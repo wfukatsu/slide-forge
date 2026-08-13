@@ -8,8 +8,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-from slide_templates import (ROOT, SlideTemplateError, load_example, load_template,
-                             render_template, template_entries, validate_template_record)
+from slide_templates import (ROOT, SlideTemplateError, declared_densities,
+                             load_example, load_template, render_template,
+                             template_entries, validate_template_record)
 
 
 def main() -> int:
@@ -34,10 +35,18 @@ def main() -> int:
         try:
             template, path = load_template(entry["id"])
             problems.extend(validate_template_record(template, entry, path))
-            example, _ = load_example(entry["id"])
-            slide = render_template(template, example)
-            rendered.append(slide)
-            print(f"ok schema: {entry['id']}")
+            # A template with $density tokens must render cleanly at every
+            # density; the combined dry-run below then audits both variants.
+            try:
+                densities: tuple = declared_densities(template) or (None,)
+            except SlideTemplateError:
+                continue                   # already reported by the record check
+            for density in densities:
+                example, _ = load_example(entry["id"], density)
+                slide = render_template(template, example, density=density)
+                rendered.append(slide)
+            label = "" if densities == (None,) else f" [{'/'.join(densities)}]"
+            print(f"ok schema: {entry['id']}{label}")
         except SlideTemplateError as exc:
             problems.append(str(exc))
     if problems:

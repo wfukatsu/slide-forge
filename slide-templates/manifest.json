@@ -540,6 +540,127 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "claim-evidence-table",
+      "displayName": "主張とエビデンス表",
+      "pack": "read-alone",
+      "category": "evidence",
+      "path": "read-alone/claim-evidence-table/template.json",
+      "tags": [
+        "evidence",
+        "table",
+        "so-what",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "exhibit-analysis",
+      "displayName": "図表と示唆",
+      "pack": "read-alone",
+      "category": "evidence",
+      "path": "read-alone/exhibit-analysis/template.json",
+      "tags": [
+        "exhibit",
+        "vbars",
+        "so-what",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "exec-summary-readable",
+      "displayName": "エグゼクティブサマリー",
+      "pack": "read-alone",
+      "category": "summary",
+      "path": "read-alone/exec-summary-readable/template.json",
+      "tags": [
+        "exec-summary",
+        "scr",
+        "pyramid",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "conclusion-rationale-implication",
+      "displayName": "結論・根拠・So What",
+      "pack": "read-alone",
+      "category": "summary",
+      "path": "read-alone/conclusion-rationale-implication/template.json",
+      "tags": [
+        "conclusion",
+        "rationale",
+        "so-what",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "dense-comparison-table",
+      "displayName": "案の比較評価",
+      "pack": "read-alone",
+      "category": "comparison",
+      "path": "read-alone/dense-comparison-table/template.json",
+      "tags": [
+        "comparison",
+        "rating-matrix",
+        "recommendation",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "key-message-storyline",
+      "displayName": "ストーリーライン",
+      "pack": "read-alone",
+      "category": "summary",
+      "path": "read-alone/key-message-storyline/template.json",
+      "tags": [
+        "storyline",
+        "action-title",
+        "horizontal-logic",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "faq-objection-handling",
+      "displayName": "想定問答",
+      "pack": "read-alone",
+      "category": "qa",
+      "path": "read-alone/faq-objection-handling/template.json",
+      "tags": [
+        "faq",
+        "objection",
+        "qa",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "one-page-brief",
+      "displayName": "ワンページブリーフ",
+      "pack": "read-alone",
+      "category": "summary",
+      "path": "read-alone/one-page-brief/template.json",
+      "tags": [
+        "brief",
+        "exhibit",
+        "table",
+        "decision",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

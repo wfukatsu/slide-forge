@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "exhibit-analysis",
+  "displayName": "図表と示唆",
+  "pack": "read-alone",
+  "category": "evidence",
+  "description": "図表番号つきの枠にグラフを収め、右側に読み取れる示唆を添えて本文・付録から参照できる 1 枚にする",
+  "answers": ["この図表から何が読み取れるか"],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "exhibitNumber": {"type": "integer", "default": 1, "minimum": 1, "maximum": 99},
+    "exhibitTitle": {"type": "string", "required": true, "maxLength": 40},
+    "bars": {"type": "array", "required": true, "minItems": 2,
+             "maxItems": {"$density": {"print": 8, "presentation": 5}},
+             "items": {"type": "tuple", "fields": [
+               {"type": "string", "maxLength": {"$density": {"print": 5, "presentation": 6}}},
+               {"type": "number", "minimum": 0}]}},
+    "unit": {"type": "string", "default": "", "maxLength": 8},
+    "insight": {"type": "string", "required": true,
+                "maxLength": {"$density": {"print": 90, "presentation": 50}}},
+    "insightPoints": {"type": "string[]", "default": [],
+                      "maxItems": {"$density": {"print": 3, "presentation": 2}},
+                      "maxLength": {"$density": {"print": 24, "presentation": 18}}},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "図表番号は本文・付録からの参照に使う。通し番号の管理は作成者の責任",
+    "示唆は図から読み取れる範囲に限定する。図にない新情報は書かない",
+    "棒グラフの基線はゼロ固定。差を大きく見せる軸の誇張はしない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "exhibit_frame", "x": 0.5, "y": 1.62, "w": 5.9, "h": 2.95,
+       "number": {"$slot": "exhibitNumber"}, "title": {"$slot": "exhibitTitle"}},
+      {"type": "vbars", "x": 0.85, "y": 2.2, "w": 5.2, "h": 2.15,
+       "items": {"$slot": "bars"}, "unit": {"$slot": "unit"}},
+      {"type": "so_what", "x": 6.6, "y": 1.62, "w": 2.9, "h": 2.95,
+       "text": {"$slot": "insight"}, "points": {"$slot": "insightPoints"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

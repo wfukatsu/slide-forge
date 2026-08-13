@@ -398,12 +398,15 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | 定性・技術ページ | 5 | 数字でないものすべて |
 | 締め・付録ページ | 3 | 決定とその後 |
 
-これらのページパターンに加えて、`slide-templates/` には 5 つのパック
-（marketing-analysis、b2b-sales、scalar-ae、planning、analysis）で 37 の
-既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
+これらのページパターンに加えて、`slide-templates/` には 6 つのパック
+（marketing-analysis、b2b-sales、scalar-ae、planning、analysis、read-alone）で
+45 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
 答える問い、ガードレールつきで
 [`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md)
-にカタログ化されている。
+にカタログ化されている。read-alone パックのテンプレートは `$density`
+バリアントを持ち、同じテンプレートが高密度の配布資料（`print`）と低密度の
+登壇スライド（`presentation`）のどちらでも描画できる。密度はインテイクの
+「用途」の回答か `render_slide_template.py --density` で選ぶ。
 
 ## サンプル
 

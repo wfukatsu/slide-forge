@@ -389,11 +389,14 @@ Which page shapes can this build? See
 | Qualitative/technical pages | 5 | Everything that isn't a number |
 | Closing/appendix pages | 3 | The decision and what follows |
 
-Beyond these page patterns, `slide-templates/` registers 37 ready-made
-one-page templates in five packs (marketing-analysis, b2b-sales, scalar-ae,
-planning, analysis). Each is catalogued with a rendered image, the question it
-answers, and its guardrails in
+Beyond these page patterns, `slide-templates/` registers 45 ready-made
+one-page templates in six packs (marketing-analysis, b2b-sales, scalar-ae,
+planning, analysis, read-alone). Each is catalogued with a rendered image, the
+question it answers, and its guardrails in
 [`references/slide-template-catalog.md`](references/slide-template-catalog.md).
+The read-alone pack's templates carry `$density` variants: the same template
+renders as a dense handout (`print`) or a sparse stage slide (`presentation`),
+chosen by the intake's Purpose question or `render_slide_template.py --density`.
 
 ## Examples
 

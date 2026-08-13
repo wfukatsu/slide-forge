@@ -1,6 +1,6 @@
 *[English](slide-template-catalog.md)*
 
-# スライドテンプレート カタログ（全 37 種）
+# スライドテンプレート カタログ（全 45 種）
 
 `slide-templates/` に登録されたテンプレートを実際に 1 枚ずつ生成して
 書き出した画像カタログ。**どのテンプレートで 1 枚を作るかを見て選ぶ**ためのもの。
@@ -13,11 +13,11 @@
 
 ```bash
 # このカタログを作り直す（テンプレートを追加したときも同じ手順）
-for pack in marketing-analysis b2b-sales scalar-ae planning analysis; do
+for pack in marketing-analysis b2b-sales scalar-ae planning analysis read-alone; do
   .venv/bin/python scripts/build_slide_template_catalog.py \
       --pack $pack --out out/template-catalog/$pack.json
 done
-# 5 つの spec の slides を 1 つに結合して build_deck.py で生成し、
+# 6 つの spec の slides を 1 つに結合して build_deck.py で生成し、
 # fetch_thumbnails.py の PNG を references/images/slide-templates/<id>.png に配置
 .venv/bin/python scripts/build_template_catalog_doc.py
 ```
@@ -29,6 +29,7 @@ done
 | [Scalar AE パック](#scalar-ae) | 8 種 | Scalar のアカウントエグゼクティブが商談レビュー・活動計画で使う定型ページ群 |
 | [計画パック](#planning) | 3 種 | 時間軸を持つ計画を示すページ群 |
 | [現状分析パック](#analysis) | 10 種 | コンサルティングの現状分析・課題特定フレームワークをページ化した群 |
+| [読み物パック](#read-alone) | 8 種 | 1 枚で読み切れる高密度スライド（外資コンサル型の配布資料）のページ群 |
 
 <a id="marketing-analysis"></a>
 
@@ -726,3 +727,161 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 - バブルが重なると読めない。課題は 8 件まで、近い課題は統合する
 - highlight は着手を決めた課題だけに使う（強調が多いと何も強調されない）
 - 課題の中身（何を解決するか）はこのスライドでは説明しない。gap-analysis や logic-tree で定義してから持ち込む
+
+<a id="read-alone"></a>
+
+## 読み物パック（`read-alone`）
+
+1 枚で読み切れる高密度スライド（外資コンサル型の配布資料）のページ群。ガバニングメッセージ・リード文・エビデンス・示唆・出典を 1 枚に収める。全テンプレートが `$density` バリアントを持ち、同じファイルから print（配布・印刷）と presentation（登壇）の 2 密度で描画できる。
+
+### 主張とエビデンス表（`claim-evidence-table`）
+
+![主張とエビデンス表](images/slide-templates/claim-evidence-table.png)
+
+主張・裏付けの表・示唆・出典を 1 枚に収め、読むだけで完結させる読み物スライドの標準形
+
+**答える問い**: この主張はどの事実に支えられているか
+
+**figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- タイトルは「何が言えるか」を 2 行以内で書く。表の説明文にしない
+- 示唆は表から読み取れる範囲に限定する。タイトルの復唱も新情報も書かない
+- 出典のない数値は載せない。書けない行は削る
+
+### 図表と示唆（`exhibit-analysis`）
+
+![図表と示唆](images/slide-templates/exhibit-analysis.png)
+
+図表番号つきの枠にグラフを収め、右側に読み取れる示唆を添えて本文・付録から参照できる 1 枚にする
+
+**答える問い**: この図表から何が読み取れるか
+
+**figures**: `governing_message`, `lead_in`, `exhibit_frame`, `vbars`, `so_what`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 図表番号は本文・付録からの参照に使う。通し番号の管理は作成者の責任
+- 示唆は図から読み取れる範囲に限定する。図にない新情報は書かない
+- 棒グラフの基線はゼロ固定。差を大きく見せる軸の誇張はしない
+
+### エグゼクティブサマリー（`exec-summary-readable`）
+
+![エグゼクティブサマリー](images/slide-templates/exec-summary-readable.png)
+
+状況→課題→答えの 3 段と支える論点で、最初の 1 枚だけで意思決定できる状態にする
+
+**答える問い**: この資料は結局何を決めてほしいのか
+
+**figures**: `governing_message`, `exec_summary`, `source_note`  
+**推論レベル**: 戦略（評価と方向づけ）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- この 1 枚だけで意思決定できることが条件。本編は答えの裏付けに回す
+- 答えの段は結論を数値つきで書く。「検討する」で終わらせない
+- 支える論点が 5 つを超えるなら本編の章立てから見直す
+
+### 結論・根拠・So What（`conclusion-rationale-implication`）
+
+![結論・根拠・So What](images/slide-templates/conclusion-rationale-implication.png)
+
+結論を先に置き、根拠カードと次の打ち手（So What）で 1 枚のピラミッドとして読み切らせる
+
+**答える問い**: 結論は何で、なぜそう言え、次に何をするのか
+
+**figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
+**推論レベル**: 戦略（評価と方向づけ）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 結論はタイトルに書く。本文の最後まで読まないと結論が分からない構成にしない
+- 根拠は互いに重ならない 3〜4 点に絞る。5 点を超えるなら別スライドに分ける
+- So What は次の行動を書く。根拠やタイトルの復唱にしない
+
+### 案の比較評価（`dense-comparison-table`）
+
+![案の比較評価](images/slide-templates/dense-comparison-table.png)
+
+複数案をドット評価のマトリクスで比較し、推奨案とその理由まで 1 枚で示す
+
+**答える問い**: どの案が最も優れ、なぜそれを推すのか
+
+**figures**: `governing_message`, `lead_in`, `rating_matrix`, `so_what`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 評価基準は意思決定に効くものだけに絞る。埋め草の基準を足さない
+- 採点の根拠（見積もり・評価会など）を必ず出典に書く
+- 推奨は劣る点も認めた上で総合判断として書く。全勝の案に見せかけない
+
+### ストーリーライン（`key-message-storyline`）
+
+![ストーリーライン](images/slide-templates/key-message-storyline.png)
+
+本編のアクションタイトルを順に並べ、タイトルだけで論旨が通ることを 1 枚で示す横の論理
+
+**答える問い**: タイトルだけを読んで話の筋が通っているか
+
+**figures**: `governing_message`, `lead_in`, `storyline`, `source_note`  
+**推論レベル**: 戦略（評価と方向づけ）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 各行は本編スライドのアクションタイトルと一致させる。要約で書き換えない
+- ここで論旨が途切れるならスライドを作る前に構成を直す
+- 各行は「何が言えるか」の主張形で書く。「〜について」の目次形にしない
+
+### 想定問答（`faq-objection-handling`）
+
+![想定問答](images/slide-templates/faq-objection-handling.png)
+
+承認会議で想定される反論と根拠つきの回答を対で並べ、質疑を先回りして潰す 1 枚
+
+**答える問い**: 想定される反論にどう答えるか
+
+**figures**: `governing_message`, `lead_in`, `table`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 回答には必ず根拠（本編の図表番号・付録・試験結果など）を添える
+- 答えられない懸念は残す。ごまかした回答は資料全体の信頼を壊す
+- 懸念は実際に出そうなものに絞る。自作自演の弱い反論を並べない
+
+### ワンページブリーフ（`one-page-brief`）
+
+![ワンページブリーフ](images/slide-templates/one-page-brief.png)
+
+図表・比較表・示唆・決定事項・出典を 1 枚に収める、パック中最も高密度な 1 枚もの決裁資料
+
+**答える問い**: この 1 枚だけで決裁者が判断と決定事項を確認できるか
+
+**figures**: `governing_message`, `lead_in`, `exhibit_frame`, `vbars`, `table`, `so_what`, `source_note`  
+**推論レベル**: 戦略（評価と方向づけ）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- この 1 枚は決裁の最終確認用。図表と表は本編の要約であり、初出の数字を置かない
+- 決定事項は Yes/No を言える形で書き、期限を添える。「検討を継続」を決定事項にしない
+- 詰め込むのは情報であって文字ではない。表のセルは体言止めで短く保つ

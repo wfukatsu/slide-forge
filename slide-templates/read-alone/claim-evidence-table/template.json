@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "claim-evidence-table",
+  "displayName": "主張とエビデンス表",
+  "pack": "read-alone",
+  "category": "evidence",
+  "description": "主張・裏付けの表・示唆・出典を 1 枚に収め、読むだけで完結させる読み物スライドの標準形",
+  "answers": ["この主張はどの事実に支えられているか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "headers": {"type": "string[]", "required": true, "minItems": 2, "maxItems": 3, "maxLength": 10},
+    "rows": {"type": "string[][]", "required": true, "minItems": 3,
+             "maxItems": {"$density": {"print": 7, "presentation": 4}},
+             "maxLength": {"$density": {"print": 24, "presentation": 16}}},
+    "insight": {"type": "string", "required": true,
+                "maxLength": {"$density": {"print": 90, "presentation": 50}}},
+    "insightPoints": {"type": "string[]", "default": [],
+                      "maxItems": {"$density": {"print": 3, "presentation": 2}},
+                      "maxLength": {"$density": {"print": 24, "presentation": 18}}},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "タイトルは「何が言えるか」を 2 行以内で書く。表の説明文にしない",
+    "示唆は表から読み取れる範囲に限定する。タイトルの復唱も新情報も書かない",
+    "出典のない数値は載せない。書けない行は削る"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "table", "x": 0.5, "y": 1.62, "w": 5.9,
+       "headers": {"$slot": "headers"}, "rows": {"$slot": "rows"},
+       "size": {"$density": {"print": 9, "presentation": 11}},
+       "rowH": {"$density": {"print": 0.36, "presentation": 0.46}}},
+      {"type": "so_what", "x": 6.6, "y": 1.62, "w": 2.9,
+       "h": {"$density": {"print": 2.9, "presentation": 2.5}},
+       "text": {"$slot": "insight"}, "points": {"$slot": "insightPoints"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

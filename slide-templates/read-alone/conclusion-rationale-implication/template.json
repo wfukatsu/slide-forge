@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "conclusion-rationale-implication",
+  "displayName": "結論・根拠・So What",
+  "pack": "read-alone",
+  "category": "summary",
+  "description": "結論を先に置き、根拠カードと次の打ち手（So What）で 1 枚のピラミッドとして読み切らせる",
+  "answers": ["結論は何で、なぜそう言え、次に何をするのか"],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "rationale": {"type": "array", "required": true, "minItems": 3,
+                  "maxItems": {"$density": {"print": 4, "presentation": 3}},
+                  "items": {"type": "tuple", "fields": [
+                    {"type": "string", "maxLength": 12},
+                    {"type": "string", "maxLength": {"$density": {"print": 48, "presentation": 30}}}]}},
+    "implication": {"type": "string", "required": true,
+                    "maxLength": {"$density": {"print": 100, "presentation": 60}}},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "結論はタイトルに書く。本文の最後まで読まないと結論が分からない構成にしない",
+    "根拠は互いに重ならない 3〜4 点に絞る。5 点を超えるなら別スライドに分ける",
+    "So What は次の行動を書く。根拠やタイトルの復唱にしない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "cards", "x": 0.5, "y": 1.62, "w": 9.0, "h": 1.85,
+       "items": {"$slot": "rationale"}},
+      {"type": "so_what", "x": 0.5, "y": 3.7, "w": 9.0, "h": 0.95,
+       "label": "So What", "text": {"$slot": "implication"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

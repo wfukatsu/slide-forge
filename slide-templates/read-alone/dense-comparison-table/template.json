@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "id": "dense-comparison-table",
+  "displayName": "案の比較評価",
+  "pack": "read-alone",
+  "category": "comparison",
+  "description": "複数案をドット評価のマトリクスで比較し、推奨案とその理由まで 1 枚で示す",
+  "answers": ["どの案が最も優れ、なぜそれを推すのか"],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "criteria": {"type": "string[]", "required": true, "minItems": 3,
+                 "maxItems": {"$density": {"print": 5, "presentation": 4}},
+                 "maxLength": 8},
+    "options": {"type": "array", "required": true, "minItems": 2,
+                "maxItems": {"$density": {"print": 5, "presentation": 4}},
+                "items": {"type": "tuple", "fields": [
+                  {"type": "string", "maxLength": 16},
+                  {"type": "integer[]", "minimum": 0, "maximum": 4,
+                   "matchLength": "criteria"}]}},
+    "recommendation": {"type": "string", "required": true,
+                       "maxLength": {"$density": {"print": 100, "presentation": 60}}},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "評価基準は意思決定に効くものだけに絞る。埋め草の基準を足さない",
+    "採点の根拠（見積もり・評価会など）を必ず出典に書く",
+    "推奨は劣る点も認めた上で総合判断として書く。全勝の案に見せかけない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "rating_matrix", "x": 0.5, "y": 1.6, "w": 9.0,
+       "columns": {"$slot": "criteria"}, "rows": {"$slot": "options"},
+       "size": {"$density": {"print": 9.5, "presentation": 10.5}},
+       "rowH": {"$density": {"print": 0.38, "presentation": 0.46}}},
+      {"type": "so_what", "x": 0.5, "y": 3.88, "w": 9.0, "h": 0.9,
+       "label": "推奨", "text": {"$slot": "recommendation"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

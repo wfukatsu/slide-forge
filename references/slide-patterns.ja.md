@@ -97,6 +97,12 @@
 配布資料側の作法（密度・示唆の使い方・アンチパターン）は
 `examples/read-alone-guide.json` に集約してある。
 
+この表は `read-alone` テンプレートパック（`slide-templates/read-alone/`）に
+機械可読な `$density` バリアントとしても収録されている。各テンプレートは
+同じファイルから `print`（高密度の読み物形）と `presentation`（低密度の
+登壇形）のどちらでも描画できる。`render_slide_template.py` に `--density` を
+渡すか、インテイクの「用途」の回答で選ぶ。
+
 ## 設計の根拠（2026-08 調査）
 
 出典: [Deckary: Consulting Slide Standards](https://deckary.com/blog/consulting-slide-standards)、

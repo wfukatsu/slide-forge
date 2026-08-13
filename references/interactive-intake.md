@@ -63,7 +63,7 @@ options from live data** (so they don't go stale as registrations change):
 | # | header | Question | How to build the options |
 |---|---|---|---|
 | 1 | Template | Which template should we use? | Up to 3 entries from `list_templates.py`'s output, plus "Parse and register a new URL." Put "N layouts / N boilerplate slides included" in `description`. If the user has no existing template and wants a brand-new design matched to their brand, point them to the `template-forge` skill instead |
-| 2 | Purpose | What is this deck for? | Proposal / sales material (Proposal category) / conference talk or study session (Presentation category) / internal sharing or reporting. If the template has no notion of category, skip this question entirely |
+| 2 | Purpose | What is this deck for? | Proposal / sales material (Proposal category + template density `print`) / conference talk or study session (Presentation category + density `presentation`) / internal sharing or reporting (Proposal category + density `print`). The answer fixes **both** the layout family and the density variant of every registered slide template used in the deck. If the template has no notion of category, don't skip — ask the reduced two-option form instead: 「このデッキはプレゼン投影用ですか、印刷・配布用ですか？」 (投影用 → `presentation` / 印刷・配布用 → `print`), whenever templated slides will be used |
 | 3 | Structure | Which structure should we build it with? | 3 types from `references/deck-outlines.md`, plus "Build it to match the content." **Put section headings into `preview`** so they're easy to compare |
 | 4 | Length | About how many slides? | ~10 slides (15 min) / ~20 slides (30 min) / 40+ slides (detailed version, with appendix) |
 
@@ -88,9 +88,9 @@ The actual call (substitute values to match `list_templates.py`'s output):
       "question": "このデッキは何に使いますか？",
       "multiSelect": false,
       "options": [
-        {"label": "提案書・営業資料", "description": "Proposal 系レイアウト。フッターと © 表記あり。読み物として配布される前提で文字は多め"},
-        {"label": "登壇・勉強会", "description": "Presentation 系レイアウト。タイトル領域が広い。1 枚 1 メッセージで文字は少なめ"},
-        {"label": "社内共有・報告", "description": "Proposal 系。数値と根拠を厚めに、装飾は控えめに組む"}
+        {"label": "提案書・営業資料", "description": "Proposal 系レイアウト。フッターと © 表記あり。読み物として配布される前提で文字は多め（テンプレート密度 print）"},
+        {"label": "登壇・勉強会", "description": "Presentation 系レイアウト。タイトル領域が広い。1 枚 1 メッセージで文字は少なめ（テンプレート密度 presentation）"},
+        {"label": "社内共有・報告", "description": "Proposal 系。数値と根拠を厚めに、装飾は控えめに組む（テンプレート密度 print）"}
       ]
     },
     {
@@ -120,6 +120,13 @@ The actual call (substitute values to match `list_templates.py`'s output):
   ]
 }
 ```
+
+**How the density answer is applied.** Registered slide templates with
+`$density` variants (e.g. the `read-alone` pack) are rendered by passing the
+chosen density to every `render_slide_template.py --density …` call; templates
+without variants ignore it. For a `print` deck, the spec may additionally set
+spec-level `defaults` (e.g. `"bodyFontSize": 10`) so non-templated body slides
+match the handout density — an existing spec feature, no engine flag needed.
 
 ---
 

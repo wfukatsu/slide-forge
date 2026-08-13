@@ -160,7 +160,7 @@ Decisions to settle (each one forces a rebuild when wrong):
 | Decision | Default | Impact when wrong |
 |---|---|---|
 | Template | `scalar-2026` | Every layout and color changes |
-| Purpose (Proposal / Presentation family) | Proposal | A deck with a mismatched register |
+| Purpose (Proposal / Presentation family + template density `print` / `presentation`) | Proposal + `print` | A deck with a mismatched register; templated slides rendered at the wrong density |
 | Outline type | Problem-solving | The narrative order changes = every slide reordered |
 | Length | ~20 slides | Information density per slide changes |
 
