@@ -84,6 +84,8 @@ cost of additional wall-clock time and main-context usage.
 - Codex discovers the shared skills exposed under `.agents/skills/`.
 - A selected generation skill is loaded completely; unrelated skills and
   references are not preloaded.
+- `scripts/validate_agent_contracts.py` passes for the Claude Code, Codex, and
+  Antigravity adapters, replacement safety, reference loading, and QA scope.
 - `.venv/bin/python -m pip check` succeeds.
 - `scripts/` compiles without syntax errors.
 - A representative deck spec passes `build_deck.py --dry-run --strict`.
@@ -96,6 +98,7 @@ Run the host-independent checks from the repository root:
 ```bash
 .venv/bin/python -m pip check
 .venv/bin/python -m compileall -q scripts
+.venv/bin/python scripts/validate_agent_contracts.py
 .venv/bin/python scripts/build_deck.py \
   --template templates/corporate.json \
   --spec examples/charts-demo.json --dry-run --strict

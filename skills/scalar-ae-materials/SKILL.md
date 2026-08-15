@@ -67,7 +67,9 @@ via `AskUserQuestion` (following the conventions in
 2. What one statement do you want to get from the customer in this visit?
 3. Is there anything you want internally (approval of proposal investment /
    price approval / SA staffing)?
-4. Should visual QA run after generation (default and recommended: run)?
+
+The shared workflow contract settles the QA choice; do not repeat it in this
+skill's audience-specific question batch.
 
 ## Step 2: Choose the material type (routing)
 
@@ -165,12 +167,10 @@ From the returned IDs, choose `--folder` per the Step 2 location table:
 `01_顧客提示`, an individual's private judgments go straight to the customer
 when the folder is shared.
 
-## Step 6: Visual inspection
+## Step 6: Material-specific QA
 
-If you chose "run" in Step 1, follow the `slide-qa` skill's procedure, and
-when done, delete the verification files with
-`.venv/bin/python scripts/cleanup_qa.py`. If skipped, state clearly in the
-report that QA was not performed.
+Apply the shared QA procedure. For customer-facing material, repeat the Step 3
+leakage check against the rendered thumbnails.
 
 ## Step 7: Write back to the ledger (do not skip)
 

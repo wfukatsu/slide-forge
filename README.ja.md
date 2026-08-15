@@ -2,9 +2,11 @@
 
 # slide-forge
 
-Codex と Claude Code のためのエージェント駆動 Google Slides デッキ生成。共有
-Python エンジンの上に、17 の生成/支援スキルと 1 つのエンドツーエンドワークフローを
-載せる。コーポレートテンプレートのデッキ、ゼロからのアーキテクチャ図、デザイン
+Claude Code を主ホストとするエージェント駆動 Google Slides デッキ生成。Codex と
+Antigravity は薄いホスト互換レイヤーを通じて同じ共有スキルを利用する。共有 Python
+エンジンの上に、17 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
+Claude Code のプラグインコマンドと共有 `skills/` を動作の正本とし、ホスト固有文書へ
+ワークフローを複製しない。コーポレートテンプレートのデッキ、ゼロからのアーキテクチャ図、デザイン
 仕様からのテンプレート作成、生成前の検証、任意のサムネイルベース視覚 QA
 （既定で有効）、PowerPoint（`.pptx`）エクスポート、見積もり・BOM 向けの
 明細スプレッドシート（Excel / Google Spreadsheet）までをカバーする。
@@ -46,6 +48,16 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 
 - Codex: `forge` スキルを名前で呼び出す。
 - Claude Code: `/forge` または `/slide-forge:forge` を使う。
+- Antigravity: `.agents/skills/` から該当する共有スキルを使う。
+
+3ホストとも `references/workflow-contract.md` に従う。選択した生成スキルを1つだけ
+最後まで読み、その後はタスクが有効化するreferenceの該当節だけを読む。
+
+ホスト互換レイヤー、コマンド、スキル、共通契約を変更した後は次を実行する。
+
+```bash
+.venv/bin/python scripts/validate_agent_contracts.py
+```
 
 ### Account Executive ワークフロー
 
@@ -400,7 +412,7 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 
 これらのページパターンに加えて、`slide-templates/` には 6 つのパック
 （marketing-analysis、b2b-sales、scalar-ae、planning、analysis、read-alone）で
-45 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
+47 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
 答える問い、ガードレールつきで
 [`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md)
 にカタログ化されている。read-alone パックのテンプレートは `$density`

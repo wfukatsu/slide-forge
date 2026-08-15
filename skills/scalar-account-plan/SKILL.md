@@ -36,11 +36,6 @@ inputs, so don't mix them. **This skill covers the left one.**
 
 Working directory: the slide-forge root. Run commands with `.venv/bin/python`.
 
-The source of truth for these decisions is
-[references/scalar/sales-playbook.md](../../references/scalar/sales-playbook.md).
-Stages, gate IDs, the 5 material types, BANT, and the 10-question checkpoint
-are all defined there. **Do not redefine them in this skill.**
-
 ## Boundaries
 
 | Request | Where it goes |
@@ -264,17 +259,15 @@ drawio -x -f png -s 2 -b 8 \
 - Always put the `.drawio` and PNG in the deck's Drive folder. A PNG alone
   can't be edited
 
-### 8. Visual inspection and cleanup
+### 8. Account-plan visual checks
 
-Check the thumbnails with the `slide-qa` skill. Pay particular attention to:
+Apply the shared QA procedure. In addition, check:
 
 - On the influence map, does **the person to move next** catch the eye first
   (squint test)?
 - Do table rows overlap the logo band at the bottom edge?
 - Do person labels hide each other? If so, **fix the coordinates in the
   ledger** (not the template)
-
-When done, run `.venv/bin/python scripts/cleanup_qa.py`.
 
 ### 9. Report, together with Drive
 

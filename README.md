@@ -2,9 +2,11 @@
 
 # slide-forge
 
-Agent-driven Google Slides deck generation for Codex and Claude Code: seventeen
+Claude-first, agent-driven Google Slides deck generation with the same shared
+skills available to Codex and Antigravity through thin host adapters: seventeen
 generation/support skills plus one end-to-end workflow on a shared Python
-engine. It covers corporate-template decks, from-scratch architecture
+engine. Claude Code's plugin commands and the shared `skills/` are the behavior
+source of truth; host files do not duplicate workflow logic. It covers corporate-template decks, from-scratch architecture
 diagrams, template creation from a design spec, validation before generation,
 optional thumbnail-based visual QA (on by default), PowerPoint (`.pptx`)
 export, and line-item spreadsheets (Excel / Google Spreadsheet) for estimates
@@ -47,6 +49,18 @@ export via `pptx-export` (when chosen) → final report.
 
 - Codex: invoke the `forge` skill by name.
 - Claude Code: use `/forge` or `/slide-forge:forge`.
+- Antigravity: use the matching shared skill through `.agents/skills/`.
+
+All three hosts follow `references/workflow-contract.md`. They load one selected
+generation skill completely, then only the reference sections activated by the
+task.
+
+Validate the shared prompt contracts after changing a host adapter, command,
+skill, or workflow reference:
+
+```bash
+.venv/bin/python scripts/validate_agent_contracts.py
+```
 
 ### Account Executive workflow
 
@@ -389,7 +403,7 @@ Which page shapes can this build? See
 | Qualitative/technical pages | 5 | Everything that isn't a number |
 | Closing/appendix pages | 3 | The decision and what follows |
 
-Beyond these page patterns, `slide-templates/` registers 45 ready-made
+Beyond these page patterns, `slide-templates/` registers 47 ready-made
 one-page templates in six packs (marketing-analysis, b2b-sales, scalar-ae,
 planning, analysis, read-alone). Each is catalogued with a rendered image, the
 question it answers, and its guardrails in

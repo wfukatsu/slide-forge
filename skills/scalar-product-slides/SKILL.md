@@ -29,37 +29,16 @@ Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running
 from an installed plugin, `/path/to/slide-forge` on a local clone
 (literal `cd` paths below assume the local clone).
 
-## Important
+## Product-deck rules
 
-- **Prerequisite skill**: `google-slides-template` (same repo) — auth, the shared
-  venv, the `scalar-2026` / `scalar-2026-boilerplate` templates, and cloud icons.
-  Follow that SKILL.md for setup, API constraints, and the drawing API. This
-  skill owns only what is Scalar-specific: deck structures, build scripts, and
-  research findings. Auth and the venv are shared at the repo root
-  (`config/`, `.venv`).
+- Use `google-slides-template` only for template-specific implementation details
+  activated by this deck; shared auth, Drive, approval, and QA behavior comes
+  from the two workflow contracts above.
 - **Research facts before writing them.** Company info, versions, and case
   studies start from `references/scalar/research-2026-08.md`, but **re-research
   if more than 3 months have passed since the research date** (Phase 2 below).
   Never fill gaps with guesses. Omit items you cannot confirm (e.g. capital
   stock).
-- **Visual QA is a separate skill (`slide-qa`), chosen at generation time**
-  (Phase 1 asks; default and recommended: run). When it runs, follow that
-  skill — fetch every page with `scripts/fetch_thumbnails.py`, inspect, then
-  delete the local QA files with `scripts/cleanup_qa.py`. When skipped, say
-  so in the report and offer `slide-qa` as a follow-up.
-- **Drive folder rule** (shared with `google-slides-template`): create a Drive
-  folder for the deck first (`scripts/drive_folder.py create "<title>"`), pass
-  its ID as the output folder, and collect the spec / figure sources there
-  with `drive_folder.py upload`. Report the folder URL with the deck URL.
-- **When updating an existing deck the user already has** (same URL, in-place
-  edits — not the normal copy-the-boilerplate flow), run
-  `.venv/bin/python scripts/snapshot_version.py <URL>` first to record the
-  pre-edit revision and take a local PPTX backup, and report the revision ID
-  before editing (rule shared with `google-slides-template`).
-- **If the premises are unspecified, settle them with `AskUserQuestion` before
-  researching** (Phase 1). Follow the interaction conventions in
-  `references/interactive-intake.md` (sections 0, 3, 4, 5). Only the question
-  set itself is specific to this skill.
 
 ## Quick Reference
 
@@ -96,10 +75,8 @@ Question set (specific to this skill; ask all 4 questions of Q1 in one round):
   research date, put "Re-research" first as the recommended option and state the
   reason (research date and months elapsed) in the `description`.
 - These 4 questions fill one round. If unspecified, ask for the output Drive
-  folder, the cover date, the language (Japanese / English), and whether to
-  run visual QA after generation (default and recommended: run; skipping means
-  the deck ships unverified) together in a second round (without `--folder`,
-  the deck goes directly to My Drive).
+  folder, cover date, and language (Japanese / English) together in a second
+  round. The shared contract owns the QA question.
 - **Do not ask about**: how diagrams are composed, coordinates, colors, or
   which diagram each feature gets. Those are fixed by `FEATURES_DB` /
   `FEATURES_DL` and the design conventions.
@@ -196,16 +173,10 @@ cd /path/to/slide-forge
    audit_overlaps / audit_text_fit` on every slide and print "audit:" lines ("検査:" with GSLIDES_LANG=ja).
    **If any audit fires, fix the spec and rebuild** (faster than patching).
    Delete the old deck from Drive before rebuilding
-2. **If the user chose visual QA (the default)**, run the `slide-qa` skill:
-   fetch every page with `scripts/fetch_thumbnails.py`, inspect with Read
-   (overflow, overlaps, wrong layout picked), and when done delete the local
-   QA files with `scripts/cleanup_qa.py`. If QA was skipped, state so in the
-   report and offer `slide-qa` as a follow-up
+2. Apply the shared contract's selected QA and cleanup procedure.
 3. **Rebuilding changes the URL.** Tell the user the new URL and be explicit
    about what happens to the old deck (deletion)
-4. Pass QA yourself before presenting results. If there is room to improve,
-   offer via `AskUserQuestion`: "finalize / adjust wording / change a diagram /
-   add or remove features" (`interactive-intake.md` section 4)
+4. Use the shared contract's final-adjustment choices before handoff.
 
 ## File layout
 

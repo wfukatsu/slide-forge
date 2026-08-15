@@ -58,12 +58,6 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
   and `references/scalar/proposal-map.md` (§3/§5 dated 2026-08-05). Both follow
   the **3-month rule** — refresh only affected claims using
   `references/scalar/research-policy.md`; parallel research is not automatic.
-- **Shared rules with the sibling skills** (see google-slides-template
-  SKILL.md): Drive folder per deck (`scripts/drive_folder.py`), version
-  snapshot before in-place edits (`scripts/snapshot_version.py`), visual QA
-  via the `slide-qa` skill — chosen at intake, default run, QA files deleted
-  with `scripts/cleanup_qa.py` when done — and interactive intake conventions
-  (`references/interactive-intake.md` sections 0, 3, 4, 5).
 
 ## Quick Reference
 
@@ -92,11 +86,9 @@ Follow `references/interactive-intake.md` sections 0/3/4/5. Ask in one batch:
   pre-select the likely categories in the option descriptions.
 - If nothing is known yet, present the hearing checklist
   (proposal-map.md §1) as the deliverable instead of forcing a deck.
-- Second round if unspecified: output Drive folder, cover date, language,
-  cloud (default AWS — state the adopted default instead of asking when
-  the customer's cloud is unknown), and whether to run visual QA after
-  generation (default and recommended: run; skipping means the deck ships
-  unverified).
+- Second round if unspecified: output Drive folder, cover date, language, and
+  cloud (default AWS — state the adopted default instead of asking when the
+  customer's cloud is unknown). The shared contract owns the QA question.
 - **Do not ask about** diagram composition, coordinates, colors, or which
   part draws which section — that is fixed by the worked example and
   design conventions.
@@ -171,18 +163,15 @@ cd /path/to/slide-forge
 1. The script prints "audit:" lines from `audit_*` on every drawn slide.
    **If any audit fires, fix the data/spec and rebuild** (delete the old deck
    from Drive first; rebuilding changes the URL — tell the user).
-2. **If the user chose visual QA (the default)**, run the `slide-qa` skill:
-   fetch every page with `scripts/fetch_thumbnails.py`, inspect with Read,
-   and delete the local QA files with `scripts/cleanup_qa.py` when done.
-   If QA was skipped, state so in the report and offer `slide-qa` later.
+2. Apply the shared contract's QA and cleanup procedure.
 3. Content QA specific to proposals: no customer-specific number without a
    hearing basis, no case/price without a source note, challenge wording
    consistent across slides 3 / 7 (challenge summary and mapping table), scope-out line present.
 4. In the final report, alongside the deck/folder URLs, include the BOM
    lists (cloud services per environment; Scalar products with quantity and
    monthly cost) — the builder prints them as `=== Bill of Materials (BOM) ===`.
-5. Offer follow-ups via `AskUserQuestion` (interactive-intake.md §4):
-   finalize / adjust wording / swap cases / add-remove sections.
+5. Use the shared contract's final-adjustment step, adding proposal-specific
+   choices for swapping cases or adding/removing sections.
 
 ## File layout
 

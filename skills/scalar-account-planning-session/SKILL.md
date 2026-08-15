@@ -40,11 +40,9 @@ unknowns into actions is covered in
 The working directory is the slide-forge root. Commands run via
 `.venv/bin/python`.
 
-The source for judgment calls is
-[references/scalar/sales-playbook.md](../../references/scalar/sales-playbook.md).
 Page definitions and the judgment criteria for each page are in
 [references/account-planning-session.md](../../references/account-planning-session.md).
-**Neither is redefined by this skill.**
+Do not redefine either source in this skill.
 
 > [references/account-planning-template-plan.md](../../references/account-planning-template-plan.md)
 > is a **plan document that is not yet implemented**. There is no
@@ -326,10 +324,10 @@ The `--into` prohibitions (e.g. never make the template master the
 replacement target) are the same as
 [`scalar-account-plan`](../scalar-account-plan/SKILL.md) §5.
 
-### 9. Visual inspection and reporting
+### 9. APS-specific QA and reporting
 
-Check the thumbnails with `slide-qa`, then run `scripts/cleanup_qa.py` when
-done.
+Apply the shared QA procedure, then verify that public-information additions,
+unknowns, and next-contact targets are consistent across both decks.
 
 ```bash
 .venv/bin/python scripts/drive_folder.py upload <00_活動計画 の ID> \

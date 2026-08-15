@@ -1,0 +1,44 @@
+{
+  "cases": [
+    {
+      "name": "claude-code-primary-route",
+      "files": ["commands/forge.md", ".claude-plugin/marketplace.json"],
+      "requires": ["Claude Code", "references/workflow-contract.md", "outline approval"]
+    },
+    {
+      "name": "codex-thin-adapter",
+      "files": ["AGENTS.md", ".agents/skills/forge/SKILL.md"],
+      "requires": ["Claude Code", "references/workflow-contract.md", "thin"]
+    },
+    {
+      "name": "antigravity-thin-adapter",
+      "files": ["GEMINI.md"],
+      "requires": ["Claude Code", "references/workflow-contract.md", "thin adapter"]
+    },
+    {
+      "name": "progressive-reference-loading",
+      "files": ["references/workflow-contract.md", "skills/google-slides-template/SKILL.md"],
+      "requires": ["Do not preload", "only references activated", "relevant section"]
+    },
+    {
+      "name": "minor-edit-never-full-replacement",
+      "files": ["references/workflow-contract.md", "skills/google-slides-template/SKILL.md"],
+      "requires": ["one page does not authorize", "Never use it for a minor edit", "replaces every page"]
+    },
+    {
+      "name": "approved-full-replacement-gates",
+      "files": ["references/workflow-contract.md", "skills/google-slides-template/SKILL.md"],
+      "requires": ["complete source spec", "snapshot", "explicit approval", "target"]
+    },
+    {
+      "name": "qa-full-first-pass-and-scoped-repair",
+      "files": ["references/workflow-contract.md", "skills/slide-qa/SKILL.md"],
+      "requires": ["First QA pass", "inspect every page", "adjacent pages", "shared layout/component"]
+    },
+    {
+      "name": "complexity-based-delegation",
+      "files": ["references/workflow-contract.md", "references/parallel-generation.md"],
+      "requires": ["18–20", "total tokens", "at most two"]
+    }
+  ]
+}

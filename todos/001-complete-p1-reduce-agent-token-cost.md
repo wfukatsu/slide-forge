@@ -76,6 +76,46 @@ Implement Option 2. Keep safety, approval, snapshot, offline validation, and vis
 
 ## Work Log
 
+### 2026-08-15 - Review findings reopened
+
+**By:** Codex
+
+**Actions:**
+
+- Reopened after full review found one destructive-update risk and three completeness gaps.
+- Added acceptance work for explicit full-replacement approval, prompt-contract evals, real Scalar deduplication, and Claude-first distribution docs.
+
+**Learnings:**
+
+- `build_deck.py --into` replaces every page and must not be the generic path for a minor edit.
+- Adding a shared contract without deleting the copied rules increases rather than decreases Scalar context.
+
+## Review Remediation Acceptance Criteria
+
+- [x] Generic existing-deck edits never route directly to destructive `--into` replacement.
+- [x] Full replacement requires a complete source spec, a snapshot, target verification, and explicit approval.
+- [x] Scalar skills remove the common rules now owned by shared contracts.
+- [x] README and Claude marketplace metadata state Claude-first ownership without losing existing version/catalog edits.
+- [x] A deterministic contract eval covers Claude Code, Codex, Antigravity, QA scope, reference loading, and replacement safety.
+- [x] All offline validation and agent-contract evals pass.
+
+### 2026-08-15 - Review remediation completed
+
+**By:** Codex
+
+**Actions:**
+
+- Restricted `build_deck.py --into` to explicitly approved, snapshotted full-deck replacement from a complete spec.
+- Removed Scalar workflow/QA rules duplicated by the shared contracts.
+- Made Claude Code ownership explicit in README and marketplace metadata while preserving the 1.23.0 and 47-template updates.
+- Added eight deterministic cross-host contract scenarios and structural checks.
+- Passed contract evaluation, JSON validation, Python compileall, strict deck dry-run, spreadsheet dry-run, and scoped diff checks.
+
+**Learnings:**
+
+- In-place URL preservation must not be conflated with a scoped edit; the current builder replaces the entire deck.
+- Prompt contracts need executable regression checks because prose-only compatibility claims drift silently.
+
 ### 2026-08-15 - Implementation started
 
 **By:** Codex

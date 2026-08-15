@@ -23,7 +23,8 @@ Use this skill to:
 
 - generate a new deck from a registered template;
 - inspect and register a supplied, unregistered master before generation;
-- update a user-owned templated deck in place when its URL must remain stable.
+- rebuild a slide-forge-managed deck in place from its complete source spec
+  when its URL must remain stable and full replacement is explicitly approved.
 
 Use `google-slides` for a deck without a corporate master, `template-forge` to
 create a new master design, and `image-slots` when the only task is filling
@@ -33,6 +34,9 @@ empty image frames in an existing deck.
 
 - Before editing a user-owned deck in place, run
   `.venv/bin/python scripts/snapshot_version.py <URL>` and report the revision.
+- `build_deck.py --into` replaces every page. Never use it for a minor edit,
+  insertion, or an arbitrary existing deck. It requires a complete source spec,
+  target/master verification, and explicit approval of full replacement.
 - Ask only for missing branch decisions; never ask again for supplied or
   delegated (`your call`) decisions.
 - Get explicit approval for page count, layout, and every action title before
@@ -151,8 +155,10 @@ Create the Drive folder first, generate once, and upload editable sources:
 ```
 
 If generation fails, remove the partial deck made by this run before retrying.
-For an approved in-place update, use the builder's supported `--into` path only
-after the snapshot rule has passed.
+For an approved full-deck replacement, use `--into` only after all four gates
+pass: complete source spec, generated-deck target verification, successful
+snapshot, and explicit approval to replace every page. For a local edit or
+insertion, use the relevant scoped editing skill/procedure instead.
 
 ## Phase 5: Verify and deliver
 

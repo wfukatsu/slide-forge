@@ -28,6 +28,11 @@ or materially changed scope may still require user input.
 ## Invariants
 
 - Snapshot a user-owned deck before editing it in place.
+- Treat full-deck replacement as destructive. `build_deck.py --into` is allowed
+  only when a complete source spec exists, the target is confirmed to be a
+  generated deck rather than its master, a snapshot succeeded, and the user
+  explicitly approved replacing every page. A request to edit, insert, or fix
+  one page does not authorize `--into`; route it to a scoped editing workflow.
 - Never expose credentials, tokens, API keys, or account-ledger internals.
 - Never put named-person judgements or internal sales material in a
   customer-facing artifact.
