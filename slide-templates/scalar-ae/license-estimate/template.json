@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "license-estimate",
+  "displayName": "ライセンス見積もりサマリー",
+  "pack": "scalar-ae",
+  "category": "customer",
+  "description": "Scalar ライセンス見積もりの明細・定価→値引→御提供金額・前提条件を 1 枚に集約した提案書の費用ページ",
+  "answers": ["この構成でいくらかかり、金額の内訳と前提は何か"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "lines": {"type": "string[][]", "required": true, "minItems": 2,
+              "maxItems": {"$density": {"print": 7, "presentation": 4}},
+              "maxLength": {"$density": {"print": 20, "presentation": 14}}},
+    "offerPrice": {"type": "string", "required": true, "maxLength": 12},
+    "offerLabel": {"type": "string", "default": "御提供金額（年額・税抜）", "maxLength": 18},
+    "pricing": {"type": "string[][]", "required": true, "minItems": 3, "maxItems": 4,
+                "maxLength": 12},
+    "assumptions": {"type": "string[]", "default": [],
+                    "maxItems": {"$density": {"print": 2, "presentation": 1}},
+                    "maxLength": 60},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "単価・金額は price-master の見積書から転記する。このスライド上で手計算しない",
+    "割引率は載せない。見せるのは定価合計・値引額・御提供金額のみ",
+    "契約期間（月額 / 年額 / 3年）を集計表に必ず載せる。金額だけ書いて期間を省かない",
+    "Pod 数は見積書・構成図と一致させる。契約 Pod ルール（年額契約＝同時稼働の最大 Pod 数）を前提に明記する"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "table", "x": 0.5, "y": 1.62, "w": 5.9,
+       "headers": ["製品", "環境", "Pod", "金額（税抜）"],
+       "rows": {"$slot": "lines"}, "colWidths": [2.0, 1.4, 0.7, 1.8],
+       "aligns": ["START", "START", "CENTER", "END"],
+       "size": {"$density": {"print": 9, "presentation": 11}},
+       "rowH": {"$density": {"print": 0.36, "presentation": 0.46}}},
+      {"type": "metric", "x": 6.6, "y": 1.62, "w": 2.9, "h": 1.05,
+       "value": {"$slot": "offerPrice"}, "caption": {"$slot": "offerLabel"}},
+      {"type": "table", "x": 6.6, "y": 2.85, "w": 2.9,
+       "headers": ["項目", "内容"],
+       "rows": {"$slot": "pricing"}, "colWidths": [1.2, 1.7],
+       "aligns": ["START", "END"], "headerH": 0.3,
+       "size": {"$density": {"print": 8.5, "presentation": 9.5}},
+       "rowH": 0.34},
+      {"type": "source_note", "x": 0.5, "y": 4.62, "w": 9.0,
+       "notes": {"$slot": "assumptions"}, "source": {"$slot": "source"}}
+    ]
+  }
+}

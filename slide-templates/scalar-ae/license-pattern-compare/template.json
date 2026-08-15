@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "id": "license-pattern-compare",
+  "displayName": "ライセンスパターン比較",
+  "pack": "scalar-ae",
+  "category": "customer",
+  "description": "複数の見積もりパターン（Standard / Premium、構成違いなど）を構成・Pod 数・御提供金額で横並び比較し、推奨案を明示する",
+  "answers": ["どのライセンスパターンがこの顧客に最適で、金額はいくら違うのか"],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": ["BLANK"],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {"print": "example.json", "presentation": "example.presentation.json"},
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 70},
+    "lead": {"type": "string", "required": true, "maxLength": 100},
+    "patternHeaders": {"type": "string[]", "required": true, "minItems": 3, "maxItems": 4,
+                       "maxLength": 14},
+    "rows": {"type": "string[][]", "required": true, "minItems": 3,
+             "maxItems": {"$density": {"print": 5, "presentation": 4}},
+             "maxLength": {"$density": {"print": 20, "presentation": 14}}},
+    "recommendation": {"type": "string", "required": true,
+                       "maxLength": {"$density": {"print": 55, "presentation": 30}}},
+    "source": {"type": "string", "required": true, "maxLength": 170}
+  },
+  "guardrails": [
+    "金額は price-master の見積書（比較サマリ）から転記する。割引率は載せず御提供金額で比較する",
+    "パターン間で行の観点（構成・Pod 数・期間・金額）を揃え、行ごとに読み比べられるようにする",
+    "推奨は機能要件と金額の両面から書く。安い案を無条件に推さない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "lead_in", "x": 0.5, "y": 1.0, "w": 9.0, "text": {"$slot": "lead"}},
+      {"type": "table", "x": 0.5, "y": 1.55, "w": 9.0,
+       "headers": {"$slot": "patternHeaders"}, "rows": {"$slot": "rows"},
+       "size": {"$density": {"print": 9, "presentation": 10.5}},
+       "rowH": {"$density": {"print": 0.38, "presentation": 0.48}}},
+      {"type": "so_what", "x": 0.5, "y": 3.9, "w": 9.0, "h": 0.9,
+       "label": "推奨", "text": {"$slot": "recommendation"},
+       "size": {"$density": {"print": 9, "presentation": 10}}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

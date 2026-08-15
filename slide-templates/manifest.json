@@ -542,6 +542,38 @@
       "version": 1
     },
     {
+      "id": "license-estimate",
+      "displayName": "ライセンス見積もりサマリー",
+      "pack": "scalar-ae",
+      "category": "customer",
+      "path": "scalar-ae/license-estimate/template.json",
+      "tags": [
+        "license",
+        "estimate",
+        "quotation",
+        "pricing",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "license-pattern-compare",
+      "displayName": "ライセンスパターン比較",
+      "pack": "scalar-ae",
+      "category": "customer",
+      "path": "scalar-ae/license-pattern-compare/template.json",
+      "tags": [
+        "license",
+        "comparison",
+        "quotation",
+        "pricing",
+        "density"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
       "id": "claim-evidence-table",
       "displayName": "主張とエビデンス表",
       "pack": "read-alone",
