@@ -2,9 +2,10 @@
 
 # slide-forge エージェント向け指示
 
-このリポジトリは Codex と Claude Code の両方をサポートする。共有の Python
-エンジンと `.agents/skills/` 配下のスキルを使うこと。それらのロジックを
-ホスト固有のプロンプトに複製してはならない。
+Claude Code を主ホスト兼配布経路とする。Codex は同じ共有 Python エンジンと
+`.agents/skills/` からリンクされた同じ `skills/` を利用する。動作の正本は
+`commands/`、共有 `skills/`、`references/workflow-contract.md` とし、この文書は
+薄い Codex 互換レイヤーに保つ。
 
 ## 実行環境
 
@@ -37,6 +38,9 @@
 | サムネイルによるビジュアル QA | `slide-qa` |
 | Google Slides の PPTX エクスポート | `pptx-export` |
 | 見積もり / BOM スプレッドシート | `spreadsheets` |
+
+スキル選択後は、未選択のスキルや記載されたreferenceを一括で読み込まない。
+`references/workflow-contract.md` の段階読込表に従う。
 
 ## ホストツール互換性
 

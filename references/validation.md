@@ -119,13 +119,14 @@ generation time (the default), look at the images after generating.
 
 `--size` accepts SMALL / MEDIUM / LARGE. Judge with LARGE.
 
-If the deck exceeds 15 slides, split the QA across sub-agents (`--pages 9-16`,
-6-8 slides each, findings returned as text only) — see
-`references/parallel-generation.md`.
+When thumbnail images would crowd the main context, split the first QA pass
+into 6–8-slide ranges (`--pages 9-16`, findings returned as text only). Keep a
+small repair pass local. See `references/parallel-generation.md`.
 
 ### Which pages to open first
 
-Seeing every page is the ideal; with many slides, prioritize:
+Inspect every page on the first pass. With many slides, prioritize this viewing
+order:
 
 1. **The page with the most elements** (overlaps show up there first)
 2. **The page with the most complex figure** (swimlanes, branching flows, multi-panel)

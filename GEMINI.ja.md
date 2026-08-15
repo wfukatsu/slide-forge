@@ -2,7 +2,7 @@
 
 # slide-forge Project Guidelines for Antigravity
 
-このリポジトリは、Google Slides デッキ生成・インフォグラフィックス作成・Visual QA・PPTX変換・スプレッドシート作成のための統合エンジン（`slide-forge`）です。
+このリポジトリは、Google Slides デッキ生成・インフォグラフィックス作成・Visual QA・PPTX変換・スプレッドシート作成のための統合エンジン（`slide-forge`）です。Claude Code を主ホスト兼配布経路とします。Antigravity は同じ共有 `skills/`、`commands/`、`references/workflow-contract.md` を使う薄い互換レイヤーであり、ここへワークフローロジックを複製しません。
 
 ## 1. 実行環境ルール
 
@@ -19,6 +19,8 @@
 ## 2. スキルの活用
 
 スライド作成・編集・検証などのタスク依頼を受信した場合は、`.agents/skills/` 内にある該当スキルの `SKILL.md` を読み込み、その手順に従って実行してください。
+
+生成スキルは1つだけ選んで最後まで読み、その後は `references/workflow-contract.md` が有効化するreferenceの該当節だけを読みます。リンクされたマニュアルやカタログを事前に全件読み込みません。
 
 | タスク / 目的 | 使用する Skill (`.agents/skills/`) |
 |---|---|

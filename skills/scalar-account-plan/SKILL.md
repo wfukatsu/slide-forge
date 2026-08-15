@@ -16,6 +16,10 @@ description: >-
 
 # Scalar Account Plan
 
+Use `references/scalar/workflow-contract.md` for shared safety, Drive,
+approval, and QA rules. `references/scalar/sales-playbook.md` remains the only
+source for phases, gates, and checkpoint definitions.
+
 One ledger per customer. **The ledger is the single source of truth**; the
 deck is just a rendering of it. Append to the ledger after every visit, and
 refresh the deck at the same URL.

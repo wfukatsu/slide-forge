@@ -19,6 +19,10 @@ description: >-
 
 # Scalar Solution Proposal Slides
 
+Use `references/scalar/workflow-contract.md` for shared sales-material rules
+and `references/scalar/research-policy.md` for freshness/research. This skill
+owns only proposal-specific decisions and generation.
+
 Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running
 from an installed plugin, `/path/to/slide-forge` on a local clone
 (literal `cd` paths below assume the local clone).
@@ -52,8 +56,8 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
   proposal quality.
 - **Research freshness**: facts come from `references/scalar/research-2026-08.md`
   and `references/scalar/proposal-map.md` (§3/§5 dated 2026-08-05). Both follow
-  the **3-month rule** — re-research via parallel agents if stale (Phase 2 of
-  the scalar-product-slides SKILL.md describes the agent setup).
+  the **3-month rule** — refresh only affected claims using
+  `references/scalar/research-policy.md`; parallel research is not automatic.
 - **Shared rules with the sibling skills** (see google-slides-template
   SKILL.md): Drive folder per deck (`scripts/drive_folder.py`), version
   snapshot before in-place edits (`scripts/snapshot_version.py`), visual QA

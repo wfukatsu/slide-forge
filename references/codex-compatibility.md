@@ -1,6 +1,7 @@
 # Codex compatibility
 
-slide-forge uses one engine and one set of skills for Codex and Claude Code.
+Claude Code is slide-forge's primary host and distribution path. Codex uses
+the same engine and shared skills through a thin compatibility layer.
 The Python scripts, JSON schemas, templates, and validation commands are
 host-independent. Only skill discovery, interactive questions, visual file
 inspection, and optional work delegation differ between hosts.
@@ -19,10 +20,10 @@ Start Codex in the repository root. It should discover `AGENTS.md` and the
 skills below `.agents/skills/`. The symlinks deliberately point at the shared
 `skills/` directories so Claude and Codex cannot drift onto different copies.
 
-The Claude marketplace manifest at `.claude-plugin/marketplace.json` remains
-the Claude Code distribution mechanism. Codex does not need that manifest and
-does not install `commands/forge.md` as a Claude-style namespaced command.
-Invoke the `forge` skill by name instead.
+The Claude marketplace manifest at `.claude-plugin/marketplace.json` and the
+shared `commands/`/`skills/` define the primary distribution. Codex does not
+need that manifest and invokes the thin `.agents/skills/forge` entry point.
+Both paths follow `references/workflow-contract.md`.
 
 ### Supported entry points
 
@@ -80,7 +81,9 @@ cost of additional wall-clock time and main-context usage.
 
 ## Compatibility checklist
 
-- Codex discovers all eleven skills under `.agents/skills/`.
+- Codex discovers the shared skills exposed under `.agents/skills/`.
+- A selected generation skill is loaded completely; unrelated skills and
+  references are not preloaded.
 - `.venv/bin/python -m pip check` succeeds.
 - `scripts/` compiles without syntax errors.
 - A representative deck spec passes `build_deck.py --dry-run --strict`.

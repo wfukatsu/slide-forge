@@ -2,9 +2,10 @@
 
 # slide-forge agent instructions
 
-This repository supports both Codex and Claude Code. Use the shared Python
-engine and the skills under `.agents/skills/`; do not duplicate their logic in
-host-specific prompts.
+Claude Code is the primary host and distribution path. Codex uses the same
+shared Python engine and the same `skills/` through `.agents/skills/` links.
+`commands/`, shared `skills/`, and `references/workflow-contract.md` own
+behavior; keep this file as a thin Codex compatibility layer.
 
 ## Runtime
 
@@ -37,6 +38,10 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Thumbnail visual QA | `slide-qa` |
 | Export Google Slides to PPTX | `pptx-export` |
 | Estimate/BOM spreadsheet | `spreadsheets` |
+
+After selecting a skill, do not preload the other skills or every reference it
+mentions. Follow the progressive-loading table in
+`references/workflow-contract.md`.
 
 ## Host-tool compatibility
 

@@ -19,6 +19,10 @@ description: >-
 
 # Scalar AE Materials
 
+Use `references/scalar/workflow-contract.md` for shared safety, Drive,
+approval, and QA rules. This skill owns only the routing and content rules for
+a single visit or internal approval artifact.
+
 **The same deal information must never be shown to everyone through a single
 document.** This skill's job is to choose the material type from phase
 (0–6) × audience (customer / internal) × purpose, and to build only a

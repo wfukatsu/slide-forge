@@ -13,6 +13,11 @@ description: >-
 
 # Google Slides Generation (from scratch)
 
+Claude Code is the primary host for this shared skill. Codex and Antigravity
+use the same procedure through thin adapters. Read this file completely, then
+follow `references/workflow-contract.md`; do not preload every reference in the
+capability table below.
+
 ## Important
 
 - **Scope**: building decks WITHOUT a registered corporate master. Two paths, both on the shared engine in this repo:
@@ -52,8 +57,8 @@ description: >-
 | Cloud vendor icons (AWS/GCP/Azure) | `scripts/cloud_icons.py` + `assets/cloud-icons` + `references/cloud-icons.md` |
 | Restore cloud icons (first use) | `scripts/fetch_cloud_icons.py` |
 | AI-generated images (covers, section art) | `scripts/images.py` (needs `GEMINI_API_KEY`) + `references/images.md` |
-| API pitfalls | `references/google-slides-api.md`, `references/api-notes.md` |
-| Deck composition recipes | `references/composers/{basic,content,product,usecase,enterprise,db-middleware}.md` |
+| API pitfall | Search the matching topic in `references/api-notes.md`; open the relevant `google-slides-api.md` section only if unresolved |
+| Deck composition recipe | One matching file/section under `references/composers/` |
 
 ---
 
@@ -128,7 +133,7 @@ Contract rules (footer safe area, title height, connector attachment) are in `re
 - **Connectors attach to shapes**, never drawn as free coordinates — the API does not validate line endpoints, so a detached arrow is invisible until QA
 - Body >= 12pt, title >= 20pt; WCAG AA contrast (4.5:1); max ~6 bullets, 1 slide = 1 message; 60-30-10 color rule
 - Do not guess cloud icon names — search with `scripts/cloud_icons.py --search <term>`; recoloring/rotating/flipping vendor icons is prohibited by their license terms
-- Full principles and per-slide-type guidance: `references/google-slides-api.md`, `references/composers/`, `references/slide-patterns.md`
+- Per-slide guidance: load only the matching Composer and slide-pattern sections.
 
 ---
 
@@ -180,7 +185,10 @@ Code-first path:
 
 Upload whatever lets the user regenerate or edit later: the spec (`deck.json`) or deck module (`deck.py`), `.drawio` sources, and exported figure PNGs. QA thumbnails stay local. Report the folder URL together with the presentation URL.
 
-For large decks, page-level fan-out to subagents is possible; see `references/parallel-generation.md` for what may and may not be split.
+Keep ordinary decks up to 17 pages in one agent. Consider page-level fan-out
+at 18–20 pages, or earlier only when independent page groups use different
+complex figures. Load only the applicable sections of
+`references/parallel-generation.md`.
 
 ---
 
@@ -200,4 +208,8 @@ The procedure is owned by the **`slide-qa` skill** — follow it. In short:
 
 Check: text clipped or overflowing its frame, elements overlapping decorations, detached connector arrows, unreadable contrast, awkward line wraps. These are invisible in API responses.
 
-On any failure: fix the spec/module, re-run Phase 3 validation, **delete the broken presentation, and regenerate**. Repeat until the thumbnails are clean, clean up the QA files, then report the final URL.
+On failure: fix the spec/module, re-run Phase 3 validation, **delete the broken
+presentation, and regenerate**. The first QA pass covers every page. After a
+local fix, reinspect the changed page and adjacent pages; expand to all pages
+using a changed shared component, and to the whole deck after master/theme/
+footer/page-number changes. Clean up QA files, then report the final URL.

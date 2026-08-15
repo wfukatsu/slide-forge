@@ -21,6 +21,10 @@ description: >-
 
 # Scalar Product Introduction Slides
 
+Use `references/scalar/workflow-contract.md` for shared sales-material rules
+and `references/scalar/research-policy.md` for research. This skill owns only
+product-deck-specific decisions and generation.
+
 Working directory: the slide-forge root — `${CLAUDE_PLUGIN_ROOT}` when running
 from an installed plugin, `/path/to/slide-forge` on a local clone
 (literal `cd` paths below assume the local clone).
@@ -107,8 +111,9 @@ before rewriting `build_plan()`.
 ## Phase 2: Research
 
 Read `references/scalar/research-2026-08.md`; if it is fresh enough, use it as
-is. If it is stale or new information is needed, dispatch research agents **in
-parallel**:
+is. If information needs refreshing, apply `research-policy.md`: check changes
+first, use one researcher for a small update, and split into non-overlapping
+scopes only when multiple areas genuinely need fresh evidence:
 
 1. Company info and news: https://scalar-labs.com/ja/ (company / news), press
    release searches
@@ -120,9 +125,9 @@ parallel**:
 3. Use cases and case studies: the case-study category of the news feed plus
    web search (there is no dedicated case-study page)
 
-Always instruct the agents: cite source URLs, mark unknowns explicitly as
-unknown, no guessing. Update `references/scalar/` with the results and rewrite
-the research date.
+Give researchers only their source boundary and the compact return schema from
+the policy—not this full skill. Cite source URLs, mark unknowns explicitly,
+never guess, and update the dated research cache.
 **Check the pitfall list (at the end of the references file) before turning
 anything into slides, every time.**
 

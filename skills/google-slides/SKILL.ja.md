@@ -13,6 +13,10 @@ description: >-
 
 # Google Slides 生成（ゼロから）
 
+Claude Code を主ホストとする。Codex と Antigravity も同じ共有スキルを利用する。
+このファイルを最後まで読んだ後、`references/workflow-contract.md` に従う。機能表に
+載るreferenceを事前に全件読み込まない。
+
 ## 重要事項
 
 - **スコープ**: 登録済みコーポレートマスターを使わずにデッキを構築する。パスは 2 つあり、どちらも本リポジトリの共有エンジン上で動く:

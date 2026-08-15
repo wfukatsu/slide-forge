@@ -2,7 +2,7 @@
 
 # slide-forge Project Guidelines for Antigravity
 
-This repository is an integrated engine (`slide-forge`) for Google Slides deck generation, infographic creation, visual QA, PPTX conversion, and spreadsheet generation.
+This repository is an integrated engine (`slide-forge`) for Google Slides deck generation, infographic creation, visual QA, PPTX conversion, and spreadsheet generation. Claude Code is the primary host and distribution path. Antigravity is a thin adapter over the same shared `skills/`, `commands/`, and `references/workflow-contract.md`; do not duplicate their workflow logic here.
 
 ## 1. Runtime rules
 
@@ -19,6 +19,8 @@ This repository is an integrated engine (`slide-forge`) for Google Slides deck g
 ## 2. Using skills
 
 When a task request involves creating, editing, or validating slides, load the relevant skill's `SKILL.md` under `.agents/skills/` and follow its procedure.
+
+Load exactly one generation skill completely, then read only the reference sections activated by `references/workflow-contract.md`. Do not preload every linked manual or catalog.
 
 | Task / purpose | Skill to use (`.agents/skills/`) |
 |---|---|

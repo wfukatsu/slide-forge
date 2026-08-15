@@ -17,6 +17,10 @@ description: >-
 
 # Scalar Account Planning Session
 
+Use `references/scalar/workflow-contract.md` for shared safety, Drive,
+approval, stable-URL, and QA rules. Do not restate or reinterpret stage gates
+owned by `references/scalar/sales-playbook.md`.
+
 APS is an **annual/semi-annual account review**, not the activity plan
 (`scalar-account-plan`) that gets updated after every visit — the two differ
 in lifespan and input, so don't mix them.

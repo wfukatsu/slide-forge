@@ -20,6 +20,9 @@ description: >-
 
 # Visual QA for Generated Slides (thumbnail-based)
 
+Follow the QA scope in `references/workflow-contract.md`. The first pass is a
+complete visual inspection; repair passes are impact-scoped.
+
 ## Important
 
 - **Scope**: post-generation visual verification only. The offline coordinate
@@ -49,7 +52,7 @@ description: >-
 | Restrict pages (split QA) | `--pages 3,8,12,20` / `--pages 9-16` |
 | Delete local QA files (always, at the end) | `.venv/bin/python scripts/cleanup_qa.py` (`--dry-run` to preview) |
 | Full checklist, fix loop, reporting rules | `references/validation.md` (Gate 2) |
-| Splitting QA across sub-agents (>15 slides) | `references/parallel-generation.md` §6 |
+| Splitting QA when images crowd context | `references/parallel-generation.md` §6 |
 | Delete a superseded deck from Drive | `drive.files().delete(fileId=…)` (or move to trash) |
 
 ---
@@ -61,7 +64,7 @@ description: >-
 ```
 
 - Judge with `--size LARGE`. SMALL is only for the squint test.
-- **If the deck exceeds 15 slides, split the QA into 6–8-slide ranges.** When
+- **When images would crowd the main context, split QA into 6–8-slide ranges.** When
   the host and session permit sub-agents, delegate those ranges and have them
   **return only findings as text**. Otherwise inspect the same ranges
   sequentially using the Codex fallback in `references/parallel-generation.md`.
@@ -70,8 +73,8 @@ description: >-
 
 ## Phase 2: Inspect
 
-Open the PNGs with the Read tool. Seeing every page is the ideal; with many
-slides, prioritize:
+Open the PNGs with the Read tool. On the first QA pass, inspect every page;
+sampling is not a substitute. With many slides, prioritize the viewing order:
 
 1. **The page with the most elements** (overlaps show up there first)
 2. **The page with the most complex figure** (swimlanes, branching flows, multi-panel)
@@ -116,6 +119,9 @@ identify defects → fix the spec / deck module (originating skill)
   **Never delete a deck whose URL has been shared** — the URL *is* the
   deliverable, and deleting it breaks every link the user has handed out.
 - Never patch the artifact; fix the source and rebuild (faster, reproducible).
+- After a local page fix, re-fetch that page and its adjacent pages. After a
+  shared layout/component fix, re-fetch every page using it. Re-fetch the
+  entire deck after a master, theme, footer, or page-number change.
 - Delete intermediate decks created during verification from Drive as well
   (this too applies only to new-presentation decks, never to `--into` targets).
 

@@ -30,14 +30,15 @@ worth it when:
 
 | Use it | Don't use it |
 |---|---|
-| 12+ pages | 10 or fewer (the coordination overhead costs more) |
+| 18–20+ pages | 17 or fewer with ordinary text/standard figures |
 | Many figures (each page needs a different reference) | Every page is just bullet text |
-| QA covers 15+ pages (images crowd out context) | Fixing/regenerating a few pages |
+| QA images crowd the main context | Repair QA for a few pages |
 | A large-scale replacement of an existing deck | Fixing a single page |
 
-**Splitting QA pays off even with fewer pages.** A single thumbnail image
-costs hundreds to a thousand tokens; reading 20 fills the main context with
-images. Splitting just this part is always worthwhile.
+**Split QA based on context pressure, not page count alone.** A thumbnail can
+cost hundreds to a thousand tokens, so a long first pass may benefit from
+range workers. Repair passes should stay local when only a few pages changed;
+delegating those adds coordination cost without reducing total tokens.
 
 ## Work That Should Not Be Split
 
@@ -82,7 +83,8 @@ Every agent's instructions must include:
 2. The `layout` and **finalized action titles** (don't make the agent decide them)
 3. The skeleton (A–F) and content (component names)
 4. The numbers/copy to place, **verbatim**. Pass the source citation string too
-5. Which reference(s) to read, **named explicitly, only 1–2** (don't have it read everything)
+5. Which reference section(s) to read, **named explicitly, at most two
+   sections** (don't have it read whole manuals)
 6. Coordinates must follow the "Standard Coordinates by Skeleton" in `references/slide-patterns.md`
 7. The self-check below must be completed
 
