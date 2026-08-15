@@ -112,11 +112,12 @@ identify defects → fix the spec / deck module (originating skill)
 - **新規プレゼンテーションとして生成された**デッキでは、再生成のたびに新しい
   プレゼンテーションと URL が作られる。**先に旧版を Drive から削除する** —
   ユーザーが持つ URL は最新の 1 つだけにする。
-- **例外 — インプレース（`--into`）デッキ。** URL の不変が契約であるデッキ —
-  `scalar-account-plan` の活動計画、`scalar-account-planning-session` の
+- **例外 — インプレース（`--into`）デッキ。** ページ固有の修正は
+  `--into <deck> --update-slides <pages>` を使い、変更ページと前後ページだけを取得する。
+  URL の不変が契約であるデッキ — `scalar-account-plan` の活動計画、`scalar-account-planning-session` の
   2 つのデッキ、`spreadsheets` スキルで更新するスプレッドシート — は、
   `scripts/snapshot_version.py` で編集前リビジョンを記録した上で、
-  **同じデッキへの再生成**（`build_deck.py --into` / ビルダーのインプレース更新）
+  **同じデッキへの再生成**（裸の `build_deck.py --into` は承認済み全再構築のみ）
   で修正する。**共有済み URL のデッキは決して削除しない** — URL そのものが
   納品物であり、削除すればユーザーが配ったリンクがすべて壊れる。
 - 成果物をパッチせず、ソースを直して再ビルドする（速く、再現可能）。

@@ -32,7 +32,10 @@ or materially changed scope may still require user input.
   only when a complete source spec exists, the target is confirmed to be a
   generated deck rather than its master, a snapshot succeeded, and the user
   explicitly approved replacing every page. A request to edit, insert, or fix
-  one page does not authorize `--into`; route it to a scoped editing workflow.
+  one page does not authorize bare `--into`; route local fixes to `--into
+  <deck> --update-slides <pages>`. Partial updates still require a complete
+  source spec, snapshot, strict validation, template match, and live page-count
+  match; they preserve every unselected slide but assign new IDs to replaced slides.
 - Never expose credentials, tokens, API keys, or account-ledger internals.
 - Never put named-person judgements or internal sales material in a
   customer-facing artifact.

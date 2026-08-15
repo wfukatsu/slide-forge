@@ -59,6 +59,20 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 .venv/bin/python scripts/validate_agent_contracts.py
 ```
 
+既存のslide-forgeデッキで指定ページだけを再生成する場合も、完全なSpecを正本として
+live実行前にstrict dry-runを行う。
+
+```bash
+.venv/bin/python scripts/build_deck.py --template templates/<id>.json \
+  --spec out/<deck>/deck.json --into <deck-url> --update-slides 3,7 \
+  --dry-run --strict
+```
+
+`--dry-run` を外す前にsnapshotを取得する。未選択ページ、デッキURL、タイトル、Drive
+フォルダは変わらない。置換ページには新しいslide IDが付くため、そのページのコメントと
+旧IDへのリンクは維持されない。`--update-slides` なしの `--into` は引き続き、明示承認を
+得た全ページ置換専用である。
+
 ### Account Executive ワークフロー
 
 成果物がデッキではなく AE の次のアクションになる営業側は、さらに 2 つの

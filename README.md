@@ -62,6 +62,20 @@ skill, or workflow reference:
 .venv/bin/python scripts/validate_agent_contracts.py
 ```
 
+To regenerate only selected pages of an existing slide-forge deck, keep the
+complete spec as the source of truth and run strict dry-run before the live call:
+
+```bash
+.venv/bin/python scripts/build_deck.py --template templates/<id>.json \
+  --spec out/<deck>/deck.json --into <deck-url> --update-slides 3,7 \
+  --dry-run --strict
+```
+
+Snapshot the deck before removing `--dry-run`. Unselected pages, the deck URL,
+title, and Drive folder stay unchanged. Replaced pages receive new slide IDs,
+so their comments and links to the old IDs are not preserved. Bare `--into`
+remains the explicitly approved full-deck replacement mode.
+
 ### Account Executive workflow
 
 Two more commands cover the sales side, where the deliverable is not a deck but

@@ -23,8 +23,8 @@ Use this skill to:
 
 - generate a new deck from a registered template;
 - inspect and register a supplied, unregistered master before generation;
-- rebuild a slide-forge-managed deck in place from its complete source spec
-  when its URL must remain stable and full replacement is explicitly approved.
+- update selected pages of a slide-forge-managed deck from its complete source
+  spec, or rebuild all pages when full replacement is explicitly approved.
 
 Use `google-slides` for a deck without a corporate master, `template-forge` to
 create a new master design, and `image-slots` when the only task is filling
@@ -34,9 +34,9 @@ empty image frames in an existing deck.
 
 - Before editing a user-owned deck in place, run
   `.venv/bin/python scripts/snapshot_version.py <URL>` and report the revision.
-- `build_deck.py --into` replaces every page. Never use it for a minor edit,
-  insertion, or an arbitrary existing deck. It requires a complete source spec,
-  target/master verification, and explicit approval of full replacement.
+- For a local fix, use `--into <deck> --update-slides <pages>` after snapshot;
+  it preserves every unselected page. Bare `--into` replaces every page and
+  requires target/master verification plus explicit full-replacement approval.
 - Ask only for missing branch decisions; never ask again for supplied or
   delegated (`your call`) decisions.
 - Get explicit approval for page count, layout, and every action title before
@@ -155,10 +155,10 @@ Create the Drive folder first, generate once, and upload editable sources:
 ```
 
 If generation fails, remove the partial deck made by this run before retrying.
-For an approved full-deck replacement, use `--into` only after all four gates
-pass: complete source spec, generated-deck target verification, successful
-snapshot, and explicit approval to replace every page. For a local edit or
-insertion, use the relevant scoped editing skill/procedure instead.
+For a local edit, pass the complete source spec with `--into <deck>
+--update-slides 3,7`; strict dry-run, snapshot, template and live-page-count
+checks remain mandatory. Selected pages receive new slide IDs. Use bare
+`--into` only after explicit approval to replace every page.
 
 ## Phase 5: Verify and deliver
 

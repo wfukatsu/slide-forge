@@ -23,7 +23,12 @@
     {
       "name": "minor-edit-never-full-replacement",
       "files": ["references/workflow-contract.md", "skills/google-slides-template/SKILL.md"],
-      "requires": ["one page does not authorize", "Never use it for a minor edit", "replaces every page"]
+      "requires": ["one page does not authorize", "--update-slides", "replaces every page"]
+    },
+    {
+      "name": "three-host-targeted-slide-update",
+      "files": ["references/workflow-contract.md", "skills/google-slides-template/SKILL.md", "AGENTS.md", "GEMINI.md"],
+      "requires": ["Claude Code", "Codex", "Antigravity", "--into", "--update-slides", "preserve"]
     },
     {
       "name": "approved-full-replacement-gates",

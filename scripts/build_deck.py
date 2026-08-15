@@ -361,6 +361,37 @@ MAX_REQUESTS_PER_BATCH = 10000
 MAX_BATCH_BYTES = 5_000_000
 
 
+def parse_slide_selection(value: str, slide_count: int) -> list[int]:
+    """Parse a comma-separated, one-based page selection into zero-based indices."""
+    if not value or not value.strip():
+        raise ValueError("--update-slides requires at least one page number")
+    indices: list[int] = []
+    seen: set[int] = set()
+    for raw in value.split(","):
+        token = raw.strip()
+        if not token or not token.isdecimal():
+            raise ValueError(
+                f"invalid page number {token!r} in --update-slides; use e.g. 3,7"
+            )
+        page = int(token)
+        if page < 1 or page > slide_count:
+            raise ValueError(
+                f"page {page} is outside the spec range 1..{slide_count}"
+            )
+        index = page - 1
+        if index in seen:
+            raise ValueError(f"page {page} is listed more than once")
+        seen.add(index)
+        indices.append(index)
+    return indices
+
+
+def _single_batch_size(requests: list[dict]) -> tuple[int, int]:
+    return len(requests), sum(
+        len(json.dumps(req, ensure_ascii=False).encode()) for req in requests
+    )
+
+
 def _batches(requests: list[dict], max_requests: int = MAX_REQUESTS_PER_BATCH,
              max_bytes: int = MAX_BATCH_BYTES):
     """Split the request list into chunks that fit both the count and byte-size limits.
@@ -411,6 +442,9 @@ class TemplateDeck:
         self.image_fixups: list[tuple] = []
         # --into's title change is deferred until after a successful commit (see open())
         self.pending_title: str | None = None
+        # Partial page replacement must be atomic. It is never split across batchUpdate calls.
+        self.require_single_batch = False
+        self.partial_targets: dict[int, str] = {}
 
     @property
     def url(self) -> str:
@@ -503,6 +537,43 @@ class TemplateDeck:
             # remembered here, and issued once commit() has successfully
             # replaced the contents
             deck.pending_title = title
+        return deck
+
+    @classmethod
+    def open_partial(
+        cls,
+        template: dict,
+        source: str,
+        *,
+        selected_indices: list[int],
+        expected_slide_count: int,
+        layouts=None,
+        creds=None,
+    ) -> "TemplateDeck":
+        """Open a generated deck for atomic replacement of selected pages only."""
+        slides, drive = _auth.services(creds)
+        pid = _auth.presentation_id(source)
+        if pid == template.get("presentationId"):
+            raise ValueError(
+                t("{pid} is template '{tpl}' itself, not a deck generated from "
+                  "it; --into must never overwrite the master",
+                  pid=pid, tpl=template.get("name", "?")))
+        deck = cls(slides, drive, pid, template)
+        deck._require_layouts(layouts)
+        present = deck._present_slide_ids()
+        if len(present) != expected_slide_count:
+            raise ValueError(
+                "partial update refused: the live deck has "
+                f"{len(present)} pages but the source spec has {expected_slide_count}; "
+                "refresh the spec or use an explicitly approved full replacement"
+            )
+        deck.partial_targets = {index: present[index] for index in selected_indices}
+        deck.require_single_batch = True
+        deck._print_pre_edit_revision()
+        pages = ", ".join(str(index + 1) for index in selected_indices)
+        print(f"  partial update: only pages {pages} will be replaced")
+        print("  warning: replaced pages receive new slide IDs; comments and "
+              "links to their old IDs are not preserved")
         return deck
 
     def _present_slide_ids(self) -> list[str]:
@@ -912,69 +983,57 @@ class TemplateDeck:
         # When stacking after slides kept via keep_existing, advance the
         # numbering start by that many slides
         start = cfg.get("startAt", 1) + self.kept_slides if start is None else start
+        return sum(
+            self._add_page_number(entry, start + offset, cfg)
+            for offset, entry in enumerate(self._added)
+        )
+
+    def add_page_numbers_at(self, page_indices: list[int]) -> int:
+        """Draw numbers for newly added pages at their original zero-based positions."""
+        if len(page_indices) != len(self._added):
+            raise ValueError("page number positions must match the added slides")
+        cfg = self.template.get("pageNumber", {})
+        start = cfg.get("startAt", 1)
+        drawn = 0
+        for entry, index in zip(self._added, page_indices):
+            drawn += self._add_page_number(entry, start + index, cfg)
+        return drawn
+
+    def _add_page_number(self, entry: dict, number: int, cfg: dict) -> int:
+        """Draw one page number, returning one when the layout declares a slot."""
+        layout = entry["layout"]
+        geo = layout.get("elements", {}).get("slideNumber")
+        if not layout.get("hasPageNumber") or not geo:
+            return 0
         font = cfg.get("font", "Arial")
         size = cfg.get("fontSize", 7)
         color = cfg.get("color", "#666666")
         align = cfg.get("align", "END")
-
-        drawn = 0
-        for offset, entry in enumerate(self._added):
-            layout = entry["layout"]
-            geo = layout.get("elements", {}).get("slideNumber")
-            if not layout.get("hasPageNumber") or not geo:
-                continue
-            # The original frame is only a few mm wide and truncates at 2
-            # digits, so widen it to a minimum of 0.5in while keeping the right edge fixed
-            right = geo["x"] + geo["w"]
-            w = max(geo["w"], 0.5)
-            x = right - w if align == "END" else geo["x"]
-            oid = self._next_id("pagenum")
-            self.requests += [
-                {
-                    "createShape": {
-                        "objectId": oid,
-                        "shapeType": "TEXT_BOX",
-                        "elementProperties": {
-                            "pageObjectId": entry["slideId"],
-                            "size": {
-                                "width": {"magnitude": _auth.inches(w), "unit": "EMU"},
-                                "height": {"magnitude": _auth.inches(geo["h"]), "unit": "EMU"},
-                            },
-                            "transform": {
-                                "scaleX": 1, "scaleY": 1,
-                                "translateX": _auth.inches(x),
-                                "translateY": _auth.inches(geo["y"]),
-                                "unit": "EMU",
-                            },
-                        },
-                    }
-                },
-                {"insertText": {"objectId": oid, "text": str(start + offset)}},
-                {
-                    "updateTextStyle": {
-                        "objectId": oid,
-                        "style": {
-                            "fontFamily": font,
-                            "fontSize": {"magnitude": size, "unit": "PT"},
-                            "foregroundColor": {
-                                "opaqueColor": {"rgbColor": _auth.hex_to_rgb(color)}
-                            },
-                        },
-                        "textRange": {"type": "ALL"},
-                        "fields": "fontFamily,fontSize,foregroundColor",
-                    }
-                },
-                {
-                    "updateParagraphStyle": {
-                        "objectId": oid,
-                        "style": {"alignment": align},
-                        "textRange": {"type": "ALL"},
-                        "fields": "alignment",
-                    }
-                },
-            ]
-            drawn += 1
-        return drawn
+        right = geo["x"] + geo["w"]
+        w = max(geo["w"], 0.5)
+        x = right - w if align == "END" else geo["x"]
+        oid = self._next_id("pagenum")
+        self.requests += [
+            {"createShape": {"objectId": oid, "shapeType": "TEXT_BOX",
+             "elementProperties": {"pageObjectId": entry["slideId"],
+             "size": {"width": {"magnitude": _auth.inches(w), "unit": "EMU"},
+                      "height": {"magnitude": _auth.inches(geo["h"]), "unit": "EMU"}},
+             "transform": {"scaleX": 1, "scaleY": 1,
+                           "translateX": _auth.inches(x),
+                           "translateY": _auth.inches(geo["y"]), "unit": "EMU"}}}},
+            {"insertText": {"objectId": oid, "text": str(number)}},
+            {"updateTextStyle": {"objectId": oid,
+             "style": {"fontFamily": font,
+                       "fontSize": {"magnitude": size, "unit": "PT"},
+                       "foregroundColor": {"opaqueColor": {
+                           "rgbColor": _auth.hex_to_rgb(color)}}},
+             "textRange": {"type": "ALL"},
+             "fields": "fontFamily,fontSize,foregroundColor"}},
+            {"updateParagraphStyle": {"objectId": oid,
+             "style": {"alignment": align}, "textRange": {"type": "ALL"},
+             "fields": "alignment"}},
+        ]
+        return 1
 
     # ---------- Execution ----------
 
@@ -987,6 +1046,13 @@ class TemplateDeck:
                 n_img = self.assets.flush()
                 if n_img:
                     print(f"  images uploaded: {n_img}")
+            if self.require_single_batch:
+                count, size = _single_batch_size(self.requests)
+                if count > MAX_REQUESTS_PER_BATCH or size > MAX_BATCH_BYTES:
+                    raise ValueError(
+                        "partial update exceeds the atomic batch limit "
+                        f"({count} requests / {size} bytes); split it into fewer pages"
+                    )
             for n, chunk in enumerate(_batches(self.requests, chunk_size), 1):
                 # batchUpdate is non-idempotent; resending after a lost response risks a half-built deck, so stop instead
                 _retry(
@@ -1674,11 +1740,18 @@ def validate_spec(template: dict, spec: dict) -> list[str]:
     return problems
 
 
-def build_from_spec(deck: TemplateDeck, spec: dict) -> list[str]:
+def build_from_spec(
+    deck: TemplateDeck,
+    spec: dict,
+    selected_indices: list[int] | None = None,
+) -> list[str]:
     """Stack slides from the spec. Returns audit findings if any figures were drawn."""
     defaults = spec.get("defaults", {})
     warnings: list[str] = []
-    for i, s in enumerate(spec.get("slides", [])):
+    slides = spec.get("slides", [])
+    indices = range(len(slides)) if selected_indices is None else selected_indices
+    for i in indices:
+        s = slides[i]
         ref = deck.add_slide(
             s["layout"],
             title=s.get("title"),
@@ -1691,9 +1764,14 @@ def build_from_spec(deck: TemplateDeck, spec: dict) -> list[str]:
             body_line_spacing=s.get("bodyLineSpacing", defaults.get("bodyLineSpacing")),
             body_space_above=s.get("bodySpaceAbove", defaults.get("bodySpaceAbove")),
             body_space_below=s.get("bodySpaceBelow", defaults.get("bodySpaceBelow")),
+            index=i if selected_indices is not None else None,
         )
         figs = s.get("figures")
         if not figs:
+            if selected_indices is not None:
+                deck.requests.append({"deleteObject": {
+                    "objectId": deck.partial_targets[i]
+                }})
             continue
         from diagrams import Canvas  # only loaded for a spec that uses figures
         canvas = Canvas(deck, ref["slideId"], deck.template)
@@ -1701,6 +1779,10 @@ def build_from_spec(deck: TemplateDeck, spec: dict) -> list[str]:
         for msg in (canvas.audit_bounds() + canvas.audit_connectors()
                     + canvas.audit_overlaps() + canvas.audit_text_fit()):
             warnings.append(f"slides[{i}] ({s.get('title') or s['layout']}): {msg}")
+        if selected_indices is not None:
+            deck.requests.append({"deleteObject": {
+                "objectId": deck.partial_targets[i]
+            }})
     return warnings
 
 
@@ -1718,6 +1800,9 @@ def main() -> int:
                    help=t("replace the contents of this existing deck "
                           "(URL or ID) instead of creating a new one; the "
                           "deck URL stays the same"))
+    p.add_argument("--update-slides", metavar="PAGES",
+                   help="with --into, replace only these one-based pages "
+                        "from the complete spec (for example: 3,7)")
     p.add_argument("--dry-run", action="store_true",
                    help=t("validate the spec only, without calling the API"))
     p.add_argument("--no-page-numbers", action="store_true",
@@ -1732,6 +1817,31 @@ def main() -> int:
     template = load_template(args.template)
     with open(args.spec, encoding="utf-8") as f:
         spec = json.load(f)
+
+    selected_indices: list[int] | None = None
+    if args.update_slides is not None:
+        if not args.into:
+            print("ERROR: --update-slides requires --into", file=sys.stderr)
+            return 1
+        if args.keep_existing:
+            print("ERROR: --update-slides cannot be combined with --keep-existing",
+                  file=sys.stderr)
+            return 1
+        if args.title:
+            print("ERROR: --title cannot be combined with --update-slides; "
+                  "partial updates preserve the Drive title", file=sys.stderr)
+            return 1
+        if args.folder:
+            print("ERROR: --folder cannot be combined with --update-slides; "
+                  "partial updates preserve the Drive folder", file=sys.stderr)
+            return 1
+        try:
+            selected_indices = parse_slide_selection(
+                args.update_slides, len(spec.get("slides", []))
+            )
+        except ValueError as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
 
     # Resolve the layout's image slots to coordinates before validation
     # (everything downstream — validation, audit, generation — looks at the resolved coordinates)
@@ -1748,7 +1858,7 @@ def main() -> int:
         return 1
 
     title = args.title or spec.get("title")
-    if not title:
+    if not title and selected_indices is None:
         print(t("No title (specify --title or spec.title)"), file=sys.stderr)
         return 1
 
@@ -1772,6 +1882,10 @@ def main() -> int:
         if any(s.get("figures") for s in spec["slides"]):
             print(t("figure audit (connectors / overlaps / text overflow): "
                     "no problems"))
+        if selected_indices is not None:
+            pages = ", ".join(str(index + 1) for index in selected_indices)
+            print(f"partial update plan: replace pages {pages}; all other pages stay unchanged")
+            print("live write will also verify page count, slide IDs, and template layouts")
         return 0
 
     if args.into:
@@ -1783,10 +1897,18 @@ def main() -> int:
             print(t("  note: --folder is ignored with --into "
                     "(the deck stays in its current folder)"))
         try:
-            deck = TemplateDeck.open(
-                template, args.into, title=title,
-                layouts=[s["layout"] for s in spec["slides"]],
-            )
+            if selected_indices is not None:
+                deck = TemplateDeck.open_partial(
+                    template, args.into,
+                    selected_indices=selected_indices,
+                    expected_slide_count=len(spec["slides"]),
+                    layouts=[spec["slides"][i]["layout"] for i in selected_indices],
+                )
+            else:
+                deck = TemplateDeck.open(
+                    template, args.into, title=title,
+                    layouts=[s["layout"] for s in spec["slides"]],
+                )
         except ValueError as exc:
             # A wrong replacement target is reliably stopped right here.
             # No traceback, just a clear message about what happened
@@ -1798,9 +1920,10 @@ def main() -> int:
             keep_existing=args.keep_existing,
         )
     try:
-        warnings = build_from_spec(deck, spec)
+        warnings = build_from_spec(deck, spec, selected_indices=selected_indices)
         if not args.no_page_numbers:
-            n = deck.add_page_numbers()
+            n = (deck.add_page_numbers_at(selected_indices)
+                 if selected_indices is not None else deck.add_page_numbers())
             print(f"  page numbers: {n} slides")
         url = deck.commit()
     except Exception:
@@ -1813,7 +1936,12 @@ def main() -> int:
                     "{url} — delete it manually if it is not needed",
                     url=deck.url), file=sys.stderr)
         raise
-    print(f"Done! {len(deck.slide_ids)} slides created.")
+    if selected_indices is not None:
+        pages = ", ".join(str(index + 1) for index in selected_indices)
+        print(f"Done! pages {pages} replaced; all other pages were left unchanged.")
+        print("Note: replaced pages receive new slide IDs; comments and links to old IDs are not preserved.")
+    else:
+        print(f"Done! {len(deck.slide_ids)} slides created.")
     if warnings:
         print("\n" + t("Figure audit found {n} findings:", n=len(warnings)),
               file=sys.stderr)
