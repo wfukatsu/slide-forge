@@ -126,3 +126,31 @@ Usage tips:
 - All 15 sections together run to 60+ slides. For a 15-minute board
   meeting, narrow down to sections 1, 3, 4, 8, and 10, and move the rest to
   the Appendix.
+
+### Use the business-plan pack for revenue, investment, risk, and structure
+
+Sections 8-12 take the same shape every time, so `slide-templates/business-plan/`
+carries eight ready-made templates. Fill semantic slots instead of recomposing
+from primitives:
+
+| Section | Template | What it answers |
+|---|---|---|
+| 8 Profitability | `revenue-plan` | What revenue and profit in each year, and when it turns profitable |
+| 8 Profitability | `sales-buildup` | Which drivers add up to planned revenue, and which one it depends on |
+| 9 Investment and cost | `cost-structure` | How much is needed, and what the money is spent on in what order |
+| 9 Investment and cost | `break-even` | How much must be sold to stop losing money, and how much room the plan has |
+| 9 Investment and cost | `roi-payback` | When the money is recovered, and whether it holds up as an investment |
+| 10 Risk | `scenario-comparison` | How far results move when assumptions move, and whether the worst case is acceptable |
+| 10 Risk | `risk-register` | What could break the plan, how it is handled, and what makes us stop |
+| 11-12 Structure | `execution-structure` | Who executes it, and how many people each role needs |
+
+```bash
+.venv/bin/python scripts/render_slide_template.py \
+    --template revenue-plan --data my-pl.json --out out/pl.json \
+    --density print          # print = written plan, presentation = board meeting
+```
+
+The numeric tie-outs are stated in each template's guardrails. Always hold them:
+the total of `sales-buildup` equals revenue in `revenue-plan`, personnel cost in
+`cost-structure` equals the headcount in `execution-structure`, and the base case
+of `scenario-comparison` equals `revenue-plan`.

@@ -9,14 +9,14 @@ Rendering specification for the 4 types in the db-middleware category. Builds DB
 
 ### Cloud Icons
 
-Provider-specific icons are stored under `assets/shared/cloud-icons/`. Composers reference them via `add_image_from_asset()`.
+Provider-specific icons are stored under `assets/cloud-icons/` (fetched by `scripts/fetch_cloud_icons.py`;
+the directory is gitignored). Composers place them with the `cloud_icon()` helper from `scripts/cloud_icons.py`.
 
 ```
-assets/shared/cloud-icons/
+assets/cloud-icons/
   aws/       — AWS サービスアイコン
   gcp/       — GCP サービスアイコン
   azure/     — Azure サービスアイコン
-  generic/   — 汎用インフラアイコン
 ```
 
 ```python
@@ -366,7 +366,7 @@ def compose_multi_cloud(sb, slide_id, content, theme, page_num, total_pages=None
 - Assumes 2-3 clouds (4 or more providers narrows the card width)
 - Uses each provider's brand color in the header for easy visual identification
 - Placing the Scalar layer on top visually expresses the "vendor-independent unified layer" concept
-- Service icons are loaded from `assets/shared/cloud-icons/{provider}/`. Falls back to a badge if the asset is missing
+- Service icons are loaded from `assets/cloud-icons/{provider}/` (`aws` / `gcp` / `azure`). Falls back to a badge if the asset is missing
 
 ---
 

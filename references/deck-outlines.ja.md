@@ -110,3 +110,29 @@ Presentation 系レイアウト（`CONTENT_PRESENTATION` / `TITLE_ONLY_PRESENTAT
   参入インパクトが伝わる（1 枚に押し込まない）。
 - 全 15 セクションで 60 枚超になる。役員会 15 分なら 1・3・4・8・10 に絞り、
   残りは Appendix に回す。
+
+### 収益・投資・リスク・体制は business-plan パックを使う
+
+8〜12 は毎回同じ形になるので、`slide-templates/business-plan/` に 8 種の既製
+テンプレートがある。部品から組み直さず、意味のあるスロットにデータを入れる:
+
+| セクション | テンプレート | 何を答えるか |
+|---|---|---|
+| 8 収益性 | `revenue-plan` | 何年目にいくらの売上・利益になり、いつ黒字化するか |
+| 8 収益性 | `sales-buildup` | 計画売上はどのドライバーの積み上げか、どこに依存するか |
+| 9 投資・コスト | `cost-structure` | いくら必要で、費用は何にどの順で使われるか |
+| 9 投資・コスト | `break-even` | どれだけ売れば赤字を脱するか、計画にどれだけ余裕があるか |
+| 9 投資・コスト | `roi-payback` | 投じた資金はいつ回収でき、投資判断として見合うか |
+| 10 リスク | `scenario-comparison` | 前提が振れると業績はどこまで動くか、最悪ケースは許容できるか |
+| 10 リスク | `risk-register` | 何が計画を壊しうるか、どう手当てし、どうなったら止めるか |
+| 11・12 体制 | `execution-structure` | 誰が実行し、どの役割に何人必要か |
+
+```bash
+.venv/bin/python scripts/render_slide_template.py \
+    --template revenue-plan --data my-pl.json --out out/pl.json \
+    --density print          # print=事業計画書、presentation=役員会での説明
+```
+
+数字の整合はテンプレート側のガードレールに書いてある。`sales-buildup` の合計 =
+`revenue-plan` の売上高、`cost-structure` の人件費 = `execution-structure` の
+人数、`scenario-comparison` の標準 = `revenue-plan`、という対応を必ず取る。

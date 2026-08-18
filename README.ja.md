@@ -29,7 +29,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `b2b-account-maps` | B2B ソフトウェア商談の帰趨を左右する 2 つのアカウントマップを作る: 購買委員会の**インフルエンスマップ**（影響力 × 賛否、チャンピオンを強調表示）と、MEDDPICC の各項目を確認済み / 一部把握 / 推測のままで塗り分ける**ディスカバリーマップ**。加えて委員会テーブル、承認経路、ペインチェーン、そして「誰にいつまでに聞くか」つきのギャップ一覧。8 つのページテンプレートを `b2b-sales` パックとして `slide-templates/` に同梱。顧客提示用ではなく社内の作業成果物。 |
 | `scalar-account-plan` | 顧客ごとに 1 つの**営業台帳**（`accounts/<AE>/<customer>/account.json`）を維持する — 発言 / 観察 / 推測のラベルつき事実、購買委員会、MEDDPICC の状況、ペインチェーン、BANT リスク、現在のステージの Exit 条件とその顧客側エビデンス、未完了アクション — そしてそれを **URL の変わらない** 9 ページの活動計画としてレンダリングする（`build_deck.py --into` が既存デッキのページを差し替える）。台帳が答えられないことがそのまま成果物になる: `account_ledger.py gaps` がプレイブックの 10 のレビュー質問を照合し、未回答の質問をすべて「誰に聞くか・期限・完了条件」つきのアクションに変換して実行間で引き継ぎ、スライドと CRM 向け Markdown の両方に書き出す。社内専用。 |
 | `scalar-account-planning-session` | 台帳が既にカバーしているアカウントについて、年次の **Account Planning Session** デッキ — アカウントチーム向けのフル Plan Document と 9 ページのエグゼクティブレビューデッキ — を、顧客の公開資料を台帳に加えた 1 つの `aps.json` から作る。各提案を顧客自身の中期経営計画の一文に結びつけ、商談ごとに独立した章を与え、公開されている役員一覧と組織図から法人ごとに**次に誰と会うべきか**を導き、各人名には経由すべき人物を添える。ビルダーが持つのはレイアウトだけで、文字列はすべて gitignore された `accounts/` ツリー配下の `aps.json` にある。社内専用。 |
-| `scalar-ae-materials` | 商談フェーズ（0–6）× 相手 × 目的でルーティングして**1 回の訪問の資料**を作り、顧客提示のワンページャー、社内向け訪問計画、WPS ウィンプラン、Deal Desk / 稟議パケットが決して同じファイルにならないようにする。特定個人への評価・競合の弱点・未確認の数字が顧客の目に触れるものへ紛れ込まないことを生成前に確認するチェックを含み、各成果物を Drive の `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` に格納する。8 つのページテンプレートを `scalar-ae` パックとして同梱。ルールは `references/scalar/sales-playbook.ja.md` に従う。 |
+| `scalar-ae-materials` | 商談フェーズ（0–6）× 相手 × 目的でルーティングして**1 回の訪問の資料**を作り、顧客提示のワンページャー、社内向け訪問計画、WPS ウィンプラン、Deal Desk / 稟議パケットが決して同じファイルにならないようにする。特定個人への評価・競合の弱点・未確認の数字が顧客の目に触れるものへ紛れ込まないことを生成前に確認するチェックを含み、各成果物を Drive の `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` に格納する。10 のページテンプレートを `scalar-ae` パックとして同梱（Scalar ライセンス見積もり用の `license-estimate` と `license-pattern-compare` を含む。見積もりテンプレートは内訳に契約期間（月額 / 年額 / 3 年）の明示を必須とする）。ルールは `references/scalar/sales-playbook.ja.md` に従う。 |
 | `scalar-product-slides` | `scalar-2026` テンプレートによる Scalar Inc. の会社・製品・機能デッキのワークフロー。 |
 | `scalar-proposal-slides` | 顧客の課題を起点とする顧客別 Scalar ソリューション提案: ヒアリングチェックリスト、課題→製品マッピング（`references/scalar/proposal-map.ja.md`）、書き換え可能な実例つきの課題解決型提案構成（`scripts/scalar/build_scalar_proposal.py`）。 |
 | `drawio-diagrams` | 密度の高いクラウドアーキテクチャ / データフロー / ネットワーク図を draw.io ファイルとして作成し、ヘッドレスで PNG に書き出し（`drawio` CLI）、視覚的に QA してデッキに挿入する。編集可能な `.drawio` はデッキの Drive フォルダにアーカイブされる。 |
@@ -107,6 +107,13 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
   charts.py illustrations.py patterns.py pages.py events.py   図表ライブラリ
   icons.py cloud_icons.py images.py                 ピクトグラム、ベンダーアイコン、AI 画像
   inspect_template.py assemble_spec.py layout_sample.py list_templates.py
+  build_template.py               デザイン仕様 -> 新規マスター (template-forge)
+  slide_templates.py render_slide_template.py list_slide_templates.py validate_slide_templates.py
+                                  slide-templates/ パックのエンジン、レンダラー、レジストリ、オフライン検証
+  build_slide_template_catalog.py build_pattern_catalog.py build_template_catalog_doc.py
+                                  カタログ用 spec と生成されるカタログドキュメント
+  fill_image_slots.py             既存デッキの空の画像枠を埋める (image-slots)
+  validate_agent_contracts.py     ホスト / コマンド / スキル共通のプロンプト契約 eval
   account_graph.py build_account_graph.py   インフルエンス / ディスカバリーグラフ -> .drawio
   scalar/account_ledger.py       顧客ごとの営業台帳: 検証、gaps、スロットデータ
   scalar/account_workspace.py    Drive ツリー <root>/<AE>/<customer>/… (冪等)
@@ -119,7 +126,7 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
   scalar/         Scalar デッキビルダー
 templates/    登録済みマスター (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge のデザインプリセット)
   masters/        マスター .pptx をここに置いてインポートする (gitignored。同ディレクトリの README 参照)
-slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ
+slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (7 パック 55 種、manifest.json)
 assets/       scalar/ (ブランド: ピクトグラム、ロゴ、製品ロゴ), cloud-icons/ (gitignored)
 references/   エンジン・ワークフロー・ホスト互換のドキュメント
   images/slide-patterns/  パターンカタログ画像 (コミット済み。セットアップ 6 で再生成)
@@ -362,6 +369,14 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | `pptx-export` | ✔ | — | — | — | — |
 | `spreadsheets` | ✔（OAuth は Google Spreadsheet 出力時のみ） | — | — | — | — |
 | `template-forge` | ✔ | コピーする場合はベースのマスター | — | — | — |
+| `slide-template-creator` | ✔（カタログ画像の生成時） | — | — | — | — |
+| `current-state-analysis` | ✔ | ✔ copy モードのテンプレートで必要 | — | — | — |
+| `analysis-template-creator` | ✔（カタログ画像の生成時） | — | — | — | — |
+| `b2b-account-maps` | ✔ | ✔ copy モードのテンプレートで必要 | — | 出力したマップを編集するとき | — |
+| `scalar-account-plan` | ✔ | ✔ scalar-2026 | — | — | — |
+| `scalar-account-planning-session` | ✔ | ✔ scalar-2026 | — | — | — |
+| `scalar-ae-materials` | ✔ | ✔ scalar-2026 | — | — | — |
+| `image-slots` | ✔ | —（任意のデッキ URL で動作） | — | — | ✔ |
 
 秘密情報の衛生: `config/`（認証情報、トークン、API キー）、`out/`、
 `cache/`、`assets/cloud-icons/` は gitignored — マシンローカルなものが
@@ -405,6 +420,26 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 担うのが `slide-qa` スキルのサムネイル QA:
 `references/validation.ja.md` を参照。
 
+## クイックスタート（スライドテンプレート）
+
+`slide-templates/` には 7 パック・55 種の 1 枚ものテンプレートがある。座標では
+なく意味のある入力スロットを受け取って 1 枚分の spec を生成するので、登録済みの
+どのマスターとも組み合わせられる。
+
+```bash
+.venv/bin/python scripts/list_slide_templates.py --pack analysis   # 登録済み一覧
+.venv/bin/python scripts/validate_slide_templates.py --pack analysis   # オフライン検証
+.venv/bin/python scripts/render_slide_template.py \
+    --template swot-analysis --data my-swot.json --out out/swot.json \
+    --density print                                # 配布資料 / 登壇スライド
+```
+
+`--density` は `$density` バリアントを宣言しているテンプレート（`read-alone`
+と `business-plan` パック）にだけ効き、それ以外は無視する。デッキ spec の `$template` フィールドから
+呼び出すこともできる。全テンプレートはレンダリング画像つきで
+[`references/slide-template-catalog.ja.md`](references/slide-template-catalog.ja.md)
+にカタログ化してある。
+
 ## スライドパターンカタログ
 
 どんな形のページが作れるか?
@@ -424,12 +459,12 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | 定性・技術ページ | 5 | 数字でないものすべて |
 | 締め・付録ページ | 3 | 決定とその後 |
 
-これらのページパターンに加えて、`slide-templates/` には 6 つのパック
-（marketing-analysis、b2b-sales、scalar-ae、planning、analysis、read-alone）で
-47 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
+これらのページパターンに加えて、`slide-templates/` には 7 つのパック
+（marketing-analysis、b2b-sales、scalar-ae、planning、analysis、read-alone、
+business-plan）で 55 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
 答える問い、ガードレールつきで
 [`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md)
-にカタログ化されている。read-alone パックのテンプレートは `$density`
+にカタログ化されている。read-alone と business-plan パックのテンプレートは `$density`
 バリアントを持ち、同じテンプレートが高密度の配布資料（`print`）と低密度の
 登壇スライド（`presentation`）のどちらでも描画できる。密度はインテイクの
 「用途」の回答か `render_slide_template.py --density` で選ぶ。

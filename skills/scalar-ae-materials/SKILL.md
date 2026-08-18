@@ -82,7 +82,7 @@ skill's audience-specific question batch.
 | Customer / show feasibility | 3 | Demo materials, To-Be, architecture overview | `01_顧客提示` | `scalar-proposal-slides` |
 | Customer / agree on a PoC | 3 | PoC proposal, implementation plan | `02_顧客提案` | `scalar-proposal-slides` |
 | Internal / approve pricing and contract risk | 3–5 | Deal Desk materials, internal approval | `90_社内` | This skill |
-| Customer / selection and budgeting | 4 | Formal proposal, quotation, ROI | `02_顧客提案` | `scalar-proposal-slides` + `spreadsheets` |
+| Customer / selection and budgeting | 4 | Formal proposal, quotation, ROI (`license-pattern-compare` + `license-estimate` for the licence pages) | `02_顧客提案` | `scalar-proposal-slides` + `spreadsheets` |
 | Customer / contract procedures | 5 | Checklist, SOW, purchase order | `02_顧客提案` | `google-slides-template` |
 | Internal / renewal and expansion planning | 6 | Health review, renewal plan | `90_社内` | `scalar-account-plan` |
 

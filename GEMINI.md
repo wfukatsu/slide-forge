@@ -29,6 +29,8 @@ Load exactly one generation skill completely, then read only the reference secti
 | Generate a deck from scratch (no master) | `google-slides` |
 | Create/register a new master template | `template-forge` |
 | Create/register a reusable single-slide content template | `slide-template-creator` |
+| Current-state analysis / problem identification from supplied material | `current-state-analysis` |
+| Create/change an analysis-framework slide template | `analysis-template-creator` |
 | Create Scalar product/proposal slides | `scalar-product-slides`, `scalar-proposal-slides` |
 | Per-customer activity plan / visit materials (AE sales activity) | `scalar-account-plan`, `scalar-ae-materials` |
 | Account Planning Session (annual org-chart / deal-stocktake deck) | `scalar-account-planning-session` |

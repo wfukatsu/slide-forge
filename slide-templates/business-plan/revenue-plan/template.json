@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 1,
+  "id": "revenue-plan",
+  "displayName": "収益計画（複数年 P/L）",
+  "pack": "business-plan",
+  "category": "financial",
+  "description": "売上高から営業利益までの損益計画を年度別の表で示し、黒字化の時期と水準を 1 枚で示す",
+  "answers": [
+    "この事業は何年目にいくらの売上と利益になり、いつ黒字化するのか"
+  ],
+  "inferenceLevel": "predictive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "headers": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 5,
+      "maxItems": 5,
+      "maxLength": 8
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 7,
+          "presentation": 5
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 9,
+          "presentation": 8
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 80
+    }
+  },
+  "guardrails": [
+    "タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる",
+    "先頭列は項目名、残り 4 列は期間。3 期の計画なら最終列を「累計」か「CAGR」に充てる（空列を作らない）",
+    "単位（百万円・千円）と税抜/税込を先頭列ヘッダーか lead に必ず明記する",
+    "売上高の根拠は sales-buildup、費用の根拠は cost-structure に置く。このスライドは結果だけを載せる",
+    "利益率などの比率行は算出済みの文字列を渡す。スライド上では計算されない",
+    "実績ではなく計画値。実績を併記するなら行ラベルに（実績）と明記して区別する",
+    "前提が変わると全数字が動く。前提の幅は scenario-comparison で別途示す"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "headers": {
+          "$slot": "headers"
+        },
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          2.4,
+          1.65,
+          1.65,
+          1.65,
+          1.65
+        ],
+        "aligns": [
+          "START",
+          "END",
+          "END",
+          "END",
+          "END"
+        ],
+        "size": {
+          "$density": {
+            "print": 9.5,
+            "presentation": 11
+          }
+        },
+        "rowH": {
+          "$density": {
+            "print": 0.34,
+            "presentation": 0.44
+          }
+        },
+        "headerH": {
+          "$density": {
+            "print": 0.38,
+            "presentation": 0.44
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

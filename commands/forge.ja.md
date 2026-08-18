@@ -17,6 +17,8 @@ Claude Code をこのコマンドの主ホストとする。`$ARGUMENTS` を起�
 | Scalar の会社・製品・機能紹介 | `scalar-product-slides` |
 | 顧客課題起点の Scalar 提案書 | `scalar-proposal-slides` |
 | 再利用可能な1枚テンプレート | `slide-template-creator` |
+| 素材からの現状分析・課題特定（SWOT、PEST、5 フォース、なぜなぜ、ロジックツリー、ギャップ分析など） | `current-state-analysis` |
+| 分析フレームワークのテンプレート自体の追加・変更 | `analysis-template-creator` |
 | B2B 関与者／ディスカバリーマップ | `b2b-account-maps` |
 | 登録テンプレート／マスターを使用 | `google-slides-template` |
 | コーポレートマスターなし | `google-slides` |

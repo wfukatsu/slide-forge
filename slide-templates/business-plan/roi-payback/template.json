@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "id": "roi-payback",
+  "displayName": "投資回収（ROI・回収期間）",
+  "pack": "business-plan",
+  "category": "financial",
+  "description": "累計投資と累計リターンの交点で回収時期を示し、回収率・回収期間・NPV を数値で添える",
+  "answers": [
+    "投じた資金はいつ回収でき、投資判断として見合うのか"
+  ],
+  "inferenceLevel": "predictive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "roiValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 8
+    },
+    "roiLabel": {
+      "type": "string",
+      "default": "投資回収率（累計）",
+      "maxLength": 14
+    },
+    "paybackValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 8
+    },
+    "paybackLabel": {
+      "type": "string",
+      "default": "投資回収期間",
+      "maxLength": 14
+    },
+    "npvValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 8
+    },
+    "npvLabel": {
+      "type": "string",
+      "default": "NPV（正味現在価値）",
+      "maxLength": 14
+    },
+    "labels": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "maxLength": 6
+    },
+    "series": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 8
+          },
+          {
+            "type": "number[]",
+            "minimum": 0,
+            "matchLength": "labels"
+          }
+        ]
+      }
+    },
+    "unit": {
+      "type": "string",
+      "default": "",
+      "maxLength": 6
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 80
+    }
+  },
+  "guardrails": [
+    "タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる",
+    "折れ線は累計値どうしを比べる。単年度の値と累計値を同じ図に混ぜない",
+    "累計はマイナスにならない形（累計投資額と累計リターン）で描き、交点を回収時点として読む",
+    "割引率と算定期間を npvLabel か出典行に必ず書く。前提のない NPV は比較できない",
+    "回収期間は「割引前／割引後」のどちらかを明示する。両者は 1 年以上ずれることがある",
+    "回収率・NPV は算出済みの文字列を渡す。スライド上では計算されない",
+    "投資額は cost-structure、リターンの元になる売上は revenue-plan と一致させる",
+    "線の端に値ラベルは付けない。回収時点の交差付近でラベルが重なるため、金額は上部の指標タイルで示す"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "metric",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 2.6,
+        "h": 1.0,
+        "value": {
+          "$slot": "roiValue"
+        },
+        "caption": {
+          "$slot": "roiLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "metric",
+        "x": 3.7,
+        "y": 1.55,
+        "w": 2.6,
+        "h": 1.0,
+        "value": {
+          "$slot": "paybackValue"
+        },
+        "caption": {
+          "$slot": "paybackLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "metric",
+        "x": 6.9,
+        "y": 1.55,
+        "w": 2.6,
+        "h": 1.0,
+        "value": {
+          "$slot": "npvValue"
+        },
+        "caption": {
+          "$slot": "npvLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "linechart",
+        "x": 0.5,
+        "y": 2.75,
+        "w": 9.0,
+        "h": 1.9,
+        "labels": {
+          "$slot": "labels"
+        },
+        "series": {
+          "$slot": "series"
+        },
+        "unit": {
+          "$slot": "unit"
+        },
+        "size": {
+          "$density": {
+            "print": 9.0,
+            "presentation": 10.0
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.88,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

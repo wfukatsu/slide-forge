@@ -29,6 +29,8 @@
 | ゼロからのスライド生成（マスター無し） | `google-slides` |
 | 新規マスターテンプレートの作成・登録 | `template-forge` |
 | 再利用可能な 1 枚ものコンテンツテンプレートの作成・登録 | `slide-template-creator` |
+| 提供素材からの現状分析・課題特定 | `current-state-analysis` |
+| 分析フレームワークのスライドテンプレートの作成・変更 | `analysis-template-creator` |
 | Scalar 社製品・提案スライドの作成 | `scalar-product-slides`, `scalar-proposal-slides` |
 | 顧客ごとの活動計画・訪問資料（AE の営業活動） | `scalar-account-plan`, `scalar-ae-materials` |
 | Account Planning Session（年次の組織図・商談棚卸しデッキ） | `scalar-account-planning-session` |

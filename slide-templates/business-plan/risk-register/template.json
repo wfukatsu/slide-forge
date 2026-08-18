@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "id": "risk-register",
+  "displayName": "リスクと対策・撤退基準",
+  "pack": "business-plan",
+  "category": "risk",
+  "description": "主要リスクを影響度・発生度とともに一覧化し、対策と撤退／見直しの発動基準まで対で示す",
+  "answers": [
+    "何が計画を壊しうるのか、どう手当てし、どうなったら止めるのか"
+  ],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "risks": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 22,
+          "presentation": 16
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 5,
+        "maxItems": 5
+      }
+    },
+    "decisionRule": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 110,
+          "presentation": 70
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 80
+    }
+  },
+  "guardrails": [
+    "タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる",
+    "1 行 = 1 リスク。影響度と発生度は 大／中／小 など全行で同じ尺度の語を使う",
+    "撤退・見直し基準は必ず観測可能な数値で書く（「状況を見て」は基準ではない）",
+    "対策は担当が動かせる具体行動を書く。「注意する」「検討する」は対策にならない",
+    "対策済みで残存リスクが小さいものは載せない。承認者が判断を変えうるリスクだけに絞る",
+    "撤退判断の主体とタイミング（誰がいつ）は decisionRule に書く。行ごとの基準と役割分担を混ぜない",
+    "シナリオ分析と併用する場合、悲観シナリオの水準と撤退基準の整合を取る"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.62,
+        "w": 9.0,
+        "headers": [
+          "リスク",
+          "影響",
+          "発生",
+          "対策",
+          "撤退・見直し基準"
+        ],
+        "rows": {
+          "$slot": "risks"
+        },
+        "colWidths": [
+          2.1,
+          0.7,
+          0.7,
+          2.8,
+          2.7
+        ],
+        "aligns": [
+          "START",
+          "CENTER",
+          "CENTER",
+          "START",
+          "START"
+        ],
+        "size": {
+          "$density": {
+            "print": 9.0,
+            "presentation": 10.0
+          }
+        },
+        "rowH": {
+          "$density": {
+            "print": 0.34,
+            "presentation": 0.42
+          }
+        },
+        "headerH": {
+          "$density": {
+            "print": 0.36,
+            "presentation": 0.4
+          }
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.74,
+        "w": 9.0,
+        "h": 1.1,
+        "label": "撤退判断",
+        "text": {
+          "$slot": "decisionRule"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.88,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

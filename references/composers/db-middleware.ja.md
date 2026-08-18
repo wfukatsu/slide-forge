@@ -9,14 +9,14 @@ db-middleware カテゴリ 4 タイプのレンダリング仕様。データフ
 
 ### クラウドアイコン
 
-`assets/shared/cloud-icons/` にプロバイダ別のアイコンを格納。コンポーザーから `add_image_from_asset()` で参照する。
+`assets/cloud-icons/` にプロバイダ別のアイコンを格納（`scripts/fetch_cloud_icons.py` で取得する。
+ディレクトリは gitignore 対象）。コンポーザーからは `scripts/cloud_icons.py` の `cloud_icon()` で配置する。
 
 ```
-assets/shared/cloud-icons/
+assets/cloud-icons/
   aws/       — AWS サービスアイコン
   gcp/       — GCP サービスアイコン
   azure/     — Azure サービスアイコン
-  generic/   — 汎用インフラアイコン
 ```
 
 ```python
@@ -366,7 +366,7 @@ def compose_multi_cloud(sb, slide_id, content, theme, page_num, total_pages=None
 - クラウド数は 2-3 を想定（4 プロバイダ以上はカード幅が狭くなる）
 - 各プロバイダのブランドカラーをヘッダーに使用し、視覚的に識別しやすくする
 - Scalar レイヤを上段に配置することで「ベンダー非依存の統一レイヤ」を視覚的に表現
-- サービスアイコンは `assets/shared/cloud-icons/{provider}/` から読み込み。アセットが無い場合はバッジにフォールバック
+- サービスアイコンは `assets/cloud-icons/{provider}/`（`aws` / `gcp` / `azure`）から読み込み。アセットが無い場合はバッジにフォールバック
 
 ---
 

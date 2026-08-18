@@ -32,7 +32,7 @@ IMG_DIR = ROOT / "references/images/slide-templates"
 IMG_REL = "images/slide-templates"
 
 PACK_ORDER = ["marketing-analysis", "b2b-sales", "scalar-ae", "planning", "analysis",
-              "read-alone"]
+              "read-alone", "business-plan"]
 
 PACK_INTRO_JA = {
     "marketing-analysis": (
@@ -71,6 +71,14 @@ PACK_INTRO_JA = {
         "全テンプレートが `$density` バリアントを持ち、同じファイルから "
         "print（配布・印刷）と presentation（登壇）の 2 密度で描画できる。",
     ),
+    "business-plan": (
+        "事業計画パック",
+        "事業計画・稟議で承認者が最初に見る「収益・投資・リスク・体制」のページ群。"
+        "収益計画（P/L）、売上ブリッジ、コスト構造、損益分岐点、シナリオ比較、"
+        "投資回収、リスクと撤退基準、推進体制を 1 枚ずつのフォーマットにしている。"
+        "全テンプレートが `$density` バリアントを持ち、配布用の事業計画書（print）と"
+        "役員会での説明（presentation）の 2 密度で描画できる。",
+    ),
 }
 
 INFERENCE_LABEL = {
@@ -79,12 +87,14 @@ INFERENCE_LABEL = {
         "diagnostic": "診断（要因・構造の特定）",
         "causal": "因果（原因の主張）",
         "strategic": "戦略（評価と方向づけ）",
+        "predictive": "予測（将来値の見通し）",
     },
     "en": {
         "descriptive": "Descriptive (organizing facts)",
         "diagnostic": "Diagnostic (identifying factors and structure)",
         "causal": "Causal (asserting causes)",
         "strategic": "Strategic (evaluation and direction-setting)",
+        "predictive": "Predictive (projecting future values)",
     },
 }
 
@@ -92,11 +102,12 @@ REGEN_FENCE = {
     "ja": [
         "```bash",
         "# このカタログを作り直す（テンプレートを追加したときも同じ手順）",
-        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis read-alone; do",
+        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis \\",
+        "            read-alone business-plan; do",
         "  .venv/bin/python scripts/build_slide_template_catalog.py \\",
         "      --pack $pack --out out/template-catalog/$pack.json",
         "done",
-        "# 6 つの spec の slides を 1 つに結合して build_deck.py で生成し、",
+        "# 7 つの spec の slides を 1 つに結合して build_deck.py で生成し、",
         "# fetch_thumbnails.py の PNG を references/images/slide-templates/<id>.png に配置",
         ".venv/bin/python scripts/build_template_catalog_doc.py",
         "```",
@@ -104,11 +115,12 @@ REGEN_FENCE = {
     "en": [
         "```bash",
         "# Rebuild this catalog (same steps when adding a template)",
-        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis read-alone; do",
+        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis \\",
+        "            read-alone business-plan; do",
         "  .venv/bin/python scripts/build_slide_template_catalog.py \\",
         "      --pack $pack --out out/template-catalog/$pack.json",
         "done",
-        "# Merge the 6 specs' slides into one deck, generate with build_deck.py,",
+        "# Merge the 7 specs' slides into one deck, generate with build_deck.py,",
         "# then place the fetch_thumbnails.py PNGs at references/images/slide-templates/<id>.png",
         ".venv/bin/python scripts/build_template_catalog_doc.py",
         "```",
