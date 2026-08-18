@@ -6,7 +6,7 @@
   "paybackValue": "2.6 年",
   "paybackLabel": "投資回収期間（割引前）",
   "npvValue": "+340",
-  "npvLabel": "NPV（割引率 8%）",
+  "npvLabel": "NPV（8%・百万円）",
   "labels": [
     "FY2026",
     "FY2027",
