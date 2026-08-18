@@ -1,0 +1,186 @@
+{
+  "schemaVersion": 1,
+  "id": "scenario-comparison",
+  "displayName": "シナリオ比較（悲観・標準・楽観）",
+  "pack": "business-plan",
+  "category": "financial",
+  "description": "複数シナリオの業績推移と、その差を生む前提条件を対で示し、計画の振れ幅を明らかにする",
+  "answers": [
+    "前提がどう振れると業績はどこまで動くのか、最悪ケースは許容できるか"
+  ],
+  "inferenceLevel": "predictive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "labels": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "maxLength": 6
+    },
+    "series": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 8
+          },
+          {
+            "type": "number[]",
+            "minimum": 0,
+            "matchLength": "labels"
+          }
+        ]
+      }
+    },
+    "unit": {
+      "type": "string",
+      "default": "",
+      "maxLength": 6
+    },
+    "assumptions": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "maxLength": {
+        "$density": {
+          "print": 12,
+          "presentation": 9
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 4,
+        "maxItems": 4
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 80
+    }
+  },
+  "guardrails": [
+    "タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる",
+    "シナリオは前提の違いだけで区別する。同じ前提から違う結果を出さない",
+    "表に載せる前提は結果を動かすドライバーだけに絞る。動かない前提は書かない",
+    "悲観シナリオは「少し悪い」ではなく、意思決定が変わる水準まで振る。楽観は根拠のある上限に留める",
+    "標準シナリオの数値は revenue-plan と一致させる",
+    "確率の重みづけはしない。起こりやすさを論じるなら別スライドで根拠とともに示す",
+    "撤退判断に使う場合は、どのシナリオで何をするかを risk-register の撤退基準と紐づける"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "linechart",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "h": 1.55,
+        "labels": {
+          "$slot": "labels"
+        },
+        "series": {
+          "$slot": "series"
+        },
+        "unit": {
+          "$slot": "unit"
+        },
+        "size": {
+          "$density": {
+            "print": 9.0,
+            "presentation": 10.0
+          }
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 3.3,
+        "w": 9.0,
+        "headers": [
+          "前提条件",
+          "悲観",
+          "標準",
+          "楽観"
+        ],
+        "rows": {
+          "$slot": "assumptions"
+        },
+        "colWidths": [
+          3.3,
+          1.9,
+          1.9,
+          1.9
+        ],
+        "aligns": [
+          "START",
+          "END",
+          "END",
+          "END"
+        ],
+        "size": {
+          "$density": {
+            "print": 9.0,
+            "presentation": 10.5
+          }
+        },
+        "rowH": {
+          "$density": {
+            "print": 0.32,
+            "presentation": 0.38
+          }
+        },
+        "headerH": 0.34
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.88,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

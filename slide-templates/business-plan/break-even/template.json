@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "id": "break-even",
+  "displayName": "損益分岐点分析",
+  "pack": "business-plan",
+  "category": "financial",
+  "description": "売上高線と総費用線の交点で損益分岐点を示し、計画に対する安全余裕率まで併記する",
+  "answers": [
+    "どれだけ売れば赤字を脱するのか、計画にどれだけ余裕があるのか"
+  ],
+  "inferenceLevel": "predictive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "labels": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 5,
+      "maxLength": 5
+    },
+    "series": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 8
+          },
+          {
+            "type": "number[]",
+            "minimum": 0,
+            "matchLength": "labels"
+          }
+        ]
+      }
+    },
+    "unit": {
+      "type": "string",
+      "default": "",
+      "maxLength": 6
+    },
+    "bepValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 8
+    },
+    "bepLabel": {
+      "type": "string",
+      "default": "損益分岐点売上高",
+      "maxLength": 14
+    },
+    "marginValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 8
+    },
+    "marginLabel": {
+      "type": "string",
+      "default": "安全余裕率（計画比）",
+      "maxLength": 14
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 80
+    }
+  },
+  "guardrails": [
+    "タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる",
+    "固定費と変動費の区分定義を出典行に必ず書く。区分が変われば分岐点も変わる",
+    "売上高線と総費用線は同じ横軸（数量または売上規模）・同じ期間で引く",
+    "単年度の静的分析であり、資金繰りは示さない。回収と資金の話は roi-payback へ",
+    "変動費率が数量帯で変わる事業では直線近似が崩れる。適用範囲を lead に明記する",
+    "安全余裕率は（計画売上−損益分岐点売上）÷計画売上。算出済みの文字列を渡す",
+    "計画点（現在の販売水準）は lead か出典で言葉にする。線の端に値ラベルは付けない（分岐点付近で必ず重なる）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "linechart",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 6.0,
+        "h": 2.8,
+        "labels": {
+          "$slot": "labels"
+        },
+        "series": {
+          "$slot": "series"
+        },
+        "unit": {
+          "$slot": "unit"
+        },
+        "size": {
+          "$density": {
+            "print": 9.5,
+            "presentation": 10.5
+          }
+        }
+      },
+      {
+        "type": "metric",
+        "x": 6.8,
+        "y": 1.6,
+        "w": 2.7,
+        "h": 1.15,
+        "value": {
+          "$slot": "bepValue"
+        },
+        "caption": {
+          "$slot": "bepLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "metric",
+        "x": 6.8,
+        "y": 2.95,
+        "w": 2.7,
+        "h": 1.15,
+        "value": {
+          "$slot": "marginValue"
+        },
+        "caption": {
+          "$slot": "marginLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

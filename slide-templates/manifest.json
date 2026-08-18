@@ -693,6 +693,124 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "revenue-plan",
+      "displayName": "収益計画（複数年 P/L）",
+      "pack": "business-plan",
+      "category": "financial",
+      "path": "business-plan/revenue-plan/template.json",
+      "tags": [
+        "revenue",
+        "pl",
+        "financial",
+        "plan"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "sales-buildup",
+      "displayName": "売上ブリッジ（積み上げ分解）",
+      "pack": "business-plan",
+      "category": "financial",
+      "path": "business-plan/sales-buildup/template.json",
+      "tags": [
+        "revenue",
+        "waterfall",
+        "bridge",
+        "driver"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "cost-structure",
+      "displayName": "投資・コスト構造",
+      "pack": "business-plan",
+      "category": "financial",
+      "path": "business-plan/cost-structure/template.json",
+      "tags": [
+        "cost",
+        "investment",
+        "opex",
+        "capex"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "break-even",
+      "displayName": "損益分岐点分析",
+      "pack": "business-plan",
+      "category": "financial",
+      "path": "business-plan/break-even/template.json",
+      "tags": [
+        "break-even",
+        "bep",
+        "fixed-cost",
+        "financial"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "scenario-comparison",
+      "displayName": "シナリオ比較（悲観・標準・楽観）",
+      "pack": "business-plan",
+      "category": "financial",
+      "path": "business-plan/scenario-comparison/template.json",
+      "tags": [
+        "scenario",
+        "sensitivity",
+        "forecast"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "roi-payback",
+      "displayName": "投資回収（ROI・回収期間）",
+      "pack": "business-plan",
+      "category": "financial",
+      "path": "business-plan/roi-payback/template.json",
+      "tags": [
+        "roi",
+        "payback",
+        "npv",
+        "investment"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "risk-register",
+      "displayName": "リスクと対策・撤退基準",
+      "pack": "business-plan",
+      "category": "risk",
+      "path": "business-plan/risk-register/template.json",
+      "tags": [
+        "risk",
+        "mitigation",
+        "exit-criteria"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "execution-structure",
+      "displayName": "推進体制と役割分担",
+      "pack": "business-plan",
+      "category": "organization",
+      "path": "business-plan/execution-structure/template.json",
+      "tags": [
+        "organization",
+        "team",
+        "roles",
+        "staffing"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "id": "sales-buildup",
+  "displayName": "売上ブリッジ（積み上げ分解）",
+  "pack": "business-plan",
+  "category": "financial",
+  "description": "起点から計画値までの売上増減をドライバー別に橋渡しし、成長の内訳と依存先を示す",
+  "answers": [
+    "計画売上はどのドライバーの積み上げで成り立ち、どこに最も依存しているか"
+  ],
+  "inferenceLevel": "predictive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 7,
+          "presentation": 5
+        }
+      },
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 8
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "maxLength": 5
+          }
+        ]
+      }
+    },
+    "unit": {
+      "type": "string",
+      "default": "",
+      "maxLength": 6
+    },
+    "implication": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 100,
+          "presentation": 70
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 80
+    }
+  },
+  "guardrails": [
+    "タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる",
+    "各項目の第 3 要素は total（0 からの累計）か delta（前の累計からの増減）。先頭は必ず total（起点）にする",
+    "最後の total は増減の積み上げ合計と一致しなければ生成時にエラーになる。表計算の値をそのまま転記する",
+    "途中の累計がマイナスになる橋は描けない。減少が大きい計画は起点を分けるか別スライドにする",
+    "ドライバーは意思決定できる粒度で切る（新規/既存拡大/解約/価格）。「その他」に大きな塊を残さない",
+    "単位は unit か lead に明記する。ドライバーごとの算定根拠は出典行に書く",
+    "積み上げの合計は revenue-plan の売上高と一致させる"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "waterfall",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "h": 2.0,
+        "items": {
+          "$slot": "items"
+        },
+        "unit": {
+          "$slot": "unit"
+        },
+        "good": "up",
+        "size": {
+          "$density": {
+            "print": 9.5,
+            "presentation": 10.5
+          }
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.72,
+        "w": 9.0,
+        "h": 1.1,
+        "text": {
+          "$slot": "implication"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.88,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

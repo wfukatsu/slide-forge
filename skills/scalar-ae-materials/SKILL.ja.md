@@ -69,7 +69,7 @@ description: >-
 | 顧客 / 実現性を見せる | 3 | デモ資料・To-Be・アーキテクチャ概要 | `01_顧客提示` | `scalar-proposal-slides` |
 | 顧客 / PoC を合意する | 3 | PoC 提案書・実施計画 | `02_顧客提案` | `scalar-proposal-slides` |
 | 社内 / 価格・契約リスクの承認 | 3〜5 | Deal Desk 資料・稟議 | `90_社内` | このスキル |
-| 顧客 / 選定と予算化 | 4 | 正式提案書・見積・ROI | `02_顧客提案` | `scalar-proposal-slides` + `spreadsheets` |
+| 顧客 / 選定と予算化 | 4 | 正式提案書・見積・ROI（ライセンスのページは `license-pattern-compare` + `license-estimate`） | `02_顧客提案` | `scalar-proposal-slides` + `spreadsheets` |
 | 顧客 / 契約手続 | 5 | チェックリスト・SOW・注文書 | `02_顧客提案` | `google-slides-template` |
 | 社内 / 更新・拡張の計画 | 6 | ヘルスレビュー・更新計画 | `90_社内` | `scalar-account-plan` |
 

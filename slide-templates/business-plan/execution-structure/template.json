@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "id": "execution-structure",
+  "displayName": "推進体制と役割分担",
+  "pack": "business-plan",
+  "category": "organization",
+  "description": "事業を実行する体制図と、役割ごとの担当・人数を並べて実行可能性を裏づける",
+  "answers": [
+    "誰がこの事業を実行し、どの役割に何人必要なのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "tree": {
+      "type": "tuple",
+      "required": true,
+      "fields": [
+        {
+          "type": "string",
+          "maxLength": 18
+        },
+        {
+          "type": "array"
+        }
+      ]
+    },
+    "roles": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 6,
+          "presentation": 4
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 15,
+          "presentation": 12
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    "notes": {
+      "type": "string[]",
+      "default": [],
+      "maxItems": 2,
+      "maxLength": 60
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 80
+    }
+  },
+  "guardrails": [
+    "タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる",
+    "全社の組織図ではなく、この事業の推進体制を書く。関与しない部署は載せない",
+    "人数は cost-structure の人件費と一致させる。体制図で増員し、費用計画で増やし忘れない",
+    "専任と兼務を必ず区別して書く。兼務比率が高い体制は実行可能性の指摘対象になる",
+    "深さ 4 以上・葉 8 超は文字が潰れる。部門ごとにスライドを分ける",
+    "ノードのラベルは「役割\\n人数」の 2 行にすると読みやすい。個人名は社外提出時に伏せる",
+    "立ち上げ期と拡大期で体制が変わるなら、時期を明記して 2 枚に分ける"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "orgchart",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 5.4,
+        "h": 2.7,
+        "tree": {
+          "$slot": "tree"
+        },
+        "size": {
+          "$density": {
+            "print": 9.5,
+            "presentation": 10.5
+          }
+        }
+      },
+      {
+        "type": "table",
+        "x": 6.2,
+        "y": 1.6,
+        "w": 3.3,
+        "headers": [
+          "役割",
+          "担当・人数"
+        ],
+        "rows": {
+          "$slot": "roles"
+        },
+        "colWidths": [
+          1.55,
+          1.75
+        ],
+        "aligns": [
+          "START",
+          "START"
+        ],
+        "size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 9.0
+          }
+        },
+        "rowH": {
+          "$density": {
+            "print": 0.36,
+            "presentation": 0.44
+          }
+        },
+        "headerH": 0.34
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.7,
+        "w": 9.0,
+        "notes": {
+          "$slot": "notes"
+        },
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

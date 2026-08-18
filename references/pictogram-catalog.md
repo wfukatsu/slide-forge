@@ -40,8 +40,8 @@ There are three construction patterns:
 
 **Principle**: Express with a single shape whenever possible. Composite pictograms with 3 or more shapes become too complex, so consider using an external image instead.
 
-> **When using an external image, the first choice is the icon library under `assets/shared/icons/`**
-> (62 Scalar-branded icons). It can be tinted with theme colors and pasted in. See `references/icon-library.md`
+> **When using an external image, the first choice is the pictogram library under `assets/scalar/pictograms/`**
+> (62 Scalar-branded pictograms). It can be tinted with theme colors and pasted in. See `references/icons.md`
 > for usage. Business vocabulary such as "information bank," "evidence chain," or "job offer" cannot be
 > drawn with shapes, so use the icon library from the start for those. Just be aware this involves
 > communication via Drive.

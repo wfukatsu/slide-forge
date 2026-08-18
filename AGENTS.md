@@ -27,6 +27,8 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Deck without a corporate master | `google-slides` |
 | Create/register a template | `template-forge` |
 | Create/register a reusable single-slide content template | `slide-template-creator` |
+| Current-state analysis / problem identification from supplied material | `current-state-analysis` |
+| Create/change an analysis-framework slide template | `analysis-template-creator` |
 | B2B stakeholder map / discovery mapping | `b2b-account-maps` |
 | Per-customer activity plan / deal ledger (AE's action plan) | `scalar-account-plan` |
 | Account Planning Session (annual/semi-annual stocktake and executive review) | `scalar-account-planning-session` |
