@@ -634,7 +634,8 @@
         "The low scenario must be bad enough to change a decision, not merely \"a bit worse\". Keep the high case at a defensible ceiling",
         "The base scenario's figures must match revenue-plan",
         "Do not weight the scenarios by probability. Argue likelihood on a separate slide with evidence",
-        "When this drives an exit decision, tie the scenarios to the exit criteria in risk-register"
+        "When this drives an exit decision, tie the scenarios to the exit criteria in risk-register",
+        "Set yMax to the round number just above the maximum. The automatic scale can reach 1.4x the maximum, squashing every line into the lower half of the plot"
       ]
     },
     "roi-payback": {

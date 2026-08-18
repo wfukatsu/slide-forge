@@ -935,6 +935,8 @@ Pages covering what an approver looks at first in a business plan or investment 
 
 ### Revenue Plan (multi-year P/L) (`revenue-plan`)
 
+![Revenue Plan (multi-year P/L)](images/slide-templates/revenue-plan.png)
+
 Shows the profit plan from revenue down to operating income as a year-by-year table, making the level and timing of profitability visible on one page
 
 **Answers**: What revenue and profit will this business reach in each year, and when does it turn profitable?
@@ -956,6 +958,8 @@ Guardrails:
 
 ### Revenue Bridge (driver buildup) (`sales-buildup`)
 
+![Revenue Bridge (driver buildup)](images/slide-templates/sales-buildup.png)
+
 Bridges from a starting point to the planned figure driver by driver, showing what the growth is made of and what it depends on
 
 **Answers**: Which drivers add up to the planned revenue, and which one does it depend on most?
@@ -976,6 +980,8 @@ Guardrails:
 - The total of the buildup must match the revenue in revenue-plan
 
 ### Investment and Cost Structure (`cost-structure`)
+
+![Investment and Cost Structure](images/slide-templates/cost-structure.png)
 
 Places the year-by-year cost mix beside the up-front/recurring breakdown by line item to show how much the business needs
 
@@ -999,6 +1005,8 @@ Guardrails:
 
 ### Break-Even Analysis (`break-even`)
 
+![Break-Even Analysis](images/slide-templates/break-even.png)
+
 Marks the break-even point where the revenue line meets the total-cost line, with the margin of safety against plan alongside
 
 **Answers**: How much must we sell to stop losing money, and how much room does the plan have?
@@ -1020,6 +1028,8 @@ Guardrails:
 
 ### Scenario Comparison (low / base / high) (`scenario-comparison`)
 
+![Scenario Comparison (low / base / high)](images/slide-templates/scenario-comparison.png)
+
 Shows several scenarios' trajectories with the assumptions that separate them, making the plan's range explicit
 
 **Answers**: How far do results move when the assumptions move, and is the worst case acceptable?
@@ -1038,8 +1048,11 @@ Guardrails:
 - The base scenario's figures must match revenue-plan
 - Do not weight the scenarios by probability. Argue likelihood on a separate slide with evidence
 - When this drives an exit decision, tie the scenarios to the exit criteria in risk-register
+- Set yMax to the round number just above the maximum. The automatic scale can reach 1.4x the maximum, squashing every line into the lower half of the plot
 
 ### Payback (ROI and payback period) (`roi-payback`)
+
+![Payback (ROI and payback period)](images/slide-templates/roi-payback.png)
 
 Shows when the investment is recovered at the crossing of cumulative investment and cumulative return, with return rate, payback period, and NPV alongside
 
@@ -1063,6 +1076,8 @@ Guardrails:
 
 ### Risks, Mitigations, and Exit Criteria (`risk-register`)
 
+![Risks, Mitigations, and Exit Criteria](images/slide-templates/risk-register.png)
+
 Lists the major risks with impact and likelihood, paired with the mitigation and the trigger for exiting or revisiting
 
 **Answers**: What could break the plan, how is it handled, and what makes us stop?
@@ -1083,6 +1098,8 @@ Guardrails:
 - When used with scenario analysis, align the exit criteria with the level of the low scenario
 
 ### Execution Structure and Roles (`execution-structure`)
+
+![Execution Structure and Roles](images/slide-templates/execution-structure.png)
 
 Places the delivery org chart beside the owner and headcount per role to substantiate that the plan can actually be executed
 
