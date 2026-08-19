@@ -111,13 +111,32 @@ file**.
 
 | Field | Where it's used |
 |-----------|-----------|
-| `placeholders` | Determines whether the deck spec is allowed to set `title` / `subtitle` / `body`. Specifying something not listed here is an error |
+| `placeholders` | Determines whether the deck spec is allowed to set `title` / `subtitle` / `body`. Specifying something not listed here is an error (a `generationMode: create` template declares its slots in `drawText` instead) |
 | `elements.body` | The reference point (top edge, left/right margins) when drawing additional shapes |
 | `elements.slideNumber` | Where the page number is drawn. Many layouts have a narrow width, so the builder widens it to a minimum of 0.5in while keeping the right edge fixed |
 | `textStyles` | The text size the template expects. Text much larger than this will overflow |
 | `decorations` | If there's a full-size rectangle, suspect it's covering the master's footer |
 | `imageSlots` | **Put images here if present.** If empty, you're free to choose coordinates yourself |
 | `theme:XXX` in `colors` | A color shown as `theme:ACCENT6` is a theme-color reference. Look up the actual hex value in `colors.accent6` |
+| `drawText` | Only on a `generationMode: create` template. The slots it draws as coordinate-positioned text boxes, in place of placeholders |
+
+### `generationMode: create` Templates
+
+A template with no master to duplicate (`blank-16x9` is the one in the repo)
+has no `presentationId` and no real layouts. `build_deck.py` creates an empty
+presentation instead of copying one, makes each page from the layout's
+`predefinedLayout`, and draws TITLE / SUBTITLE / BODY as text boxes at the
+coordinates in `drawText` — `placeholders` stays empty. A slot declared in
+`drawText` is addressed by the same `title` / `subtitle` / `body` spec fields
+as a placeholder, and only the slots that actually receive text are drawn.
+
+| Field | Meaning |
+|---|---|
+| `predefinedLayout` | The `createSlide` predefined layout (`BLANK` for every `blank-16x9` layout; the page is drawn, not laid out) |
+| `drawText.<slot>` | `x` / `y` / `w` / `h` in inches, plus `size`, `bold`, `color`, `align`, `valign` and `lineSpacing`. The font family comes from `textStyles.<slot>.fontFamily` |
+
+A per-slide `titleFontSize` / `bodyFontSize` / `bodyLineSpacing` still wins
+over the `drawText` values.
 
 ### Where `imageSlots` Comes From
 

@@ -57,6 +57,13 @@
           "w": 8.6,
           "h": 0.8,
           "align": "START"
+        },
+        "body": {
+          "x": 0.7,
+          "y": 4.0,
+          "w": 8.6,
+          "h": 0.9,
+          "align": "START"
         }
       },
       "textStyles": {
@@ -68,6 +75,11 @@
         "subtitle": {
           "fontFamily": "Noto Sans JP",
           "fontSize": 12.5,
+          "bold": false
+        },
+        "body": {
+          "fontFamily": "Noto Sans JP",
+          "fontSize": 11,
           "bold": false
         }
       },
@@ -95,6 +107,18 @@
           "valign": "TOP",
           "color": "#6B7280",
           "lineSpacing": 125
+        },
+        "body": {
+          "x": 0.7,
+          "y": 4.0,
+          "w": 8.6,
+          "h": 0.9,
+          "size": 11,
+          "bold": false,
+          "align": "START",
+          "valign": "TOP",
+          "color": "#6B7280",
+          "lineSpacing": 120
         }
       }
     },
