@@ -109,13 +109,32 @@
 
 | フィールド | 使いどころ |
 |-----------|-----------|
-| `placeholders` | デッキ仕様で `title` / `subtitle` / `body` を指定してよいかの判定に使う。ここに無いものを指定するとエラー |
+| `placeholders` | デッキ仕様で `title` / `subtitle` / `body` を指定してよいかの判定に使う。ここに無いものを指定するとエラー（`generationMode: create` のテンプレートは代わりに `drawText` で枠を宣言する） |
 | `elements.body` | 追加の図形を描くときの上端・左右マージンの基準 |
 | `elements.slideNumber` | ページ番号の描画位置。幅が狭いレイアウトが多いので、ビルダーは右端を保ったまま最小 0.5in に広げる |
 | `textStyles` | テンプレートが想定する文字サイズ。ここより大幅に大きい文字を入れると溢れる |
 | `decorations` | 全面サイズの矩形があれば、マスターのフッターを覆っている可能性を疑う |
 | `imageSlots` | **画像を置くならここ。** 空なら自分で座標を決めてよい |
 | `colors` の `theme:XXX` | 色が `theme:ACCENT6` のように出るのはテーマ色参照。実際の hex は `colors.accent6` を引く |
+| `drawText` | `generationMode: create` のテンプレートだけが持つ。プレースホルダの代わりに座標指定のテキストボックスとして描く枠 |
+
+### `generationMode: create` のテンプレート
+
+複製元のマスターを持たないテンプレート（リポジトリでは `blank-16x9`）は
+`presentationId` も実レイアウトも持たない。`build_deck.py` は複製ではなく空の
+プレゼンテーションを新規作成し、各ページをレイアウトの `predefinedLayout` から
+作り、TITLE / SUBTITLE / BODY を `drawText` の座標にテキストボックスとして描く
+（`placeholders` は空のまま）。`drawText` で宣言した枠はプレースホルダと同じく
+デッキ仕様の `title` / `subtitle` / `body` で指定でき、実際に文字が入る枠だけが
+描画される。
+
+| フィールド | 意味 |
+|---|---|
+| `predefinedLayout` | `createSlide` に渡す既定レイアウト（`blank-16x9` は全レイアウト `BLANK`。ページは組版ではなく描画する） |
+| `drawText.<枠>` | インチ単位の `x` / `y` / `w` / `h` と `size` / `bold` / `color` / `align` / `valign` / `lineSpacing`。フォントファミリは `textStyles.<枠>.fontFamily` から取る |
+
+スライドごとの `titleFontSize` / `bodyFontSize` / `bodyLineSpacing` は
+`drawText` の値より優先される。
 
 ### `imageSlots` はどこから拾っているか
 

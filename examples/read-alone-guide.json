@@ -1140,7 +1140,7 @@
       "layout": "CONTENT",
       "title": "この仕様をテンプレートとして使う",
       "body": [
-        "このデッキ自体が出発点になる。examples/print-deck-catalog.json を複製し、",
+        "このデッキ自体が出発点になる。examples/read-alone-guide.json を複製し、",
         "架空の題材「受注処理コスト削減」を自分の題材に置き換える。",
         "",
         "手順:",

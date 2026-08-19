@@ -36,6 +36,7 @@ register({
         "  warn: {what} が HTTP {code} で失敗。{wait:.0f} 秒後に再試行 "
         "({attempt}/{attempts})",
     "template copy": "テンプレートの複製",
+    "presentation create": "プレゼンテーションの新規作成",
     "rename": "デッキ名の変更",
     "no response was received for {what} ({err}); the write may already have "
     "been applied. Check whether the deck was updated before rerunning: {url}":
@@ -80,6 +81,14 @@ register({
         "  note: --into では --folder は無視されます（デッキは今のフォルダに留まります）",
     "template.json has no presentationId":
         "template.json に presentationId がありません",
+    "  warn: the template expects a {want}in page but Slides created a "
+    "{got}in one; coordinates will not line up":
+        "  warn: テンプレートは {want}in のページを想定していますが Slides は "
+        "{got}in で作成しました。座標が合いません",
+    "  note: --keep-existing is ignored by a generationMode: create template "
+    "(it bundles no slides)":
+        "  note: generationMode: create のテンプレートには同梱スライドが無いため "
+        "--keep-existing は無視されます",
     "  warn: template.json existingSlideIds contains IDs that do not exist: "
     "{ids}\n        The template may have been updated; re-analyze it with "
     "inspect_template.py.":
@@ -413,6 +422,73 @@ def _batches(requests: list[dict], max_requests: int = MAX_REQUESTS_PER_BATCH,
         yield batch
 
 
+def draw_slot_name(key: str) -> str:
+    """`drawText` key -> slot name: `title` -> TITLE, `bodyx1` -> BODY#1."""
+    return key.upper().replace("X", "#") if key[-1].isdigit() else key.upper()
+
+
+def declared_slots(layout: dict) -> list[str]:
+    """The slots a layout can fill: real placeholders plus drawn text boxes.
+
+    A `generationMode: create` template has no real layouts, so it declares
+    TITLE / SUBTITLE / BODY under `drawText` and they are drawn at explicit
+    coordinates instead of mapped onto placeholders. Both kinds are addressed
+    by the same spec fields, so both count as declared. validate_layout.py
+    resolves slots the same way.
+    """
+    declared = list(layout.get("placeholders", []))
+    for key in layout.get("drawText") or {}:
+        name = draw_slot_name(key)
+        if name not in declared:
+            declared.append(name)
+    return declared
+
+
+def _drawn_text_styles(oid: str, spec: dict) -> list[dict]:
+    """Base appearance for a drawn slot, queued after its text is inserted.
+
+    Styling an empty shape does not survive a later insertText, so these
+    always follow the insert. Per-slide overrides (titleFontSize,
+    bodyFontSize, line spacing) are queued after this and win.
+    """
+    style: dict = {}
+    fields = []
+    if spec.get("fontFamily"):
+        style["fontFamily"] = spec["fontFamily"]
+        fields.append("fontFamily")
+    if spec.get("size"):
+        style["fontSize"] = {"magnitude": spec["size"], "unit": "PT"}
+        fields.append("fontSize")
+    if spec.get("bold") is not None:
+        style["bold"] = bool(spec["bold"])
+        fields.append("bold")
+    if spec.get("color"):
+        style["foregroundColor"] = {
+            "opaqueColor": {"rgbColor": _auth.hex_to_rgb(spec["color"])}}
+        fields.append("foregroundColor")
+
+    requests: list[dict] = []
+    if fields:
+        requests.append({"updateTextStyle": {
+            "objectId": oid, "style": style,
+            "textRange": {"type": "ALL"}, "fields": ",".join(fields)}})
+    para: dict = {}
+    if spec.get("align"):
+        para["alignment"] = spec["align"]
+    if spec.get("lineSpacing"):
+        para["lineSpacing"] = spec["lineSpacing"]
+    if para:
+        requests.append({"updateParagraphStyle": {
+            "objectId": oid, "style": para,
+            "textRange": {"type": "ALL"}, "fields": ",".join(para)}})
+    if spec.get("valign"):
+        requests.append({"updateShapeProperties": {
+            "objectId": oid,
+            "shapeProperties": {"contentAlignment": spec["valign"]},
+            "fields": "contentAlignment"}})
+    return requests
+
+
 def load_template(path: str) -> dict:
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -462,9 +538,12 @@ class TemplateDeck:
         keep_existing: bool = False,
     ) -> "TemplateDeck":
         src = template.get("presentationId")
-        if not src:
-            raise ValueError(t("template.json has no presentationId"))
         slides, drive = _auth.services(creds)
+        if not src:
+            if template.get("generationMode") != "create":
+                raise ValueError(t("template.json has no presentationId"))
+            return cls._create_blank(slides, drive, template, title, folder,
+                                     keep_existing=keep_existing)
 
         body: dict = {"name": title}
         fid = _auth.folder_id(folder)
@@ -489,6 +568,66 @@ class TemplateDeck:
                 what="presentations.get")
             deck.kept_slides = len(pres.get("slides", []))
         return deck
+
+    @classmethod
+    def _create_blank(
+        cls,
+        slides,
+        drive,
+        template: dict,
+        title: str,
+        folder: str | None,
+        keep_existing: bool = False,
+    ) -> "TemplateDeck":
+        """Start from an empty presentation (`generationMode: create`).
+
+        A template with no `presentationId` has no master to duplicate; it
+        declares `predefinedLayout` layouts whose slots are drawn at explicit
+        coordinates (see `drawText` in add_slide). `blank-16x9` is the one in
+        the repo, and it is the only template a clone can use without a
+        master of its own in Drive.
+        """
+        if keep_existing:
+            print(t("  note: --keep-existing is ignored by a generationMode: "
+                    "create template (it bundles no slides)"))
+        # presentations.create ignores every field but the title, so the page
+        # size is whatever Slides defaults to. Say so rather than drawing to a
+        # canvas that silently differs from the one the template declares.
+        pres = _retry(
+            lambda: slides.presentations().create(body={"title": title}).execute(),
+            what=t("presentation create"))
+        deck = cls(slides, drive, pres["presentationId"], template)
+        want = template.get("pageSize", {}).get("widthInches")
+        got = pres.get("pageSize", {}).get("width", {}).get("magnitude")
+        if want and got and abs(_auth.to_inches(got) - want) > 0.01:
+            print(t("  warn: the template expects a {want}in page but Slides "
+                    "created a {got}in one; coordinates will not line up",
+                    want=want, got=round(_auth.to_inches(got), 2)),
+                  file=sys.stderr)
+        if folder:
+            deck._move_to_folder(folder)
+        # A new presentation always opens with one slide, and the deck is
+        # built entirely from its own pages
+        deck._queue_slide_deletes(
+            [sl["objectId"] for sl in pres.get("slides", [])])
+        return deck
+
+    def _move_to_folder(self, folder: str) -> None:
+        """Move the presentation out of My Drive's root into `folder`."""
+        fid = _auth.folder_id(folder)
+        if not fid:
+            return
+        meta = _retry(
+            lambda: self.drive.files().get(
+                fileId=self.presentation_id, fields="parents",
+                supportsAllDrives=True).execute(),
+            what="files.get")
+        _retry(
+            lambda: self.drive.files().update(
+                fileId=self.presentation_id, addParents=fid,
+                removeParents=",".join(meta.get("parents", [])),
+                fields="id", supportsAllDrives=True).execute(),
+            what="files.update")
 
     @classmethod
     def open(
@@ -727,7 +866,8 @@ class TemplateDeck:
         slideId as pageObjectId if you want to draw additional figures.
         """
         resolved_key, layout = self.resolve_layout(layout_key)
-        declared = layout.get("placeholders", [])
+        declared = declared_slots(layout)
+        draw_specs = self._draw_specs(layout)
 
         if body is not None and bodies is not None:
             raise ValueError(t("body and bodies cannot be specified together"))
@@ -761,7 +901,8 @@ class TemplateDeck:
         mappings = []
         # SLIDE_NUMBER is excluded because the API silently ignores it even if
         # mapped (drawn instead by add_page_numbers)
-        for name in [t for t in declared if t.split("#")[0] in FILLABLE]:
+        for name in [t for t in layout.get("placeholders", [])
+                     if t.split("#")[0] in FILLABLE]:
             ph_type, _, idx = name.partition("#")
             idx = int(idx) if idx else 0
             safe = name.replace("#", "x").lower()
@@ -771,10 +912,14 @@ class TemplateDeck:
                 {"layoutPlaceholder": {"type": ph_type, "index": idx}, "objectId": oid}
             )
 
-        create_req: dict = {
-            "objectId": slide_id,
-            "slideLayoutReference": {"layoutId": layout["layoutId"]},
-        }
+        create_req: dict = {"objectId": slide_id}
+        if layout.get("layoutId"):
+            create_req["slideLayoutReference"] = {"layoutId": layout["layoutId"]}
+        else:
+            # A generationMode: "create" template has no real layouts, so the
+            # page comes from a predefined one and its slots are drawn below
+            create_req["slideLayoutReference"] = {
+                "predefinedLayout": layout.get("predefinedLayout", "BLANK")}
         if mappings:
             create_req["placeholderIdMappings"] = mappings
         if index is not None:
@@ -786,6 +931,18 @@ class TemplateDeck:
         )
 
         filled_bodies = list(zip(body_slots, bodies or []))
+
+        # Coordinate-positioned slots are drawn as text boxes, and only the
+        # ones that get text — an empty drawn box would still be on the page.
+        # A real placeholder always wins, so nothing is drawn twice.
+        drawn: set[str] = set()
+        for name, value in ([(title_slot or "TITLE", title),
+                             ("SUBTITLE", subtitle)] + filled_bodies):
+            if value is None or name in ph_ids or name not in draw_specs:
+                continue
+            ph_ids[name] = self._draw_slot(slide_id, draw_specs[name])
+            drawn.add(name)
+
         for name, value in ((title_slot or "TITLE", title), ("SUBTITLE", subtitle)):
             if value is None:
                 continue
@@ -793,6 +950,8 @@ class TemplateDeck:
             self.requests.append(
                 {"insertText": {"objectId": ph_ids[name], "text": text}}
             )
+            if name in drawn:
+                self.requests += _drawn_text_styles(ph_ids[name], draw_specs[name])
 
         # Depending on the template, the title's default size may only fit
         # about 20 characters per line. Shrink long action titles with
@@ -818,6 +977,8 @@ class TemplateDeck:
             self.requests.append(
                 {"insertText": {"objectId": ph_ids[name], "text": text}}
             )
+            if name in drawn:
+                self.requests += _drawn_text_styles(ph_ids[name], draw_specs[name])
 
         # Adjust the body's appearance. A placeholder's default size is often
         # generous, meant for hand-typed text, and Japanese body text looks
@@ -867,6 +1028,32 @@ class TemplateDeck:
             "layout": layout,
             "layoutKey": resolved_key,
         }
+
+    # ---------- Drawn slots (generationMode: create) ----------
+
+    @staticmethod
+    def _draw_specs(layout: dict) -> dict[str, dict]:
+        """Slot name -> how to draw it, merging drawText with its font family."""
+        styles = layout.get("textStyles") or {}
+        specs = {}
+        for key, geo in (layout.get("drawText") or {}).items():
+            specs[draw_slot_name(key)] = {
+                **geo, "fontFamily": (styles.get(key) or {}).get("fontFamily")}
+        return specs
+
+    def _draw_slot(self, slide_id: str, spec: dict) -> str:
+        """Queue an empty text box at the slot's coordinates and return its id."""
+        oid = self._next_id("drawn")
+        self.requests.append(
+            {"createShape": {"objectId": oid, "shapeType": "TEXT_BOX",
+             "elementProperties": {"pageObjectId": slide_id,
+             "size": {"width": {"magnitude": _auth.inches(spec["w"]), "unit": "EMU"},
+                      "height": {"magnitude": _auth.inches(spec["h"]), "unit": "EMU"}},
+             "transform": {"scaleX": 1, "scaleY": 1,
+                           "translateX": _auth.inches(spec["x"]),
+                           "translateY": _auth.inches(spec["y"]),
+                           "unit": "EMU"}}}})
+        return oid
 
     # ---------- Body emphasis ----------
 
@@ -1691,7 +1878,7 @@ def validate_spec(template: dict, spec: dict) -> list[str]:
                   roles=sorted(roles), keys=sorted(layouts))
             )
             continue
-        declared = layout.get("placeholders", [])
+        declared = declared_slots(layout)
         title_ph = "CENTERED_TITLE" if ("CENTERED_TITLE" in declared
                                         and "TITLE" not in declared) else "TITLE"
         for field, ph in (("title", title_ph), ("subtitle", "SUBTITLE")):
