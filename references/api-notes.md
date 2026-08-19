@@ -322,6 +322,31 @@ that overflows the frame vertically without clipping it, so subtracting the top/
 padding too causes single-line labels to be misdetected across the board (measured example: a
 single 9.5pt line in a 0.24in frame displays fine).
 
+### The padding cannot be set — but a negative indent gets past it
+
+There is no field for it anywhere in the API: `ShapeProperties` carries only
+`shapeBackgroundFill` / `outline` / `shadow` / `link` / `contentAlignment` /
+`autofit`, and `TableCellProperties` only `tableCellBackgroundFill` /
+`contentAlignment` (checked against the live discovery doc, revision
+20260812). The cell padding the Slides UI offers is not reachable from the
+API.
+
+A **negative paragraph indent** is. It is accepted (`indentStart` etc. take a
+negative magnitude in PT — `IN` is not a valid `Unit`) and it moves the text
+past the built-in inset: at 9pt in a 3.0in box, `-7.2pt` on each side sets the
+text flush to the frame edge and fits one more full-width character per line.
+
+**Set all three of `indentStart`, `indentFirstLine` and `indentEnd`.**
+`indentStart` alone leaves the first line where it was — and in a one-line
+table cell that is the only line, which is why a first attempt at this looks
+like it does nothing at all.
+
+Table cells have their own, narrower inset: `-3.6pt` (0.05in) is what sets
+cell text flush. `charts.py` exposes this as `table(text_margin=…)` and
+`diagrams.py` as `shape(text_margin=…)` / `Canvas.text_margin`; the audit
+subtracts the tightened value rather than the default, so the extra width is
+actually usable. Vertical padding has no equivalent lever.
+
 ## 15. `TRAPEZOID`'s slope cannot be changed
 
 The top-edge inset is fixed at **displayed height × 0.25** (on each side). Measured:

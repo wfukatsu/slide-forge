@@ -120,6 +120,10 @@ register({
         "{where}: 未知の type '{kind}'（利用可能: {available}）",
     "{where}: type '{kind}' is missing required keys: {missing}":
         "{where}: type '{kind}' に必要なキーがありません: {missing}",
+    "{where}: 'textMargin' must be a number (inches)":
+        "{where}: 'textMargin' は数値（インチ）である必要があります",
+    "{where}: 'textMargin' is {v}in; give an inner margin between 0 and 1.0in":
+        "{where}: 'textMargin' が {v}in です。0〜1.0in の内側余白を指定してください",
     "{where}: '{k}' must be a number (inches)":
         "{where}: '{k}' は数値（インチ）である必要があります",
     "{where}: extends horizontally past the page ({pw}in) "
@@ -1479,6 +1483,30 @@ def _figure_args(fig: dict) -> tuple[list, dict]:
     return args, kwargs
 
 
+def _check_text_margin(value, where: str) -> list[str]:
+    """Reject a textMargin that is not a usable inner margin, in inches."""
+    if value is None:
+        return []
+    if not isinstance(value, (int, float)):
+        return [t("{where}: 'textMargin' must be a number (inches)", where=where)]
+    if value < 0 or value > 1.0:
+        return [t("{where}: 'textMargin' is {v}in; give an inner margin "
+                  "between 0 and 1.0in", where=where, v=value)]
+    return []
+
+
+def _text_margin(spec: dict, slide: dict) -> float | None:
+    """The inner margin figures on this slide draw text with, in inches.
+
+    `textMargin` on the slide wins over `defaults.textMargin`; None leaves the
+    inset Slides bakes in. Lower it to pack a dense page — a figure can still
+    override it per call.
+    """
+    if slide.get("textMargin") is not None:
+        return slide["textMargin"]
+    return (spec.get("defaults") or {}).get("textMargin")
+
+
 def draw_figures(canvas, figures: list, *, skip_network: bool = False) -> None:
     """Draw a figures block onto the Canvas."""
     for fig in figures:
@@ -1504,7 +1532,10 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
     band = footer_band(template) if template else None
     layouts = (template or {}).get("layouts", {})
     roles = (template or {}).get("roles", {})
+    problems += _check_text_margin(
+        (spec.get("defaults") or {}).get("textMargin"), "defaults")
     for i, s in enumerate(spec.get("slides", [])):
+        problems += _check_text_margin(s.get("textMargin"), f"slides[{i}]")
         figs = s.get("figures")
         if figs is None:
             continue
@@ -1534,11 +1565,12 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
                     "{where}: type '{kind}' is missing required keys: "
                     "{missing}", where=where, kind=kind, missing=missing))
                 continue
-            for k in ("x", "y", "w", "h"):
+            for k in ("x", "y", "w", "h", "textMargin"):
                 if k in fig and not isinstance(fig[k], (int, float)):
                     problems.append(t(
                         "{where}: '{k}' must be a number (inches)",
                         where=where, k=k))
+            problems += _check_text_margin(fig.get("textMargin"), where)
             # "size" is a spatial quantity (inches) only for types that take
             # size as a positional argument (icon-family, pie). For others
             # like table it's a font size (pt), so using it in place of the
@@ -1659,6 +1691,7 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
         if not figs:
             continue
         canvas = Canvas(_StubDeck(), f"dry_{i}", template)
+        canvas.text_margin = _text_margin(spec, s)
         try:
             draw_figures(canvas, figs, skip_network=True)
         except Exception as e:  # an argument mismatch may only surface here
@@ -1962,6 +1995,7 @@ def build_from_spec(
             continue
         from diagrams import Canvas  # only loaded for a spec that uses figures
         canvas = Canvas(deck, ref["slideId"], deck.template)
+        canvas.text_margin = _text_margin(spec, s)
         draw_figures(canvas, figs)
         for msg in (canvas.audit_bounds() + canvas.audit_connectors()
                     + canvas.audit_overlaps() + canvas.audit_text_fit()):

@@ -120,6 +120,16 @@ d.linechart(0.5, 1.2, 9.0, 3.2, ["1月", "2月", "3月"],
 d.pie(0.7, 1.3, 2.8, [("移行済み", 62), ("移行中", 23), ("未着手", 15)])
 ```
 
+On a page carrying a lot of information, `text_margin` (inches) tightens the
+inner margin of the text so more fits in the same box. Slides has no field for
+that padding, so it is produced with a negative indent (`references/api-notes.md`
+§14). Pass it per call, or set `d.text_margin` once for the whole canvas.
+
+```python
+d.text_margin = 0.02                       # every shape and cell on this slide
+d.table(0.5, 1.2, 9.0, headers, rows, text_margin=0.02)   # this table only
+```
+
 Code samples use `code_block` (`references/code-blocks.md`): monospace with
 highlighting, square corners. Estimate the height from the effective line
 height (`lines × size × ls × 1.45 / 72 + 0.14in`).

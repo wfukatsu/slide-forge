@@ -296,6 +296,28 @@ y' = shearY·x + scaleY·y + translateY        scaleX = scaleY = cosθ
 そのまま描くため、上下余白まで差し引くと 1 行のラベルが軒並み誤検知になる
 （実測: 0.24in の枠に 9.5pt の 1 行は問題なく表示される）。
 
+### 余白そのものは設定できないが、負のインデントで外に出せる
+
+API にはこの余白のフィールドが無い。`ShapeProperties` が持つのは
+`shapeBackgroundFill` / `outline` / `shadow` / `link` / `contentAlignment` /
+`autofit` だけ、`TableCellProperties` は `tableCellBackgroundFill` /
+`contentAlignment` だけ（ライブの discovery doc・revision 20260812 で確認）。
+Slides の画面にある「セルの余白」は API から触れない。
+
+代わりに使えるのが**負の段落インデント**。`indentStart` などは負の値を受け付け
+（単位は PT。`Unit` に `IN` は無い）、内蔵の余白より外へ文字を出せる。実測では
+3.0in 枠・9pt で左右 `-7.2pt` にすると文字が枠線に接し、1 行あたり全角 1 文字
+ぶん多く入る。
+
+**`indentStart` / `indentFirstLine` / `indentEnd` の 3 つとも指定すること。**
+`indentStart` だけでは 1 行目が動かない。1 行しかないテーブルセルではその 1 行が
+すべてなので、最初に試すと「何も起きない」ように見える。
+
+テーブルセルの余白はこれより狭く、`-3.6pt`（0.05in）で罫線に接する。
+`charts.py` は `table(text_margin=…)`、`diagrams.py` は `shape(text_margin=…)` /
+`Canvas.text_margin` として公開している。検査側も既定値ではなく詰めた後の値を
+引くので、広がったぶんを実際に使える。上下方向に相当する手段は無い。
+
 ## 15. `TRAPEZOID` の傾きは変えられない
 
 上底の食い込みは **表示上の高さ × 0.25**（左右それぞれ）で固定されている。実測:
