@@ -58,7 +58,8 @@ d.table(x, y, w, headers, rows,
         aligns=None,       # 列ごとの寄せ。省略で 1 列目 START、残り CENTER
         header_fill=None,  # 見出し行の塗り（既定 primary。文字色は自動）
         zebra=True,        # 偶数行に薄い縞
-        border=None)       # 罫線色（既定 border）
+        border=None,       # 罫線色（既定 border）
+        text_margin=None)  # セルの内側余白（インチ）。既定は Slides 自身の 0.05in
 ```
 
 - Slides ネイティブのテーブルなので**生成後にユーザーが編集できる**（図形で
@@ -66,6 +67,13 @@ d.table(x, y, w, headers, rows,
 - `row_h` は最小値。セル内で文字が折り返すと行が伸び、戻り値の下端 y より
   実物が下がる。セルの文字量は `audit_text_fit()` が生成前に検査する。
 - 行数が多い表は文字を小さくするより**スライドを分ける**。
+- `text_margin` は情報量の多い表を詰めるための指定。セルが左右に持っている
+  余白を取り戻すので、同じ幅・同じ文字サイズのままより多くの文字が入る。
+  0.02in が読める限界の目安で、0 にすると罫線に接する。指定しなければ
+  キャンバス全体の `d.text_margin` を使う。デッキ仕様では `textMargin` を
+  図ごと・スライドごと・`defaults` に書ける（[template-schema](template-schema.ja.md)）。
+  効くのは左右だけ。セルの上下余白を動かす手段は Slides に無いので、縦を
+  詰めるときは `row_h` / `header_h` / `size` を使う。
 
 ## vbars — 縦棒
 

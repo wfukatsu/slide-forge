@@ -172,6 +172,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         self.texts: dict[str, dict] = {}
         # Record of filled shapes. If drawn later, they can cover text underneath.
         self.solids: list[dict] = []
+        # Inner margin (inches) for text drawn on this canvas. None keeps the
+        # inset Slides bakes in; a smaller value tightens it to fit more text
+        # in the same box. See _text_inset() / shape().
+        self.text_margin: float | None = None
         self._seq = 0
 
     def _oid(self, prefix: str) -> str:
@@ -247,7 +251,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
               bold=False, align="CENTER", valign="MIDDLE", line_spacing=None,
               alpha: float = 1.0, rotation: float = 0.0,
               flip_x: bool = False, flip_y: bool = False,
-              font: str | None = None) -> str:
+              font: str | None = None,
+              text_margin: float | None = None) -> str:
         """Draw a shape and return its objectId. fill=None means no fill.
 
         dash is the outline's line style (SOLID / DASH / DOT / DASH_DOT, …). Use a
@@ -308,6 +313,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 "objectId": oid, "shapeProperties": props,
                 "fields": ",".join(fields)}})
 
+        inset = self._text_inset(text_margin)
         if text:
             reqs.append({"insertText": {"objectId": oid, "text": text}})
             fg = color or (readable_on(fill) if fill else self.P.text)
@@ -326,9 +332,12 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             if line_spacing:
                 pstyle["lineSpacing"] = line_spacing
                 pfields.append("lineSpacing")
-            # If no line spacing was given and alignment is already the default,
-            # the paragraph style doesn't need to be touched
-            if line_spacing or align != _default_align(kind):
+            indent = _auth.indent_style(self.TEXT_INSET_X - inset)
+            pstyle.update(indent)
+            pfields += list(indent)
+            # If no line spacing or tightening was asked for and alignment is
+            # already the default, the paragraph style doesn't need touching
+            if line_spacing or indent or align != _default_align(kind):
                 reqs.append({"updateParagraphStyle": {
                     "objectId": oid, "style": pstyle,
                     "textRange": {"type": "ALL"}, "fields": ",".join(pfields)}})
@@ -350,7 +359,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             self.texts[oid] = {"rect": trect, "kind": kind, "text": text,
                                "size": size, "ls": line_spacing or 100,
                                "fill": fill is not None and alpha >= 0.9,
-                               "align": align, "valign": valign, "seq": self._seq}
+                               "align": align, "valign": valign,
+                               "inset": inset, "seq": self._seq}
         return oid
 
     def box(self, x, y, w, h, text=None, **kw) -> str:
@@ -777,9 +787,20 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     # line at 9.5pt renders fine in a 0.24in box).
     TEXT_INSET_X = 0.10
 
+    def _text_inset(self, override: float | None = None) -> float:
+        """The inner margin to assume for text, in inches (per side).
+
+        Slides bakes TEXT_INSET_X into every text frame and offers no way to
+        change it, so a smaller margin is produced by pulling the text back
+        out with a negative indent (see indent_style). Resolution order:
+        the call's own text_margin, then the canvas-wide one, then Slides'.
+        """
+        m = override if override is not None else self.text_margin
+        return self.TEXT_INSET_X if m is None else max(0.0, float(m))
+
     def _text_lines(self, m):
         """Return the number of lines accounting for wrapping, and the number of characters that fit per line."""
-        w = max(m["rect"][2] - self.TEXT_INSET_X * 2, 0.01)
+        w = max(m["rect"][2] - m.get("inset", self.TEXT_INSET_X) * 2, 0.01)
         per = (w * 72.0) / m["size"]
         if per <= 0:
             return 1, per
@@ -812,7 +833,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         x, y, w, h = m["rect"]
         lines, per = self._text_lines(m)
         longest = max((self._em(l) for l in m["text"].split("\n")), default=0)
-        tw = min(w, min(longest, per) * m["size"] / 72.0 + 0.10)
+        tw = min(w, min(longest, per) * m["size"] / 72.0
+                 + m.get("inset", self.TEXT_INSET_X))
         th = min(h, lines * m["size"] * self.LINE_EM * (m["ls"] / 100.0) / 72.0)
         if m["align"] == "CENTER":
             x += (w - tw) / 2

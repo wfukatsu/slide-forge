@@ -132,9 +132,15 @@ class ChartMixin:
 
     # ---- Tables (native Slides tables) ----
 
+    # A table cell's built-in horizontal inner padding, narrower than the
+    # TEXT_INSET_X of a shape. Measured: text set flush to the cell border by
+    # a -0.05in indent. Slides exposes no field for it (see _auth.indent_style)
+    CELL_INSET_X = 0.05
+
     def table(self, x, y, w, headers, rows, *, col_widths=None, row_h=0.34,
               header_h=0.38, size=10, header_size=None, aligns=None,
-              header_fill=None, zebra=True, border=None) -> float:
+              header_fill=None, zebra=True, border=None,
+              text_margin=None) -> float:
         """Draw a table and return the bottom y. headers are column headers, rows is a list of rows.
 
         - `col_widths` are column-width ratios (e.g. `[2, 1, 1]`). Omit for equal widths
@@ -142,6 +148,13 @@ class ChartMixin:
           Omit for START on column 1, CENTER on the rest
         - `zebra` shades even rows lightly (avoids misreading when there are many rows)
         - Cells are native Slides tables, so the user can edit them after generation
+        - `text_margin` is the inner margin of a cell in inches, for packing
+          more into a dense table. It defaults to the CELL_INSET_X Slides
+          bakes in; a smaller value (0.02 is about as tight as stays legible)
+          buys that much width per side back. Falls back to the canvas-wide
+          `text_margin` when not given. Horizontal only — Slides gives no
+          lever on a cell's top/bottom padding, so tighten rows with `row_h`
+          / `header_h` / a smaller `size` instead.
 
         `row_h` is the **minimum** row height. Rows grow taller on their own
         when text wraps, so the return value is only an estimate. Text that
@@ -223,6 +236,12 @@ class ChartMixin:
             for r in range(2, nrows, 2):
                 cell_fill(r, 0, 1, ncols, self.P.surfaceAlt)
 
+        cell_margin = (text_margin if text_margin is not None
+                       else self.text_margin)
+        cell_inset = (self.CELL_INSET_X if cell_margin is None
+                      else max(0.0, float(cell_margin)))
+        cell_indent = _auth.indent_style(self.CELL_INSET_X - cell_inset)
+
         def put_text(r, c, text, *, color, bold, fsize, align):
             if text is None or str(text) == "":
                 return
@@ -239,10 +258,11 @@ class ChartMixin:
                         "rgbColor": _auth.hex_to_rgb(color)}}},
                 "textRange": {"type": "ALL"},
                 "fields": "fontFamily,fontSize,bold,foregroundColor"}})
+            pstyle = {"alignment": align, **cell_indent}
             reqs.append({"updateParagraphStyle": {
                 "objectId": oid, "cellLocation": loc,
-                "style": {"alignment": align},
-                "textRange": {"type": "ALL"}, "fields": "alignment"}})
+                "style": pstyle, "textRange": {"type": "ALL"},
+                "fields": ",".join(pstyle)}})
 
         hs = header_size or size
         for c, head in enumerate(headers):
@@ -259,9 +279,11 @@ class ChartMixin:
         self.solids.append({"rect": (x, y, w, h_total), "seq": self._seq,
                             "name": t("table {head}", head=str(headers[0])[:12])})
         # Register each cell's text as a target for audit_text_fit / audit_overlaps.
-        # A cell's inner padding is 0.05in left/right (narrower than a shape's
-        # 0.1in), but it's evaluated conservatively to match the auditor's
-        # estimate (TEXT_INSET_X)
+        # A cell's inner padding is CELL_INSET_X left/right (narrower than a
+        # shape's TEXT_INSET_X), but it's evaluated conservatively at
+        # TEXT_INSET_X. A tightened cell keeps the same slack, so the
+        # calibration the auditor was measured against still holds
+        audit_inset = cell_inset + (self.TEXT_INSET_X - self.CELL_INSET_X)
         cx0 = x
         for c, cw in enumerate(widths):
             cy0 = y
@@ -273,7 +295,8 @@ class ChartMixin:
                         "rect": (cx0, cy0, cw, rh), "kind": "TABLE_CELL",
                         "text": str(text), "size": hs if r == 0 else size,
                         "ls": 100, "fill": True, "align": aligns[c],
-                        "valign": "MIDDLE", "seq": self._seq}
+                        "valign": "MIDDLE", "inset": audit_inset,
+                        "seq": self._seq}
                 cy0 += rh
             cx0 += cw
         return y + h_total

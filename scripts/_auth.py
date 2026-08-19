@@ -112,6 +112,25 @@ def inches(v: float) -> int:
     return int(round(v * EMU_PER_INCH))
 
 
+def indent_style(tighten_in: float) -> dict:
+    """Paragraph indents that pull text `tighten_in` inches back on each side.
+
+    The Slides API exposes no text inset — `TableCellProperties` and
+    `ShapeProperties` have no such field (checked against the live discovery
+    doc), and the frame's built-in inner margin cannot be set. A negative
+    indent is the one lever that moves text past it, so a tighter margin is
+    expressed as one. All three indents have to be set: `indentStart` alone
+    leaves the first line where it was, which is every line of a one-line
+    table cell.
+
+    Returns {} for no change, so the caller can skip the request entirely.
+    """
+    if not tighten_in or tighten_in <= 0:
+        return {}
+    d = {"magnitude": -tighten_in * 72.0, "unit": "PT"}
+    return {"indentStart": d, "indentFirstLine": d, "indentEnd": d}
+
+
 def to_inches(emu: float) -> float:
     return emu / EMU_PER_INCH
 

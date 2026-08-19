@@ -177,7 +177,11 @@
       "bodyFontSize": 13,
       "bodyLineSpacing": 115,
       "bodySpaceAbove": 0,
-      "bodySpaceBelow": 3
+      "bodySpaceBelow": 3,
+      // 図の中で描くテキストの内側余白（インチ）。省略すると Slides 内蔵の
+      // 余白のまま。情報量が多いページで詰めるための指定で、slide 単位・
+      // spec の "defaults"・図ごと（下の figures 参照）に書ける
+      "textMargin": 0.02
     },
     {
       "layout": "THREE_COLUMN",
@@ -194,7 +198,10 @@
         { "type": "icon_flow", "x": 0.5, "y": 1.3, "w": 9.0, "size": 0.92,
           "items": [["person", "利用者"], ["database", "台帳"]] },
         { "type": "image", "x": 0.5, "y": 3.2, "w": 4.0, "h": 1.6,
-          "source": "assets/shot.png", "fit": "cover", "caption": "管理画面" }
+          "source": "assets/shot.png", "fit": "cover", "caption": "管理画面" },
+        // textMargin はこの図だけに効く（スライドや defaults の値より優先）
+        { "type": "table", "x": 0.5, "y": 1.2, "w": 9.0, "textMargin": 0.02,
+          "headers": ["観点", "現行", "移行後"], "rows": [["…", "…", "…"]] }
       ]
     },
     {

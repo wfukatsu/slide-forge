@@ -61,7 +61,8 @@ d.table(x, y, w, headers, rows,
         aligns=None,       # per-column alignment. Defaults to START for column 1, CENTER for the rest
         header_fill=None,  # header row fill (default: primary; text color chosen automatically)
         zebra=True,        # light stripe on even rows
-        border=None)       # border color (default: border)
+        border=None,       # border color (default: border)
+        text_margin=None)  # inner margin of a cell in inches (default: Slides' own 0.05in)
 ```
 
 - Because this is a Slides-native table, **users can edit it after generation** (the key
@@ -70,6 +71,14 @@ d.table(x, y, w, headers, rows,
   extends below the returned bottom-edge y. `audit_text_fit()` checks cell text volume before
   generation.
 - For a table with many rows, **split across slides** rather than shrinking the font.
+- `text_margin` packs a dense table: it buys back the padding a cell holds on
+  each side, so more text fits at the same width and font size. 0.02in is
+  about as tight as stays legible, and 0 sets the text flush to the border.
+  It falls back to the canvas-wide `d.text_margin`, and `textMargin` in a deck
+  spec sets it per figure, per slide, or under `defaults` (see
+  [template-schema](template-schema.md)). Horizontal only — Slides gives no
+  lever on a cell's top/bottom padding, so use `row_h` / `header_h` / a
+  smaller `size` for vertical density.
 
 ## vbars — vertical bars
 

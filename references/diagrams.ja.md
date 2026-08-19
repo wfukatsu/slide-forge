@@ -112,6 +112,16 @@ d.pie(0.7, 1.3, 2.8, [("移行済み", 62), ("移行中", 23), ("未着手", 15)
 コードサンプルは `code_block`（`references/code-blocks.md`）。等幅 + ハイライト付き、
 角は直角。高さは実効行高（`行数 × size × ls × 1.45 / 72 + 0.14in`）で見積もる。
 
+情報量の多いページでは `text_margin`（インチ）でテキストの内側余白を詰めると、
+同じ枠により多く入る。この余白を設定するフィールドは Slides に無いので、
+負のインデントで作っている（`references/api-notes.ja.md` §14）。呼び出しごとに
+渡すか、`d.text_margin` でキャンバス全体に効かせる。
+
+```python
+d.text_margin = 0.02                       # このスライドの図形・セルすべて
+d.table(0.5, 1.2, 9.0, headers, rows, text_margin=0.02)   # この表だけ
+```
+
 ```python
 d.code_block(0.5, 1.0, 6.1, 2.9, code, lang="java")  # java/graphql/json/bash
 ```
