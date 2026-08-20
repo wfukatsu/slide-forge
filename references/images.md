@@ -239,6 +239,12 @@ python scripts/images.py --prompt "…" --style flat_vector \
 > returns `HTTP 429 / limit: 0`. You need an API key from a project with billing enabled.
 > The shape-based `illustrations` still works without any key.
 
+> **Generation can be switched off entirely** — `imageGeneration: false` in
+> `config/settings.json` (`.venv/bin/python scripts/settings.py --image-generation off`).
+> `generate()` then refuses before the cache lookup, `build_deck.py` rejects `aiImage` during
+> spec validation, and `fill_image_slots.py` stops before reading the deck. Check it with
+> `scripts/settings.py --show` before offering AI imagery. See `references/settings.md`.
+
 ### Generating to match the frame
 
 Omitting `aspect` generates the image to match the destination frame (whether that's a

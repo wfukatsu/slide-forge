@@ -31,6 +31,10 @@ own branching, borrowing only the conventions from here.
 - When told "use your judgment," "whatever," or "just make it quick." Assemble it with the
   defaults, **state the premises you adopted in one line** before generating (never decide
   silently).
+- Anything `config/settings.json` already decides — whether Gemini generates images at all, and
+  whether the deliverable is Google Slides or a local `.pptx`. **Read them before the Q2 set**
+  (`.venv/bin/python scripts/settings.py --show`) and drop the questions they answer; see
+  `references/settings.md`. A request to *change* them goes to the `settings` skill, not here.
 - Coordinates, font sizes, choice of figure parts, colors. These are **your responsibility**, not
   something to hand to the user to choose. When in doubt, follow the conventions in
   `references/`.
@@ -142,7 +146,7 @@ Ask only about what Q1's answers didn't settle. There's no need to ask all of th
 | Output destination | Where in Drive should it go? | My Drive root / a specified folder (URL or ID) / append to an existing deck |
 | Cover | What information goes on the cover? | Date + company name / date only / none |
 | Verification | Run visual QA (thumbnail verification) after generation? | Run it (recommended, default) / skip it (generation only; can be run later via the `slide-qa` skill) |
-| Output format | In addition to Google Slides, also export to PowerPoint (.pptx)? | Google Slides only (default) / also export PPTX (for delivery/distribution; exported after generation via the `pptx-export` skill) |
+| Output format | In addition to Google Slides, also export to PowerPoint (.pptx)? | Google Slides only (default) / also export PPTX (for delivery/distribution; exported after generation via the `pptx-export` skill). **Skip this question when `output` is set in `config/settings.json`** — `local` already means the .pptx is the deliverable |
 | Cost breakdown | Also produce a cost/composition breakdown (quotation) as a spreadsheet? | No (default; slide summary only) / yes — Excel + Google Spreadsheet (via the `spreadsheets` skill; placed in the same Drive folder as the deck, with the total matching the slides) |
 
 Notes:
@@ -152,7 +156,9 @@ Notes:
 - **AI images (`aiImage`) require a billed `GEMINI_API_KEY`.** If the answer indicates they plan
   to use one, check for a key first; if there isn't one, propose a shape-based alternative
   (`illustrations` / `patterns`). A free-tier key has zero quota for the image model and fails
-  with a 429 at generation time.
+  with a 429 at generation time. **When `imageGeneration` is off in `config/settings.json`,
+  don't offer AI images or ask about the key at all** — go straight to the shape-based
+  alternative (the engine refuses `aiImage` at validation time anyway).
 - If materials are "we'll research it," **never fill in numbers by guessing.** Anything without
   a verifiable source becomes an `○○` placeholder, and tell the user so.
 - **For "verification," default to putting "run it" first (recommended).** Mention in the
@@ -161,8 +167,10 @@ Notes:
   in the final report that QA was not performed. The QA procedure (fetch thumbnails → visual
   review → fix loop → delete verification files) is owned by the `slide-qa` skill.
 - **Only ask about "output format" when PPTX delivery/distribution is expected** (proposals,
-  customer-facing materials, etc.). Don't ask for conference talks or internal sharing — default
-  to Google Slides only. If "also export PPTX" is chosen, export via the `pptx-export` skill
+  customer-facing materials, etc.), **and only when `config/settings.json` leaves it open.** With
+  `output: local` the deck is exported to the local folder automatically after generation, so
+  state that as a premise instead of asking, and report the local path next to the deck URL.
+  Don't ask for conference talks or internal sharing — default to Google Slides only. If "also export PPTX" is chosen, export via the `pptx-export` skill
   only **after generation and QA are both fully complete** (an export is a snapshot, so
   regenerating the deck requires re-exporting). Procedure and fidelity notes are owned by that
   skill.

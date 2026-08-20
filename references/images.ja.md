@@ -227,6 +227,12 @@ python scripts/images.py --prompt "…" --style flat_vector \
 > `HTTP 429 / limit: 0` が返る。課金を有効にしたプロジェクトの API キーが要る。
 > 図形で描く `illustrations` のほうはキー無しで動く。
 
+> **画像生成そのものを OFF にできる** — `config/settings.json` の
+> `imageGeneration: false`（`.venv/bin/python scripts/settings.py --image-generation off`）。
+> OFF のとき `generate()` はキャッシュ参照の前に拒否し、`build_deck.py` は spec 検証で
+> `aiImage` を弾き、`fill_image_slots.py` はデッキを読む前に停止する。AI 画像を提案する
+> 前に `scripts/settings.py --show` で確認すること。詳細は `references/settings.ja.md`。
+
 ### 枠に合わせて生成する
 
 `aspect` を省略すると、置き先の枠（テンプレートの `imageSlots` でも、自分で

@@ -40,6 +40,7 @@ Load exactly one generation skill completely, then read only the reference secti
 | Thumbnail-based visual QA | `slide-qa` |
 | Export to PowerPoint (`.pptx`) format | `pptx-export` |
 | Generate spreadsheets such as line-item estimates | `spreadsheets` |
+| Change the image-generation or output-destination switches | `settings` |
 
 ## 3. Interactive questions
 

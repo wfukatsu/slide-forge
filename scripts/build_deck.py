@@ -28,9 +28,34 @@ import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+import settings  # noqa: E402
 from _i18n import t, register  # noqa: E402
 
 register({
+    "{where}: 'aiImage' needs Gemini image generation, which is off in the "
+    "settings (imageGeneration: off). Turn it on with "
+    "scripts/settings.py --image-generation on, or replace the figure with a "
+    "shape-drawn one (illustrations / patterns)":
+        "{where}: 'aiImage' は Gemini の画像生成を使いますが、設定で OFF に"
+        "なっています（imageGeneration: off）。"
+        "scripts/settings.py --image-generation on で ON にするか、"
+        "図形で描く図（illustrations / patterns）に置き換えてください",
+    "where the deliverable goes: google (Drive / Slides) or local "
+    "(folder / PowerPoint); defaults to config/settings.json":
+        "成果物の出力先: google（Drive / Slides）または local"
+        "（フォルダ / PowerPoint）。既定は config/settings.json",
+    "  output: local — exporting to PowerPoint...":
+        "  出力先: local — PowerPoint に書き出します...",
+    "  output: local — after generation the deck is exported to PowerPoint "
+    "under {dir}":
+        "  出力先: local — 生成後に {dir} へ PowerPoint を書き出します",
+    "  PPTX: {path} ({size:.1f} MB)": "  PPTX: {path}（{size:.1f} MB）",
+    "  the deck itself stays in Google Slides (nothing is deleted): {url}":
+        "  デッキ自体は Google Slides に残ります（削除はしません）: {url}",
+    "  warn: the PowerPoint export failed ({err}); the deck is still "
+    "available at {url}":
+        "  warn: PowerPoint への書き出しに失敗しました（{err}）。"
+        "デッキは {url} にあります",
     "  warn: {what} failed with HTTP {code}; retrying in {wait:.0f}s "
     "({attempt}/{attempts})":
         "  warn: {what} が HTTP {code} で失敗。{wait:.0f} 秒後に再試行 "
@@ -1558,6 +1583,16 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
                     "{where}: unknown type '{kind}' (available: {available})",
                     where=where, kind=kind, available=sorted(FIGURES)))
                 continue
+            # Caught offline so --dry-run reports it, rather than failing
+            # partway through a live generation that already created a deck
+            if kind == "aiImage" and not settings.image_generation_enabled():
+                problems.append(t(
+                    "{where}: 'aiImage' needs Gemini image generation, which "
+                    "is off in the settings (imageGeneration: off). Turn it "
+                    "on with scripts/settings.py --image-generation on, or "
+                    "replace the figure with a shape-drawn one "
+                    "(illustrations / patterns)", where=where))
+                continue
             _, order = FIGURES[kind]
             missing = [k for k in order if k not in fig]
             if missing:
@@ -2007,6 +2042,40 @@ def build_from_spec(
     return warnings
 
 
+def deliver_local(deck: "TemplateDeck", title: str | None) -> str | None:
+    """Export the freshly built deck to `.pptx` in the local output folder.
+
+    The engine always draws through the Slides API, so `output: local` is
+    about the *deliverable*, not the build: the deck is exported to
+    PowerPoint under `settings.local_output_dir()` and the Slides original is
+    deliberately left in place (this toolkit never deletes for you).
+
+    A failed export is reported, not raised — the deck itself was generated
+    successfully by that point, and losing that fact to an export error would
+    be a worse outcome than an export the user can retry with
+    `scripts/export_pptx.py`.
+    """
+    import export_pptx  # local: pulls in the Drive export helpers only when used
+
+    name = title or (deck.pending_title or "deck")
+    out_dir = settings.local_output_dir()
+    path = os.path.join(out_dir, f"{export_pptx.safe_name(name)}.pptx")
+    print(t("  output: local — exporting to PowerPoint..."))
+    try:
+        export_pptx.export_pptx(deck.drive, _auth.get_credentials(),
+                                deck.presentation_id, path)
+    except (Exception, SystemExit) as exc:  # export_pptx signals errors with SystemExit
+        print(t("  warn: the PowerPoint export failed ({err}); the deck is "
+                "still available at {url}", err=exc, url=deck.url),
+              file=sys.stderr)
+        return None
+    print(t("  PPTX: {path} ({size:.1f} MB)", path=path,
+            size=os.path.getsize(path) / (1 << 20)))
+    print(t("  the deck itself stays in Google Slides (nothing is deleted): "
+            "{url}", url=deck.url))
+    return path
+
+
 def main() -> int:
     p = argparse.ArgumentParser(
         description=t("generate a presentation from a template"))
@@ -2033,7 +2102,17 @@ def main() -> int:
     p.add_argument("--strict", action="store_true",
                    help=t("fail if the figure audit (overlaps / text "
                           "overflow) reports anything"))
+    p.add_argument("--output", metavar="google|local",
+                   help=t("where the deliverable goes: google (Drive / Slides) "
+                          "or local (folder / PowerPoint); defaults to "
+                          "config/settings.json"))
     args = p.parse_args()
+
+    try:
+        output_target = settings.output_target(args.output)
+    except settings.SettingsError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
 
     template = load_template(args.template)
     with open(args.spec, encoding="utf-8") as f:
@@ -2103,6 +2182,10 @@ def main() -> int:
         if any(s.get("figures") for s in spec["slides"]):
             print(t("figure audit (connectors / overlaps / text overflow): "
                     "no problems"))
+        if output_target == settings.LOCAL:
+            print(t("  output: local — after generation the deck is exported "
+                    "to PowerPoint under {dir}",
+                    dir=settings.local_output_dir()))
         if selected_indices is not None:
             pages = ", ".join(str(index + 1) for index in selected_indices)
             print(f"partial update plan: replace pages {pages}; all other pages stay unchanged")
@@ -2169,6 +2252,8 @@ def main() -> int:
         for msg in warnings:
             print(f"  - {msg}", file=sys.stderr)
     print(f"Open: {url}")
+    if output_target == settings.LOCAL:
+        deliver_local(deck, title)
     return 1 if (warnings and args.strict) else 0
 
 

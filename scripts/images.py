@@ -24,7 +24,9 @@ sidecar .json file, so it can be traced later.
 
 Requires `GEMINI_API_KEY`. The image model sometimes has zero free-tier
 quota, in which case it returns 429 (a key from a project with billing
-enabled is required).
+enabled is required). Generation can also be switched off entirely in
+`config/settings.json` (`imageGeneration: off`, see `scripts/settings.py`),
+in which case `generate()` refuses before touching the cache or the API.
 
 --- 2. Place your own image --------------------------------------------------
 
@@ -60,6 +62,7 @@ from concurrent.futures import Future, ThreadPoolExecutor  # noqa: F401
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+import settings  # noqa: E402
 from _i18n import t, register  # noqa: E402
 from colors import Palette  # noqa: E402
 
@@ -386,6 +389,10 @@ def generate(subject: str, *, style: str = DEFAULT_STYLE, palette: dict | None =
     reproducibility. Since frame is part of the full prompt text, a
     different frame triggers regeneration.
     """
+    if not settings.image_generation_enabled():
+        # Checked before the cache lookup on purpose: the switch is about
+        # whether AI imagery appears at all, not only about spending quota.
+        raise ImageGenerationError(settings.image_generation_off_message())
     if aspect not in ASPECTS:
         raise ValueError(t("aspect must be one of {aspects} (got: {aspect})",
                            aspects=ASPECTS, aspect=aspect))

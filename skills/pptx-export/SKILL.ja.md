@@ -35,6 +35,11 @@ description: >-
 - **PPTX をエクスポートするかどうかは生成時に確定する。** インテイクの出力形式の
   質問（`references/interactive-intake.md` §2）で決まり、既定は Google Slides
   のみ。既存デッキ URL に対するスタンドアロン実行ではインテイクは不要。
+- **`config/settings.json` の `output: local` ならエクスポートは自動。**
+  `build_deck.py` / `render_deck.py` が毎回 `localOutputDir` へ書き出すので、
+  PPTX の質問はせず、二重にエクスポートもしない — 生成側が出力したパスを
+  報告する。スタンドアロン実行や手編集後の取り直しには引き続き本スキルを使う
+  （`references/settings.ja.md`）。
 - **ゼロからの PPTX 作成は別の仕事である。** ユーザーが（Google Slides を介さず）
   PPTX を直接作成・編集したい場合は、本スキルではなく `document-skills:pptx` に
   引き継ぐ。
@@ -43,7 +48,7 @@ description: >-
 
 | タスク | コマンド |
 |------|---------|
-| エクスポート（`out/pptx/<デッキ名>.pptx` に保存） | `.venv/bin/python scripts/export_pptx.py <URL or ID>` |
+| エクスポート（`localOutputDir`、既定は `out/pptx/<デッキ名>.pptx` に保存） | `.venv/bin/python scripts/export_pptx.py <URL or ID>` |
 | 明示したパスへのエクスポート | `--out path/to/deck.pptx` |
 | デッキの Drive フォルダにも保管 | `--folder <Drive フォルダ URL/ID>` |
 

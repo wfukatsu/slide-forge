@@ -42,6 +42,7 @@ Antigravity も同じ `skills/` と Python エンジンを利用する。
 | business framework | `patterns.md` の該当component |
 | page skeleton／density | `slide-patterns.md` の該当skeleton |
 | 画像 | `images.md` の該当節 |
+| 画像生成の ON/OFF・成果物の出力先 | `settings.md` |
 | API問題 | `api-notes.md` を検索し、未解決時だけ `google-slides-api.md` |
 | 大規模・複雑デッキ | `parallel-generation.md` の該当節 |
 | Visual QA | `slide-qa/SKILL.md` と `validation.md` のGate 2 |
@@ -50,6 +51,7 @@ Antigravity も同じ `skills/` と Python エンジンを利用する。
 
 1. `.venv/bin/python scripts/list_templates.py` で環境と候補を確認する。
 2. テンプレート、用途、枚数、アウトライン、密度、Drive、QA、納品形式の未指定分だけを確定する。
+   先に `scripts/settings.py --show` を読み、画像生成と出力先が設定済みならその質問は省く。
 3. 枚数、レイアウト、全アクションタイトルを提示して承認を得る。
 4. 未登録URLのときだけ `inspect_template.py --emit ... --thumbnails ...` を実行し、画像を目視する。
 5. Specを作り、次のオフライン検証を通す。

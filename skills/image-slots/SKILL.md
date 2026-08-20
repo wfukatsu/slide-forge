@@ -42,6 +42,11 @@ from an installed plugin, `/path/to/slide-forge` on a local clone.
 - **`GEMINI_API_KEY` is required** and the image model has **zero free-tier
   quota**; the key must belong to a billing-enabled project
   (`references/images.md`).
+- **Image generation can be switched off for the whole toolkit**
+  (`imageGeneration: false` in `config/settings.json`). Check it before
+  proposing this skill — `.venv/bin/python scripts/settings.py --show`. When it
+  is off, `fill_image_slots.py` stops before reading the deck; either the user
+  turns it on or the frames stay empty (`references/settings.md`).
 - **Verify with thumbnails afterwards.** A clean API response cannot show a
   picture whose subject got cropped. Hand off to the `slide-qa` skill.
 

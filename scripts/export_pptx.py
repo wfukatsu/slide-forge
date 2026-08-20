@@ -10,7 +10,8 @@ that point in time** — regenerating the deck requires re-exporting.
 
 - files.export has a 10MB limit. If exceeded, it automatically falls back to
   fetching via exportLinks (so decks with many images/diagrams don't fail)
-- if --out is omitted, saves to out/pptx/<deck name>.pptx
+- if --out is omitted, saves to the local output folder from
+  config/settings.json (`localOutputDir`, default out/pptx)/<deck name>.pptx
 - passing --folder also uploads the exported .pptx to the same Drive folder,
   alongside the spec and diagram sources (per the Drive folder convention)
 """
@@ -27,6 +28,7 @@ from googleapiclient.http import MediaIoBaseDownload
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 import drive_folder  # noqa: E402
+import settings  # noqa: E402
 from _i18n import t, register  # noqa: E402
 
 register({
@@ -40,8 +42,10 @@ register({
     "Export a Google Slides deck as .pptx":
         "Google Slides デッキを .pptx に書き出す",
     "presentation URL or ID": "プレゼンテーションの URL または ID",
-    "output path (default: out/pptx/<deck name>.pptx)":
-        "出力パス（省略時: out/pptx/<デッキ名>.pptx）",
+    "output path (default: <localOutputDir from config/settings.json>/"
+    "<deck name>.pptx)":
+        "出力パス（省略時: <config/settings.json の localOutputDir>/"
+        "<デッキ名>.pptx）",
     "Drive folder URL or ID to upload the exported .pptx into":
         "書き出した .pptx をアップロードする Drive フォルダの URL または ID",
 })
@@ -133,7 +137,9 @@ def export_pptx(drive, creds, pres_id: str, path: str) -> None:
 def main() -> int:
     p = argparse.ArgumentParser(description=t("Export a Google Slides deck as .pptx"))
     p.add_argument("source", help=t("presentation URL or ID"))
-    p.add_argument("--out", help=t("output path (default: out/pptx/<deck name>.pptx)"))
+    p.add_argument("--out",
+                   help=t("output path (default: <localOutputDir from "
+                          "config/settings.json>/<deck name>.pptx)"))
     p.add_argument("--folder",
                    help=t("Drive folder URL or ID to upload the exported .pptx into"))
     args = p.parse_args()
@@ -144,7 +150,10 @@ def main() -> int:
 
     meta = drive.files().get(fileId=pres_id, fields="name",
                              supportsAllDrives=True).execute()
-    path = args.out or os.path.join("out", "pptx", f"{safe_name(meta['name'])}.pptx")
+    # Same folder build_deck.py delivers into under `output: local`, so a
+    # standalone export and a settings-driven one land in the same place
+    path = args.out or os.path.join(settings.local_output_dir(),
+                                    f"{safe_name(meta['name'])}.pptx")
 
     export_pptx(drive, creds, pres_id, path)
     size = os.path.getsize(path)

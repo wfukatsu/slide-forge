@@ -21,9 +21,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 import deckkit  # noqa: E402
+import settings  # noqa: E402
 import validate_layout as vl  # noqa: E402
 from _i18n import t, register  # noqa: E402
-from build_deck import TemplateDeck  # noqa: E402
+from build_deck import TemplateDeck, deliver_local  # noqa: E402
 from diagrams import Canvas  # noqa: E402
 
 register({
@@ -43,6 +44,10 @@ register({
     "do not render page numbers": "ページ番号を描かない",
     "skip the coordinate checks (not recommended)":
         "座標検査を飛ばす（非推奨）",
+    "where the deliverable goes: google (Drive / Slides) or local "
+    "(folder / PowerPoint); defaults to config/settings.json":
+        "成果物の出力先: google（Drive / Slides）または local"
+        "（フォルダ / PowerPoint）。既定は config/settings.json",
     "specify --template or define TEMPLATE in the deck":
         "--template を指定するか、デッキに TEMPLATE を定義してください",
     "The coordinate check found {n} problems; aborting generation:":
@@ -74,7 +79,16 @@ def main() -> int:
                    help=t("do not render page numbers"))
     p.add_argument("--skip-validate", action="store_true",
                    help=t("skip the coordinate checks (not recommended)"))
+    p.add_argument("--output", metavar="google|local",
+                   help=t("where the deliverable goes: google (Drive / Slides) "
+                          "or local (folder / PowerPoint); defaults to "
+                          "config/settings.json"))
     args = p.parse_args()
+
+    try:
+        output_target = settings.output_target(args.output)
+    except settings.SettingsError as exc:
+        raise SystemExit(f"ERROR: {exc}") from None
 
     mod, slides = vl.load_deck_module(args.deck)
     if args.template:
@@ -133,6 +147,8 @@ def main() -> int:
     url = deck.commit()
     print(f"Done! {len(deck.slide_ids)} slides created.")
     print(f"Open: {url}")
+    if output_target == settings.LOCAL:
+        deliver_local(deck, title)
     return 0
 
 

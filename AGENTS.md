@@ -40,6 +40,7 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Thumbnail visual QA | `slide-qa` |
 | Export Google Slides to PPTX | `pptx-export` |
 | Estimate/BOM spreadsheet | `spreadsheets` |
+| Change the image-generation or output-destination switches | `settings` |
 
 After selecting a skill, do not preload the other skills or every reference it
 mentions. Follow the progressive-loading table in

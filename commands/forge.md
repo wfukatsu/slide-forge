@@ -30,7 +30,10 @@ Pick one based on the arguments and context. Only ask once via
 Load the selected skill completely, then follow it and the shared contract.
 Do not load unselected generation skills. Ask only for missing branch
 decisions, including QA (default: run), relevant delivery formats, and density
-(`print` for proposals/handouts, `presentation` for talks).
+(`print` for proposals/handouts, `presentation` for talks). Read
+`config/settings.json` first (`scripts/settings.py --show`) — it may already
+settle image generation and the deliverable destination; route a request to
+change them to the `settings` skill.
 
 The outline approval gate is mandatory. After approval, continue through
 validation, generation, selected QA, optional deliverables, cleanup, and report

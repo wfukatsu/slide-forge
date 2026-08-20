@@ -35,6 +35,11 @@ description: >-
   format question in intake (`references/interactive-intake.md` §2); the
   default is Google Slides only. Standalone runs on an existing deck URL need
   no intake.
+- **`output: local` in `config/settings.json` makes the export automatic.**
+  `build_deck.py` / `render_deck.py` export the deck to `localOutputDir` on
+  every run, so don't ask the PPTX question and don't export a second time —
+  report the path the generator printed. This skill still applies standalone,
+  or to re-export after a manual edit (`references/settings.md`).
 - **From-scratch PPTX authoring is a different job.** When the user wants a
   PPTX built or edited directly (no Google Slides involved), hand off to
   `document-skills:pptx` instead of this skill.
@@ -43,7 +48,7 @@ description: >-
 
 | Task | Command |
 |------|---------|
-| Export (saves to `out/pptx/<deck name>.pptx`) | `.venv/bin/python scripts/export_pptx.py <URL or ID>` |
+| Export (saves to `localOutputDir`, default `out/pptx/<deck name>.pptx`) | `.venv/bin/python scripts/export_pptx.py <URL or ID>` |
 | Export to an explicit path | `--out path/to/deck.pptx` |
 | Also archive in the deck's Drive folder | `--folder <Drive folder URL/ID>` |
 

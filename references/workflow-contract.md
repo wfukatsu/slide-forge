@@ -8,7 +8,10 @@ and Python engine through thin host adapters.
 
 1. **Route** — select exactly one generation skill. Load that skill completely.
 2. **Intake** — ask only for missing branch decisions. Use
-   `interactive-intake.md` only for the applicable question set.
+   `interactive-intake.md` only for the applicable question set. Read
+   `config/settings.json` first (`scripts/settings.py --show`) and drop the
+   questions it already answers — Gemini image generation on/off, and whether
+   the deliverable is Google Slides or a local `.pptx` (`references/settings.md`).
 3. **Approve** — show page count, layout, and every action title. Do not write
    the deck before explicit approval unless the user already supplied and
    approved that outline.
@@ -19,7 +22,9 @@ and Python engine through thin host adapters.
    editable sources. Remove a partial deck after a failed generation.
 7. **Verify** — when QA was selected, follow `slide-qa` and clean local QA files.
 8. **Deliver** — run optional PPTX or spreadsheet skills only after the deck is
-   final. Report URLs, local deliverables, QA scope/results, and cleanup.
+   final. Report URLs, local deliverables, QA scope/results, and cleanup. Under
+   `output: local` the generator already exported the `.pptx` on its last run;
+   report that path instead of exporting again.
 
 After outline approval, continue through delivery without another approval
 gate. A missing credential, external permission, destructive target ambiguity,
