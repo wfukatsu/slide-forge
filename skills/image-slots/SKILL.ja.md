@@ -42,6 +42,11 @@ description: >-
 - **`GEMINI_API_KEY` が必須**で、画像モデルの**無料枠クォータはゼロ**。
   キーは課金が有効なプロジェクトのものでなければならない
   （`references/images.md`）。
+- **画像生成はツールキット全体で OFF にできる**
+  （`config/settings.json` の `imageGeneration: false`）。このスキルを提案する
+  前に `.venv/bin/python scripts/settings.py --show` で確認する。OFF のとき
+  `fill_image_slots.py` はデッキを読む前に停止するので、ユーザーが ON にするか、
+  枠は空のままにする（`references/settings.ja.md`）。
 - **完了後はサムネイルで検証する。** API レスポンスが正常でも、被写体が切れた
   画像は検出できない。`slide-qa` スキルへ引き継ぐ。
 

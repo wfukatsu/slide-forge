@@ -63,6 +63,7 @@ for the named topic before opening a large range.
 | Business framework | Matching component in `references/patterns.md` |
 | Page skeleton/density | Matching skeleton in `references/slide-patterns.md` |
 | Image generation/placement | Matching sections in `references/images.md` |
+| Image generation on/off, deliverable destination | `references/settings.md` |
 | Scalar or cloud icons | `icons.md` or matching section of `cloud-icons.md` |
 | Code sample | `references/code-blocks.md` |
 | Outline model | One matching outline in `references/deck-outlines.md` |
@@ -88,8 +89,10 @@ operation needs it.
 ## Phase 1: Settle premises and approve the outline
 
 Determine the template, audience/purpose, page count, outline, density, Drive
-folder, QA choice, and relevant delivery formats. Batch only missing decisions
-into one or two question rounds. QA defaults to run.
+folder, QA choice, and relevant delivery formats. Read `config/settings.json`
+first (`scripts/settings.py --show`) — it may already settle image generation
+and the deliverable destination. Batch only missing decisions into one or two
+question rounds. QA defaults to run.
 
 Purpose selects density for `$density` templates:
 

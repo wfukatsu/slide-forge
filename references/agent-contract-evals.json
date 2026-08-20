@@ -44,6 +44,11 @@
       "name": "complexity-based-delegation",
       "files": ["references/workflow-contract.md", "references/parallel-generation.md"],
       "requires": ["18–20", "total tokens", "at most two"]
+    },
+    {
+      "name": "settings-drive-intake-questions",
+      "files": ["references/workflow-contract.md", "skills/settings/SKILL.md", "references/interactive-intake.md"],
+      "requires": ["config/settings.json", "AskUserQuestion", "imageGeneration", "output: local"]
     }
   ]
 }

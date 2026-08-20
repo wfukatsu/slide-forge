@@ -34,6 +34,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import _auth  # noqa: E402
 import images  # noqa: E402
+import settings  # noqa: E402
 import inspect_template as it  # noqa: E402
 from build_deck import TemplateDeck  # noqa: E402
 from diagrams import Canvas  # noqa: E402
@@ -179,6 +180,12 @@ def main() -> int:
     p.add_argument("--force", action="store_true",
                    help=t("regenerate even when the image is already cached"))
     args = p.parse_args()
+
+    # Every slot this script fills is AI-generated, so an off switch stops it
+    # here — before the deck is read and before anything is written
+    if not settings.image_generation_enabled():
+        print(settings.image_generation_off_message(), file=sys.stderr)
+        return 1
 
     pres_id = _auth.presentation_id(args.source)
     creds = _auth.get_credentials()

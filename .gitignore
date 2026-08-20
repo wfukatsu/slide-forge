@@ -8,6 +8,7 @@ __pycache__/
 # descending and the !config/.gitkeep negation below could never match.
 config/*
 !config/.gitkeep
+!config/settings.example.json
 **/credentials.json
 **/token.json
 **/token.json.bak*

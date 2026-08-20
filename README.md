@@ -3,7 +3,7 @@
 # slide-forge
 
 Claude-first, agent-driven Google Slides deck generation with the same shared
-skills available to Codex and Antigravity through thin host adapters: seventeen
+skills available to Codex and Antigravity through thin host adapters: eighteen
 generation/support skills plus one end-to-end workflow on a shared Python
 engine. Claude Code's plugin commands and the shared `skills/` are the behavior
 source of truth; host files do not duplicate workflow logic. It covers corporate-template decks, from-scratch architecture
@@ -38,6 +38,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `slide-qa` | Thumbnail-based visual QA of a generated deck: fetch every page as PNG, inspect against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files (`scripts/cleanup_qa.py`). Invoked by the generation skills when the user opts in at intake (the default), or standalone on any deck URL. |
 | `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (output format) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
 | `spreadsheets` | Line-item spreadsheets — estimates, BOMs, cost breakdowns — as Excel and/or Google Spreadsheet from one JSON spec (`scripts/build_sheet.py`): typed columns, real formulas for amounts and subtotal/tax/total, `--dry-run` validation, and in-place updates that keep the Spreadsheet URL stable. Companion to a proposal deck's cost slide (same Drive folder), or standalone. Worked example: `examples/estimate-sample.json`. |
+| `settings` | Read and change the two toolkit switches in `config/settings.json` through a multiple-choice dialogue (`scripts/settings.py`): whether Gemini generates images at all, and whether the deliverable is Google Drive / Google Slides or a local folder as PowerPoint (plus that folder's path). Shows the current values, asks, writes, and reads the result back; never touches credentials or API keys. The generation skills read the same settings at intake and skip the questions they answer. |
 
 ## End-to-end workflow
 
@@ -106,6 +107,7 @@ commands/     Claude Code slash commands (/forge, /account, /visit)
 accounts/     per-customer sales ledgers (git-ignored; never committed)
 scripts/      shared engine — one importable package
   _auth.py        OAuth helper (Slides + Drive)
+  settings.py     image-generation and output switches (config/settings.json)
   build_deck.py   template-driven generator (TemplateDeck); --dry-run validation
   diagrams.py     Canvas drawing hub (aggregates the mixins below)
   charts.py illustrations.py patterns.py pages.py events.py   figure libraries
@@ -136,14 +138,14 @@ references/   engine, workflow, and host compatibility documentation
   images/slide-patterns/  pattern catalog images (committed; regenerate via Setup 6)
   i18n/           English sidecar strings for the two generated catalogs
 examples/     runnable spec catalogs and code-first example decks
-config/       credentials.json + token.json (gitignored, 0600)
+config/       credentials.json + token.json (gitignored, 0600) + settings.json (switches)
 cache/ out/   transient render cache and QA output (gitignored)
 ```
 
 ## Install as a Claude Code plugin
 
 The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all seventeen skills):
+one plugin bundling all eighteen skills):
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -161,7 +163,7 @@ skills will be listed twice.
 ## Use with Codex
 
 Codex uses the same skills and Python engine. In a repository clone, the
-`.agents/skills/` entries expose all seventeen generation/support skills plus the
+`.agents/skills/` entries expose all eighteen generation/support skills plus the
 end-to-end `forge` skill. Start Codex from the repository root and invoke
 `forge` by name; the Claude-specific `/slide-forge:forge` command and plugin
 marketplace manifest are not required.
@@ -351,6 +353,33 @@ For `scripts/images.py`, set `GEMINI_API_KEY` or save the key to
 `config/gemini_api_key` (gitignored, like the OAuth files). The key must
 belong to a **billed** project — the image model has zero free-tier quota.
 
+### 8. Settings — image generation and where the deliverable goes
+
+Two switches, set once in `config/settings.json` (gitignored; copy
+`config/settings.example.json` to start) and applied to every run. Ask the
+`settings` skill (`/slide-forge:settings`) to change them through a
+multiple-choice dialogue, or run the commands directly:
+
+```bash
+.venv/bin/python scripts/settings.py --show                  # current values
+
+.venv/bin/python scripts/settings.py --image-generation off  # no Gemini images at all
+.venv/bin/python scripts/settings.py --output local          # deliverable = local .pptx
+.venv/bin/python scripts/settings.py --output google         # deliverable = Drive / Slides (default)
+```
+
+| Key | Values | Effect |
+|---|---|---|
+| `imageGeneration` | `true` / `false` | `false` refuses `aiImage` figures, `images.py`, and `fill_image_slots.py` — offline, before anything is spent |
+| `output` | `"google"` / `"local"` | `local` exports the generated deck to `.pptx` under `localOutputDir` (default `out/pptx`) after generation |
+
+The defaults match the behaviour from before this file existed, so an absent
+`settings.json` changes nothing. `GSLIDES_IMAGE_GENERATION` / `GSLIDES_OUTPUT` /
+`GSLIDES_LOCAL_DIR` override it for one run, and `build_deck.py --output` for one
+command. `output: local` still builds through the Slides API — it changes the
+deliverable, not the build — and the generated deck is left in Drive as the
+editable source. Details: `references/settings.md`.
+
 ### What each skill needs
 
 | Skill | venv + OAuth | Slide master | Cloud icons | draw.io CLI | Gemini key |
@@ -363,6 +392,7 @@ belong to a **billed** project — the image model has zero free-tier quota.
 | `slide-qa` | ✔ | — | — | — | — |
 | `pptx-export` | ✔ | — | — | — | — |
 | `spreadsheets` | ✔ (OAuth only for Google Spreadsheet output) | — | — | — | — |
+| `settings` | — (reads/writes a local JSON file) | — | — | — | — |
 | `template-forge` | ✔ | base master, if copying one | — | — | — |
 | `slide-template-creator` | ✔ (to render catalog previews) | — | — | — | — |
 | `current-state-analysis` | ✔ | ✔ for the copy-mode templates | — | — | — |

@@ -4,7 +4,7 @@
 
 Claude Code を主ホストとするエージェント駆動 Google Slides デッキ生成。Codex と
 Antigravity は薄いホスト互換レイヤーを通じて同じ共有スキルを利用する。共有 Python
-エンジンの上に、17 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
+エンジンの上に、18 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
 Claude Code のプラグインコマンドと共有 `skills/` を動作の正本とし、ホスト固有文書へ
 ワークフローを複製しない。コーポレートテンプレートのデッキ、ゼロからのアーキテクチャ図、デザイン
 仕様からのテンプレート作成、生成前の検証、任意のサムネイルベース視覚 QA
@@ -37,6 +37,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `slide-qa` | 生成済みデッキのサムネイルベース視覚 QA: 全ページを PNG で取得し、欠陥チェックリストに照らして点検し、修正と再生成のループを回し、最後にローカルの QA ファイルを削除する（`scripts/cleanup_qa.py`）。インテイクでユーザーが選択した場合（既定で有効）に生成スキルから呼ばれるほか、任意のデッキ URL に対して単体でも実行できる。 |
 | `pptx-export` | 生成済みデッキを納品形式として PowerPoint（`.pptx`）にエクスポートする（`scripts/export_pptx.py`）: 10MB 制限を自動フォールバックで回避する Drive API エクスポート。ローカルに保存し、任意でデッキの Drive フォルダにもアーカイブする。PPTX 納品が想定される場合はインテイク（出力形式）で選択するか、任意のデッキ URL に対して単体で実行する。ゼロからの PPTX 作成は引き続き `document-skills:pptx` の担当。 |
 | `spreadsheets` | 見積もり、BOM、コスト内訳といった明細スプレッドシートを、1 つの JSON 仕様から Excel および/または Google Spreadsheet として生成する（`scripts/build_sheet.py`）: 型付きカラム、金額と小計/税/合計の実数式、`--dry-run` 検証、Spreadsheet の URL を保ったままのインプレース更新。提案デッキのコストスライドの伴走成果物（同じ Drive フォルダ）としても、単体でも使える。実例: `examples/estimate-sample.json`。 |
+| `settings` | `config/settings.json` の 2 つのスイッチを選択式の対話で確認・変更する（`scripts/settings.py`）: Gemini による画像生成を使うか、成果物を Google Drive / Google Slides に出すかローカルフォルダの PowerPoint に出すか（およびそのフォルダのパス）。現在値の表示 → 質問 → 書き込み → 読み戻しまでを行い、認証情報や API キーには触れない。生成スキルはインテイクで同じ設定を読み、設定が答えている質問を省く。 |
 
 ## エンドツーエンドワークフロー
 
@@ -102,6 +103,7 @@ commands/     Claude Code スラッシュコマンド (/forge, /account, /visit)
 accounts/     顧客ごとの営業台帳 (git-ignored。コミット禁止)
 scripts/      共有エンジン — 1 つのインポート可能なパッケージ
   _auth.py        OAuth ヘルパー (Slides + Drive)
+  settings.py     画像生成と出力先のスイッチ (config/settings.json)
   build_deck.py   テンプレート駆動ジェネレーター (TemplateDeck)。--dry-run 検証
   diagrams.py     Canvas 描画ハブ (下記の mixin を集約)
   charts.py illustrations.py patterns.py pages.py events.py   図表ライブラリ
@@ -132,14 +134,14 @@ references/   エンジン・ワークフロー・ホスト互換のドキュメ
   images/slide-patterns/  パターンカタログ画像 (コミット済み。セットアップ 6 で再生成)
   i18n/           生成される 2 つのカタログ用の英語サイドカー文字列
 examples/     実行可能な仕様カタログとコードファーストのサンプルデッキ
-config/       credentials.json + token.json (gitignored, 0600)
+config/       credentials.json + token.json (gitignored, 0600) + settings.json（スイッチ）
 cache/ out/   一時レンダーキャッシュと QA 出力 (gitignored)
 ```
 
 ## Claude Code プラグインとしてのインストール
 
 このリポジトリはプラグインマーケットプレイスを兼ねる
-（`.claude-plugin/marketplace.json`、17 スキルすべてを束ねた 1 プラグイン）:
+（`.claude-plugin/marketplace.json`、18 スキルすべてを束ねた 1 プラグイン）:
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -157,7 +159,7 @@ venv、OAuth 認証情報、クラウドアイコンはマシンローカルで�
 ## Codex での利用
 
 Codex も同じスキルと Python エンジンを使う。リポジトリのクローンでは、
-`.agents/skills/` のエントリが 17 の生成/支援スキルすべてと、エンドツー
+`.agents/skills/` のエントリが 18 の生成/支援スキルすべてと、エンドツー
 エンドの `forge` スキルを公開する。リポジトリルートから Codex を起動し、
 `forge` を名前で呼び出せばよい。Claude 固有の `/slide-forge:forge`
 コマンドやプラグインマーケットプレイスのマニフェストは不要。
@@ -356,6 +358,32 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 キーは**課金設定済み**プロジェクトのものであること — 画像モデルには
 無料枠のクォータがない。
 
+### 8. 設定 — 画像生成と成果物の出力先
+
+`config/settings.json`（gitignored。雛形は `config/settings.example.json`）で
+一度決めれば以降の全実行に効く 2 つのスイッチ。選択式で変更したいときは
+`settings` スキル（`/slide-forge:settings`）に頼む。直接叩くなら以下。
+
+```bash
+.venv/bin/python scripts/settings.py --show                  # 現在値
+
+.venv/bin/python scripts/settings.py --image-generation off  # Gemini 画像生成を使わない
+.venv/bin/python scripts/settings.py --output local          # 成果物をローカルの .pptx に
+.venv/bin/python scripts/settings.py --output google         # 成果物を Drive / Slides に（既定）
+```
+
+| キー | 値 | 効果 |
+|---|---|---|
+| `imageGeneration` | `true` / `false` | `false` で `aiImage` 図・`images.py`・`fill_image_slots.py` を拒否する（オフラインで、課金前に止める） |
+| `output` | `"google"` / `"local"` | `local` は生成後にデッキを `localOutputDir`（既定 `out/pptx`）へ `.pptx` として書き出す |
+
+既定値はこのファイルが無かった頃の挙動と同じなので、`settings.json` が無くても
+何も変わらない。`GSLIDES_IMAGE_GENERATION` / `GSLIDES_OUTPUT` /
+`GSLIDES_LOCAL_DIR` は 1 回の実行だけ、`build_deck.py --output` は 1 コマンド
+だけ上書きする。`output: local` でも生成は Slides API 経由 — 変わるのは成果物で
+あって生成方法ではない — で、生成されたデッキは編集可能な原本として Drive に
+残る。詳細は `references/settings.ja.md`。
+
 ### 各スキルに必要なもの
 
 | スキル | venv + OAuth | スライドマスター | クラウドアイコン | draw.io CLI | Gemini キー |
@@ -368,6 +396,7 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | `slide-qa` | ✔ | — | — | — | — |
 | `pptx-export` | ✔ | — | — | — | — |
 | `spreadsheets` | ✔（OAuth は Google Spreadsheet 出力時のみ） | — | — | — | — |
+| `settings` | —（ローカル JSON の読み書きのみ） | — | — | — | — |
 | `template-forge` | ✔ | コピーする場合はベースのマスター | — | — | — |
 | `slide-template-creator` | ✔（カタログ画像の生成時） | — | — | — | — |
 | `current-state-analysis` | ✔ | ✔ copy モードのテンプレートで必要 | — | — | — |
