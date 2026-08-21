@@ -159,6 +159,8 @@ Skills become available as `slide-forge:<skill-name>`, and the pipeline
 command as `/slide-forge:forge`. After installing,
 run the Setup below inside the plugin root (`${CLAUDE_PLUGIN_ROOT}`) — the
 venv, OAuth credentials, and cloud icons are machine-local and not bundled.
+The [guided setup prompt](#guided-setup--copy-this-prompt) walks through it
+interactively.
 Alternatively, clone the repo and symlink `skills/*` into `~/.claude/skills/`
 (the layout used during development); pick one of the two, not both, or the
 skills will be listed twice.
@@ -213,6 +215,64 @@ you have run the steps below that you need.
 |---|---|---|
 | `assets/cloud-icons/` | AWS / Google Cloud / Azure do not permit redistribution | [4](#4-cloud-vendor-icons-only-for-cloud-architecture-figures) |
 | `templates/masters/*.pptx` | 6–8MB each; the master has to live in *your* Drive to be copied | [5](#5-slide-masters-for-the-copy-mode-templates) |
+
+### Guided setup — copy this prompt
+
+Steps 1–8 below are the reference. If you would rather be walked through them,
+start an agent session (Claude Code, Codex, …) with the slide-forge root as the
+working directory and paste this prompt. It asks what you actually intend to
+use, runs only the steps that follow from your answers, and hands the browser
+work back to you.
+
+```text
+Set up slide-forge on this machine for the first time.
+
+Work from the slide-forge root — the clone directory, or ${CLAUDE_PLUGIN_ROOT}
+for a Claude plugin install — and read the "Setup" section of README.md there.
+Steps 1-8 are the source of truth: follow them, don't improvise. If you cannot
+find README.md, ask me for the path before doing anything else.
+
+First, ask me with AskUserQuestion — one call, all four questions, your
+recommended option first; if your host has no such tool, ask the same four as
+a numbered list and wait for my answers:
+1. What I plan to use, so you know which optional steps apply — multi-select,
+   with a "just the basics" option: decks from a corporate template (needs a
+   slide master), cloud architecture diagrams (vendor icons + draw.io),
+   nexus-architect explanation decks (mermaid CLI + Chrome), AI-generated
+   images (Gemini API key).
+2. Where the deliverable should go — Google Drive / Slides, or a local .pptx.
+3. Whether Gemini image generation is allowed at all.
+4. Whether CLI messages should be English or Japanese (GSLIDES_LANG).
+
+Then work in this order, skipping whatever my answers made unnecessary:
+- Step 1, Python environment: create .venv and install requirements.txt. If
+  .venv already exists, verify it rather than recreating it.
+- Step 2, OAuth client: mine to do in the browser. Do NOT try to automate the
+  Google Cloud Console. Check whether config/credentials.json is already
+  there; if not, print the numbered console steps from the README, wait until
+  I have saved the file, then continue.
+- Step 3, verify: run scripts/list_templates.py and let me complete the
+  consent screen. A printed template list means auth works.
+- Step 8, settings: apply my answers via scripts/settings.py, then --show the
+  result. Tell me how to set GSLIDES_LANG if I chose Japanese.
+- Steps 4-7, only for what I selected: cloud icons, a slide master, a Gemini
+  key. The pattern-catalog images (step 6) are committed — that step is for
+  regenerating them, not for setup, so skip it.
+
+Rules:
+- Check before you install. Report what is already in place and leave it be.
+- Never print, echo, or cat anything under config/ — credentials, tokens, API
+  keys. Report only whether a file exists.
+- Anything that needs my browser or my account — Google Cloud Console, the
+  consent screen, the Gemini key, uploading a master to Drive — stops and asks
+  me. Never create accounts or enter credentials on my behalf.
+- A failing step doesn't end the run: finish the independent ones, then say
+  what is left.
+
+Finish with a short table — each step done / skipped (why) / waiting on me —
+plus one command I can run to prove it works, and which skills are usable now
+versus still blocked.
+```
 
 ### 1. Python environment
 
