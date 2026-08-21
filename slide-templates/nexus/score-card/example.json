@@ -1,0 +1,29 @@
+{
+  "title": "平均 MMI 50.8%、分割できるモジュールはない",
+  "score": "50.8%",
+  "scoreCaption": "システム平均 MMI\nNeeds Improvement (40–60)",
+  "dimensions": [
+    [
+      "Cohesion",
+      2.4,
+      "2.4 / 5"
+    ],
+    [
+      "Coupling",
+      3.2,
+      "3.2 / 5"
+    ],
+    [
+      "Independence",
+      1.4,
+      "1.4 / 5"
+    ],
+    [
+      "Reusability",
+      1.8,
+      "1.8 / 5"
+    ]
+  ],
+  "verdict": "帯域内の分布は一様ではなく、上位 3 モジュール（68 / 62 / 62）は部分的リファクタリングで分割可能な Moderate。平均を押し下げているのは Payment 42 と Order 20 の 2 つで、分割の可否はこの 2 モジュールの再設計にかかっている。",
+  "source": "reports/02_evaluation/mmi-overview.md（生成 2026-08-18 12:27 JST）／サンプルデータ"
+}

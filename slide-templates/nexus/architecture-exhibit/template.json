@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "id": "architecture-exhibit",
+  "displayName": "構成図（画像＋読み取りポイント）",
+  "pack": "nexus",
+  "category": "design",
+  "description": "レポートの構造図をそのまま図表として貼り、読み取るべき点を 3 つ添える",
+  "answers": [
+    "この構成図から何を読み取ればよいのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "exhibitNumber": {
+      "type": "string",
+      "required": true,
+      "maxLength": 6
+    },
+    "exhibitTitle": {
+      "type": "string",
+      "required": true,
+      "maxLength": 44
+    },
+    "image": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 90,
+          "presentation": 70
+        }
+      }
+    },
+    "readings": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "maxLength": {
+        "$density": {
+          "print": 34,
+          "presentation": 26
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "画像は scripts/mermaid_export.py / drawio_export.py / html_shot.py で書き出したものを使い、生成後に Read で目視確認する",
+    "画像枠は約 2:1。極端に縦長・横長の図は余白だらけになるので、分割するかネイティブ図に描き直す",
+    "スライドサイズで読めない図は貼らない。読めないなら分割するか、ネイティブ図に描き直す",
+    "readings は図に描かれていることだけ。図にない主張を 3 点に混ぜない",
+    "図表番号は本文から参照できるように連番で管理する"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "exhibit_frame",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 6.3,
+        "h": 3.62,
+        "number": {
+          "$slot": "exhibitNumber"
+        },
+        "title": {
+          "$slot": "exhibitTitle"
+        }
+      },
+      {
+        "type": "image",
+        "x": 0.64,
+        "y": 1.42,
+        "w": 6.02,
+        "h": 3.06,
+        "source": {
+          "$slot": "image"
+        },
+        "fit": "contain"
+      },
+      {
+        "type": "so_what",
+        "x": 7.0,
+        "y": 1.0,
+        "w": 2.5,
+        "h": 3.62,
+        "text": {
+          "$slot": "lead"
+        },
+        "points": {
+          "$slot": "readings"
+        },
+        "label": "読み取りポイント",
+        "size": {
+          "$density": {
+            "print": 9.5,
+            "presentation": 10.5
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

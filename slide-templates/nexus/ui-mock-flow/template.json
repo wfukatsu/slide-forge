@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "id": "ui-mock-flow",
+  "displayName": "画面フロー（UI モック 3 枚）",
+  "pack": "nexus",
+  "category": "product",
+  "description": "ドメインストーリーの順に並べた画面モックで、体験の流れを示す",
+  "answers": [
+    "この業務は、どの画面をどの順に通るのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "story": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "shot1": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "shot2": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "shot3": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 16
+          },
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 44,
+                "presentation": 34
+              }
+            }
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "モックはストーリーの順（{STORY}-NN-{slug}.html の NN 順）に並べる。見栄えで順序を変えない",
+    "画像は scripts/html_shot.py で撮り、Read で目視確認してから貼る（スタイルが当たらなくても撮影は成功する）",
+    "モックは仕様であって実装ではない。『実装済み』と読める書き方をしない",
+    "3 枚に収まらないフローは、この枚数で切れる単位に分けて複数ページにする"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "story"
+        }
+      },
+      {
+        "type": "image",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 2.9,
+        "h": 2.05,
+        "source": {
+          "$slot": "shot1"
+        },
+        "fit": "contain"
+      },
+      {
+        "type": "image",
+        "x": 3.55,
+        "y": 1.5,
+        "w": 2.9,
+        "h": 2.05,
+        "source": {
+          "$slot": "shot2"
+        },
+        "fit": "contain"
+      },
+      {
+        "type": "image",
+        "x": 6.6,
+        "y": 1.5,
+        "w": 2.9,
+        "h": 2.05,
+        "source": {
+          "$slot": "shot3"
+        },
+        "fit": "contain"
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.66,
+        "w": 9.0,
+        "h": 1.08,
+        "items": {
+          "$slot": "steps"
+        },
+        "title_size": {
+          "$density": {
+            "print": 10,
+            "presentation": 11
+          }
+        },
+        "body_size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 9.5
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print"
+}

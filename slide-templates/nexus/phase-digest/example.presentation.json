@@ -1,0 +1,24 @@
+{
+  "title": "現行モノリスの課題 19 件中 6 件は重大",
+  "headers": [
+    "出力レポート",
+    "内容"
+  ],
+  "phase": "Phase 0: Investigation ／ 完了 2026-08-18",
+  "finding": "Spring Boot 3.2.5 / MySQL 8.0 の単一デプロイ構成。19 件の課題のうち CRITICAL が 6 件で、いずれも認証と入力検証の欠落に由来する。",
+  "outputs": [
+    [
+      "technology-stack.md",
+      "フレームワークと版"
+    ],
+    [
+      "issues-and-debt.md",
+      "課題 19 件の一覧"
+    ],
+    [
+      "ddd-readiness.md",
+      "DDD 準備度 32/100"
+    ]
+  ],
+  "source": "reports/before/ec-monolith/*.md（生成 2026-08-18）／サンプルデータ"
+}

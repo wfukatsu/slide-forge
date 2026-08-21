@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "id": "score-breakdown",
+  "displayName": "スコアの内訳（対象 × 観点）",
+  "pack": "nexus",
+  "category": "evaluation",
+  "description": "モジュールや観点ごとのスコアを面で比較し、どこが足を引っ張っているかを示す",
+  "answers": [
+    "低いのはどの対象の、どの観点なのか"
+  ],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "columns": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 6,
+          "presentation": 5
+        }
+      },
+      "maxLength": 14
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 20
+          },
+          {
+            "type": "integer[]",
+            "minimum": 0,
+            "maximum": 5
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 100,
+          "presentation": 75
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "行と列の順序はレポートに合わせる。スコア順に並べ替えるなら、そう明記する",
+    "点は 0〜levels の整数。小数のスコアを丸めて載せる場合は source に丸め方を書く",
+    "空白（未評価）と 0 点を同じに見せない。未評価の行は載せないか、行ラベルに明記する"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "rating_matrix",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 9.0,
+        "columns": {
+          "$slot": "columns"
+        },
+        "rows": {
+          "$slot": "rows"
+        },
+        "levels": 5,
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.36,
+            "presentation": 0.42
+          }
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.72,
+        "w": 9.0,
+        "h": 1.02,
+        "text": {
+          "$slot": "verdict"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

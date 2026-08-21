@@ -41,6 +41,7 @@ Load exactly one generation skill completely, then read only the reference secti
 | Export to PowerPoint (`.pptx`) format | `pptx-export` |
 | Generate spreadsheets such as line-item estimates | `spreadsheets` |
 | Change the image-generation or output-destination switches | `settings` |
+| Explain a nexus-architect project's reports / UI mocks as slides | `nexus-report-slides` |
 
 ## 3. Interactive questions
 

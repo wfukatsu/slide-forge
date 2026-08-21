@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "id": "roadmap",
+  "displayName": "移行・実装ロードマップ",
+  "pack": "nexus",
+  "category": "plan",
+  "description": "段取りと期間、依存関係を帯で示す",
+  "answers": [
+    "何を、どの順で、どれくらいの期間でやるのか"
+  ],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "columns": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 8,
+          "presentation": 6
+        }
+      },
+      "maxLength": 10
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 24,
+                "presentation": 18
+              }
+            }
+          },
+          {
+            "type": "number",
+            "minimum": 0
+          },
+          {
+            "type": "number",
+            "minimum": 0
+          },
+          {
+            "type": "string",
+            "maxLength": 18
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 7,
+          "presentation": 5
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "期間の根拠がないなら期間を書かない。相対順序だけの図にする",
+    "並行して走る帯は、本当に並行できる（依存がない）ものだけにする",
+    "マイルストーン（start == end）は意思決定点に使う。作業には使わない",
+    "未着手フェーズに依存する工程は、その旨を lead に書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "gantt",
+        "x": 0.5,
+        "y": 1.62,
+        "w": 9.0,
+        "h": {
+          "$density": {
+            "print": 3.0,
+            "presentation": 2.8
+          }
+        },
+        "columns": {
+          "$slot": "columns"
+        },
+        "rows": {
+          "$slot": "rows"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

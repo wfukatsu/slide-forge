@@ -1,0 +1,13 @@
+{
+  "title": "目標構成は 5 サービス、分散するのは注文だけ",
+  "exhibitNumber": "1",
+  "exhibitTitle": "目標アーキテクチャ（To-Be）",
+  "image": "out/nexus/shots/target-architecture-01.png",
+  "lead": "5 サービスのうち分散トランザクションに入るのは 3 つだけ。",
+  "readings": [
+    "境界は 5 つ（Identity・Catalog ほか）",
+    "サービス間の同期呼び出しは注文確定の 2 経路",
+    "在庫引当と決済は ScalarDB で担保"
+  ],
+  "source": "reports/03_design/target-architecture.md の mermaid を PNG 化（生成 2026-08-18）／サンプルデータ"
+}

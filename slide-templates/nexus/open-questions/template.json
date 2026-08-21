@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "id": "open-questions",
+  "displayName": "未回答の問いと次アクション",
+  "pack": "nexus",
+  "category": "coverage",
+  "description": "まだ埋まっていない前提・未着手フェーズを、誰がどう埋めるかと一緒に示す",
+  "answers": [
+    "この資料でまだ答えられていないことは何で、どうすれば埋まるのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "headers": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 3,
+      "maxLength": 16
+    },
+    "questions": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 36,
+          "presentation": 28
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 3,
+        "maxItems": 3
+      }
+    },
+    "nextSteps": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 18
+          },
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 50,
+                "presentation": 38
+              }
+            }
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "推測で埋めた項目をここから消さない。埋めていないから未回答なのであって、書けることがないわけではない",
+    "各行に『誰が / どのコマンドで』埋まるかを必ず書く。宿題の一覧で終わらせない",
+    "未着手フェーズ由来の未回答と、レポートが明示した open question を混ぜない（source で区別する）",
+    "部分実行のデッキでは最終ページに必ず置く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "headers": {
+          "$slot": "headers"
+        },
+        "rows": {
+          "$slot": "questions"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.34,
+            "presentation": 0.4
+          }
+        },
+        "col_widths": [
+          2.4,
+          1.6,
+          2.4
+        ],
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.7,
+        "w": 9.0,
+        "h": 1.04,
+        "items": {
+          "$slot": "nextSteps"
+        },
+        "title_size": {
+          "$density": {
+            "print": 10,
+            "presentation": 11
+          }
+        },
+        "body_size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 9.5
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "title": "注文確認は在庫と決済の結果を分けて表示する",
+  "screen": "SCR-02 注文確認（STORY-ORDER-02-confirm.html）",
+  "shot": "out/nexus/shots/STORY-ORDER-02-confirm.png",
+  "notes": [
+    [
+      "在庫",
+      "行ごとに引当結果を表示"
+    ],
+    [
+      "決済",
+      "在庫確定後にのみ実行"
+    ],
+    [
+      "失敗時",
+      "カートを保持して戻す"
+    ],
+    [
+      "未確定",
+      "ポイント利用の扱い"
+    ]
+  ],
+  "source": "reports/02_spec/ui-mocks/STORY-ORDER-02-confirm.html（生成 2026-08-19）／サンプルデータ"
+}

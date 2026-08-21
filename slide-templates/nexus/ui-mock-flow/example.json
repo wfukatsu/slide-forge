@@ -1,0 +1,22 @@
+{
+  "title": "まとめ買いは 3 画面で完結し、失敗時も保持する",
+  "story": "STORY-ORDER ステップ 1–3（reports/02_spec/ui-mocks/STORY-ORDER-index.html）",
+  "shot1": "out/nexus/shots/STORY-ORDER-01-cart.png",
+  "shot2": "out/nexus/shots/STORY-ORDER-02-confirm.png",
+  "shot3": "out/nexus/shots/STORY-ORDER-03-result.png",
+  "steps": [
+    [
+      "1. カート",
+      "数量変更と在庫表示を同じ行に（SCR-01）"
+    ],
+    [
+      "2. 確認",
+      "在庫引当と決済の結果を分ける（SCR-02）"
+    ],
+    [
+      "3. 結果",
+      "失敗時はカートを保持して 2 に戻す（SCR-03）"
+    ]
+  ],
+  "source": "reports/02_spec/ui-mocks/STORY-ORDER-*.html（生成 2026-08-19）／サンプルデータ"
+}

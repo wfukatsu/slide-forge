@@ -811,6 +811,202 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "pipeline-coverage",
+      "displayName": "パイプラインのカバレッジ",
+      "pack": "nexus",
+      "category": "coverage",
+      "path": "nexus/pipeline-coverage/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "coverage"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "phase-digest",
+      "displayName": "フェーズ要約（章扉）",
+      "pack": "nexus",
+      "category": "coverage",
+      "path": "nexus/phase-digest/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "coverage"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "stack-inventory",
+      "displayName": "技術スタックの棚卸し",
+      "pack": "nexus",
+      "category": "inventory",
+      "path": "nexus/stack-inventory/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "inventory"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "issue-register",
+      "displayName": "課題・負債・指摘の一覧",
+      "pack": "nexus",
+      "category": "findings",
+      "path": "nexus/issue-register/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "findings"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "score-card",
+      "displayName": "評価スコア（単一指標）",
+      "pack": "nexus",
+      "category": "evaluation",
+      "path": "nexus/score-card/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "evaluation"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "score-breakdown",
+      "displayName": "スコアの内訳（対象 × 観点）",
+      "pack": "nexus",
+      "category": "evaluation",
+      "path": "nexus/score-breakdown/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "evaluation"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "context-map",
+      "displayName": "コンテキストマップ",
+      "pack": "nexus",
+      "category": "design",
+      "path": "nexus/context-map/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "design"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "architecture-exhibit",
+      "displayName": "構成図（画像＋読み取りポイント）",
+      "pack": "nexus",
+      "category": "design",
+      "path": "nexus/architecture-exhibit/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "design"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "decision-record",
+      "displayName": "決定と根拠（ADR）",
+      "pack": "nexus",
+      "category": "design",
+      "path": "nexus/decision-record/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "design"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "roadmap",
+      "displayName": "移行・実装ロードマップ",
+      "pack": "nexus",
+      "category": "plan",
+      "path": "nexus/roadmap/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "plan"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "persona-journey",
+      "displayName": "ペルソナと体験の詰まり",
+      "pack": "nexus",
+      "category": "product",
+      "path": "nexus/persona-journey/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "product"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "ui-mock-flow",
+      "displayName": "画面フロー（UI モック 3 枚）",
+      "pack": "nexus",
+      "category": "product",
+      "path": "nexus/ui-mock-flow/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "product"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "ui-mock-detail",
+      "displayName": "画面詳細（UI モック 1 枚）",
+      "pack": "nexus",
+      "category": "product",
+      "path": "nexus/ui-mock-detail/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "product"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "open-questions",
+      "displayName": "未回答の問いと次アクション",
+      "pack": "nexus",
+      "category": "coverage",
+      "path": "nexus/open-questions/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "coverage"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

@@ -43,8 +43,8 @@ def evaluate_structure() -> list[str]:
     plugin = marketplace["plugins"][0]
     if marketplace["metadata"]["version"] != plugin["version"]:
         failures.append("marketplace metadata/plugin versions differ")
-    if len(plugin["skills"]) != 18:
-        failures.append(f"Claude plugin exposes {len(plugin['skills'])} skills, expected 18")
+    if len(plugin["skills"]) != 19:
+        failures.append(f"Claude plugin exposes {len(plugin['skills'])} skills, expected 19")
     for key, description in (
         ("metadata.description", marketplace["metadata"]["description"]),
         ("plugins[0].description", plugin["description"]),

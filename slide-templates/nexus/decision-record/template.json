@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "id": "decision-record",
+  "displayName": "決定と根拠（ADR）",
+  "pack": "nexus",
+  "category": "design",
+  "description": "検討した選択肢と採否、そして決定理由を 1 枚に残す",
+  "answers": [
+    "なぜこの方式を選んだのか、他は何を理由に落としたのか"
+  ],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "question": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "options": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "maxLength": {
+        "$density": {
+          "print": 34,
+          "presentation": 26
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 3,
+        "maxItems": 3
+      }
+    },
+    "decision": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 150,
+          "presentation": 110
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "落とした選択肢を必ず 1 つ以上載せる。採用案だけの表は決定記録ではなく宣伝になる",
+    "採否理由は評価軸（性能・整合性・運用・コスト）に紐づける。好みで書かない",
+    "決定が未確定なら『未決』と書く。決まったように見せない",
+    "決定の影響範囲（どのフェーズがこの決定に依存するか）を decision に含める"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "question"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.62,
+        "w": 9.0,
+        "headers": [
+          "選択肢",
+          "採否",
+          "理由"
+        ],
+        "rows": {
+          "$slot": "options"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.34,
+            "presentation": 0.4
+          }
+        },
+        "col_widths": [
+          1.5,
+          0.7,
+          3.2
+        ],
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.45,
+        "w": 9.0,
+        "h": 1.28,
+        "text": {
+          "$slot": "decision"
+        },
+        "label": "決定"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}
