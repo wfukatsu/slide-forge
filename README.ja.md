@@ -38,7 +38,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `pptx-export` | 生成済みデッキを納品形式として PowerPoint（`.pptx`）にエクスポートする（`scripts/export_pptx.py`）: 10MB 制限を自動フォールバックで回避する Drive API エクスポート。ローカルに保存し、任意でデッキの Drive フォルダにもアーカイブする。PPTX 納品が想定される場合はインテイク（出力形式）で選択するか、任意のデッキ URL に対して単体で実行する。ゼロからの PPTX 作成は引き続き `document-skills:pptx` の担当。 |
 | `spreadsheets` | 見積もり、BOM、コスト内訳といった明細スプレッドシートを、1 つの JSON 仕様から Excel および/または Google Spreadsheet として生成する（`scripts/build_sheet.py`）: 型付きカラム、金額と小計/税/合計の実数式、`--dry-run` 検証、Spreadsheet の URL を保ったままのインプレース更新。提案デッキのコストスライドの伴走成果物（同じ Drive フォルダ）としても、単体でも使える。実例: `examples/estimate-sample.json`。 |
 | `settings` | `config/settings.json` の 2 つのスイッチを選択式の対話で確認・変更する（`scripts/settings.py`）: Gemini による画像生成を使うか、成果物を Google Drive / Google Slides に出すかローカルフォルダの PowerPoint に出すか（およびそのフォルダのパス）。現在値の表示 → 質問 → 書き込み → 読み戻しまでを行い、認証情報や API キーには触れない。生成スキルはインテイクで同じ設定を読み、設定が答えている質問を省く。 |
-| `nexus-report-slides` | **nexus-architect** プロジェクトの出力レポートと UI モックから説明デッキを作る（パイプラインが途中でも可）。`scripts/nexus/collect.py` が `work/pipeline-progress.json` からカバレッジを先に確定し、`build_nexus_deck.py` が記録だけで決まるページ（カバレッジ、フェーズ章扉、未回答一覧、レポート付録）を書き、解釈が要るページは `slide-templates/nexus` パック（14 枚）で組む。構造図は `mermaid_export.py`、UI モックは `html_shot.py` で画像化。プロジェクトは読むだけで書き込まない。 |
+| `nexus-report-slides` | **nexus-architect** プロジェクトの出力レポートと UI モックから説明デッキを作る（パイプラインが途中でも可）。`scripts/nexus/collect.py` が `work/pipeline-progress.json` からカバレッジを先に確定し、`build_nexus_deck.py` が記録だけで決まるページ（カバレッジ、フェーズ章扉、未回答一覧、レポート付録）を書き、解釈が要るページは `slide-templates/nexus` パック（14 枚）で組む。構造図は `mermaid_export.py`（mermaid CLI）、UI モックは `html_shot.py`（ヘッドレス Chrome）で画像化。プロジェクトは読むだけで書き込まない。 |
 
 ## エンドツーエンドワークフロー
 
@@ -187,6 +187,12 @@ Claude プラグインのインストールは不要。
 - **draw.io desktop** — `drawio-diagrams` スキルでのみ必要:
   `brew install --cask drawio`（エクスポートスクリプトは
   `/Applications/draw.io.app` のアプリバンドル内バイナリも見つける）
+- **mermaid CLI** — `nexus-report-slides` スキルでレポートの構造図を
+  画像化するときだけ必要: `npm i -g @mermaid-js/mermaid-cli`（Node.js が要る。
+  エクスポートスクリプトは `PATH` 上の `mmdc` を探す）
+- **Google Chrome** — `nexus-report-slides` スキルで製品 UI モックを
+  撮影するときだけ必要: `PATH` 上の `google-chrome` / `chromium` / `chrome`、
+  macOS なら `/Applications/Google Chrome.app`、または `$CHROME_BINARY`
 - Gemini API キー — 任意の AI 画像生成でのみ必要
 
 ## セットアップ
@@ -389,18 +395,18 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 
 ### 各スキルに必要なもの
 
-| スキル | venv + OAuth | スライドマスター | クラウドアイコン | draw.io CLI | Gemini キー |
+| スキル | venv + OAuth | スライドマスター | クラウドアイコン | 外部 CLI | Gemini キー |
 |---|---|---|---|---|---|
 | `google-slides-template` | ✔ | ✔ copy モードのテンプレートで必要 | クラウド図を描くとき | — | 任意 |
 | `google-slides` | ✔ | —（blank-16x9 は不要） | クラウド図を描くとき | — | 任意 |
 | `scalar-product-slides` | ✔ | ✔ scalar-2026 | クラウド図を描くとき | — | — |
-| `scalar-proposal-slides` | ✔ | ✔ scalar-2026 | — | 同梱の環境図を編集するとき | — |
-| `drawio-diagrams` | ✔（デッキ挿入時） | — | — | ✔ | — |
+| `scalar-proposal-slides` | ✔ | ✔ scalar-2026 | — | draw.io（同梱の環境図を編集するとき） | — |
+| `drawio-diagrams` | ✔（デッキ挿入時） | — | — | draw.io | — |
 | `slide-qa` | ✔ | — | — | — | — |
 | `pptx-export` | ✔ | — | — | — | — |
 | `spreadsheets` | ✔（OAuth は Google Spreadsheet 出力時のみ） | — | — | — | — |
 | `settings` | —（ローカル JSON の読み書きのみ） | — | — | — | — |
-| `nexus-report-slides` | ✔ | —（blank-16x9 は不要） | — | — | — |
+| `nexus-report-slides` | ✔ | —（blank-16x9 は不要） | — | 構造図は mermaid（`mmdc`）、UI モックは Chrome | — |
 | `template-forge` | ✔ | コピーする場合はベースのマスター | — | — | — |
 | `slide-template-creator` | ✔（カタログ画像の生成時） | — | — | — | — |
 | `current-state-analysis` | ✔ | ✔ copy モードのテンプレートで必要 | — | — | — |

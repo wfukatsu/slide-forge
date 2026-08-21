@@ -39,7 +39,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (output format) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
 | `spreadsheets` | Line-item spreadsheets — estimates, BOMs, cost breakdowns — as Excel and/or Google Spreadsheet from one JSON spec (`scripts/build_sheet.py`): typed columns, real formulas for amounts and subtotal/tax/total, `--dry-run` validation, and in-place updates that keep the Spreadsheet URL stable. Companion to a proposal deck's cost slide (same Drive folder), or standalone. Worked example: `examples/estimate-sample.json`. |
 | `settings` | Read and change the two toolkit switches in `config/settings.json` through a multiple-choice dialogue (`scripts/settings.py`): whether Gemini generates images at all, and whether the deliverable is Google Drive / Google Slides or a local folder as PowerPoint (plus that folder's path). Shows the current values, asks, writes, and reads the result back; never touches credentials or API keys. The generation skills read the same settings at intake and skip the questions they answer. |
-| `nexus-report-slides` | Turn a **nexus-architect** project's output reports and UI mocks into an explanation deck, including while the pipeline is unfinished: `scripts/nexus/collect.py` establishes coverage from `work/pipeline-progress.json` first, `build_nexus_deck.py` writes the pages the records settle (coverage, per-phase digests, the gap list, the report appendix), and the interpretive pages are authored onto the `slide-templates/nexus` pack (14 templates). Structure diagrams render via `mermaid_export.py`, product UI mocks via `html_shot.py`. Reads the project, never writes to it. |
+| `nexus-report-slides` | Turn a **nexus-architect** project's output reports and UI mocks into an explanation deck, including while the pipeline is unfinished: `scripts/nexus/collect.py` establishes coverage from `work/pipeline-progress.json` first, `build_nexus_deck.py` writes the pages the records settle (coverage, per-phase digests, the gap list, the report appendix), and the interpretive pages are authored onto the `slide-templates/nexus` pack (14 templates). Structure diagrams render via `mermaid_export.py` (mermaid CLI), product UI mocks via `html_shot.py` (headless Chrome). Reads the project, never writes to it. |
 
 ## End-to-end workflow
 
@@ -190,6 +190,12 @@ is needed for Codex.
 - **draw.io desktop** — only for the `drawio-diagrams` skill:
   `brew install --cask drawio` (the export script also finds the app-bundle
   binary at `/Applications/draw.io.app`)
+- **mermaid CLI** — only for the `nexus-report-slides` skill, to render a
+  report's structure diagrams: `npm i -g @mermaid-js/mermaid-cli` (needs
+  Node.js; the export script looks for `mmdc` on `PATH`)
+- **Google Chrome** — only for the `nexus-report-slides` skill, to screenshot
+  product UI mocks: any of `google-chrome` / `chromium` / `chrome` on `PATH`,
+  `/Applications/Google Chrome.app` on macOS, or `$CHROME_BINARY`
 - A Gemini API key — only for optional AI image generation
 
 ## Setup
@@ -385,18 +391,18 @@ editable source. Details: `references/settings.md`.
 
 ### What each skill needs
 
-| Skill | venv + OAuth | Slide master | Cloud icons | draw.io CLI | Gemini key |
+| Skill | venv + OAuth | Slide master | Cloud icons | External CLI | Gemini key |
 |---|---|---|---|---|---|
 | `google-slides-template` | ✔ | ✔ for the copy-mode templates | when drawing cloud diagrams | — | optional |
 | `google-slides` | ✔ | — (blank-16x9 needs none) | when drawing cloud diagrams | — | optional |
 | `scalar-product-slides` | ✔ | ✔ scalar-2026 | when drawing cloud diagrams | — | — |
-| `scalar-proposal-slides` | ✔ | ✔ scalar-2026 | — | to edit the bundled environment diagram | — |
-| `drawio-diagrams` | ✔ (for deck insertion) | — | — | ✔ | — |
+| `scalar-proposal-slides` | ✔ | ✔ scalar-2026 | — | draw.io, to edit the bundled environment diagram | — |
+| `drawio-diagrams` | ✔ (for deck insertion) | — | — | draw.io | — |
 | `slide-qa` | ✔ | — | — | — | — |
 | `pptx-export` | ✔ | — | — | — | — |
 | `spreadsheets` | ✔ (OAuth only for Google Spreadsheet output) | — | — | — | — |
 | `settings` | — (reads/writes a local JSON file) | — | — | — | — |
-| `nexus-report-slides` | ✔ | — (blank-16x9 needs none) | — | — | — |
+| `nexus-report-slides` | ✔ | — (blank-16x9 needs none) | — | mermaid (`mmdc`) for structure diagrams, Chrome for UI mocks | — |
 | `template-forge` | ✔ | base master, if copying one | — | — | — |
 | `slide-template-creator` | ✔ (to render catalog previews) | — | — | — | — |
 | `current-state-analysis` | ✔ | ✔ for the copy-mode templates | — | — | — |
