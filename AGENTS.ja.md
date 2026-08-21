@@ -41,6 +41,7 @@ Claude Code を主ホスト兼配布経路とする。Codex は同じ共有 Pyth
 | Google Slides の PPTX エクスポート | `pptx-export` |
 | 見積もり / BOM スプレッドシート | `spreadsheets` |
 | 画像生成・出力先スイッチの変更 | `settings` |
+| nexus-architect のレポート・UI モックの説明スライド化 | `nexus-report-slides` |
 
 スキル選択後は、未選択のスキルや記載されたreferenceを一括で読み込まない。
 `references/workflow-contract.md` の段階読込表に従う。

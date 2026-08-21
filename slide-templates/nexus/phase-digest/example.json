@@ -1,0 +1,24 @@
+{
+  "title": "現行モノリスの課題 19 件中 6 件は本番を止めうる",
+  "headers": [
+    "出力レポート",
+    "内容"
+  ],
+  "phase": "Phase 0: Investigation ／ investigate ／ 完了 2026-08-18",
+  "finding": "Spring Boot 3.2.5 / Java 17 / MySQL 8.0 の単一デプロイ構成。技術負債 6・セキュリティ 5・その他 8 の計 19 件を検出し、CRITICAL は SQL インジェクション、IDOR、/admin の無認証、MD5 パスワード、カード番号のログ出力、OrderService の肥大化の 6 件。",
+  "outputs": [
+    [
+      "technology-stack.md",
+      "フレームワーク・ライブラリと版"
+    ],
+    [
+      "issues-and-debt.md",
+      "課題 19 件の一覧と根拠"
+    ],
+    [
+      "ddd-readiness.md",
+      "DDD 準備度 32/100 の内訳"
+    ]
+  ],
+  "source": "reports/before/ec-monolith/*.md（生成 2026-08-18 03:07 JST）／サンプルデータ"
+}

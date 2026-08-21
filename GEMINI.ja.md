@@ -41,6 +41,7 @@
 | PowerPoint (`.pptx`) 形式へのエクスポート | `pptx-export` |
 | 見積もり明細などのスプレッドシート生成 | `spreadsheets` |
 | 画像生成・出力先スイッチの変更 | `settings` |
+| nexus-architect のレポート・UI モックの説明スライド化 | `nexus-report-slides` |
 
 ## 3. インタラクティブ質問
 

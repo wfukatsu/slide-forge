@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "id": "phase-digest",
+  "displayName": "フェーズ要約（章扉）",
+  "pack": "nexus",
+  "category": "coverage",
+  "description": "1 フェーズが何を明らかにしたかを、そのフェーズ自身の要約と出力ファイルで示す",
+  "answers": [
+    "このフェーズは何を明らかにし、どのレポートに書いたのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "phase": {
+      "type": "string",
+      "required": true,
+      "maxLength": 60
+    },
+    "finding": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 200,
+          "presentation": 150
+        }
+      }
+    },
+    "headers": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 2,
+      "maxLength": 16
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 42
+          },
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 46,
+                "presentation": 34
+              }
+            }
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "summary はフェーズが自分で記録した要約（pipeline-progress.json の summary）を土台にする。読み手向けに言い換えるのはよいが、新しい主張を足さない",
+    "outputs は実在するファイルだけ。宣言されているが書かれていないものは open-questions 側に回す",
+    "章扉なので結論は 1 つ。複数の発見があるなら後続ページに分ける"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "phase"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": {
+          "$density": {
+            "print": 1.65,
+            "presentation": 1.45
+          }
+        },
+        "text": {
+          "$slot": "finding"
+        },
+        "label": "このフェーズの結論"
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": {
+          "$density": {
+            "print": 3.28,
+            "presentation": 3.08
+          }
+        },
+        "w": 9.0,
+        "headers": {
+          "$slot": "headers"
+        },
+        "rows": {
+          "$slot": "outputs"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.32,
+            "presentation": 0.38
+          }
+        },
+        "col_widths": [
+          1.4,
+          1.6
+        ],
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "id": "persona-journey",
+  "displayName": "ペルソナと体験の詰まり",
+  "pack": "nexus",
+  "category": "product",
+  "description": "対象ユーザーの体験を時系列で並べ、どこで詰まるかを示す",
+  "answers": [
+    "誰が、どの体験の、どこで詰まっているのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "persona": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "milestones": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 14
+          },
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 34,
+                "presentation": 24
+              }
+            }
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 3,
+      "maxItems": 5
+    },
+    "pains": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 18
+          },
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 50,
+                "presentation": 38
+              }
+            }
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "ペルソナの属性は調査で確認できたものだけ。年齢・年収などを埋めるために創作しない",
+    "痛みは観察された事実（発言・行動・数値）に紐づける。推測なら『仮説』と明記する",
+    "解決策をこのページに書かない。ここは現状の体験まで"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "persona"
+        }
+      },
+      {
+        "type": "journey",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "h": 2.05,
+        "items": {
+          "$slot": "milestones"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.7,
+        "w": 9.0,
+        "h": 1.04,
+        "items": {
+          "$slot": "pains"
+        },
+        "title_size": {
+          "$density": {
+            "print": 10,
+            "presentation": 11
+          }
+        },
+        "body_size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 9.5
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print"
+}

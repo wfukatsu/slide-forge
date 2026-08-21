@@ -1,0 +1,49 @@
+{
+  "title": "19 件中 6 件が CRITICAL、原因は認証と入力検証",
+  "lead": "技術負債 6・セキュリティ 5・その他 8。CRITICAL は移行前に個別に潰せる。",
+  "counts": [
+    [
+      "CRITICAL",
+      6,
+      "6"
+    ],
+    [
+      "HIGH",
+      5,
+      "5"
+    ],
+    [
+      "MEDIUM",
+      8,
+      "8"
+    ]
+  ],
+  "issues": [
+    [
+      "CRITICAL",
+      "SQL インジェクション",
+      "文字列連結クエリ"
+    ],
+    [
+      "CRITICAL",
+      "他人の注文を閲覧",
+      "所有者検査なし"
+    ],
+    [
+      "CRITICAL",
+      "/admin が無認証",
+      "除外設定"
+    ],
+    [
+      "CRITICAL",
+      "MD5 で保存",
+      "UserService"
+    ],
+    [
+      "HIGH",
+      "God Service 化",
+      "業務ルール 6 件集中"
+    ]
+  ],
+  "source": "reports/before/ec-monolith/issues-and-debt.md（生成 2026-08-18）／サンプルデータ"
+}

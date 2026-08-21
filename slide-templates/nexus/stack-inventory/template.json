@@ -1,0 +1,184 @@
+{
+  "schemaVersion": 1,
+  "id": "stack-inventory",
+  "displayName": "技術スタックの棚卸し",
+  "pack": "nexus",
+  "category": "inventory",
+  "description": "現行システムが何でできているかを層で示し、版と制約を併記する",
+  "answers": [
+    "このシステムは何の上に建っているのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 22
+          },
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 52,
+                "presentation": 40
+              }
+            }
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 6,
+          "presentation": 5
+        }
+      }
+    },
+    "facts": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 7,
+          "presentation": 5
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 24,
+          "presentation": 18
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "層は実際に動いているものだけ。設定ファイルに書いてあるが呼ばれていないものは note で『宣言のみ』と明示する",
+    "版は必ず書く。サポート期限や既知脆弱性の判断は版がないとできない",
+    "評価（良い・悪い）はこのページに書かない。課題は issue-register へ"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "layers",
+        "x": 0.5,
+        "y": 1.62,
+        "w": 5.5,
+        "h": {
+          "$density": {
+            "print": 2.9,
+            "presentation": 2.6
+          }
+        },
+        "items": {
+          "$slot": "layers"
+        },
+        "size": {
+          "$density": {
+            "print": 10,
+            "presentation": 11
+          }
+        }
+      },
+      {
+        "type": "table",
+        "x": 6.2,
+        "y": 1.62,
+        "w": 3.3,
+        "headers": [
+          "項目",
+          "実測値"
+        ],
+        "rows": {
+          "$slot": "facts"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.32,
+            "presentation": 0.38
+          }
+        },
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print"
+}

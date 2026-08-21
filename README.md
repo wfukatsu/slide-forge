@@ -3,7 +3,7 @@
 # slide-forge
 
 Claude-first, agent-driven Google Slides deck generation with the same shared
-skills available to Codex and Antigravity through thin host adapters: eighteen
+skills available to Codex and Antigravity through thin host adapters: nineteen
 generation/support skills plus one end-to-end workflow on a shared Python
 engine. Claude Code's plugin commands and the shared `skills/` are the behavior
 source of truth; host files do not duplicate workflow logic. It covers corporate-template decks, from-scratch architecture
@@ -39,6 +39,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (output format) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
 | `spreadsheets` | Line-item spreadsheets — estimates, BOMs, cost breakdowns — as Excel and/or Google Spreadsheet from one JSON spec (`scripts/build_sheet.py`): typed columns, real formulas for amounts and subtotal/tax/total, `--dry-run` validation, and in-place updates that keep the Spreadsheet URL stable. Companion to a proposal deck's cost slide (same Drive folder), or standalone. Worked example: `examples/estimate-sample.json`. |
 | `settings` | Read and change the two toolkit switches in `config/settings.json` through a multiple-choice dialogue (`scripts/settings.py`): whether Gemini generates images at all, and whether the deliverable is Google Drive / Google Slides or a local folder as PowerPoint (plus that folder's path). Shows the current values, asks, writes, and reads the result back; never touches credentials or API keys. The generation skills read the same settings at intake and skip the questions they answer. |
+| `nexus-report-slides` | Turn a **nexus-architect** project's output reports and UI mocks into an explanation deck, including while the pipeline is unfinished: `scripts/nexus/collect.py` establishes coverage from `work/pipeline-progress.json` first, `build_nexus_deck.py` writes the pages the records settle (coverage, per-phase digests, the gap list, the report appendix), and the interpretive pages are authored onto the `slide-templates/nexus` pack (14 templates). Structure diagrams render via `mermaid_export.py`, product UI mocks via `html_shot.py`. Reads the project, never writes to it. |
 
 ## End-to-end workflow
 
@@ -119,6 +120,8 @@ scripts/      shared engine — one importable package
   build_slide_template_catalog.py build_pattern_catalog.py build_template_catalog_doc.py
                                   catalog specs and the generated catalog docs
   fill_image_slots.py             fill an existing deck's empty picture frames (image-slots)
+  nexus/collect.py nexus/build_nexus_deck.py   nexus-architect coverage + deck spine
+  html_shot.py mermaid_export.py  HTML / mermaid -> PNG for slide insertion
   validate_agent_contracts.py     shared prompt-contract eval for hosts/commands/skills
   account_graph.py build_account_graph.py   influence / discovery graphs -> .drawio
   scalar/account_ledger.py       per-customer sales ledger: validate, gaps, slot data
@@ -145,7 +148,7 @@ cache/ out/   transient render cache and QA output (gitignored)
 ## Install as a Claude Code plugin
 
 The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all eighteen skills):
+one plugin bundling all nineteen skills):
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -163,7 +166,7 @@ skills will be listed twice.
 ## Use with Codex
 
 Codex uses the same skills and Python engine. In a repository clone, the
-`.agents/skills/` entries expose all eighteen generation/support skills plus the
+`.agents/skills/` entries expose all nineteen generation/support skills plus the
 end-to-end `forge` skill. Start Codex from the repository root and invoke
 `forge` by name; the Claude-specific `/slide-forge:forge` command and plugin
 marketplace manifest are not required.
@@ -393,6 +396,7 @@ editable source. Details: `references/settings.md`.
 | `pptx-export` | ✔ | — | — | — | — |
 | `spreadsheets` | ✔ (OAuth only for Google Spreadsheet output) | — | — | — | — |
 | `settings` | — (reads/writes a local JSON file) | — | — | — | — |
+| `nexus-report-slides` | ✔ | — (blank-16x9 needs none) | — | — | — |
 | `template-forge` | ✔ | base master, if copying one | — | — | — |
 | `slide-template-creator` | ✔ (to render catalog previews) | — | — | — | — |
 | `current-state-analysis` | ✔ | ✔ for the copy-mode templates | — | — | — |

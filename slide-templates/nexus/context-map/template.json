@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "id": "context-map",
+  "displayName": "コンテキストマップ",
+  "pack": "nexus",
+  "category": "design",
+  "description": "中心となるコンテキストと周辺の関係を、関係種別つきで示す",
+  "answers": [
+    "どの境界が中心で、周辺とはどんな関係にあるのか"
+  ],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "center": {
+      "type": "string",
+      "required": true,
+      "maxLength": 22
+    },
+    "contexts": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "maxLength": 24
+    },
+    "relations": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 6,
+          "presentation": 4
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 22,
+          "presentation": 18
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "関係種別（Shared Kernel / Conformist / Separate Ways など）はレポートの用語をそのまま使う",
+    "As-Is と To-Be を 1 枚に混ぜない。どちらの図かを title で明示する",
+    "図で表せない多対多の関係は表側に逃がす。線を増やして読めなくしない",
+    "元の mermaid をそのまま貼りたい場合は architecture-exhibit を使う"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "hub",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 5.6,
+        "h": 3.05,
+        "center": {
+          "$slot": "center"
+        },
+        "items": {
+          "$slot": "contexts"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        }
+      },
+      {
+        "type": "table",
+        "x": 6.3,
+        "y": 1.55,
+        "w": 3.2,
+        "headers": [
+          "関係",
+          "種別"
+        ],
+        "rows": {
+          "$slot": "relations"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.33,
+            "presentation": 0.4
+          }
+        },
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

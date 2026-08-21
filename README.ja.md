@@ -4,7 +4,7 @@
 
 Claude Code を主ホストとするエージェント駆動 Google Slides デッキ生成。Codex と
 Antigravity は薄いホスト互換レイヤーを通じて同じ共有スキルを利用する。共有 Python
-エンジンの上に、18 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
+エンジンの上に、19 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
 Claude Code のプラグインコマンドと共有 `skills/` を動作の正本とし、ホスト固有文書へ
 ワークフローを複製しない。コーポレートテンプレートのデッキ、ゼロからのアーキテクチャ図、デザイン
 仕様からのテンプレート作成、生成前の検証、任意のサムネイルベース視覚 QA
@@ -38,6 +38,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `pptx-export` | 生成済みデッキを納品形式として PowerPoint（`.pptx`）にエクスポートする（`scripts/export_pptx.py`）: 10MB 制限を自動フォールバックで回避する Drive API エクスポート。ローカルに保存し、任意でデッキの Drive フォルダにもアーカイブする。PPTX 納品が想定される場合はインテイク（出力形式）で選択するか、任意のデッキ URL に対して単体で実行する。ゼロからの PPTX 作成は引き続き `document-skills:pptx` の担当。 |
 | `spreadsheets` | 見積もり、BOM、コスト内訳といった明細スプレッドシートを、1 つの JSON 仕様から Excel および/または Google Spreadsheet として生成する（`scripts/build_sheet.py`）: 型付きカラム、金額と小計/税/合計の実数式、`--dry-run` 検証、Spreadsheet の URL を保ったままのインプレース更新。提案デッキのコストスライドの伴走成果物（同じ Drive フォルダ）としても、単体でも使える。実例: `examples/estimate-sample.json`。 |
 | `settings` | `config/settings.json` の 2 つのスイッチを選択式の対話で確認・変更する（`scripts/settings.py`）: Gemini による画像生成を使うか、成果物を Google Drive / Google Slides に出すかローカルフォルダの PowerPoint に出すか（およびそのフォルダのパス）。現在値の表示 → 質問 → 書き込み → 読み戻しまでを行い、認証情報や API キーには触れない。生成スキルはインテイクで同じ設定を読み、設定が答えている質問を省く。 |
+| `nexus-report-slides` | **nexus-architect** プロジェクトの出力レポートと UI モックから説明デッキを作る（パイプラインが途中でも可）。`scripts/nexus/collect.py` が `work/pipeline-progress.json` からカバレッジを先に確定し、`build_nexus_deck.py` が記録だけで決まるページ（カバレッジ、フェーズ章扉、未回答一覧、レポート付録）を書き、解釈が要るページは `slide-templates/nexus` パック（14 枚）で組む。構造図は `mermaid_export.py`、UI モックは `html_shot.py` で画像化。プロジェクトは読むだけで書き込まない。 |
 
 ## エンドツーエンドワークフロー
 
@@ -115,6 +116,8 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
   build_slide_template_catalog.py build_pattern_catalog.py build_template_catalog_doc.py
                                   カタログ用 spec と生成されるカタログドキュメント
   fill_image_slots.py             既存デッキの空の画像枠を埋める (image-slots)
+  nexus/collect.py nexus/build_nexus_deck.py   nexus-architect のカバレッジとデッキ背骨
+  html_shot.py mermaid_export.py  HTML / mermaid を PNG 化してスライドへ
   validate_agent_contracts.py     ホスト / コマンド / スキル共通のプロンプト契約 eval
   account_graph.py build_account_graph.py   インフルエンス / ディスカバリーグラフ -> .drawio
   scalar/account_ledger.py       顧客ごとの営業台帳: 検証、gaps、スロットデータ
@@ -141,7 +144,7 @@ cache/ out/   一時レンダーキャッシュと QA 出力 (gitignored)
 ## Claude Code プラグインとしてのインストール
 
 このリポジトリはプラグインマーケットプレイスを兼ねる
-（`.claude-plugin/marketplace.json`、18 スキルすべてを束ねた 1 プラグイン）:
+（`.claude-plugin/marketplace.json`、19 スキルすべてを束ねた 1 プラグイン）:
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -159,7 +162,7 @@ venv、OAuth 認証情報、クラウドアイコンはマシンローカルで�
 ## Codex での利用
 
 Codex も同じスキルと Python エンジンを使う。リポジトリのクローンでは、
-`.agents/skills/` のエントリが 18 の生成/支援スキルすべてと、エンドツー
+`.agents/skills/` のエントリが 19 の生成/支援スキルすべてと、エンドツー
 エンドの `forge` スキルを公開する。リポジトリルートから Codex を起動し、
 `forge` を名前で呼び出せばよい。Claude 固有の `/slide-forge:forge`
 コマンドやプラグインマーケットプレイスのマニフェストは不要。
@@ -397,6 +400,7 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | `pptx-export` | ✔ | — | — | — | — |
 | `spreadsheets` | ✔（OAuth は Google Spreadsheet 出力時のみ） | — | — | — | — |
 | `settings` | —（ローカル JSON の読み書きのみ） | — | — | — | — |
+| `nexus-report-slides` | ✔ | —（blank-16x9 は不要） | — | — | — |
 | `template-forge` | ✔ | コピーする場合はベースのマスター | — | — | — |
 | `slide-template-creator` | ✔（カタログ画像の生成時） | — | — | — | — |
 | `current-state-analysis` | ✔ | ✔ copy モードのテンプレートで必要 | — | — | — |

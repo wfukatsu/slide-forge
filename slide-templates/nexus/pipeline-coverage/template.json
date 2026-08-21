@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "id": "pipeline-coverage",
+  "displayName": "パイプラインのカバレッジ",
+  "pack": "nexus",
+  "category": "coverage",
+  "description": "この資料がどこまでの分析に基づくか（完了・実行中・未着手）を最初に示す",
+  "answers": [
+    "この提案・報告は、どこまで終わった分析に基づいているのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "basis": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 150,
+          "presentation": 110
+        }
+      }
+    },
+    "counts": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 12
+          },
+          {
+            "type": "number",
+            "minimum": 0
+          },
+          {
+            "type": "string",
+            "maxLength": 8
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 2,
+      "maxItems": 5
+    },
+    "headers": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 3,
+      "maxLength": 14
+    },
+    "groups": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 7,
+          "presentation": 5
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 22,
+          "presentation": 16
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 3,
+        "maxItems": 3
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "デッキの 2 枚目に必ず置く。未完了のまま説明する資料は、前提を先に開示してからでないと読み手が誤解する",
+    "counts はフェーズ数の実数。レポートの枚数や作業時間に読み替えない",
+    "未着手フェーズを『対象外』と書き換えない。skipped（意図的に飛ばした）と pending（まだ）は別物",
+    "source には収集時刻（asOf）を必ず入れる。パイプラインは動き続けるので、資料は常にある時点のスナップショット"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "basis"
+        }
+      },
+      {
+        "type": "hbars",
+        "x": 0.5,
+        "y": 1.62,
+        "w": 4.1,
+        "items": {
+          "$slot": "counts"
+        },
+        "label_w": 1.6,
+        "value_w": 0.9,
+        "row_h": 0.42,
+        "gap": 0.16
+      },
+      {
+        "type": "table",
+        "x": 5.0,
+        "y": 1.62,
+        "w": 4.5,
+        "headers": {
+          "$slot": "headers"
+        },
+        "rows": {
+          "$slot": "groups"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.32,
+            "presentation": 0.38
+          }
+        },
+        "header_h": 0.34,
+        "col_widths": [
+          1.7,
+          0.9,
+          1.4
+        ],
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print"
+}

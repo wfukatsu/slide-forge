@@ -1,0 +1,50 @@
+{
+  "title": "Independence の低さは単一 DB 依存が原因",
+  "lead": "4 モジュール × 4 軸を 5 段階で評価。塗りが少ないほど低い。",
+  "columns": [
+    "Cohesion",
+    "Coupling",
+    "Independ.",
+    "Reuse"
+  ],
+  "rows": [
+    [
+      "Inventory",
+      [
+        3,
+        4,
+        2,
+        2
+      ]
+    ],
+    [
+      "Catalog",
+      [
+        3,
+        4,
+        1,
+        1
+      ]
+    ],
+    [
+      "Payment",
+      [
+        2,
+        3,
+        1,
+        1
+      ]
+    ],
+    [
+      "Order",
+      [
+        1,
+        1,
+        1,
+        1
+      ]
+    ]
+  ],
+  "verdict": "Independence の低さは実装の質ではなく、単一 DB 前提から来ている。",
+  "source": "reports/02_evaluation/mmi-by-module.md（生成 2026-08-18）／サンプルデータ"
+}

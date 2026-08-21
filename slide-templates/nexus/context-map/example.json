@@ -1,0 +1,30 @@
+{
+  "title": "Order が 4 コンテキストに直接依存する一極集中",
+  "lead": "As-Is。Order だけが他のすべてを直接呼び、境界は名前だけで実体がない。",
+  "center": "Order\n(Core/Process)",
+  "contexts": [
+    "Payment",
+    "Inventory",
+    "Catalog",
+    "Identity"
+  ],
+  "relations": [
+    [
+      "Order → Payment",
+      "Shared Kernel"
+    ],
+    [
+      "Order → Inventory",
+      "Shared Kernel"
+    ],
+    [
+      "Order → Catalog",
+      "Conformist"
+    ],
+    [
+      "Inventory → Catalog",
+      "Separate Ways"
+    ]
+  ],
+  "source": "reports/03_design/context-map.md（生成 2026-08-18）／サンプルデータ"
+}

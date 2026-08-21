@@ -24,6 +24,7 @@ Pick one based on the arguments and context. Only ask once via
 | Current-state analysis / problem identification from material (SWOT, PEST, Five Forces, why-why, logic tree, gap analysis, etc.) | `current-state-analysis` |
 | Adding or changing an analysis-framework template itself | `analysis-template-creator` |
 | B2B deal stakeholder map / discovery organization | `b2b-account-maps` |
+| Explaining a nexus-architect project's reports / UI mocks | `nexus-report-slides` |
 | A template/master URL exists, build with a registered template (default) | `google-slides-template` |
 | Build from scratch with no corporate master | `google-slides` |
 

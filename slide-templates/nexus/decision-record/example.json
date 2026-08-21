@@ -1,0 +1,23 @@
+{
+  "title": "注文確定は ScalarDB の分散 Tx で実装する",
+  "question": "サービス分割後、在庫引当と決済の整合性をどう担保するか。",
+  "options": [
+    [
+      "ScalarDB 分散トランザクション",
+      "採用",
+      "既存の単一トランザクション前提を保てる"
+    ],
+    [
+      "Saga（補償トランザクション）",
+      "不採用",
+      "補償設計が 6 業務ルールに波及する"
+    ],
+    [
+      "モジュラーモノリスのまま",
+      "不採用",
+      "分割目的（独立デプロイ）を満たさない"
+    ]
+  ],
+  "decision": "ScalarDB Cluster を採用。注文確定 1 ユースケースに限定して適用し、他は結果整合で足りる。この決定に design-scalardb / generate-scalardb-code / design-infrastructure の 3 フェーズが依存する。",
+  "source": "reports/03_design/scalardb-transaction.md、api-style-decisions.md（生成 2026-08-18）／サンプルデータ"
+}

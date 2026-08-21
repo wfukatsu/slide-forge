@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "id": "score-card",
+  "displayName": "評価スコア（単一指標）",
+  "pack": "nexus",
+  "category": "evaluation",
+  "description": "成熟度・準備度などの単一スコアを帯域つきで示し、内訳を並べる",
+  "answers": [
+    "この評価軸で、いまどの水準にいるのか"
+  ],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "score": {
+      "type": "string",
+      "required": true,
+      "maxLength": 10
+    },
+    "scoreCaption": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 48,
+          "presentation": 34
+        }
+      }
+    },
+    "dimensions": {
+      "type": "array",
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 18
+          },
+          {
+            "type": "number",
+            "minimum": 0
+          },
+          {
+            "type": "string",
+            "maxLength": 10
+          }
+        ]
+      },
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 150,
+          "presentation": 110
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "スコアは必ず帯域（何点なら何を意味するか）と一緒に出す。数字だけでは判断できない",
+    "内訳の軸名と重みはレポートの定義をそのまま使う。デッキ側で足したり丸めたりしない",
+    "verdict は数字から言えることだけ。改善策は roadmap / decision-record へ"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "verdict"
+        }
+      },
+      {
+        "type": "metric",
+        "x": 0.5,
+        "y": 1.72,
+        "w": 2.5,
+        "h": 1.8,
+        "value": {
+          "$slot": "score"
+        },
+        "caption": {
+          "$slot": "scoreCaption"
+        }
+      },
+      {
+        "type": "hbars",
+        "x": 3.3,
+        "y": 1.72,
+        "w": 6.2,
+        "items": {
+          "$slot": "dimensions"
+        },
+        "label_w": 2.0,
+        "value_w": 1.0,
+        "row_h": 0.44,
+        "gap": 0.16
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

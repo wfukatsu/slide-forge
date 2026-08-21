@@ -41,6 +41,7 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Export Google Slides to PPTX | `pptx-export` |
 | Estimate/BOM spreadsheet | `spreadsheets` |
 | Change the image-generation or output-destination switches | `settings` |
+| Explain a nexus-architect project's reports / UI mocks as slides | `nexus-report-slides` |
 
 After selecting a skill, do not preload the other skills or every reference it
 mentions. Follow the progressive-loading table in
