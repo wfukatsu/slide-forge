@@ -237,7 +237,8 @@ recommended option first; if your host has no such tool, ask the same four as
 a numbered list and wait for my answers:
 1. What I plan to use, so you know which optional steps apply — multi-select,
    with a "just the basics" option: decks from a corporate template (needs a
-   slide master), cloud architecture diagrams (vendor icons + draw.io),
+   slide master — an existing one, or one you build for me),
+   cloud architecture diagrams (vendor icons + draw.io),
    nexus-architect explanation decks (mermaid CLI + Chrome), AI-generated
    images (Gemini API key).
 2. Where the deliverable should go — Google Drive / Slides, or a local .pptx.
@@ -255,8 +256,23 @@ Then work in this order, skipping whatever my answers made unnecessary:
   consent screen. A printed template list means auth works.
 - Step 8, settings: apply my answers via scripts/settings.py, then --show the
   result. Tell me how to set GSLIDES_LANG if I chose Japanese.
-- Steps 4-7, only for what I selected: cloud icons, a slide master, a Gemini
-  key. The pattern-catalog images (step 6) are committed — that step is for
+- Step 5, slide master — only if I said I want decks from a corporate
+  template. Start with scripts/check_template_access.py: it reports which
+  registered masters this account can actually copy. Templates it marks OK
+  need nothing further. For the rest, do not assume I have access to a master
+  someone else owns — ask which of these three fits, offering (a) first:
+  a. I have no master to point at — build one from my own brand with the
+     template-forge skill (scripts/build_template.py). This route needs
+     nobody else's permission, and it ends with the template registered.
+  b. I can open a master in Drive — I give you the URL, you register it with
+     scripts/inspect_template.py --emit templates/<id>.json --name <id>.
+  c. Someone handed me a .pptx — I save it to templates/masters/<id>.pptx,
+     you run scripts/import_template_master.py --id <id>.
+  Re-run check_template_access.py afterwards to show what changed. Leaving a
+  master unreachable is an acceptable outcome: say which templates stay
+  blocked, and that blank-16x9 works without one.
+- Steps 4 and 7, only for what I selected: cloud icons, a Gemini key. The
+  pattern-catalog images (step 6) are committed — that step is for
   regenerating them, not for setup, so skip it.
 
 Rules:
@@ -337,26 +353,41 @@ presentation. `templates/<id>.json` only *points* at one, so on a fresh clone
 those templates cannot work until the master exists in your own Drive.
 
 The masters themselves are **not committed** — 6–8MB each, and a master is only
-useful once it lives in your own Drive. Pick whichever applies:
+useful once it lives in your own Drive. **Access to someone else's master is not
+a prerequisite**: route (a) below builds one for you, and it is the whole of
+this step if you have nothing to start from.
 
-**a. Build your own.** The `template-forge` skill creates a new master from a
-design spec — brand colours, fonts, logo, footer — and registers it, ready for
-`google-slides-template`. Nothing else is needed; this is the path if you are
-not working with an existing corporate deck.
+Ask first which of the registered templates this account can actually copy
+(needs step 2's credentials; `--json` for the machine-readable form, exit code 1
+when something is unusable):
+
+```bash
+.venv/bin/python scripts/check_template_access.py
+```
+
+Anything it marks `OK` already generates. For each one it does not — the master
+belongs to an organization you are not in, was never shared with you, or was
+deleted — pick a route:
+
+**a. No master to point at? Build your own.** The `template-forge` skill creates
+a new master from a design spec — brand colours, fonts, logo, footer — and
+registers it, ready for `google-slides-template`. Nothing and nobody else is
+needed; this is the path if you are not working with an existing corporate deck,
+or if the corporate one is out of reach.
 
 ```bash
 .venv/bin/python scripts/build_template.py --help
 ```
 
-**b. Register a master you already have in Drive.** Analyse it once and review
+**b. Can you open a master in Drive?** Register it — analyse it once and review
 the guessed roles by hand:
 
 ```bash
 .venv/bin/python scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>
 ```
 
-**c. Import a `.pptx` of a master.** Save it as `templates/masters/<id>.pptx`,
-then upload and re-register it in one step:
+**c. Were you handed a `.pptx` of a master?** Save it as
+`templates/masters/<id>.pptx`, then upload and re-register it in one step:
 
 ```bash
 .venv/bin/python scripts/import_template_master.py --all
@@ -380,8 +411,13 @@ layout that no slide uses — `aixdevops` loses three registered layouts that wa
 — and the bundled slides listed in `existingSlideIds` are part of what those
 templates offer. See [`templates/masters/README.md`](templates/masters/README.md).
 
+Whichever route you took, re-run `scripts/check_template_access.py` to confirm
+the registration now points at something you can copy.
+
 `blank-16x9` is `generationMode: create` and needs no master, so the
 `google-slides` spec path and every `--dry-run` validation work on a bare clone.
+Leaving the out-of-reach templates unusable is a legitimate end state — nothing
+else in the repository depends on them.
 
 ### 6. Slide pattern catalog images
 
@@ -472,6 +508,13 @@ editable source. Details: `references/settings.md`.
 | `scalar-account-planning-session` | ✔ | ✔ scalar-2026 | — | — | — |
 | `scalar-ae-materials` | ✔ | ✔ scalar-2026 | — | — | — |
 | `image-slots` | ✔ | — (works on any deck URL) | — | — | ✔ |
+
+"✔ for the copy-mode templates" in the *Slide master* column is satisfied by
+any master you can copy, including one `template-forge` builds for your own
+brand — see [step 5a](#5-slide-masters-for-the-copy-mode-templates), and run
+`scripts/check_template_access.py` to see where you stand. The rows naming
+`scalar-2026` are the exception: those skills carry Scalar-specific content and
+assume that master.
 
 Secrets hygiene: `config/` (credentials, tokens, API keys), `out/`, `cache/`,
 and `assets/cloud-icons/` are gitignored — nothing machine-local is ever

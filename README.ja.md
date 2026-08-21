@@ -234,8 +234,9 @@ Claude 構成ではクローンしたディレクトリ、Claude プラグイン
 提示して回答を待つ:
 1. 何を使うつもりか。どのオプション手順が必要かを決めるため — 複数選択、
    「基本だけ」の選択肢も用意する: 会社テンプレートからのデッキ生成
-   （スライドマスターが要る）、クラウドアーキテクチャ図（ベンダーアイコン
-   と draw.io）、nexus-architect の説明デッキ（mermaid CLI と Chrome）、
+   （スライドマスターが要る — 既存のもの、またはこちら用に新しく作る）、
+   クラウドアーキテクチャ図（ベンダーアイコンと draw.io）、
+   nexus-architect の説明デッキ（mermaid CLI と Chrome）、
    AI 画像生成（Gemini API キー）。
 2. 成果物の出力先 — Google Drive / Slides か、ローカルの .pptx か。
 3. Gemini による画像生成をそもそも許可するか。
@@ -252,9 +253,26 @@ Claude 構成ではクローンしたディレクトリ、Claude プラグイン
   操作させる。テンプレート一覧が出れば認証は成功。
 - 手順 8（設定）: 回答を scripts/settings.py で適用し、--show で結果を
   読み戻す。日本語を選んだ場合は GSLIDES_LANG の設定方法も伝える。
-- 手順 4〜7: 選択されたものだけ — クラウドアイコン、スライドマスター、
-  Gemini キー。パターンカタログ画像（手順 6）はコミット済みで、あれは
-  再生成用でセットアップ用ではないので飛ばす。
+- 手順 5（スライドマスター）: 会社テンプレートからのデッキ生成を選んだ
+  場合だけ。まず scripts/check_template_access.py を実行する — このアカウ
+  ントで実際に複製できる登録済みマスターがどれかが分かる。OK と出た
+  テンプレートは何もしなくてよい。残りについては、他人のマスターへの
+  アクセス権があると前提しないこと。次の 3 つのどれに当たるかを、
+  (a) を先頭にして尋ねる:
+  a. 指す先のマスターが無い — template-forge スキル
+     （scripts/build_template.py）でこちらのブランドから新しく作る。
+     他者の許可は一切要らず、これだけで登録まで終わる。
+  b. Drive でマスターを開ける — URL をこちらが渡すので、
+     scripts/inspect_template.py --emit templates/<id>.json --name <id>
+     で登録する。
+  c. .pptx を受け取っている — こちらが templates/masters/<id>.pptx に
+     置くので、scripts/import_template_master.py --id <id> を実行する。
+  終わったら check_template_access.py をもう一度実行して差分を示す。
+  マスターに到達できないままでも構わない: どのテンプレートが使えない
+  ままかと、blank-16x9 はマスター無しで動くことを述べる。
+- 手順 4 と 7: 選択されたものだけ — クラウドアイコン、Gemini キー。
+  パターンカタログ画像（手順 6）はコミット済みで、あれは再生成用で
+  セットアップ用ではないので飛ばす。
 
 ルール:
 - 入れる前に確認する。既にある状態を報告し、それには手を出さない。
@@ -336,26 +354,42 @@ AWS / Google Cloud / Azure のアイコンセットはベンダーの資産で�
 Drive に存在するまでこれらのテンプレートは動かない。
 
 マスター自体は**コミットされていない** — 1 つ 6–8MB あり、マスターは
-自分の Drive にあって初めて意味を持つ。以下から該当するものを選ぶ:
+自分の Drive にあって初めて意味を持つ。**他人のマスターへのアクセス権は
+前提ではない**: 下の (a) はマスターを新しく作る道で、手元に何も無いなら
+それだけでこの手順は終わる。
 
-**a. 自分で作る。** `template-forge` スキルがデザイン仕様 — ブランド
-カラー、フォント、ロゴ、フッター — から新しいマスターを作成・登録し、
-そのまま `google-slides-template` で使える。他には何も要らない。既存の
-コーポレートデッキを使わないならこの道。
+まず、このアカウントで実際に複製できる登録済みテンプレートがどれかを
+確認する（手順 2 の認証情報が要る。`--json` で機械可読、使えないものが
+あれば終了コード 1）:
+
+```bash
+.venv/bin/python scripts/check_template_access.py
+```
+
+`OK` と出たものはそのまま生成できる。そうでないもの — マスターが自分の
+所属しない組織のものである、共有されていない、削除されている — について
+は、次から道を選ぶ:
+
+**a. 指す先のマスターが無いなら、自分で作る。** `template-forge` スキルが
+デザイン仕様 — ブランドカラー、フォント、ロゴ、フッター — から新しい
+マスターを作成・登録し、そのまま `google-slides-template` で使える。他には
+何も、誰も要らない。既存のコーポレートデッキを使わない場合、あるいは
+それに手が届かない場合はこの道。
 
 ```bash
 .venv/bin/python scripts/build_template.py --help
 ```
 
-**b. Drive に既にあるマスターを登録する。** 一度解析し、推測された
-ロールを手で確認する:
+**b. Drive でマスターを開けるなら、それを登録する。** 一度解析し、推測
+されたロールを手で確認する:
 
 ```bash
 .venv/bin/python scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>
 ```
 
-**c. マスターの `.pptx` をインポートする。** `templates/masters/<id>.pptx`
-として保存し、アップロードと再登録を一度に行う:
+**c. マスターの `.pptx` を受け取っているなら、インポートする。**
+`templates/masters/<id>.pptx` として保存し、アップロードと再登録を一度に
+行う:
 
 ```bash
 .venv/bin/python scripts/import_template_master.py --all
@@ -382,9 +416,13 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 テンプレートが提供する価値の一部でもある。
 [`templates/masters/README.md`](templates/masters/README.md) を参照。
 
+どの道を通った場合も、最後に `scripts/check_template_access.py` をもう
+一度実行し、登録が複製できるものを指しているか確かめる。
+
 `blank-16x9` は `generationMode: create` でマスターを必要としないため、
 `google-slides` の仕様パスとすべての `--dry-run` 検証は素のクローンでも
-動く。
+動く。手が届かないテンプレートを使えないままにしておくのも正当な終着点
+であり、リポジトリの他の部分がそれらに依存することはない。
 
 ### 6. スライドパターンカタログ画像
 
@@ -475,6 +513,13 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | `scalar-account-planning-session` | ✔ | ✔ scalar-2026 | — | — | — |
 | `scalar-ae-materials` | ✔ | ✔ scalar-2026 | — | — | — |
 | `image-slots` | ✔ | —（任意のデッキ URL で動作） | — | — | ✔ |
+
+*スライドマスター*欄の「✔ copy モードのテンプレートで必要」は、自分が複製
+できるマスターであれば何でも満たせる — `template-forge` が自分のブランド向けに
+作ったものでもよい（[手順 5a](#5-スライドマスターcopy-モードのテンプレート用)）。
+今どの状態かは `scripts/check_template_access.py` が答える。`scalar-2026` と
+書かれた行だけは例外で、これらのスキルは Scalar 固有の内容を持つため、その
+マスターを前提とする。
 
 秘密情報の衛生: `config/`（認証情報、トークン、API キー）、`out/`、
 `cache/`、`assets/cloud-icons/` は gitignored — マシンローカルなものが

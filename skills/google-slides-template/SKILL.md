@@ -187,6 +187,7 @@ Report:
 | Task | Command/owner |
 |---|---|
 | List templates | `scripts/list_templates.py` |
+| Check a master is reachable (copy-mode 404s) | `scripts/check_template_access.py [--id <id>]` |
 | Inspect/register template | `scripts/inspect_template.py` |
 | Validate/generate spec | `scripts/build_deck.py` |
 | Snapshot existing deck | `scripts/snapshot_version.py` |
