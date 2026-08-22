@@ -52,6 +52,14 @@ register({
     "use fewer columns or a table":
         "w={w} では {n} 列で 1 列 {pw:.2f}in しか取れません。"
         "列を減らすか表に切り替えてください",
+    "Look up the shape-drawn pictograms and metaphor diagrams":
+        "図形で描くピクトグラムとメタファー図を引く",
+    "List every pictogram and metaphor diagram": "すべての名前を一覧する",
+    "Partial match on the name or the description": "名前・説明の部分一致で探す",
+    "pictograms ({n}) — icon() / icon_row() / icon_flow() / icon_grid()":
+        "ピクトグラム {n} 種 — icon() / icon_row() / icon_flow() / icon_grid()",
+    "\nmetaphor diagrams ({n})": "\nメタファー図 {n} 種",
+    "no match: {term}": "該当なし: {term}",
 })
 
 # List of pictograms. Values that can be passed to icon()'s name.
@@ -905,3 +913,71 @@ class IllustrationMixin:
                        row_h - 0.46, head, size=size_title, align="CENTER",
                        valign="TOP", color=self.P.text, line_spacing=115)
         return y + row_h
+
+
+# ---------------------------------------------------------------------------
+# Lookup CLI
+#
+# "Which pictogram names exist?" is a question with a 400-byte answer, and it
+# used to be answered by opening a 70KB catalog. The names and the one-line
+# descriptions are read straight off this module, so the answer cannot drift
+# from what the code actually draws.
+# ---------------------------------------------------------------------------
+
+def _figures() -> list[tuple[str, str, str]]:
+    """(name, signature, first docstring line) for every metaphor diagram."""
+    import inspect
+    out = []
+    for name, fn in inspect.getmembers(IllustrationMixin, inspect.isfunction):
+        if name.startswith("_"):
+            continue
+        doc = (inspect.getdoc(fn) or "").split("\n")[0]
+        sig = str(inspect.signature(fn)).replace("self, ", "").replace("'", "")
+        out.append((name, sig, doc))
+    return out
+
+
+def _print_catalog(term: str | None = None) -> int:
+    import sys as _sys
+    hit = (lambda *fields: term is None
+           or any(term.lower() in f.lower() for f in fields))
+    icons = [n for n in ICONS if hit(n)]
+    figures = [f for f in _figures() if hit(f[0], f[2])]
+    if icons:
+        print(t("pictograms ({n}) — icon() / icon_row() / icon_flow() / icon_grid()",
+                n=len(icons)))
+        line = ""
+        for name in icons:
+            if len(line) + len(name) + 2 > 76:
+                print(f"  {line}")
+                line = ""
+            line += (", " if line else "") + name
+        if line:
+            print(f"  {line}")
+    if figures:
+        print(t("\nmetaphor diagrams ({n})", n=len(figures)))
+        for name, sig, doc in figures:
+            print(f"  {name:13} {doc[:78]}")
+            print(f"  {'':13} {sig[:78]}")
+    if not icons and not figures:
+        print(t("no match: {term}", term=term), file=_sys.stderr)
+        return 1
+    return 0
+
+
+def main() -> int:
+    import argparse
+    p = argparse.ArgumentParser(
+        description=t("Look up the shape-drawn pictograms and metaphor diagrams"))
+    g = p.add_mutually_exclusive_group(required=True)
+    g.add_argument("--list", action="store_true",
+                   help=t("List every pictogram and metaphor diagram"))
+    g.add_argument("--search",
+                   help=t("Partial match on the name or the description"))
+    args = p.parse_args()
+    return _print_catalog(None if args.list else args.search)
+
+
+if __name__ == "__main__":
+    import sys as _sys
+    _sys.exit(main())
