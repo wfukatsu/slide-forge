@@ -103,6 +103,12 @@ ScalarDL:
 
 ## 5. 価格・エディション（2026-08-05 時点）
 
+**一次参照先は OKF バンドル（`okf-bundle.ja.md` → `okf/pricing/`）。** 金額を書く前に
+必ず読む — 社内定価、課金モデル、Pod 数の数え方、エディション別機能マトリクスを持ち、
+いずれも公開サイトには無い。下表は **公開されている Marketplace** の数値で、顧客提示
+スライドに公表値として載せられるのはこちらだけ。バンドルの JPY 定価は参考見積と
+営業レビュー用であり、顧客提示デッキには載せない。
+
 | 製品 | 課金 | 備考 |
 |---|---|---|
 | ScalarDB Community | 無料（Apache 2.0） | 商用機能なし |
@@ -112,8 +118,15 @@ ScalarDL:
 
 - 時間課金の単位は Marketplace ページから確認できず（`research-2026-08.md` は
   Pod=2vCPU/4GB と記録。デッキには「×Pod 数〜」程度に留め、確定額を書かない）
-- ScalarDB Analytics の価格は公表確認できず（不明）。Azure Marketplace の
-  従量課金提供は不明（BYOL コンテナ記載と非提供記載が混在）
+- ScalarDB Analytics は **Pod 単位ではない** — SDBU・時間の従量課金で最小 6 SDBU
+  （`okf/pricing/scalardb-analytics-pricing.md`）。公開情報が無いため、顧客提示デッキには
+  単価ではなく課金モデルを書く。Azure Marketplace の従量課金提供は不明
+  （BYOL コンテナ記載と非提供記載が混在）
+- ScalarDL Auditor は Ledger が前提で、かつ **別の管理ドメイン**（別アカウント / 別クラスタ）
+  に配置する必要がある。同一クラスタ同居は Auditor の前提を満たさない。見積は両方を計上する
+  （`okf/pricing/scalardl-pricing.md`）
+- 3年契約の定価・先払いクレジット価格・値引き率はバンドル内でも「非公開」。営業担当に
+  つなぐ。月額・年額から内挿しない
 - 概算費用スライドには必ず `source_note`（AWS Marketplace 公表値+時点）を置く
 
 ## 6. 初期提案の標準環境構成と BOM

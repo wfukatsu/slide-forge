@@ -32,6 +32,11 @@ description: >-
   セットアップ・API 制約・描画 API はそちらの SKILL.md に従う。本スキルが持つのは
   Scalar 固有の部分 — デッキ構成、ビルドスクリプト、調査結果 — のみである。
   認証と venv はリポジトリルート（`config/`, `.venv`）で共有する。
+- **製品の事実は OKF バンドルから取る。** 機能・エディション・バージョン・
+  リリース状況・価格は、Web 調査より先に OKF バンドルを引く — 所在と引用ルールは
+  `references/scalar/okf-bundle.ja.md`（バージョンを跨がない、エディションを必ず示す、
+  プレビュー状態を明記する）。`pricing/` の数値は社内定価であり、参考見積の材料に
+  留める。顧客提示スライドに価格表として載せない。
 - **事実は調査してから書く。** 会社情報・バージョン・導入事例は
   `references/scalar/research-2026-08.md` を起点とするが、**調査日から 3 か月以上
   経過している場合は再調査する**（下記 Phase 2）。推測で穴を埋めてはならない。
@@ -61,6 +66,7 @@ description: >-
 | 前提を対話で確定させる際の作法 | `references/interactive-intake.md`（セクション 0, 3, 4, 5） |
 | 会社紹介 + 製品概要 + ユースケースデッキ | `scripts/scalar/build_scalar_intro.py` |
 | 機能カタログデッキ（1 機能 = 1 スライド、図解つき） | `scripts/scalar/build_scalar_features.py` |
+| 製品機能 / エディション / バージョン / 定価 | `references/scalar/okf-bundle.ja.md` → OKF バンドル |
 | 調査済みの事実と落とし穴 | `references/scalar/research-2026-08.md` |
 | 実行 | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/<script>.py [--folder <Drive URL>]` |
 
@@ -196,6 +202,7 @@ cd /path/to/slide-forge
 | `templates/scalar-2026.json` | Scalar 2026 テンプレート（生成デッキ用） |
 | `templates/scalar-2026-boilerplate.json` | Scalar 2026 ボイラープレートテンプレート（公式同梱スライド） |
 | `assets/scalar/{logos,product-logos,pictograms}` | ブランド素材（会社・製品ロゴ、ピクトグラム） |
+| `references/scalar/okf-bundle.ja.md` | OKF バンドルの所在と、製品事実・価格の引用ルール |
 | `references/scalar/research-2026-08.md` | 調査済みの事実（会社・製品・事例）とスライド作成の落とし穴 6 件 |
 
 スクリプトは「そのまま再実行できる実例」であり、構成を変えるときはこの

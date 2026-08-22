@@ -107,7 +107,13 @@ in the ledger and the audience is specified, decide without asking.
 - [ ] No unconfirmed item is written as if it were confirmed
   → Rephrase it as "would like to confirm today." Do not fill it in with a guess
 - [ ] No figure without a source is included (cite sources for public case studies)
-- [ ] Pricing / roadmap information is within what is allowed to be disclosed
+- [ ] Pricing / roadmap information is within what is allowed to be disclosed —
+      the figures on `license-estimate` / `license-pattern-compare` are
+      transcribed from a generated quotation (`scalar-quotation`), and their
+      edition contents, Pod counting, and billing model come from the OKF
+      bundle (`references/scalar/okf-bundle.md`). The bundle's list prices are
+      internal: reference-estimate material only, and 3-year terms, prepaid
+      credits, and discount rates are 非公開 — never put them on a customer page
   to this audience
 
 The `challenge-hypothesis` guardrails say the same thing. If even one item

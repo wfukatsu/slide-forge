@@ -4,6 +4,12 @@ Use cached research first. Re-research only facts outside their stated
 freshness window, facts directly requested by the user, or claims that affect
 the current recommendation.
 
+Product capability, edition, version, release status, and pricing come from the
+OKF bundle (`okf-bundle.md`) before any web research — it is version-pinned and
+carries the price list, which the public documentation does not. Research the
+web only for what the bundle does not hold: company profile, news, published
+case studies, customer results.
+
 Before delegation, the main agent divides non-overlapping source scopes:
 
 1. company/news;

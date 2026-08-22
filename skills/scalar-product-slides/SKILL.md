@@ -34,6 +34,12 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
 - Use `google-slides-template` only for template-specific implementation details
   activated by this deck; shared auth, Drive, approval, and QA behavior comes
   from the two workflow contracts above.
+- **Product facts come from the OKF bundle.** Capability, edition, version,
+  release status, and pricing are looked up in the OKF bundle before any web
+  research — `references/scalar/okf-bundle.md` says where it is and how to cite
+  it (one version at a time, edition always stated, preview status labelled).
+  Its `pricing/` figures are internal list prices: reference-estimate material
+  only, never a price table on a customer-facing slide.
 - **Research facts before writing them.** Company info, versions, and case
   studies start from `references/scalar/research-2026-08.md`, but **re-research
   if more than 3 months have passed since the research date** (Phase 2 below).
@@ -47,6 +53,7 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
 | Conventions for settling premises interactively | `references/interactive-intake.md` (sections 0, 3, 4, 5) |
 | Company intro + product overview + use-case deck | `scripts/scalar/build_scalar_intro.py` |
 | Feature catalog deck (1 feature = 1 slide, with diagrams) | `scripts/scalar/build_scalar_features.py` |
+| Product capability / edition / version / list price | `references/scalar/okf-bundle.md` → the OKF bundle |
 | Researched facts and pitfalls | `references/scalar/research-2026-08.md` |
 | Run | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/<script>.py [--folder <Drive URL>]` |
 
@@ -187,6 +194,7 @@ cd /path/to/slide-forge
 | `templates/scalar-2026.json` | Scalar 2026 template (generated decks) |
 | `templates/scalar-2026-boilerplate.json` | Scalar 2026 boilerplate template (official bundled slides) |
 | `assets/scalar/{logos,product-logos,pictograms}` | Brand assets (company/product logos, pictograms) |
+| `references/scalar/okf-bundle.md` | Where the OKF bundle is and how to cite product facts and prices from it |
 | `references/scalar/research-2026-08.md` | Researched facts (company, products, case studies) and 6 slide-making pitfalls |
 
 The scripts are "worked examples you can re-run as is"; when changing the

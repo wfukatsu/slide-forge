@@ -47,6 +47,12 @@ description: >-
   `references/scalar/proposal-map.md` §4（ScalarDB/DL が適さないケース）。
   課題を Scalar 製品に無理に当てはめない。適さないと言うことも提案品質の
   一部である。
+- **製品事実と価格は OKF バンドルから取る** —
+  所在と引用ルールは `references/scalar/okf-bundle.ja.md` にある。機能・エディション・
+  バージョン・リリース状況・課金モデル・定価・Pod 数の数え方はそこを引き、記憶で
+  書かない。バンドルの価格は社内定価なので、参考見積と営業レビューに使い、顧客提示
+  スライドには公開されている Marketplace 値だけを載せる。「非公開」の項目
+  （3年契約・先払いクレジット・値引き）は営業担当につなぐ。
 - **調査の鮮度**: 事実は `references/scalar/research-2026-08.md` と
   `references/scalar/proposal-map.md`（§3/§5 は 2026-08-05 付）から取る。どちらも
   **3 か月ルール**に従う — 古ければ並列エージェントで再調査する
@@ -65,6 +71,7 @@ description: >-
 | ヒアリングチェックリスト / 提案構成 / 課題→製品マップ / 制約 / 価格 / 標準環境 + BOM | `references/scalar/proposal-map.md` |
 | 提案デッキビルダー（実例。アーキテクチャ + BOM 込み 23 スライド） | `scripts/scalar/build_scalar_proposal.py` |
 | 環境図の元データ（3 環境、AWS） | `examples/scalar-proposal-envs.drawio` → `scripts/drawio_export.py` で PNG 化 |
+| 製品機能 / エディション / バージョン / 定価 / Pod 数の数え方 | `references/scalar/okf-bundle.ja.md` → OKF バンドル |
 | 調査済みの会社・製品の事実 + 落とし穴 | `references/scalar/research-2026-08.md` |
 | セクション順の根拠（課題解決型アウトライン） | `references/deck-outlines.md` |
 | 実行 | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <Drive URL>]` |
@@ -177,6 +184,7 @@ cd /path/to/slide-forge
 |------|------|
 | `scripts/scalar/build_scalar_proposal.py` | 提案デッキビルダー（実例。顧客ごとに `PROPOSAL` を書き換える） |
 | `references/scalar/proposal-map.md` | ヒアリング項目、提案構成とその根拠、課題→製品マップ、制約、価格 |
+| `references/scalar/okf-bundle.ja.md` | OKF バンドルの所在と、製品事実・価格の引用ルール |
 | `references/scalar/research-2026-08.md` | 会社・製品の事実、事例、スライドの落とし穴（scalar-product-slides と共有） |
 | `examples/scalar-proposal-envs.drawio` / `.png` | 3 環境アーキテクチャ図の元データと書き出し（顧客ごとに書き換える） |
 | `templates/scalar-2026.json` | Scalar 2026 テンプレート |

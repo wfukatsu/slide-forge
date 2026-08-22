@@ -54,6 +54,13 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
   `references/scalar/proposal-map.md` §4 (cases where ScalarDB/DL does not
   fit). Do not force a challenge onto a Scalar product; saying so is part of
   proposal quality.
+- **Product facts and prices come from the OKF bundle** —
+  `references/scalar/okf-bundle.md` tells you where it is and how to cite it.
+  Capability, edition, version, release status, billing model, list price, and
+  Pod counting are looked up there, never written from memory. Its prices are
+  internal list prices: use them for the reference estimate and AE review, keep
+  the customer-facing slide to published Marketplace values, and route the items
+  marked 非公開 (3-year terms, prepaid credits, discounts) to the AE.
 - **Research freshness**: facts come from `references/scalar/research-2026-08.md`
   and `references/scalar/proposal-map.md` (§3/§5 dated 2026-08-05). Both follow
   the **3-month rule** — refresh only affected claims using
@@ -66,6 +73,7 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
 | Hearing checklist / proposal structure / challenge→product map / constraints / pricing / standard environments + BOM | `references/scalar/proposal-map.md` |
 | Proposal deck builder (worked example, 23 slides incl. architecture + BOM) | `scripts/scalar/build_scalar_proposal.py` |
 | Environment diagram source (3 environments, AWS) | `examples/scalar-proposal-envs.drawio` → PNG via `scripts/drawio_export.py` |
+| Product capability / edition / version / list price / Pod counting | `references/scalar/okf-bundle.md` → the OKF bundle |
 | Researched company/product facts + pitfalls | `references/scalar/research-2026-08.md` |
 | Section ordering rationale (problem-solving outline) | `references/deck-outlines.md` |
 | Run | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <Drive URL>]` |
@@ -179,6 +187,7 @@ cd /path/to/slide-forge
 |------|------|
 | `scripts/scalar/build_scalar_proposal.py` | Proposal deck builder (worked example; rewrite `PROPOSAL` per customer) |
 | `references/scalar/proposal-map.md` | Hearing items, proposal structure + rationale, challenge→product map, constraints, pricing |
+| `references/scalar/okf-bundle.md` | Where the OKF bundle is and how to cite product facts and prices from it |
 | `references/scalar/research-2026-08.md` | Company/product facts, cases, slide pitfalls (shared with scalar-product-slides) |
 | `examples/scalar-proposal-envs.drawio` / `.png` | 3-environment architecture diagram source and export (rewrite per customer) |
 | `templates/scalar-2026.json` | Scalar 2026 template |
