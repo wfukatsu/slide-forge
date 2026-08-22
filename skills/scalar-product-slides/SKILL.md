@@ -38,8 +38,8 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
   release status, and pricing are looked up in the OKF bundle before any web
   research — `references/scalar/okf-bundle.md` says where it is and how to cite
   it (one version at a time, edition always stated, preview status labelled).
-  Its `pricing/` figures are internal list prices: reference-estimate material
-  only, never a price table on a customer-facing slide.
+  Its `pricing/` figures are published list prices: citable as 定価
+  (tax-excluded) and as reference-estimate material, never as a confirmed price.
 - **Research facts before writing them.** Company info, versions, and case
   studies start from `references/scalar/research-2026-08.md`, but **re-research
   if more than 3 months have passed since the research date** (Phase 2 below).

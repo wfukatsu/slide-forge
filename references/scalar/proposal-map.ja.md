@@ -104,10 +104,11 @@ ScalarDL:
 ## 5. 価格・エディション（2026-08-05 時点）
 
 **一次参照先は OKF バンドル（`okf-bundle.ja.md` → `okf/pricing/`）。** 金額を書く前に
-必ず読む — 社内定価、課金モデル、Pod 数の数え方、エディション別機能マトリクスを持ち、
-いずれも公開サイトには無い。下表は **公開されている Marketplace** の数値で、顧客提示
-スライドに公表値として載せられるのはこちらだけ。バンドルの JPY 定価は参考見積と
-営業レビュー用であり、顧客提示デッキには載せない。
+必ず読む — JPY 定価、課金モデル、Pod 数の数え方、エディション別機能マトリクスを持ち、
+いずれも scalar-labs.com には無い。バンドルのリポジトリは公開されているので、これらの
+数値は引用してよい。**定価（税抜）である旨を明示**し、参考見積の材料として扱う。
+顧客に出す見積は営業担当のレビューを通す。バンドルが「非公開」とする 3年契約・
+先払いクレジット・値引き率は対象外。下表は同じ製品の **Marketplace** 公表時間単価。
 
 | 製品 | 課金 | 備考 |
 |---|---|---|
@@ -118,10 +119,10 @@ ScalarDL:
 
 - 時間課金の単位は Marketplace ページから確認できず（`research-2026-08.md` は
   Pod=2vCPU/4GB と記録。デッキには「×Pod 数〜」程度に留め、確定額を書かない）
-- ScalarDB Analytics は **Pod 単位ではない** — SDBU・時間の従量課金で最小 6 SDBU
-  （`okf/pricing/scalardb-analytics-pricing.md`）。公開情報が無いため、顧客提示デッキには
-  単価ではなく課金モデルを書く。Azure Marketplace の従量課金提供は不明
-  （BYOL コンテナ記載と非提供記載が混在）
+- ScalarDB Analytics は **Pod 単位ではない** — SDBU・時間の従量課金で最小 6 SDBU、
+  定価 ¥33.5 / SDBU・時間（`okf/pricing/scalardb-analytics-pricing.md`。最小構成は
+  月 4,464 SDBU・時間 ≈ ¥149,544）。scalar-labs.com には記載が無く、バンドルが出典。
+  Azure Marketplace の従量課金提供は不明（BYOL コンテナ記載と非提供記載が混在）
 - ScalarDL Auditor は Ledger が前提で、かつ **別の管理ドメイン**（別アカウント / 別クラスタ）
   に配置する必要がある。同一クラスタ同居は Auditor の前提を満たさない。見積は両方を計上する
   （`okf/pricing/scalardl-pricing.md`）

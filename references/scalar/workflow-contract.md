@@ -10,9 +10,11 @@ and AE-material skills.
 - Use `okf-bundle.md` as the first-line source for Scalar product facts
   (capability, edition, version, release status) and for prices, billing models,
   and Pod counting. Never write a capability, edition boundary, or figure from
-  memory. Prices there are list prices for a reference estimate only — never a
-  confirmed price, and the items marked 非公開 (3-year terms, prepaid credits,
-  discounts) route to the account executive instead of being interpolated.
+  memory. The bundle repository is public, so what it carries — including the
+  monthly/annual list prices and the SDBU rate — may be cited as a list price and
+  as reference-estimate material, never as a confirmed price. The items it marks
+  非公開 (3-year terms, prepaid credits, discounts) route to the account
+  executive instead of being interpolated.
 - Label facts, observations, and assumptions distinctly. Unknowns become
   questions or actions, never invented content.
 - Keep customer-facing and internal material separate. Named-person opinions,

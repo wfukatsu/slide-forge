@@ -99,8 +99,9 @@ Drive ルートは最初に一度だけ聞かれ、`config/sales.json` に記憶
 Scalar 製品の事実と価格 — 機能・エディション・バージョン・リリース状況・課金モデル・
 定価・Pod 数の数え方 — は、記憶や Web 検索ではなく OKF バンドル
 ([OKF-ScalarDB-ScalarDL](https://github.com/wfukatsu/OKF-ScalarDB-ScalarDL)) から取る。
-所在と引用ルールは `references/scalar/okf-bundle.ja.md`。バンドルの価格は社内定価で、
-参考見積の材料としてのみ使う。
+所在と引用ルールは `references/scalar/okf-bundle.ja.md`。バンドルは公開リポジトリなので
+定価は引用してよい（定価・税抜と明示し、参考見積の材料として扱う）。「非公開」と
+書かれている項目は引用しない。
 
 ## リポジトリ構成
 
