@@ -15,6 +15,13 @@ with AskUserQuestion, or treat it in the deck as "to be confirmed today"**
 (never fill it in with a guess). Sources: Y's system proposal guide +
 BANT (§6).
 
+**Collection forms**: [`templates/sales/hearing-sheet.ja.md`](../../templates/sales/hearing-sheet.ja.md)
+(product-neutral — it collects the customer's facts) and
+[`templates/sales/products/scalar.ja.md`](../../templates/sales/products/scalar.ja.md)
+(the Scalar product-fit judgment). The mapping from the categories below to the
+sheet's sections is in the sheet's §14.3. When a filled-in sheet exists, use it
+as the Phase 1 input.
+
 | Category | What to confirm | Where it's used in the deck |
 |---|---|---|
 | Problem / objective | What is the current problem. **Whose** problem is it, and how strong/large in monetary terms | Problem summary, expected outcomes |

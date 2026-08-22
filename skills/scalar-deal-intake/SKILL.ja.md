@@ -93,7 +93,14 @@ mkdir -p accounts/<AE 名>/<顧客名>/stages
 cp templates/sales/deal-log.ja.md      accounts/<AE 名>/<顧客名>/stages/deal-log.md
 cp templates/sales/hearing-sheet.ja.md accounts/<AE 名>/<顧客名>/stages/hearing-sheet.md
 cp templates/sales/stage-2-discovery.ja.md accounts/<AE 名>/<顧客名>/stages/stage-2-discovery.md
+# 検討中の製品の補遺
+cp templates/sales/products/scalar.ja.md accounts/<AE 名>/<顧客名>/stages/product-fit-scalar.md
 ```
+
+ヒアリングシートは**製品に依存しない**。顧客の事実を聞くだけで、製品適合の判定
+（課題カテゴリ、提案不可の制約、サイジング、エディション）は
+`templates/sales/products/` の製品補遺が持つ（規則: `templates/sales/products/README.md`）。
+シート §4.2 / §5 の回答を補遺の B / C / D に当てて判定し、結論をシート §1 に書き戻す。
 
 様式は 2 種類ある。混ぜない。
 
@@ -130,7 +137,7 @@ cp templates/sales/stage-2-discovery.ja.md accounts/<AE 名>/<顧客名>/stages/
 - 金額・ROI・規模の数値には、算出根拠と前提条件を付ける。
 - 指標は**現状値と目標値が揃って初めて指標**。「コスト削減」だけなら `未確認` に置く。
 
-台帳（`account.json`）と語彙を揃える。変換表は `hearing-sheet.ja.md` §12 にある。
+台帳（`account.json`）と語彙を揃える。変換表は `hearing-sheet.ja.md` §14.2 にある。
 
 | 用途 | 語彙 |
 |---|---|
@@ -159,7 +166,7 @@ cp templates/sales/stage-2-discovery.ja.md accounts/<AE 名>/<顧客名>/stages/
 
 ### 6. 未確認をアクションに変える
 
-`未確認` はすべて、記録のアクション表とヒアリングシート §9 に落とす。
+`未確認` はすべて、記録のアクション表とヒアリングシート §12 に落とす。
 何が未確認か、誰なら答えられるか、いつまでに、誰が聞くか。
 確認相手は `stage-io-map.ja.md` の**そのアウトプットを持つ行**から選ぶ。
 誰が答えを持っているかは表に書いてある。

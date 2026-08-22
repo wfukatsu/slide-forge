@@ -72,6 +72,7 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
 | Task | Use |
 |------|-----|
 | Hearing checklist / proposal structure / challenge→product map / constraints / pricing / standard environments + BOM | `references/scalar/proposal-map.md` |
+| Hearing forms to hand the AE (fill-in sheets) | `templates/sales/hearing-sheet.ja.md` (product-neutral) + `templates/sales/products/scalar.ja.md` (Scalar fit) |
 | Proposal deck builder (worked example, 23 slides incl. architecture + BOM) | `scripts/scalar/build_scalar_proposal.py` |
 | Environment diagram source (3 environments, AWS) | `examples/scalar-proposal-envs.drawio` → PNG via `scripts/drawio_export.py` |
 | Product capability / edition / version / list price / Pod counting | `references/scalar/okf-bundle.md` → the OKF bundle |
@@ -93,8 +94,13 @@ Follow `references/interactive-intake.md` sections 0/3/4/5. Ask in one batch:
 
 - Material first: if minutes/notes exist, **read them before asking Q2** and
   pre-select the likely categories in the option descriptions.
-- If nothing is known yet, present the hearing checklist
-  (proposal-map.md §1) as the deliverable instead of forcing a deck.
+- If nothing is known yet, hand over the hearing forms as the deliverable
+  instead of forcing a deck — `templates/sales/hearing-sheet.ja.md` plus
+  `templates/sales/products/scalar.ja.md` (what each section feeds in the deck
+  is in the sheet's §14.3; the checklist behind them is proposal-map.md §1).
+- If a filled-in hearing sheet exists, read it first: §4.2 / §5 give the
+  current-state diagram and the BOM quantities, and the product addendum's
+  §B / §C give the constraints that must appear on the risk slide.
 - Second round if unspecified: output Drive folder, cover date, language, and
   cloud (default AWS — state the adopted default instead of asking when the
   customer's cloud is unknown). The shared contract owns the QA question.

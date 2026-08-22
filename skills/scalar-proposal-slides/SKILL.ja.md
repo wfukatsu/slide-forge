@@ -69,6 +69,7 @@ description: >-
 | やること | 使うもの |
 |------|-----|
 | ヒアリングチェックリスト / 提案構成 / 課題→製品マップ / 制約 / 価格 / 標準環境 + BOM | `references/scalar/proposal-map.md` |
+| AE に渡すヒアリング様式（記入用） | `templates/sales/hearing-sheet.ja.md`（製品非依存）+ `templates/sales/products/scalar.ja.md`（Scalar 適合判定） |
 | 提案デッキビルダー（実例。アーキテクチャ + BOM 込み 23 スライド） | `scripts/scalar/build_scalar_proposal.py` |
 | 環境図の元データ（3 環境、AWS） | `examples/scalar-proposal-envs.drawio` → `scripts/drawio_export.py` で PNG 化 |
 | 製品機能 / エディション / バージョン / 定価 / Pod 数の数え方 | `references/scalar/okf-bundle.ja.md` → OKF バンドル |
@@ -90,8 +91,12 @@ description: >-
 
 - 材料が先: 議事録・メモがあれば **Q2 を聞く前に読み**、ありそうなカテゴリを
   選択肢の description で事前に選んでおく。
-- まだ何も分かっていない場合は、デッキを無理に作らず、ヒアリングチェックリスト
-  （proposal-map.md §1）を成果物として提示する。
+- まだ何も分かっていない場合は、デッキを無理に作らず、ヒアリング様式
+  （`templates/sales/hearing-sheet.ja.md` + `templates/sales/products/scalar.ja.md`）
+  を成果物として渡す。どの節が提案書のどこになるかはシート §14.3、
+  背後のチェックリストは proposal-map.md §1。
+- 記入済みのヒアリングシートがあれば先に読む。§4.2 / §5 が現状構成図と BOM の
+  数量を、製品補遺 §B / §C がリスクスライドに載せるべき制約を持っている。
 - 未指定なら 2 ラウンド目で聞く: 出力先 Drive フォルダ、表紙の日付、言語、
   クラウド（既定は AWS — 顧客のクラウドが不明なときは質問せず、採用した既定を
   明示する）、生成後にビジュアル QA を実行するか（既定かつ推奨は実行。

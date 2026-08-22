@@ -7,7 +7,8 @@ Markdown の記入様式である。レンダリングエンジンは読まな�
 | ファイル | 用途 |
 |---|---|
 | `deal-log.ja.md` | **商談ログ**。面談履歴（時系列）・クローズプラン・リスク一覧・失注記録。金額 / クローズ予定日 / フォーキャストの正本 |
-| `hearing-sheet.ja.md` | ヒアリングシート。ステージ横断の質問集と回答欄 |
+| `hearing-sheet.ja.md` | ヒアリングシート。ステージ横断の質問集と回答欄。**製品に依存しない** |
+| `products/` | 製品別ヒアリング補遺。製品適合の判定はこちら（[README](products/README.md)） |
 | `stage-0-planning.ja.md` | ステージ 0 Territory / Account Planning（シートに行が無く、プレイブックから起こした） |
 | `stage-1-assessment.ja.md` | ステージ 1 Assessment & Qualification |
 | `stage-2-discovery.ja.md` | ステージ 2 Discovery |
@@ -34,9 +35,24 @@ Markdown の記入様式である。レンダリングエンジンは読まな�
 accounts/<AE 名>/<顧客名>/stages/
   deal-log.md          ← 商談ごとに 1 つ。取り込みのたびに面談履歴へ 1 行足す
   hearing-sheet.md
+  product-fit-scalar.md   ← templates/sales/products/scalar.ja.md から
   stage-1-assessment.md
   ...
 ```
+
+## 製品に依存する部分としない部分
+
+ヒアリングシートは**顧客の事実だけ**を聞く。製品名・バージョン・エディション・
+価格は持たない。製品ごとの判定（課題カテゴリ、提案不可の制約、動作要件、数量、
+エディション）は `products/<製品>.ja.md` が持つ。**製品が増えたら補遺を 1 つ足す。
+シート本体は変更しない。** 規則は [`products/README.md`](products/README.md)。
+
+| 入力（シート） | 判定（補遺） |
+|---|---|
+| §1 解決したいこと | A. 課題カテゴリ |
+| §4.2 現行システムの技術ファクト | B. 適用可否 / C. 技術前提 |
+| §5 サイジングと環境構成 | D. 構成と数量（BOM の元） |
+| §4.1 / §6 / §11 | E. エディション・機能の要否 |
 
 ## 2 種類の様式
 
@@ -61,7 +77,7 @@ accounts/<AE 名>/<顧客名>/stages/
 | フォーキャスト | `Pipeline` / `Best` / `Commit` / `Closed` |
 
 ヒアリングシートの `確認済` / `推定` / `未確認` からの変換表は
-`hearing-sheet.ja.md` §12 にある。
+`hearing-sheet.ja.md` §14.2 にある。
 
 `accounts/` は `.gitignore` 済み。**記入済みのファイルをコミットしない。**
 実在の個人名と、その人物についての判断が入るため、顧客・パートナーにも渡さない。
