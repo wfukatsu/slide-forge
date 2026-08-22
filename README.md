@@ -139,6 +139,10 @@ scripts/      shared engine — one importable package
   scalar/account_ledger.py       per-customer sales ledger: validate, gaps, slot data
   scalar/account_workspace.py    Drive tree <root>/<AE>/<customer>/… (idempotent)
   scalar/build_account_plan.py   ledger -> activity-plan deck (same URL on update)
+  scalar/build_account_planning.py   aps.json -> Account Planning Session decks
+  scalar/export_ledger_md.py     ledger -> Markdown for the CRM
+  hearing/hearing_sheet.py hearing/model.py   hearing sheet of record <-> Markdown / xlsx / Google Spreadsheet
+  hearing/hearing_slots.py hearing/qr.py      gaps -> collection-slide slots, answer-destination QR
   export_template_master.py import_template_master.py   bundled masters <-> Drive
   fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
   build_sheet.py  line-item spreadsheets (xlsx + Google Spreadsheet)
@@ -147,7 +151,8 @@ scripts/      shared engine — one importable package
   scalar/         Scalar deck builders
 templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
   masters/        drop a master .pptx here and import it (gitignored; see its README)
-slide-templates/ reusable single-slide content templates + registry (55 in 7 packs; manifest.json)
+  sales/ nurture/ marketing/   Markdown forms: stage records and hearing sheet, nurture tracks and segments, content brief and event plan
+slide-templates/ reusable single-slide content templates + registry (92 in 13 packs; manifest.json)
 assets/       scalar/ (brand: pictograms, logos, product-logos), cloud-icons/ (gitignored)
 references/   engine, workflow, and host compatibility documentation
   images/slide-patterns/  pattern catalog images (committed; regenerate via Setup 6)
@@ -521,6 +526,8 @@ editable source. Details: `references/settings.md`.
 | `scalar-ae-materials` | ✔ | ✔ scalar-2026 | — | — | — |
 | `scalar-deal-intake` | — (only to read Drive / Gmail sources) | — | — | — | — |
 | `scalar-nurture-intake` | — (only to read Drive / Gmail sources) | — | — | — | — |
+| `hearing-sheet` | ✔ (OAuth only for Google Spreadsheet output) | — | — | — | — |
+| `hearing-slides` | ✔ | ✔ for the copy-mode templates | — | — | — |
 | `image-slots` | ✔ | — (works on any deck URL) | — | — | ✔ |
 
 "✔ for the copy-mode templates" in the *Slide master* column is satisfied by
@@ -572,7 +579,7 @@ thumbnail QA of the `slide-qa` skill is for: see `references/validation.md`.
 
 ## Quick start (slide templates)
 
-`slide-templates/` holds 55 ready-made one-page templates in seven packs. A
+`slide-templates/` holds 92 ready-made one-page templates in thirteen packs. A
 template takes semantic input slots (not coordinates) and renders one slide
 into a deck spec, so it works with any registered master.
 
@@ -609,9 +616,10 @@ Which page shapes can this build? See
 | Qualitative/technical pages | 5 | Everything that isn't a number |
 | Closing/appendix pages | 3 | The decision and what follows |
 
-Beyond these page patterns, `slide-templates/` registers 55 ready-made
-one-page templates in seven packs (marketing-analysis, b2b-sales, scalar-ae,
-planning, analysis, read-alone, business-plan). Each is catalogued with a rendered image, the
+Beyond these page patterns, `slide-templates/` registers 92 ready-made
+one-page templates in thirteen packs (marketing-analysis, b2b-sales, scalar-ae,
+planning, analysis, read-alone, business-plan, nexus, hearing, case-studies,
+proposal, marketing, partner). Each is catalogued with a rendered image, the
 question it answers, and its guardrails in
 [`references/slide-template-catalog.md`](references/slide-template-catalog.md).
 The read-alone and business-plan packs' templates carry `$density` variants: the same template

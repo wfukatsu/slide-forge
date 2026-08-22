@@ -134,6 +134,10 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
   scalar/account_ledger.py       顧客ごとの営業台帳: 検証、gaps、スロットデータ
   scalar/account_workspace.py    Drive ツリー <root>/<AE>/<customer>/… (冪等)
   scalar/build_account_plan.py   台帳 -> 活動計画デッキ (更新後も同じ URL)
+  scalar/build_account_planning.py   aps.json -> アカウントプランニングセッションのデッキ
+  scalar/export_ledger_md.py     台帳 -> CRM 貼り付け用 Markdown
+  hearing/hearing_sheet.py hearing/model.py   ヒアリングシートの正本 <-> Markdown / xlsx / Google スプレッドシート
+  hearing/hearing_slots.py hearing/qr.py      空き -> 収集スライドのスロット、回答先 QR
   export_template_master.py import_template_master.py   同梱マスター <-> Drive
   fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
   build_sheet.py  明細スプレッドシート (xlsx + Google Spreadsheet)
@@ -142,7 +146,8 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
   scalar/         Scalar デッキビルダー
 templates/    登録済みマスター (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge のデザインプリセット)
   masters/        マスター .pptx をここに置いてインポートする (gitignored。同ディレクトリの README 参照)
-slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (7 パック 55 種、manifest.json)
+  sales/ nurture/ marketing/   Markdown 様式: 段階記録とヒアリングシート、ナーチャリングトラックとセグメント、コンテンツブリーフとイベント計画
+slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (13 パック 92 種、manifest.json)
 assets/       scalar/ (ブランド: ピクトグラム、ロゴ、製品ロゴ), cloud-icons/ (gitignored)
 references/   エンジン・ワークフロー・ホスト互換のドキュメント
   images/slide-patterns/  パターンカタログ画像 (コミット済み。セットアップ 6 で再生成)
@@ -525,6 +530,8 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | `scalar-ae-materials` | ✔ | ✔ scalar-2026 | — | — | — |
 | `scalar-deal-intake` | —（Drive / Gmail の材料を読むときのみ） | — | — | — | — |
 | `scalar-nurture-intake` | —（Drive / Gmail の材料を読むときのみ） | — | — | — | — |
+| `hearing-sheet` | ✔（OAuth は Google スプレッドシート出力のときのみ） | — | — | — | — |
+| `hearing-slides` | ✔ | ✔ copy モードのテンプレートの場合 | — | — | — |
 | `image-slots` | ✔ | —（任意のデッキ URL で動作） | — | — | ✔ |
 
 *スライドマスター*欄の「✔ copy モードのテンプレートで必要」は、自分が複製
@@ -578,7 +585,7 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 
 ## クイックスタート（スライドテンプレート）
 
-`slide-templates/` には 7 パック・55 種の 1 枚ものテンプレートがある。座標では
+`slide-templates/` には 13 パック・92 種の 1 枚ものテンプレートがある。座標では
 なく意味のある入力スロットを受け取って 1 枚分の spec を生成するので、登録済みの
 どのマスターとも組み合わせられる。
 
@@ -615,9 +622,10 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | 定性・技術ページ | 5 | 数字でないものすべて |
 | 締め・付録ページ | 3 | 決定とその後 |
 
-これらのページパターンに加えて、`slide-templates/` には 7 つのパック
+これらのページパターンに加えて、`slide-templates/` には 13 のパック
 （marketing-analysis、b2b-sales、scalar-ae、planning、analysis、read-alone、
-business-plan）で 55 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
+business-plan、nexus、hearing、case-studies、proposal、marketing、partner）で
+92 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
 答える問い、ガードレールつきで
 [`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md)
 にカタログ化されている。read-alone と business-plan パックのテンプレートは `$density`
