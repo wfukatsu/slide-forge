@@ -1,0 +1,7 @@
+{
+  "title": "アンケートへのご協力をお願いします",
+  "lead": "3 問、1 分ほどで終わります。回答いただいた方に、本日の資料をお送りします。",
+  "qr": "out/hearing/qr.png",
+  "where": "https://example.com/hearing （QR が読めない場合は、こちらの URL からお願いします）",
+  "source": "サンプル（scripts/hearing/qr.py で生成した PNG を指す。リポジトリには置かない）"
+}

@@ -136,7 +136,12 @@ hand-copy):
 `status` is `"planned"`. Write the visit's purpose, questions, and expected
 objections into the ledger first, and the material follows from the ledger.
 
-Pages not in the ledger (e.g. customer-facing case studies) are written from a
+Customer-facing case pages use the `case-studies` pack (`case-study-card` /
+`case-study-detail` / `case-fit`). **Publication consent and the dated source
+live in `templates/marketing/case-study.ja.md`**; a case whose consent is
+未取得 does not go in front of a customer.
+
+Other pages not in the ledger are written from a
 `slide-templates` template or a pattern from
 `references/slide-pattern-catalog.md`. Assemble and validate:
 

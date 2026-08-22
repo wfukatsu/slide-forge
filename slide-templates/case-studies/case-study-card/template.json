@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "id": "case-study-card",
+  "displayName": "事例（抜粋・3 社）",
+  "pack": "case-studies",
+  "category": "evidence",
+  "description": "公表事例を 3 件、1 行ずつで並べる。関心を引いた後に信頼を補強する 1 枚",
+  "answers": [
+    "同じような課題を、他社はどう解決したのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "cases": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 16
+          },
+          {
+            "type": "string",
+            "maxLength": 68
+          }
+        ]
+      }
+    },
+    "sowhat": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**公表されている事例だけを載せる。** 未公表の顧客名・数値を出さない",
+    "数値は公表資料の値をそのまま使い、**出典（媒体名と日付）を source に必ず書く**",
+    "事例・数値は 3 ヶ月ルールの対象。**最終確認日を過ぎたものは再確認してから使う**",
+    "顧客名の掲載は、その顧客と合意した範囲に限る（商談側の事例化の約束は stage-5 §6 / stage-6 §5）",
+    "3 件まで。**並べるほど印象は薄くなる**。当てる相手に近い順で選ぶ"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.16,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.7,
+        "w": 9.0,
+        "h": 1.9,
+        "items": {
+          "$slot": "cases"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.72,
+        "w": 9.0,
+        "h": 0.85,
+        "text": {
+          "$slot": "sowhat"
+        },
+        "label": "共通していること"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

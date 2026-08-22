@@ -73,6 +73,8 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
 |------|-----|
 | Hearing checklist / proposal structure / challenge→product map / constraints / pricing / standard environments + BOM | `references/scalar/proposal-map.md` |
 | Hearing forms to hand the AE (fill-in sheets) | `templates/sales/hearing-sheet.ja.md` (product-neutral) + `templates/sales/products/scalar.ja.md` (Scalar fit) |
+| A hearing sheet in Excel / Google Spreadsheet, and reading it back | `hearing-sheet` skill (`scripts/hearing/hearing_sheet.py`) |
+| Slides that ask the customer for what is still missing | `hearing-slides` skill |
 | Proposal deck builder (worked example, 23 slides incl. architecture + BOM) | `scripts/scalar/build_scalar_proposal.py` |
 | Environment diagram source (3 environments, AWS) | `examples/scalar-proposal-envs.drawio` → PNG via `scripts/drawio_export.py` |
 | Product capability / edition / version / list price / Pod counting | `references/scalar/okf-bundle.md` → the OKF bundle |
@@ -100,7 +102,10 @@ Follow `references/interactive-intake.md` sections 0/3/4/5. Ask in one batch:
   is in the sheet's §14.3; the checklist behind them is proposal-map.md §1).
 - If a filled-in hearing sheet exists, read it first: §4.2 / §5 give the
   current-state diagram and the BOM quantities, and the product addendum's
-  §B / §C give the constraints that must appear on the risk slide.
+  §B / §C give the constraints that must appear on the risk slide. When it is
+  kept as `hearing.json`, run `hearing_sheet.py gaps` before designing — what
+  is still `未確認` becomes "to confirm today" on the deck, never a guess, and
+  what is `推定` is stated as our reading rather than as fact.
 - Second round if unspecified: output Drive folder, cover date, language, and
   cloud (default AWS — state the adopted default instead of asking when the
   customer's cloud is unknown). The shared contract owns the QA question.
@@ -143,6 +148,23 @@ challenge→product mapping made explicit) and get approval before generating**
    quantities × unit prices and tax) into the deck's Drive folder. The cost
    slide keeps the summary; the spreadsheet carries the line items, and the
    two totals must match.
+
+Section pages that used to exist only inside the builder now have registered
+templates — reach for these instead of re-drawing figures by hand:
+
+| Section | Template (pack) |
+|---|---|
+| Challenge structure | `iceberg-challenge` (`proposal`) |
+| Challenge → solution mapping | `challenge-solution-map` (`proposal`) |
+| Target state and scope | `scope-in-out` (`proposal`) |
+| Expected outcomes | `outcome-before-after` (`proposal`) |
+| PoC plan and pass criteria | `poc-plan` (`proposal`) |
+| Case studies | `case-study-card` / `case-study-detail` / `case-fit` (`case-studies`) |
+| Next steps | `next-step-customer` (`proposal`) |
+
+A case page needs the customer's publication consent and a dated source —
+`templates/marketing/case-study.ja.md` §1 and §3 own both. **Do not put a case
+on a customer page while consent is 未取得.**
 
 ## Phase 3: Build the deck
 

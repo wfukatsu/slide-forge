@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "session-agenda",
+  "displayName": "セッションのプログラム",
+  "pack": "marketing",
+  "category": "event",
+  "description": "当日の進行を時刻・内容・話す人で並べる",
+  "answers": [
+    "当日は何が、どの順で、誰から話されるのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "maxLength": 40
+    },
+    "note": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**不特定多数向け**。特定の企業・個人が推測できる書き方をしない",
+    "**時刻は確定したものだけ。** 未定の枠は「調整中」と書き、空欄にしない",
+    "6 枠まで。それ以上は 2 枚に分ける（詰めて小さくしない）",
+    "質疑の時間を必ず入れる。**質疑の無いセッションでは、聞くべきことが集まらない**"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "event_timetable",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "rows": {
+          "$slot": "rows"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.9,
+        "w": 9.0,
+        "h": 0.85,
+        "text": {
+          "$slot": "note"
+        },
+        "label": "補足"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

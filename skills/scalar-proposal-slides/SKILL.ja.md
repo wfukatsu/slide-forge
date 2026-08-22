@@ -70,6 +70,8 @@ description: >-
 |------|-----|
 | ヒアリングチェックリスト / 提案構成 / 課題→製品マップ / 制約 / 価格 / 標準環境 + BOM | `references/scalar/proposal-map.md` |
 | AE に渡すヒアリング様式（記入用） | `templates/sales/hearing-sheet.ja.md`（製品非依存）+ `templates/sales/products/scalar.ja.md`（Scalar 適合判定） |
+| ヒアリングシートの Excel / Google Spreadsheet 化と読み戻し | `hearing-sheet` スキル（`scripts/hearing/hearing_sheet.py`） |
+| 足りない情報を顧客に聞くためのスライド | `hearing-slides` スキル |
 | 提案デッキビルダー（実例。アーキテクチャ + BOM 込み 23 スライド） | `scripts/scalar/build_scalar_proposal.py` |
 | 環境図の元データ（3 環境、AWS） | `examples/scalar-proposal-envs.drawio` → `scripts/drawio_export.py` で PNG 化 |
 | 製品機能 / エディション / バージョン / 定価 / Pod 数の数え方 | `references/scalar/okf-bundle.ja.md` → OKF バンドル |
@@ -97,6 +99,9 @@ description: >-
   背後のチェックリストは proposal-map.md §1。
 - 記入済みのヒアリングシートがあれば先に読む。§4.2 / §5 が現状構成図と BOM の
   数量を、製品補遺 §B / §C がリスクスライドに載せるべき制約を持っている。
+  `hearing.json` で持っている場合は、設計の前に `hearing_sheet.py gaps` を実行する。
+  **`未確認` はデッキ上「本日確認したいこと」にする**（推測で埋めない）。
+  `推定` は事実としてではなく、こちらの理解として書く。
 - 未指定なら 2 ラウンド目で聞く: 出力先 Drive フォルダ、表紙の日付、言語、
   クラウド（既定は AWS — 顧客のクラウドが不明なときは質問せず、採用した既定を
   明示する）、生成後にビジュアル QA を実行するか（既定かつ推奨は実行。
@@ -136,6 +141,23 @@ description: >-
    BOM から作成し（Excel / Google スプレッドシート、数量 × 単価と税の実数式入り）、
    デッキの Drive フォルダに入れる。費用スライドはサマリーを保持し、明細は
    スプレッドシートが担う。両者の合計は一致していなければならない。
+
+これまでビルダーの中にしか無かった節に、登録済みテンプレートができた。
+図形を手で並べ直さず、こちらを使う。
+
+| 節 | テンプレート（パック） |
+|---|---|
+| 課題の構造 | `iceberg-challenge`（`proposal`） |
+| 課題 → 解決のマッピング | `challenge-solution-map`（`proposal`） |
+| 目指す姿とスコープ | `scope-in-out`（`proposal`） |
+| 期待効果 | `outcome-before-after`（`proposal`） |
+| PoC の目的と合否基準 | `poc-plan`（`proposal`） |
+| 事例 | `case-study-card` / `case-study-detail` / `case-fit`（`case-studies`） |
+| ネクストステップ | `next-step-customer`（`proposal`） |
+
+事例ページには**顧客の公開許諾と、日付つきの出典**が要る。どちらも
+`templates/marketing/case-study.ja.md` §1・§3 が持つ。
+**許諾が「未取得」の事例を顧客提示物に載せない。**
 
 ## Phase 3: デッキを組む
 

@@ -1007,6 +1007,333 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "hearing-agenda",
+      "displayName": "本日うかがいたいこと",
+      "pack": "hearing",
+      "category": "customer",
+      "path": "hearing/hearing-agenda/template.json",
+      "tags": [
+        "hearing",
+        "discovery",
+        "customer",
+        "agenda"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "hypothesis-check",
+      "displayName": "理解の確認（違っていたら教えてください）",
+      "pack": "hearing",
+      "category": "customer",
+      "path": "hearing/hypothesis-check/template.json",
+      "tags": [
+        "hearing",
+        "discovery",
+        "customer",
+        "hypothesis"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "fill-in-sheet",
+      "displayName": "その場でご記入いただく欄",
+      "pack": "hearing",
+      "category": "customer",
+      "path": "hearing/fill-in-sheet/template.json",
+      "tags": [
+        "hearing",
+        "discovery",
+        "customer",
+        "form"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "event-poll",
+      "displayName": "当てはまるものはありますか（イベント用）",
+      "pack": "hearing",
+      "category": "customer",
+      "path": "hearing/event-poll/template.json",
+      "tags": [
+        "hearing",
+        "event",
+        "marketing",
+        "poll"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "collect-cta",
+      "displayName": "回答のお願いと次の一歩",
+      "pack": "hearing",
+      "category": "customer",
+      "path": "hearing/collect-cta/template.json",
+      "tags": [
+        "hearing",
+        "collect",
+        "customer",
+        "cta"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "collect-qr",
+      "displayName": "回答フォーム（QR）",
+      "pack": "hearing",
+      "category": "customer",
+      "path": "hearing/collect-qr/template.json",
+      "tags": [
+        "hearing",
+        "collect",
+        "event",
+        "qr"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "case-study-card",
+      "displayName": "事例（抜粋・3 社）",
+      "pack": "case-studies",
+      "category": "evidence",
+      "path": "case-studies/case-study-card/template.json",
+      "tags": [
+        "case",
+        "evidence",
+        "proposal",
+        "marketing"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "case-study-detail",
+      "displayName": "事例（詳細・1 社）",
+      "pack": "case-studies",
+      "category": "evidence",
+      "path": "case-studies/case-study-detail/template.json",
+      "tags": [
+        "case",
+        "evidence",
+        "proposal"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "case-fit",
+      "displayName": "この事例が当てはまる理由",
+      "pack": "case-studies",
+      "category": "evidence",
+      "path": "case-studies/case-fit/template.json",
+      "tags": [
+        "case",
+        "evidence",
+        "proposal",
+        "discovery"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "challenge-solution-map",
+      "displayName": "課題 → 解決のマッピング",
+      "pack": "proposal",
+      "category": "solution",
+      "path": "proposal/challenge-solution-map/template.json",
+      "tags": [
+        "proposal",
+        "solution",
+        "mapping"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "scope-in-out",
+      "displayName": "対象範囲と対象外",
+      "pack": "proposal",
+      "category": "solution",
+      "path": "proposal/scope-in-out/template.json",
+      "tags": [
+        "proposal",
+        "scope"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "poc-plan",
+      "displayName": "PoC の目的と合否基準",
+      "pack": "proposal",
+      "category": "plan",
+      "path": "proposal/poc-plan/template.json",
+      "tags": [
+        "proposal",
+        "poc",
+        "plan"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "outcome-before-after",
+      "displayName": "期待効果（業務がどう変わるか）",
+      "pack": "proposal",
+      "category": "outcome",
+      "path": "proposal/outcome-before-after/template.json",
+      "tags": [
+        "proposal",
+        "outcome"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "next-step-customer",
+      "displayName": "本日決めたいことと次の一歩",
+      "pack": "proposal",
+      "category": "plan",
+      "path": "proposal/next-step-customer/template.json",
+      "tags": [
+        "proposal",
+        "next-step",
+        "customer"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "event-announce",
+      "displayName": "イベント・セミナー告知",
+      "pack": "marketing",
+      "category": "event",
+      "path": "marketing/event-announce/template.json",
+      "tags": [
+        "event",
+        "marketing",
+        "seminar"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "session-agenda",
+      "displayName": "セッションのプログラム",
+      "pack": "marketing",
+      "category": "event",
+      "path": "marketing/session-agenda/template.json",
+      "tags": [
+        "event",
+        "marketing",
+        "agenda"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "speaker-intro",
+      "displayName": "登壇者紹介",
+      "pack": "marketing",
+      "category": "event",
+      "path": "marketing/speaker-intro/template.json",
+      "tags": [
+        "event",
+        "marketing",
+        "speaker"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "value-message",
+      "displayName": "改善効果とメリット（段 0〜1）",
+      "pack": "marketing",
+      "category": "message",
+      "path": "marketing/value-message/template.json",
+      "tags": [
+        "marketing",
+        "nurture",
+        "message"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "use-case-one-pager",
+      "displayName": "ユースケース 1 枚（段 1〜2）",
+      "pack": "marketing",
+      "category": "message",
+      "path": "marketing/use-case-one-pager/template.json",
+      "tags": [
+        "marketing",
+        "nurture",
+        "use-case"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "whitepaper-abstract",
+      "displayName": "ホワイトペーパーの要旨（段 3）",
+      "pack": "marketing",
+      "category": "message",
+      "path": "marketing/whitepaper-abstract/template.json",
+      "tags": [
+        "marketing",
+        "nurture",
+        "whitepaper"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "partner-value",
+      "displayName": "パートナー向け 価値と協業の形",
+      "pack": "partner",
+      "category": "partner",
+      "path": "partner/partner-value/template.json",
+      "tags": [
+        "partner",
+        "enablement"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "joint-proposal-policy",
+      "displayName": "共同提案方針書",
+      "pack": "partner",
+      "category": "partner",
+      "path": "partner/joint-proposal-policy/template.json",
+      "tags": [
+        "partner",
+        "proposal",
+        "raci"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "iceberg-challenge",
+      "displayName": "課題の構造（見えている問題と根本原因）",
+      "pack": "proposal",
+      "category": "solution",
+      "path": "proposal/iceberg-challenge/template.json",
+      "tags": [
+        "proposal",
+        "challenge",
+        "structure"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

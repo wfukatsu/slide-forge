@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "joint-proposal-policy",
+  "displayName": "共同提案方針書",
+  "pack": "partner",
+  "category": "partner",
+  "description": "共同勝ち筋・RACI・商流・見積境界・知財と守秘・契約責任を 1 枚で合意する",
+  "answers": [
+    "この案件で、誰が何に責任を持ち、どこで見積を分けるのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 5,
+      "maxItems": 7,
+      "maxLength": 50
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**パートナー提案用**。合意していない項目を、合意済みのように書かない",
+    "**見積境界を必ず書く。** ここが曖昧なまま顧客に出すと、後で必ずもめる",
+    "知財・守秘と契約責任の所在を省かない（プレイブック §3 の必須要件）",
+    "未合意の項目は「未合意」と書いた行として残す。**空欄で出さない**",
+    "顧客名・顧客固有の条件を書く場合、NDA の締結状況を確認してから入れる"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.45,
+        "w": 9.0,
+        "headers": [
+          "項目",
+          "合意内容"
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          2.4,
+          6.6
+        ],
+        "size": 9,
+        "rowH": 0.4
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

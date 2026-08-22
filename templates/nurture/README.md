@@ -10,6 +10,12 @@
 | `nurture-track.ja.md` | 1 セグメント × 5 ステージの設計。ストーリー、コンテンツ、パワースクリプト、指標、商談への引き渡し |
 | `content-inventory.ja.md` | コンテンツ台帳。Contents ID の採番、ステージ別の充足状況、鮮度管理 |
 
+## 1 件ずつの企画は `templates/marketing/`
+
+トラック §10 が挙げた「必要なコンテンツ」を 1 件ずつ企画する様式は
+[`templates/marketing/`](../marketing/README.md) にある（事例・コンテンツ企画・
+イベント企画）。完成したら、こちらの `content-inventory.ja.md` の台帳に登録する。
+
 ## 出典
 
 - 整理したもの: [`references/scalar/nurture-map.ja.md`](../../references/scalar/nurture-map.ja.md)

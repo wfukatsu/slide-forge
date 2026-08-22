@@ -34,6 +34,8 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Account Planning Session (annual/semi-annual stocktake and executive review) | `scalar-account-planning-session` |
 | Materials for a single visit / internal approval materials (WPS, Deal Desk) | `scalar-ae-materials` |
 | Organise minutes / email into per-stage records; work out what is still unconfirmed | `scalar-deal-intake` |
+| Hearing sheet in Markdown / Excel / Google Spreadsheet, in either direction | `hearing-sheet` |
+| Slides that collect the missing information (customer meeting / event) | `hearing-slides` |
 | Design lead nurturing before a deal exists; segments, nurture tracks, content coverage | `scalar-nurture-intake` |
 | Scalar product/company deck | `scalar-product-slides` |
 | Scalar customer proposal | `scalar-proposal-slides` |

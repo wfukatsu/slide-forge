@@ -3,7 +3,7 @@
 # slide-forge
 
 Claude-first, agent-driven Google Slides deck generation with the same shared
-skills available to Codex and Antigravity through thin host adapters: twenty-one
+skills available to Codex and Antigravity through thin host adapters: twenty-three
 generation/support skills plus one end-to-end workflow on a shared Python
 engine. Claude Code's plugin commands and the shared `skills/` are the behavior
 source of truth; host files do not duplicate workflow logic. It covers corporate-template decks, from-scratch architecture
@@ -32,6 +32,8 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `scalar-account-planning-session` | Build the annual **Account Planning Session** decks for an account the ledger already covers — a full Plan Document for the account team and a nine-page executive review deck — from one `aps.json` that adds the customer's published material to the ledger. Ties each proposal to a sentence of the customer's own mid-term management plan, gives every deal its own chapter, and works out **who to meet next** per legal entity from published officer lists and org charts, each name carrying the person we would go through. The builder holds only the layout; every string lives in `aps.json` under the ignored `accounts/` tree. Internal only. |
 | `scalar-ae-materials` | Build **one visit's materials**, routed by deal phase (0–6) × audience × purpose, so the customer-facing one-pager, the internal visit plan, the WPS win plan and the Deal Desk / internal approval (ringi) packet are never the same file. Includes a pre-generation check that no judgement about a named individual, competitor weakness or unconfirmed figure reaches anything a customer will read, and files each artifact under `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` in Drive. Ten page templates ship as the `scalar-ae` pack, including `license-estimate` and `license-pattern-compare` for Scalar license quotes (the estimate template requires the contract period — monthly / annual / 3-year — in its breakdown). Rules come from `references/scalar/sales-playbook.md`. |
 | `scalar-deal-intake` | Turn raw deal material — meeting minutes, email threads, Slack, CRM exports, customer documents — into **per-stage records (0–6), a hearing sheet and a deal log** under `accounts/<AE>/<customer>/stages/` — the deal log holding the meeting history, close plan, risks and loss reason, and owning the amount, close date and forecast — using the stage input/output map derived from the Scalar sales sheet (`references/scalar/stage-io-map.md`) and the forms in `templates/sales/` — the hearing sheet is product-neutral, with product-fit judgments (challenge category, disqualifying constraints, sizing, edition) held in per-product addenda under `templates/sales/products/`. Every extracted fact carries a source and a confidence level (`確認済` / `推定` / `未確認`), internal agreement is never recorded as customer agreement, a gate passes only on customer-side evidence, and each remaining unknown becomes a question with a counterpart and a due date. Markdown only — it generates no slides; the records feed `scalar-account-plan` and `scalar-ae-materials`. Internal, gitignored, never shared with a customer or partner. |
+| `hearing-sheet` | Keeps the hearing sheet as data — one JSON of record rendered to **Markdown, Excel and Google Spreadsheet**, each readable back, joined by a stable question ID. Hand a customer or partner a sheet to fill in (`--audience customer` drops the internal columns and sections), read their answers back with conflict detection instead of a silent overwrite, and list what is still `未確認` or `推定`. The unconfirmed list and the confirm-back list are derived from the confidences rather than kept by hand. Product-neutral: product-fit judgements stay in `templates/sales/products/`. |
+| `hearing-slides` | Builds slides whose job is to **collect** information rather than deliver it, from the gaps in a hearing sheet: the agenda of what you need to hear and why, our understanding put up to be corrected, a fill-in sheet to write on in the room, a "does this apply to you" poll for a talk or seminar, and the page that says where to send answers (with a QR when `qrcode` is installed). A page with no material refuses to build rather than being filled with a guess. Customer-facing only; the internal "who do we ask next" page stays in `scalar-ae-materials`. |
 | `scalar-nurture-intake` | Turn raw **pre-deal signals** — webinar attendance, inbound enquiries, download logs, community questions, event notes, partner referrals, CRM/MA exports — into segment definitions, five-stage nurture tracks (Education → Need → Research → Evaluation → Selection) and a content ledger under `accounts/_nurture/`, driven by `references/scalar/nurture-map.md` and the forms in `templates/nurture/`. Works on segment **types**: no personal or company names ever enter these files — a signal that matters because of who sent it is a deal, not a segment. Will not number a segment from a single signal, will not set stage from activity volume, and hands a lead to sales only on the `g1.*` gates, never on a download. Markdown only; the hand-off continues in `scalar-deal-intake`. |
 | `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
 | `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
@@ -158,7 +160,7 @@ cache/ out/   transient render cache and QA output (gitignored)
 ## Install as a Claude Code plugin
 
 The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all twenty-one skills):
+one plugin bundling all twenty-three skills):
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -178,7 +180,7 @@ skills will be listed twice.
 ## Use with Codex
 
 Codex uses the same skills and Python engine. In a repository clone, the
-`.agents/skills/` entries expose all twenty-one generation/support skills plus the
+`.agents/skills/` entries expose all twenty-three generation/support skills plus the
 end-to-end `forge` skill. Start Codex from the repository root and invoke
 `forge` by name; the Claude-specific `/slide-forge:forge` command and plugin
 marketplace manifest are not required.

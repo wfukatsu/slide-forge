@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "id": "case-fit",
+  "displayName": "この事例が当てはまる理由",
+  "pack": "case-studies",
+  "category": "evidence",
+  "description": "事例の状況と目の前の顧客の状況を並べ、なぜ参考になるのかを示す",
+  "answers": [
+    "その事例は、うちの状況にどこまで当てはまるのか"
+  ],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 4,
+      "maxLength": 38
+    },
+    "caveat": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**公表されている事例だけを載せる。** 未公表の顧客名・数値を出さない",
+    "数値は公表資料の値をそのまま使い、**出典（媒体名と日付）を source に必ず書く**",
+    "事例・数値は 3 ヶ月ルールの対象。**最終確認日を過ぎたものは再確認してから使う**",
+    "顧客名の掲載は、その顧客と合意した範囲に限る（商談側の事例化の約束は stage-5 §6 / stage-6 §5）",
+    "**当てはまらない点を必ず 1 つ書く**（caveat）。全部当てはまる事例は無く、隠すと PoC で露見する",
+    "顧客側の欄は、ヒアリングで取れている事実だけを書く。**推測で埋めない**"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 9.0,
+        "headers": [
+          "観点",
+          "事例の状況",
+          "御社の状況"
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          2.0,
+          3.5,
+          3.5
+        ],
+        "size": 9,
+        "rowH": 0.42
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.75,
+        "w": 9.0,
+        "h": 0.95,
+        "text": {
+          "$slot": "caveat"
+        },
+        "label": "当てはまらない点"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

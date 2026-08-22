@@ -34,6 +34,8 @@ Load exactly one generation skill completely, then read only the reference secti
 | Create Scalar product/proposal slides | `scalar-product-slides`, `scalar-proposal-slides` |
 | Per-customer activity plan / visit materials (AE sales activity) | `scalar-account-plan`, `scalar-ae-materials` |
 | Organise minutes / email into per-stage records; work out what is still unconfirmed | `scalar-deal-intake` |
+| Hearing sheet in Markdown / Excel / Google Spreadsheet, in either direction | `hearing-sheet` |
+| Slides that collect the missing information (customer meeting / event) | `hearing-slides` |
 | Design lead nurturing before a deal exists; segments, nurture tracks, content coverage | `scalar-nurture-intake` |
 | Account Planning Session (annual org-chart / deal-stocktake deck) | `scalar-account-planning-session` |
 | Create B2B deal stakeholder maps / discovery maps | `b2b-account-maps` |

@@ -84,3 +84,19 @@ accounts/<AE 名>/<顧客名>/stages/
 
 日本語のみで用意している。顧客との会話がそのまま入る様式であり、
 `work/CLAUDE.md` の「ユーザー向け成果物は日本語」に従う。
+
+## 3 形式で扱う（hearing-sheet スキル）
+
+この Markdown の様式は**空のフォーム**である。商談で使うときは `hearing-sheet`
+スキルで `hearing.json` を起こし、Markdown / Excel / Google Spreadsheet を
+そのレンダーとして出す。顧客に渡して記入してもらい、返ってきたものを読み戻せる。
+
+```bash
+.venv/bin/python scripts/hearing/hearing_sheet.py init \
+    templates/sales/hearing-sheet.ja.md --out accounts/<AE 名>/<顧客名>/stages/hearing.json
+```
+
+- **ID 列は JSON との突き合わせに使う。** 振り直さない、消さない、手で並べ替えない
+- 顧客に渡す版は `--audience customer`（内部の列と節を落とす）
+- 規則は [`references/hearing-kit.ja.md`](../../references/hearing-kit.ja.md)
+- 空いている項目を聞くためのスライドは `hearing-slides` スキル

@@ -103,6 +103,12 @@ disqualify the fit, sizing, edition) live in the per-product addendum under
 Feed the sheet's §4.2 / §5 answers into the addendum's B / C / D sections;
 write the addendum's verdict back into the sheet's §1.
 
+**To move the hearing sheet between formats, use the `hearing-sheet` skill** —
+it keeps `hearing.json` as the record, renders Markdown / Excel / Google
+Spreadsheet from it, and reads a filled-in one back. This skill fills the
+record from minutes and email; **handing a sheet out and taking it back is
+`hearing-sheet`'s job**. Both use the same confidence vocabulary.
+
 Two kinds of form. Do not mix them.
 
 | | Stage record (`stage-*.md`) | Deal log (`deal-log.md`) |

@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "id": "whitepaper-abstract",
+  "displayName": "ホワイトペーパーの要旨（段 3）",
+  "pack": "marketing",
+  "category": "message",
+  "description": "技術資料の中身を、読む前に判断できる形で示す表紙 1 枚",
+  "answers": [
+    "この資料には何が書いてあって、読むと何が分かるのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "toc": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 5,
+      "items": {
+        "type": "string",
+        "maxLength": 28
+      }
+    },
+    "answers_q": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "who": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**不特定多数向け**。特定の企業・個人が推測できる書き方をしない",
+    "**読むと何が分かるかを書く。** 目次だけの表紙は、読むかどうかの判断材料にならない",
+    "**想定読者を書く。** 段 3 は技術的裏付けの段で、読み手は評価者である",
+    "検証していない主張を要旨に置かない。仮説は本文で仮説として扱う",
+    "性能値・価格・エディションは 3 ヶ月ルールの対象。最終確認日を source に書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 1.0,
+        "items": {
+          "$slot": "toc"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 2.65,
+        "w": 9.0,
+        "h": 0.9,
+        "text": {
+          "$slot": "answers_q"
+        },
+        "label": "読むと分かること"
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.7,
+        "w": 9.0,
+        "h": 0.85,
+        "text": {
+          "$slot": "who"
+        },
+        "label": "想定読者"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

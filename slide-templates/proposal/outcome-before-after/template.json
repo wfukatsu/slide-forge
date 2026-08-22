@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "outcome-before-after",
+  "displayName": "期待効果（業務がどう変わるか）",
+  "pack": "proposal",
+  "category": "outcome",
+  "description": "機能ではなく、日々の業務がどう変わるかで効果を語る 1 枚",
+  "answers": [
+    "導入すると、現場の仕事は何が変わるのか"
+  ],
+  "inferenceLevel": "predictive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "before": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "maxLength": 22
+      }
+    },
+    "after": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "maxLength": 22
+      }
+    },
+    "quant": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない",
+    "**機能ではなく業務で書く。** 「ACID になる」ではなく「突合が要らなくなる」",
+    "**算出根拠のある定量値しか書かない。** 無いなら定性で書き、PoC で実測すると明示する",
+    "before と after を同じ観点で並べる。観点がずれた対比は比較にならない",
+    "公表事例の数値を自社の効果として書かない。事例は事例として別ページに置く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "before_after",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 2.2,
+        "before": {
+          "$slot": "before"
+        },
+        "after": {
+          "$slot": "after"
+        },
+        "before_title": "いまの業務",
+        "after_title": "導入後の業務"
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.85,
+        "w": 9.0,
+        "h": 0.85,
+        "text": {
+          "$slot": "quant"
+        },
+        "label": "定量化について"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

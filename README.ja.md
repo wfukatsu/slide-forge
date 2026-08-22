@@ -4,7 +4,7 @@
 
 Claude Code を主ホストとするエージェント駆動 Google Slides デッキ生成。Codex と
 Antigravity は薄いホスト互換レイヤーを通じて同じ共有スキルを利用する。共有 Python
-エンジンの上に、21 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
+エンジンの上に、23 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
 Claude Code のプラグインコマンドと共有 `skills/` を動作の正本とし、ホスト固有文書へ
 ワークフローを複製しない。コーポレートテンプレートのデッキ、ゼロからのアーキテクチャ図、デザイン
 仕様からのテンプレート作成、生成前の検証、任意のサムネイルベース視覚 QA
@@ -31,6 +31,8 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `scalar-account-planning-session` | 台帳が既にカバーしているアカウントについて、年次の **Account Planning Session** デッキ — アカウントチーム向けのフル Plan Document と 9 ページのエグゼクティブレビューデッキ — を、顧客の公開資料を台帳に加えた 1 つの `aps.json` から作る。各提案を顧客自身の中期経営計画の一文に結びつけ、商談ごとに独立した章を与え、公開されている役員一覧と組織図から法人ごとに**次に誰と会うべきか**を導き、各人名には経由すべき人物を添える。ビルダーが持つのはレイアウトだけで、文字列はすべて gitignore された `accounts/` ツリー配下の `aps.json` にある。社内専用。 |
 | `scalar-ae-materials` | 商談フェーズ（0–6）× 相手 × 目的でルーティングして**1 回の訪問の資料**を作り、顧客提示のワンページャー、社内向け訪問計画、WPS ウィンプラン、Deal Desk / 稟議パケットが決して同じファイルにならないようにする。特定個人への評価・競合の弱点・未確認の数字が顧客の目に触れるものへ紛れ込まないことを生成前に確認するチェックを含み、各成果物を Drive の `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` に格納する。10 のページテンプレートを `scalar-ae` パックとして同梱（Scalar ライセンス見積もり用の `license-estimate` と `license-pattern-compare` を含む。見積もりテンプレートは内訳に契約期間（月額 / 年額 / 3 年）の明示を必須とする）。ルールは `references/scalar/sales-playbook.ja.md` に従う。 |
 | `scalar-deal-intake` | 議事録・メール・Slack・CRM エクスポート・顧客資料といった生の材料を、`accounts/<AE>/<顧客名>/stages/` 配下の**ステージ別記録（0〜6）・ヒアリングシート・商談ログ**に整理する。商談ログは面談履歴・クローズプラン・リスク・失注理由を時系列で持ち、金額 / クローズ予定日 / フォーキャストの正本になる。スプレッドシート「ステージごとの商談の進め方」から起こした入出力対応表（`references/scalar/stage-io-map.ja.md`）と `templates/sales/` の様式を使う。ヒアリングシートは製品非依存で、製品適合の判定（課題カテゴリ・提案不可の制約・サイジング・エディション）は `templates/sales/products/` の製品別補遺が持つ。抽出した事実には必ず出典と確度（`確認済` / `推定` / `未確認`）を付け、社内合意を顧客合意として記録せず、ゲートは顧客側の証拠がある場合だけ通し、残った未確認は確認相手と期限つきの質問に変える。Markdown のみでスライドは作らない。記録は `scalar-account-plan` と `scalar-ae-materials` が読む。社内専用・gitignore 済みで、顧客にもパートナーにも渡さない。 |
+| `hearing-sheet` | ヒアリングシートをデータとして持つ。**JSON を正本**に Markdown / Excel / Google Spreadsheet を出し、どれも読み戻せる（設問の安定 ID で紐づける）。顧客・パートナーに渡して記入してもらい（`--audience customer` で内部の列と節を落とす）、返ってきた回答を**黙って上書きせず競合を検出して**取り込み、まだ `未確認` / `推定` のものを一覧にする。未確認リストと確認を返すことは確度から派生し、手で同期させない。製品非依存で、製品適合の判定は `templates/sales/products/` の補遺が持つ。 |
+| `hearing-slides` | 伝えるためではなく**集めるため**のスライドを、ヒアリングシートの空きから作る。うかがいたいことの議題（なぜ聞くかつき）、こちらの理解を出して訂正してもらうページ、その場で記入してもらう欄、登壇・セミナー用の「当てはまるものはありますか」、回答先を示すページ（`qrcode` があれば QR）。**材料が無いページは、推測で埋めずに作成を拒否する。** 顧客提示物のみで、社内向けの「誰にいつ聞くか」は `scalar-ae-materials` が持つ。 |
 | `scalar-nurture-intake` | ウェビナー参加ログ・問い合わせメール・資料ダウンロード履歴・コミュニティの質問・展示会メモ・パートナー経由の相談・CRM/MA エクスポートといった**商談化前のシグナル**を、`accounts/_nurture/` 配下のセグメント定義・5 段のナーチャリングトラック（Education → Need → Research → Evaluation → Selection）・コンテンツ台帳に整理する。出典は `references/scalar/nurture-map.ja.md`、様式は `templates/nurture/`。扱うのはセグメントという**型**であり、個人名・会社名をこれらのファイルに書かない（「誰から来たか」が重要なシグナルはセグメントではなく商談として `scalar-deal-intake` に回す）。シグナル 1 件でセグメントを採番せず、活動量で段を判定せず、営業への引き渡しは `g1.*` ゲートだけで判断する（資料ダウンロードは根拠にしない）。Markdown のみ。 |
 | `scalar-product-slides` | `scalar-2026` テンプレートによる Scalar Inc. の会社・製品・機能デッキのワークフロー。 |
 | `scalar-proposal-slides` | 顧客の課題を起点とする顧客別 Scalar ソリューション提案: ヒアリングチェックリスト、課題→製品マッピング（`references/scalar/proposal-map.ja.md`）、書き換え可能な実例つきの課題解決型提案構成（`scripts/scalar/build_scalar_proposal.py`）。 |
@@ -153,7 +155,7 @@ cache/ out/   一時レンダーキャッシュと QA 出力 (gitignored)
 ## Claude Code プラグインとしてのインストール
 
 このリポジトリはプラグインマーケットプレイスを兼ねる
-（`.claude-plugin/marketplace.json`、21 スキルすべてを束ねた 1 プラグイン）:
+（`.claude-plugin/marketplace.json`、23 スキルすべてを束ねた 1 プラグイン）:
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -172,7 +174,7 @@ venv、OAuth 認証情報、クラウドアイコンはマシンローカルで�
 ## Codex での利用
 
 Codex も同じスキルと Python エンジンを使う。リポジトリのクローンでは、
-`.agents/skills/` のエントリが 21 の生成/支援スキルすべてと、エンドツー
+`.agents/skills/` のエントリが 23 の生成/支援スキルすべてと、エンドツー
 エンドの `forge` スキルを公開する。リポジトリルートから Codex を起動し、
 `forge` を名前で呼び出せばよい。Claude 固有の `/slide-forge:forge`
 コマンドやプラグインマーケットプレイスのマニフェストは不要。

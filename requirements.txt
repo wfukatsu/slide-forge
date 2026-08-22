@@ -14,5 +14,9 @@ cairosvg>=2.7.0
 # spreadsheets スキル（scripts/build_sheet.py）の xlsx 生成
 openpyxl>=3.1.0
 
+# 任意（hearing-slides スキルの回答先 QR。無い場合は Pillow で
+# 「QR 未生成」のプレースホルダを書き出し、資料に載せないよう警告する）
+# qrcode[pil]>=7.4
+
 # 任意（google-slides スキルのアセット処理・チャートデータ管理で使う場合）
 # gspread>=6.0.0
