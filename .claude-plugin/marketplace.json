@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Claude-first Google Slides generation with shared skills for Codex and Antigravity: template and from-scratch decks, 92 one-page slide templates in 13 packs, Scalar sales and lead-nurturing workflows, the hearing-sheet kit, strict offline validation, visual QA, PPTX export, and estimate/BOM spreadsheets.",
-    "version": "1.29.0"
+    "version": "1.29.1"
   },
   "plugins": [
     {
       "name": "slide-forge",
       "strict": false,
       "description": "Claude Code is the primary host for 23 shared slide-forge skills. Use /slide-forge:forge for the common route, intake, outline approval, strict validation, generation, optional visual QA, cleanup, and delivery workflow. Codex and Antigravity use the same skills and Python engine through thin adapters.",
-      "version": "1.29.0",
+      "version": "1.29.1",
       "author": {
         "name": "Wataru Fukatsu",
         "url": "https://github.com/wfukatsu"
