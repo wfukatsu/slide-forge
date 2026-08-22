@@ -162,16 +162,22 @@ QA、PPTX、Spreadsheet、最終報告を再説明している。これらは下
 
 #### 問題
 
-`google-slides-api.md` は約64KB、`pictogram-catalog.md` は約71KB、各Composerも
-15〜36KBある。スキル内の「詳しくはこのreference」という指示だけでは、エージェントが
-安全側に倒して全文を読む可能性がある。
+スキル内の「詳しくはこのreference」という指示だけでは、エージェントが安全側に
+倒して全文を読む可能性がある。
+
+> **2026-08 追記**: この節が挙げていた肥大化（`google-slides-api.md` 約64KB、
+> `pictogram-catalog.md` 約71KB、各 Composer 15〜36KB）は解消済み。実体は
+> 「大きすぎる」ではなく「現存しない API（SlideBuilder / theme.json /
+> compose_*）を説明していた」ことで、prose を残して現行 API に書き直した結果、
+> 3 系統で 563KB → 109KB になった。名前引きは `illustrations.py --list` /
+> `list_slide_templates.py` に移し、カタログ本文を開かなくても済むようにした。
 
 #### 改善案
 
 referenceの参照条件と必要セクションを明示する。
 
 ```text
-- 既存デッキを編集するときだけ: google-slides-api.md §2
+- 既存デッキを編集するときだけ: google-slides-api.md の「座標系」節
 - コネクタを使うときだけ: diagrams.md §4、api-notes.md §1
 - 画像枠を使うときだけ: images.md §2–3
 - 棒グラフを使うときだけ: charts.md §Vertical bars
