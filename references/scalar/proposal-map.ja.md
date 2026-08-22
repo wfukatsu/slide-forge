@@ -14,6 +14,12 @@
 という扱いにする**（推測で埋めない）。出典: Y's システム提案書ガイド +
 BANT（§6）。
 
+**収集の様式**: [`templates/sales/hearing-sheet.ja.md`](../../templates/sales/hearing-sheet.ja.md)
+（製品非依存。顧客の事実を聞く）と
+[`templates/sales/products/scalar.ja.md`](../../templates/sales/products/scalar.ja.md)
+（Scalar 製品の適合判定）。下表の分類とシートの節の対応はシート §14.3 にある。
+記入済みのシートがあるなら、それを Phase 1 の入力にする。
+
 | 分類 | 確認する内容 | デッキでの使い先 |
 |---|---|---|
 | 課題・目的 | 現状課題は何か。**誰の**課題で、どの程度の強さ・金額規模か | 課題整理・期待効果 |

@@ -92,7 +92,16 @@ mkdir -p accounts/<AE>/<customer>/stages
 cp templates/sales/deal-log.ja.md      accounts/<AE>/<customer>/stages/deal-log.md
 cp templates/sales/hearing-sheet.ja.md accounts/<AE>/<customer>/stages/hearing-sheet.md
 cp templates/sales/stage-2-discovery.ja.md accounts/<AE>/<customer>/stages/stage-2-discovery.md
+# product-fit addendum for whichever product is under consideration
+cp templates/sales/products/scalar.ja.md accounts/<AE>/<customer>/stages/product-fit-scalar.md
 ```
+
+The hearing sheet is **product-neutral** — it collects the customer's facts
+only. Product-fit judgments (which challenge category, which constraints
+disqualify the fit, sizing, edition) live in the per-product addendum under
+`templates/sales/products/` (rules: `templates/sales/products/README.md`).
+Feed the sheet's §4.2 / §5 answers into the addendum's B / C / D sections;
+write the addendum's verdict back into the sheet's §1.
 
 Two kinds of form. Do not mix them.
 
@@ -130,7 +139,7 @@ Rules, from playbook §4:
 - Numbers (budget, ROI, sizing) carry their basis and assumptions.
 - A metric needs **both a baseline and a target**. "Cut costs" alone stays `未確認`.
 
-Match the ledger's vocabulary. The conversion table is `hearing-sheet.ja.md` §12.
+Match the ledger's vocabulary. The conversion table is `hearing-sheet.ja.md` §14.2.
 
 | Use | Vocabulary |
 |---|---|
@@ -164,7 +173,7 @@ the sheet rows.
 ### 6. Turn gaps into actions
 
 Every `未確認` becomes a row in the record's action table and in hearing-sheet
-§9: what is unknown, who can answer it, by when, and who asks. Choose the
+§12: what is unknown, who can answer it, by when, and who asks. Choose the
 counterpart from the `stage-io-map` row that owns that output — the map already
 says who holds each answer.
 
