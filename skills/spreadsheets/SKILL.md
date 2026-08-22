@@ -1,20 +1,16 @@
 ---
 name: spreadsheets
 description: >-
-  Generate line-item spreadsheets — estimates/quotes, BOMs, cost breakdowns,
-  comparison tables — as Excel (.xlsx) and/or Google Spreadsheet from one JSON
-  spec (scripts/build_sheet.py): typed columns, per-row formulas, a
-  subtotal/tax/total summary block, offline validation before any API call.
-  The xlsx is the source; the Google Spreadsheet is a Drive conversion of the
-  same file, so both outputs always match. Companion deliverable to slide-forge
-  decks (deck shows the cost summary, the spreadsheet holds the line items,
-  both in the same Drive folder) — and also runs standalone.
-  Triggers: "見積もりを作って", "見積書", "明細表", "費用内訳を Excel に",
-  "BOM をスプレッドシートに", "Google スプレッドシートで出力", "xlsx で出力",
-  "spreadsheets", "make an estimate sheet", "cost breakdown spreadsheet".
-  Out of scope: free-form or existing-file xlsx authoring/editing
-  (document-skills:xlsx), reading or analyzing spreadsheets, and tables drawn
-  inside slides (the deck skills' table figure).
+  Generate line-item spreadsheets — estimates, BOMs, cost breakdowns, comparison
+  tables — as Excel (.xlsx) and/or Google Spreadsheet from one JSON spec: typed
+  columns, per-row formulas, a subtotal/tax/total block, offline validation
+  before any API call. The xlsx is the source and the Spreadsheet is a Drive
+  conversion of it, so both always match. Companion to a deck, and also
+  standalone.
+  Use for: 見積もりを作って, 見積書, 明細表, 費用内訳を Excel に,
+  BOM をスプレッドシートに, cost breakdown spreadsheet.
+  Not: free-form or existing-file xlsx work (document-skills:xlsx); reading or
+  analyzing spreadsheets; tables drawn inside slides.
 ---
 
 *[日本語](SKILL.ja.md)*

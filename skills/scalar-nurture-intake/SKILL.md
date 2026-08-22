@@ -1,17 +1,14 @@
 ---
 name: scalar-nurture-intake
 description: >-
-  Turn raw pre-deal signals — webinar and seminar attendance, inbound enquiry
-  email, download logs, community and Slack questions, event badge notes,
-  partner referrals, CRM/MA exports — into segment definitions, five-stage
-  nurture tracks and a content ledger, using the nurture map derived from the
-  Scalar nurture plan sheet. Use when asked to 「ナーチャリングを設計して」
-  「リード育成」「問い合わせからセグメントを起こして」「ウェビナーの参加者を整理して」
-  「コンテンツの棚卸し」「MQL / SQO」, to work out which content is missing for a
-  segment, or to decide whether a lead is ready to hand to sales. Works on
-  segment types, never on named individuals or customers. Once a lead is handed
-  over, the per-customer records go to `scalar-deal-intake`, the deck to
-  `scalar-product-slides`, and the customer proposal to `scalar-proposal-slides`.
+  Turn pre-deal signals — webinar and seminar attendance, inbound enquiries,
+  download logs, community questions, event badge notes, partner referrals,
+  CRM/MA exports — into segment definitions, five-stage nurture tracks and a
+  content ledger. Works on segment types, never on named individuals.
+  Use for: ナーチャリングを設計して, リード育成, 問い合わせからセグメントを起こして,
+  ウェビナーの参加者を整理, コンテンツの棚卸し, MQL / SQO.
+  Not: once a lead is handed over — per-customer records (scalar-deal-intake),
+  the deck (scalar-product-slides), the proposal (scalar-proposal-slides).
 ---
 
 *[日本語](SKILL.ja.md)*

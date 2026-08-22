@@ -3,13 +3,13 @@ name: scalar-account-plan
 description: >-
   Maintain a per-customer sales ledger (account.json) for a Scalar Account
   Executive — what is confirmed, who decides, what is unknown, what to do next —
-  rendered as a Google Slides activity plan whose URL never changes. Use for an
-  account plan / 活動計画 / アカウントプラン, recording what came out of a
-  customer meeting, reviewing a deal's stage, forecast or BANT risk, working out
-  what an AE must confirm next, or setting up an account's Drive folders. The
-  annual Account Planning Session decks go to `scalar-account-planning-session`,
-  one visit's materials to `scalar-ae-materials`, the customer proposal to
-  `scalar-proposal-slides`, and the maps themselves to `b2b-account-maps`.
+  rendered as a Google Slides activity plan whose URL never changes.
+  Use for: 活動計画, アカウントプラン, 商談の記録, ステージ・フォーキャスト・BANT の
+  レビュー, 次に確認すべきこと, アカウントの Drive 準備.
+  Not: the annual Account Planning Session decks
+  (scalar-account-planning-session); one visit's materials
+  (scalar-ae-materials); the customer proposal (scalar-proposal-slides); the maps
+  (b2b-account-maps).
 ---
 
 *[日本語](SKILL.ja.md)*

@@ -1,15 +1,15 @@
 ---
 name: hearing-slides
 description: >-
-  伝えるためではなく、**集めるため**のスライドを作る。うかがいたいことの議題、
-  こちらの理解を出して訂正してもらうページ、その場で記入してもらう欄、イベント
-  や登壇で「当てはまるものはありますか」と選んでもらうページ、回答先を示す
-  ページ（QR つき）。トリガー:「聞くためのスライド」「ヒアリング用の資料」
-  「足りない情報を集めるスライド」「イベントで情報を集めたい」「アンケートの
-  スライド」「記入してもらう資料」。ヒアリングシート（`hearing-sheet`）の空き
-  から作り、**ページを埋めるために回答を捏造しない**。社内向けの「誰にいつ聞くか」
-  は `scalar-ae-materials` / `b2b-account-maps`、提案書は
-  `scalar-proposal-slides`。
+  Slides whose job is to collect information rather than deliver it: the agenda
+  of what you need to hear, our understanding put up to be corrected, a fill-in
+  sheet to write on during the meeting, an event poll, and the page that says
+  where to send the answers (with a QR). Driven by the gaps in a hearing sheet;
+  never invents an answer to fill a page.
+  Use for: 聞くためのスライド, ヒアリング用の資料, 足りない情報を集めるスライド,
+  イベントで情報を集めたい, 記入してもらう資料.
+  Not: internal "who do we ask next" pages (scalar-ae-materials /
+  b2b-account-maps); the proposal itself (scalar-proposal-slides).
 ---
 
 *[English](SKILL.md)*

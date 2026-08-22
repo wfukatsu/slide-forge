@@ -1,17 +1,15 @@
 ---
 name: scalar-ae-materials
 description: >-
-  Build the materials a Scalar Account Executive needs for one customer visit,
-  chosen by deal phase and audience: the customer-facing one-pager that opens a
-  conversation, the internal visit plan, the WPS win plan that asks for
-  proposal investment, and the Deal Desk / 稟議 packet that asks for internal
-  approval. Use when asked to prepare for a customer meeting or 訪問; to make
-  材料 for a phase-0..6 conversation; to write a 訪問計画, WPS or Deal Desk
-  資料; to get internal resources or approval for a deal; or to produce
-  顧客提示用 / 社内説明用 資料. Files land under 「AE 名 / 顧客名」 in Drive and
-  every run updates the account ledger. Route the standing activity plan to
-  `scalar-account-plan`, the formal proposal to `scalar-proposal-slides`, and
-  the stakeholder maps to `b2b-account-maps`.
+  Build what a Scalar Account Executive needs for one customer visit, chosen by
+  deal phase and audience: the customer-facing one-pager, the internal visit
+  plan, the WPS win plan that asks for proposal investment, and the Deal Desk
+  packet that asks for internal approval. Files land under "AE / customer" in
+  Drive and every run updates the account ledger.
+  Use for: 訪問・面談の準備, フェーズ 0〜6 の会話に使う資料, visit plan, WPS,
+  Deal Desk, 社内の承認やリソースを取りたい.
+  Not: the standing activity plan (scalar-account-plan); the formal proposal
+  (scalar-proposal-slides); the stakeholder maps (b2b-account-maps).
 ---
 
 *[English](SKILL.md)*

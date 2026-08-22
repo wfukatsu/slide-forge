@@ -1,20 +1,16 @@
 ---
 name: scalar-product-slides
 description: >-
-  Builds Google Slides decks for Scalar Inc. — company introductions, product
-  introductions, feature catalogs, and use-case decks — end to end: confirms the
-  deck type, target product, and audience via AskUserQuestion, researches facts
-  from the official site and developers docs, then generates and QAs the deck.
-  A Scalar-specific workflow layered on top of the google-slides-template skill
-  (scalar-2026 templates) in this repo.
-  Triggers: "製品紹介スライドを作って", "機能紹介スライド", "会社紹介スライド",
-  "Scalar 紹介資料", "ユースケーススライド", "scalar-product-slides",
-  "ScalarDB/ScalarDL の紹介資料を作って".
-  Out of scope: from-scratch PPTX authoring (document-skills:pptx; exporting
-  a generated deck to .pptx is pptx-export), decks about anything
-  other than Scalar (use google-slides / google-slides-template), and
-  customer-specific solution proposals driven by a customer's challenges
-  (use scalar-proposal-slides).
+  Build Scalar Inc. decks end to end — company introduction, product
+  introduction, feature catalog, use cases: confirm deck type, target product and
+  audience, research the facts from the official site and developer docs, then
+  generate and QA the deck.
+  Use for: 製品紹介スライド, 機能紹介スライド, 会社紹介スライド, Scalar 紹介資料,
+  ユースケーススライド.
+  Not: customer-specific proposals driven by a customer's challenges
+  (scalar-proposal-slides); decks about anything other than Scalar
+  (google-slides / google-slides-template); PPTX authoring
+  (document-skills:pptx).
 ---
 
 *[English](SKILL.md)*

@@ -2,15 +2,14 @@
 name: hearing-sheet
 description: >-
   Keep the hearing sheet as data and move it between Markdown, Excel and Google
-  Spreadsheet in both directions — hand a customer or partner a sheet to fill
-  in, read their answers back, and work out what is still unconfirmed. Use when
-  asked to 「ヒアリングシートを作って」「ヒアリング項目を Excel で」「スプレッド
-  シートで顧客に渡したい」「記入してもらったシートを取り込んで」「何が聞けて
-  いないか」, to produce a hearing sheet in any format, to merge a filled-in
-  sheet back, or to list the open questions before a visit. Product-neutral:
-  product-fit judgements live in `templates/sales/products/`. Turning the gaps
-  into slides to ask with is `hearing-slides`; reading minutes and email into
-  the record is `scalar-deal-intake`.
+  Spreadsheet in both directions — hand one to a customer or partner to fill in,
+  read the answers back, and report what is still unconfirmed. Product-neutral;
+  product-fit judgements live in templates/sales/products/.
+  Use for: ヒアリングシートを作って, ヒアリング項目を Excel で,
+  スプレッドシートで顧客に渡したい, 記入してもらったシートを取り込んで,
+  何が聞けていないか.
+  Not: slides that do the asking (hearing-slides); minutes and email into the
+  record (scalar-deal-intake).
 ---
 
 *[日本語](SKILL.ja.md)*

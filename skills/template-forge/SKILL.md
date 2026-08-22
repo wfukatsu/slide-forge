@@ -1,21 +1,16 @@
 ---
 name: template-forge
 description: >-
-  Create and register a brand-new Google Slides template (master) from a
-  design spec — brand colors, fonts, logo, footer — without touching the
-  Slides UI. The Slides API cannot create masters, so the engine
-  (scripts/build_template.py) copies a base (Google's default master, or a
-  registered template) and restyles its layout pages via batchUpdate, then
-  registers the result as templates/<id>.json with deterministic role
-  assignment, ready for google-slides-template to generate decks against.
+  Create and register a brand-new Google Slides master from a design spec — brand
+  colors, fonts, logo, footer — without touching the Slides UI, registered as
+  templates/<id>.json and ready for google-slides-template to generate against.
   Design input comes from interactive brand tokens, extraction from existing
   material (site / logo / deck), or a bundled preset.
-  Triggers: "新しいテンプレートを作って", "ブランドに合わせたマスターを作成",
-  "会社カラーのテンプレート", "テンプレートをデザインして", "template-forge",
-  "design a new slide template", "create a new master", "brand the deck template".
-  Out of scope: hand-tuning an existing master's design (Slides UI),
-  PPTX/.potx templates (document-skills:pptx), and generating decks from a
-  template (google-slides-template).
+  Use for: 新しいテンプレートを作って, ブランドに合わせたマスターを作成,
+  会社カラーのテンプレート, create a new master.
+  Not: hand-tuning an existing master's design (Slides UI); PPTX/.potx templates
+  (document-skills:pptx); generating decks from a template
+  (google-slides-template).
 ---
 
 *[日本語](SKILL.ja.md)*

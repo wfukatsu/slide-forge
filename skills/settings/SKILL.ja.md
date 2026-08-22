@@ -1,21 +1,15 @@
 ---
 name: settings
 description: >-
-  Read and change the slide-forge switches in config/settings.json through a
-  short multiple-choice dialogue: whether Gemini generates images at all
-  (imageGeneration), and whether the deliverable is Google Drive / Google
-  Slides or a local folder as PowerPoint (output / localOutputDir). Shows the
-  current values, asks with AskUserQuestion, writes via scripts/settings.py,
-  then reads the result back.
-  Triggers: "設定を変えたい", "設定を確認して", "画像生成をオフにして",
-  "Gemini の画像生成を使わない", "出力先をローカルにして", "PowerPoint で出したい",
-  "Google Drive に出したい", "slide-forge の設定", "settings", "change settings",
-  "turn off AI images", "export locally instead".
-  Out of scope: OAuth credentials and API keys (config/credentials.json,
-  config/gemini_api_key — never read or write them here), the Drive sales root
-  in config/sales.json (scalar-account-plan owns it), per-deck choices such as
-  visual QA or template selection (those stay in intake), and exporting an
-  existing deck (pptx-export).
+  Read and change the two slide-forge switches in config/settings.json through a
+  short multiple-choice dialogue: whether Gemini generates images at all, and
+  whether the deliverable is Google Drive / Slides or a local folder of .pptx.
+  Use for: 設定を変えたい, 設定を確認して, 画像生成をオフにして,
+  出力先をローカルにして, PowerPoint で出したい, Google Drive に出したい.
+  Not: OAuth credentials and API keys, which are never read or written here; the
+  Drive sales root in config/sales.json (scalar-account-plan); per-deck choices
+  such as QA or template selection, which stay in intake; exporting an existing
+  deck (pptx-export).
 ---
 
 *[English](SKILL.md)*
