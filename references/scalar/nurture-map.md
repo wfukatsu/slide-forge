@@ -47,6 +47,23 @@ by **what the buyer is looking for, not by what the seller does**.
 - Content is shared across 0–1 (extracts), goes to detail at 2, technical proof at
   3, and money at 4. **Do not reuse one deck across all five.**
 
+### Channels and how each is used (not in the sheet; added here)
+
+The sheet carries only *what* to send (Assets / Content) — never **where, or at what
+interval**. Five channels are in scope.
+
+| Channel | Mode | Stages it serves | How cadence works | Legal note |
+|---|---|---|---|---|
+| Email (MA tool) | Push | 0–4 (all) | Designed as an **interval** (e.g. fortnightly), tightening as the stage rises | §8 consent, opt-out and disclosure are **mandatory** |
+| Webinars and seminars | Event | 1–3 | Designed around **dates**; the invitation rides on the email channel | Co-hosted lists are third-party provision (§8) |
+| Owned media and the engineering blog | Pull (search) | 0–3 | Not an interval — **publish and wait**. What you design is the CTA and the route to the next stage | Not a transmission, so outside §8 |
+| Community, social and partner referral | Trigger | 1–4 | Not an interval — designed around a **firing condition** (a question appears, a partner raises a case) | Close to 1:1; partner lists fall under §8 |
+| Marketing events and speaking slots | Event | 0–2 | Designed around **when a slot is secured**. Few in number, and heavy as a stage-0 reach channel | Business-card handling per §8 |
+
+**Only email is designed as an interval.** The rest are event dates, firing conditions,
+or publish-and-wait. Each stage of a track records an **interval *or* a trigger**
+(`templates/nurture/nurture-track.ja.md`).
+
 ---
 
 ## 2. Mapping to the sales stages (the numbers collide)
@@ -62,10 +79,29 @@ zero, which is confusing. Always write which one you mean: "nurture 2", "deal 2"
 | 3. Evaluation | MQL → SQO / Trials | Deal 2. Discovery → 3. Solution Development | §3–§4 |
 | 4. Selection | MQL → SQO | Deal 4. Solution Presentation | §5 |
 
+### The MQL threshold (not in the sheet; added here)
+
+The sheet **defines neither** MQL nor SQO. **MQL is defined by the buyer's state** —
+not by a score, not by behaviour. It uses the same ruler as the stage itself (§1).
+
+| | State | Judgement |
+|---|---|---|
+| **Pre-MQL** | Does not believe anything needs fixing (stage 0, Education) | — |
+| **MQL** | **The buyer can say, in their own words, that they have a problem** (stage 1, Need, or beyond) | This is the threshold |
+| **SQO** | The customer themselves recognise the problem as one Scalar can solve | `g1.problem-recognized` |
+
+**The evidence for MQL is what the buyer said** — the body of their enquiry, a question
+in a webinar, a community post, free text in a survey. **Repeating a problem we put to
+them is not evidence.** Look for whether they describe it as their own situation.
+
+**Behavioural logs (downloads, opens, attendance) infer the state; they do not decide
+it.** "Downloaded three papers" is not grounds for MQL. Infer the state from *what* was
+downloaded and **record it as an inference** (same confidence discipline as the deal side).
+
 ### Hand-off criteria
 
-The sheet **does not define** MQL or SQO. In practice, use the deal-side `g1.*`
-gates as the hand-off bar (`sales-playbook.md` §2, phase 1).
+Past MQL, use the deal-side `g1.*` gates as the hand-off bar
+(`sales-playbook.md` §2, phase 1).
 
 | State | What the deal side confirms |
 |---|---|
@@ -289,6 +325,7 @@ This sheet **stopped mid-design.** Know the following before using it.
 | 9 | No MQL / SQO definition | Nothing says when marketing hands over to sales (§2 borrows the deal-side gates) |
 | 10 | No metrics | No targets anywhere — conversion rate, lead volume, SQO rate |
 | 11 | Nothing on the legality of sending | The design assumes email, yet consent, opt-out, disclosure and non-Japan leads appear nowhere |
+| 12 | No channels, no cadence | Only *what* to send; never **where, or at what interval** |
 
 **How each is handled here**
 
@@ -296,9 +333,10 @@ This sheet **stopped mid-design.** Know the following before using it.
 |---|---|
 | 7 | Not patched (a data-entry error in the source sheet; fix it in the sheet) |
 | 8 | Not patched, but **§3 and §7-8 state explicitly that the messaging is dated** |
-| 9 | **Partially patched.** §2 adopts the deal side's `g1.*` as the SQO handover criteria. **There is still no MQL threshold** (nurture stages 0→1→2) |
+| 9 | **Patched.** §2 defines the MQL threshold as a **buyer state** (reaching stage 1, Need); past that, the deal side's `g1.*` apply |
 | 10 | **Only the shell.** `templates/nurture/nurture-track.ja.md` §9 has the metrics table; the **targets are empty** and filling them requires a decision on Scalar's side |
 | 11 | **The list of points is added in §8.** The judgement is not — legal must confirm |
+| 12 | **Patched.** The five in-scope channels and how cadence works are in §1; the track template carries an interval-or-trigger field |
 
 For the MQL threshold (9) and the targets (10), **do not put in placeholder values**.
 Do not write what has not been decided as though it had been.

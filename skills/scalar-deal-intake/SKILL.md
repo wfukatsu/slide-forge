@@ -152,7 +152,10 @@ Match the ledger's vocabulary. The conversion table is `hearing-sheet.ja.md` §1
 ### Three places every intake touches
 
 1. `deal-log.md` §1 — one row per meeting (attendees, what was decided, both sides'
-   homework, next date, temperature)
+   homework, next date, temperature).
+   **When the stage changed that time, add a row to the stage-transition table in
+   §1 too** (date, from/to, the gate used, the customer-side evidence) — without it
+   there is no cycle time.
 2. `deal-log.md` §3 — newly surfaced risks. **Not the same as unknowns**, which are
    things an interview would answer
 3. The stage record — the fields that got filled this time
@@ -190,7 +193,8 @@ the following hold (playbook §4):
 
 ### On a loss or a hold
 
-Do not close the deal until `deal-log.md` §4 is filled: the real cause, the
+Do not close the deal until `deal-log.md` §4 is filled — **wins included** (what
+decided it, what material worked, what to repeat next time): the real cause, the
 criterion that decided it, which stage's missed check let it through, and the
 conditions for coming back. **"Price was too high" is not a root cause.**
 
