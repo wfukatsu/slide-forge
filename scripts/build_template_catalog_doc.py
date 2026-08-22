@@ -32,7 +32,8 @@ IMG_DIR = ROOT / "references/images/slide-templates"
 IMG_REL = "images/slide-templates"
 
 PACK_ORDER = ["marketing-analysis", "b2b-sales", "scalar-ae", "planning", "analysis",
-              "read-alone", "business-plan"]
+              "read-alone", "business-plan", "nexus", "hearing", "case-studies",
+              "proposal", "marketing", "partner"]
 
 PACK_INTRO_JA = {
     "marketing-analysis": (
@@ -79,6 +80,41 @@ PACK_INTRO_JA = {
         "全テンプレートが `$density` バリアントを持ち、配布用の事業計画書（print）と"
         "役員会での説明（presentation）の 2 密度で描画できる。",
     ),
+    "nexus": (
+        "Nexus レポートパック",
+        "nexus-architect の実行結果をスライドにするページ群。どこまで分析したか・"
+        "何が見つかったか・何を決めたか・何が未回答かを、拠って立つ根拠つきで示す。",
+    ),
+    "hearing": (
+        "ヒアリングパック",
+        "伝えるためではなく**集めるため**のページ群。うかがいたいことの議題、"
+        "こちらの理解を出して訂正してもらうページ、その場で記入してもらう欄、"
+        "イベント用の選択、回答先の提示までを 1 枚ずつにしている。",
+    ),
+    "case-studies": (
+        "事例パック",
+        "公表事例を資料に載せるページ群。複数を抜粋で、1 社を詳細で、"
+        "そして目の前の顧客に当てはまる理由で。公開許諾と日付つきの出典は "
+        "templates/marketing/case-study.ja.md が管理する。",
+    ),
+    "proposal": (
+        "提案パック",
+        "問題解決型提案のうち、再利用できるページが無かった節。"
+        "見えている問題の下にある構造、課題→解決のマッピング、対象と対象外、"
+        "業務がどう変わるか、PoC と合否基準、次の一歩。",
+    ),
+    "marketing": (
+        "マーケティングパック",
+        "まだ商談になっていない相手に当てるページ群。イベント・登壇の告知、"
+        "課題を認識していない人への価値の提示、ユースケース 1 枚、"
+        "技術資料の要旨。",
+    ),
+    "partner": (
+        "パートナーパック",
+        "プレイブックが定義しながらテンプレートの無かった 2 種。"
+        "担ぐとパートナーに何が得られるかと、RACI・商流・見積境界・責任の所在を"
+        "決める共同提案方針書。",
+    ),
 }
 
 INFERENCE_LABEL = {
@@ -98,16 +134,25 @@ INFERENCE_LABEL = {
     },
 }
 
+# Three nexus pages embed screenshots that only a real nexus-architect run
+# produces, so they have no catalog image. Say so instead of leaving a silent gap.
+NO_IMAGE_NOTE = {
+    "ja": "> `architecture-exhibit` / `ui-mock-flow` / `ui-mock-detail` は、実行結果の\n"
+          "> スクリーンショットを貼るページのため画像が無い。nexus-architect を実際に\n"
+          "> 走らせた出力が要る。",
+    "en": "> `architecture-exhibit`, `ui-mock-flow` and `ui-mock-detail` have no catalog\n"
+          "> image: they embed screenshots that only a real nexus-architect run produces.",
+}
+
 REGEN_FENCE = {
     "ja": [
         "```bash",
         "# このカタログを作り直す（テンプレートを追加したときも同じ手順）",
-        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis \\",
-        "            read-alone business-plan; do",
+        "for pack in " + " ".join(PACK_ORDER) + "; do",
         "  .venv/bin/python scripts/build_slide_template_catalog.py \\",
         "      --pack $pack --out out/template-catalog/$pack.json",
         "done",
-        "# 7 つの spec の slides を 1 つに結合して build_deck.py で生成し、",
+        "# 各 spec の slides を 1 つに結合して build_deck.py で生成し、",
         "# fetch_thumbnails.py の PNG を references/images/slide-templates/<id>.png に配置",
         ".venv/bin/python scripts/build_template_catalog_doc.py",
         "```",
@@ -115,12 +160,11 @@ REGEN_FENCE = {
     "en": [
         "```bash",
         "# Rebuild this catalog (same steps when adding a template)",
-        "for pack in marketing-analysis b2b-sales scalar-ae planning analysis \\",
-        "            read-alone business-plan; do",
+        "for pack in " + " ".join(PACK_ORDER) + "; do",
         "  .venv/bin/python scripts/build_slide_template_catalog.py \\",
         "      --pack $pack --out out/template-catalog/$pack.json",
         "done",
-        "# Merge the 7 specs' slides into one deck, generate with build_deck.py,",
+        "# Merge every spec's slides into one deck, generate with build_deck.py,",
         "# then place the fetch_thumbnails.py PNGs at references/images/slide-templates/<id>.png",
         ".venv/bin/python scripts/build_template_catalog_doc.py",
         "```",
@@ -247,6 +291,8 @@ def render(lang: str, templates: list[dict], i18n: dict) -> str:
             "",
             *REGEN_FENCE["ja"],
             "",
+            NO_IMAGE_NOTE["ja"],
+            "",
             "| パック | 数 | 何を作るための章か |",
             "|---|---|---|",
         ]
@@ -267,6 +313,8 @@ def render(lang: str, templates: list[dict], i18n: dict) -> str:
             "Templates are used via `render_slide_template.py` or the `$template` field in a deck spec.",
             "",
             *REGEN_FENCE["en"],
+            "",
+            NO_IMAGE_NOTE["en"],
             "",
             "| Pack | Count | What this section is for |",
             "|---|---|---|",

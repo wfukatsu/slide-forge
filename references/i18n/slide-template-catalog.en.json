@@ -34,6 +34,36 @@
       "name": "Business Plan Pack",
       "intro": "Pages covering what an approver looks at first in a business plan or investment proposal: revenue, investment, risk, and the team. Multi-year P/L, the revenue bridge, cost structure, break-even, scenario comparison, payback, the risk register with exit criteria, and the execution structure, each as a one-page format. Every template carries $density variants, so the same file renders as a written plan document (print) or a board-meeting slide (presentation).",
       "short": "Pages covering what an approver looks at first in a business plan or investment proposal: revenue, investment, risk, and the team"
+    },
+    "nexus": {
+      "name": "Nexus Report Pack",
+      "intro": "Pages that turn a nexus-architect run into slides: what the analysis covered, what it found, what was decided and what is still open. Every page states the basis it rests on.",
+      "short": "Pages that turn an architecture analysis run into slides"
+    },
+    "hearing": {
+      "name": "Hearing Pack",
+      "intro": "Pages whose job is to collect information rather than deliver it: the agenda of what you need to hear, your understanding put up to be corrected, a sheet to fill in during the meeting, a poll for an event, and where to send the answers.",
+      "short": "Pages that ask the customer or an audience for what is still missing"
+    },
+    "case-studies": {
+      "name": "Case Study Pack",
+      "intro": "Pages that carry published customer cases into a deck: several in brief, one in depth, and why a case applies to the customer in front of you. Consent and dated sources are managed in templates/marketing/case-study.ja.md.",
+      "short": "Pages that carry published customer cases into a deck"
+    },
+    "proposal": {
+      "name": "Proposal Pack",
+      "intro": "The sections of a problem-solving proposal that had no reusable page: the structure beneath the visible problems, the challenge-to-solution mapping, what is in and out of scope, how the work changes, the PoC and its pass criteria, and the next step.",
+      "short": "The sections of a problem-solving proposal that had no reusable page"
+    },
+    "marketing": {
+      "name": "Marketing Pack",
+      "intro": "Pages aimed at people who are not yet in a deal: event and talk announcements, the value message for someone who does not yet see a problem, a single use case, and the abstract of a technical paper.",
+      "short": "Pages aimed at people who are not yet in a deal"
+    },
+    "partner": {
+      "name": "Partner Pack",
+      "intro": "The two partner-facing materials the playbook defines but had no template for: what a partner gains by carrying the product, and the joint-proposal policy that settles RACI, the route to market, the estimate boundary and where responsibility sits.",
+      "short": "Partner-facing value and the joint-proposal policy"
     }
   },
   "templates": {
@@ -679,6 +709,422 @@
         "Depth of four or more, or over eight leaves, crushes the text. Split into a slide per department",
         "Two-line node labels (\"role\\nheadcount\") read best. Mask individual names when the deck leaves the company",
         "When the structure differs between launch and scale-up, state the period and use two slides"
+      ]
+    },
+    "pipeline-coverage": {
+      "displayName": "Pipeline Coverage",
+      "description": "States up front how far the analysis behind this deck actually got (done / running / not started)",
+      "answers": "How much completed analysis is this proposal or report based on?",
+      "guardrails": [
+        "Always the second slide. A deck explaining incomplete work misleads the reader unless the basis is disclosed first",
+        "counts are actual phase counts. Do not reinterpret them as report pages or hours worked",
+        "Do not relabel a not-started phase as 'out of scope'. skipped (deliberately passed over) and pending (not yet) are different",
+        "Always put the collection time (asOf) in source. The pipeline keeps moving, so the deck is always a snapshot"
+      ]
+    },
+    "phase-digest": {
+      "displayName": "Phase Digest (section divider)",
+      "description": "Shows what one phase established, using that phase's own summary and its output files",
+      "answers": "What did this phase establish, and which report says so?",
+      "guardrails": [
+        "Base summary on what the phase recorded itself (the summary in pipeline-progress.json). Rewording for the reader is fine; adding a new claim is not",
+        "outputs lists files that exist. Anything declared but unwritten goes to open-questions",
+        "A section divider carries one conclusion. Split multiple findings onto following pages"
+      ]
+    },
+    "stack-inventory": {
+      "displayName": "Technology Stack Inventory",
+      "description": "Shows what the current system is built on, layer by layer, with versions and constraints",
+      "answers": "What is this system standing on?",
+      "guardrails": [
+        "Layers are what actually runs. Anything present in config but never called is marked 'declared only' in the note",
+        "Always give the version. Support windows and known vulnerabilities cannot be judged without it",
+        "No judgement (good/bad) on this page. Problems go to issue-register"
+      ]
+    },
+    "issue-register": {
+      "displayName": "Issue, Debt and Finding Register",
+      "description": "Shows the detected issues as a severity distribution plus individual entries",
+      "answers": "What has been found, and how bad is it?",
+      "guardrails": [
+        "Use the severity the report assigned. Do not raise or lower it in the deck",
+        "The total of counts and the number of issues must agree (say so in the lead if this is an extract)",
+        "No remedies on this page. This page goes as far as 'what was found'",
+        "Every entry keeps its evidence (file, line, endpoint)"
+      ]
+    },
+    "score-card": {
+      "displayName": "Evaluation Score (single measure)",
+      "description": "Shows a single maturity or readiness score with its bands, and lists the components",
+      "answers": "Where does this measure put us right now?",
+      "guardrails": [
+        "Always show the score with its bands (what a given score means). A number alone cannot be judged",
+        "Component names and weights come from the report's definition. Do not add or round them in the deck",
+        "verdict says only what the number supports. Improvements go to roadmap / decision-record"
+      ]
+    },
+    "score-breakdown": {
+      "displayName": "Score Breakdown (subject x dimension)",
+      "description": "Compares scores per module and dimension as a surface, showing what is holding the total down",
+      "answers": "Which subject, on which dimension, is the low one?",
+      "guardrails": [
+        "Row and column order follows the report. If you sort by score, say so",
+        "Scores are integers from 0 to levels. If you round a fractional score, put the rounding rule in source",
+        "Do not make blank (not evaluated) look like 0. Either drop the row or label it in the row heading"
+      ]
+    },
+    "context-map": {
+      "displayName": "Context Map",
+      "description": "Shows the central context and its neighbours, with the relationship type on each edge",
+      "answers": "Which boundary is central, and how does it relate to its neighbours?",
+      "guardrails": [
+        "Relationship types (Shared Kernel / Conformist / Separate Ways ...) use the report's terms as they stand",
+        "Do not mix As-Is and To-Be on one page. State which it is in the title",
+        "Many-to-many relationships that the diagram cannot carry go into the table. Do not add lines until it is unreadable",
+        "To paste the original mermaid as it is, use architecture-exhibit"
+      ]
+    },
+    "architecture-exhibit": {
+      "displayName": "Architecture Exhibit (image plus what to read from it)",
+      "description": "Pastes the report's structural diagram as an exhibit and adds three things to read from it",
+      "answers": "What am I supposed to read from this diagram?",
+      "guardrails": [
+        "Use an image exported by scripts/mermaid_export.py / drawio_export.py / html_shot.py, and inspect it with Read after generating",
+        "The frame is about 2:1. An extremely tall or wide diagram leaves the page mostly margin, so split it or redraw it natively",
+        "Do not paste a diagram that cannot be read at slide size. Split it or redraw it natively",
+        "readings state only what the diagram shows. Do not slip a claim the diagram does not carry into the three points",
+        "Number exhibits sequentially so the body text can refer to them"
+      ]
+    },
+    "decision-record": {
+      "displayName": "Decision and Rationale (ADR)",
+      "description": "Keeps the options considered, what was adopted or rejected, and why, on one page",
+      "answers": "Why was this approach chosen, and on what grounds were the others dropped?",
+      "guardrails": [
+        "Always show at least one rejected option. A table of the adopted option alone is advertising, not a decision record",
+        "Tie the rationale to evaluation dimensions (performance, consistency, operations, cost). Not to preference",
+        "If the decision is not settled, write 'undecided'. Do not make it look decided",
+        "Include what the decision affects (which phases depend on it) in decision"
+      ]
+    },
+    "roadmap": {
+      "displayName": "Migration and Implementation Roadmap",
+      "description": "Shows the sequence, the durations and the dependencies as bands",
+      "answers": "What gets done, in what order, over what period?",
+      "guardrails": [
+        "If there is no basis for a duration, do not give one. Make it a relative-order diagram instead",
+        "Bands that run in parallel must actually be able to (no dependency between them)",
+        "Milestones (start == end) mark decision points, not work",
+        "If a step depends on a phase that has not started, say so in the lead"
+      ]
+    },
+    "persona-journey": {
+      "displayName": "Persona and Where the Experience Stalls",
+      "description": "Lays out the target user's experience in sequence and shows where it stalls",
+      "answers": "Who stalls, in which experience, and where?",
+      "guardrails": [
+        "Persona attributes are only what the research confirmed. Do not invent an age or an income to fill the card",
+        "Tie each pain to an observed fact (something said, done, or measured). If it is inference, label it a hypothesis",
+        "No solutions on this page. This page goes as far as the experience as it is"
+      ]
+    },
+    "ui-mock-flow": {
+      "displayName": "Screen Flow (three UI mocks)",
+      "description": "Shows the flow of an experience as screen mocks ordered by the domain story",
+      "answers": "Which screens does this work pass through, and in what order?",
+      "guardrails": [
+        "Order the mocks by the story ({STORY}-NN-{slug}.html, by NN). Do not reorder them for looks",
+        "Capture with scripts/html_shot.py and inspect with Read before pasting (a capture succeeds even when the styles did not load)",
+        "A mock is a specification, not an implementation. Do not word it so it reads as 'already built'",
+        "A flow that does not fit in three screens is split across pages at a boundary that does fit"
+      ]
+    },
+    "ui-mock-detail": {
+      "displayName": "Screen Detail (one UI mock)",
+      "description": "Shows one screen mock large, with the points to notice and the specification beside it",
+      "answers": "What has been settled on this screen?",
+      "guardrails": [
+        "The points to notice are only what is visible on the screen. Processing behind it does not go on this page",
+        "Capture with scripts/html_shot.py and inspect with Read before pasting",
+        "Mark anything unsettled as 'undecided' in the table. Do not present what the mock happens to draw as settled"
+      ]
+    },
+    "open-questions": {
+      "displayName": "Open Questions and Next Actions",
+      "description": "Shows the premises still unfilled and the phases not started, along with who fills them and how",
+      "answers": "What can this material not yet answer, and how does that get filled?",
+      "guardrails": [
+        "Do not remove an item from here by filling it with a guess. It is open because it is unfilled, not because nothing could be written",
+        "Every row says who fills it and with which command. Do not leave it as a list of homework",
+        "Do not mix open questions arising from unstarted phases with ones the report stated explicitly (distinguish them in source)",
+        "On a partially-run deck, this is always the last page"
+      ]
+    },
+    "hearing-agenda": {
+      "displayName": "What We Need to Hear Today",
+      "description": "Puts the open points on the table up front, each with the reason you are asking",
+      "answers": "What do we need to be told in this meeting?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "If you cannot say why you are asking, leave it off. Questions are decided by order, not by volume",
+        "Do not arrive with the blanks filled in by guesswork. You ask because it is blank",
+        "Five items at most. Do not exceed what one meeting can answer"
+      ]
+    },
+    "hypothesis-check": {
+      "displayName": "Checking Our Understanding",
+      "description": "Puts your reading up as a hypothesis so the customer can correct what is wrong",
+      "answers": "Where is our understanding wrong?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**Do not assert.** Only rows whose confidence is 推定 belong here; listing confirmed ones checks nothing",
+        "The point is to be corrected. Always end with 'tell us if we have this wrong'",
+        "No figure without a source"
+      ]
+    },
+    "fill-in-sheet": {
+      "displayName": "Blanks to Fill in Here",
+      "description": "Blank rows to write on during the meeting, on screen or on paper",
+      "answers": "What do we want filled in while we are in the room?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "Leave the blanks blank. **Do not pre-fill a guess and call it 'please confirm'**",
+        "Six items at most. Keep it to what there is time to write",
+        "For anything they cannot answer now, ask who could"
+      ]
+    },
+    "event-poll": {
+      "displayName": "Does Any of This Apply to You?",
+      "description": "Lets an audience at a seminar or talk say which situation they are in",
+      "answers": "Which situation is this audience in?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "Write the options as buyer situations. **Do not make them choose by product name** — that is a product pitch, not collection",
+        "Aggregate the answers as types. Do not keep who chose what in the material",
+        "If you ask for an answer, say what comes back for it (a deck, a follow-up conversation)"
+      ]
+    },
+    "collect-cta": {
+      "displayName": "Where to Send the Answers",
+      "description": "Says where answers go, and what the customer gets back for sending them",
+      "answers": "Who sends the answers, where, and by when?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses; check who the answer URL may be shared with before putting it on the page",
+        "**Say what happens once they answer.** Collecting without returning anything teaches people not to answer",
+        "Give a date and an owner. A request with neither does not move"
+      ]
+    },
+    "collect-qr": {
+      "displayName": "Answer Form (QR)",
+      "description": "Shows the QR for the answer destination large, for the end of a talk or a hand-off in person",
+      "answers": "Where do I go to answer this right now?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses; confirm who can see what the QR points at before putting it up",
+        "**Always spell the URL out as well.** There is always a seat where the QR will not scan",
+        "If it points at a shared sheet, point at the customer version (internal columns and sections removed)"
+      ]
+    },
+    "case-study-card": {
+      "displayName": "Cases in Brief (three)",
+      "description": "Three published cases, one line each — the page that reinforces trust after interest is there",
+      "answers": "How have other companies solved a problem like this?",
+      "guardrails": [
+        "**Only published cases.** No unpublished customer name or figure",
+        "Use the figures as the published material states them, and **always put the source (outlet and date) in source**",
+        "Cases and figures fall under the 3-month rule. **Re-check anything past its last-confirmed date before using it**",
+        "Name a customer only within what was agreed with them (the deal side records the promise in stage 5 §6 / stage 6 §5)",
+        "Three at most. **The more you line up, the weaker the impression.** Choose the ones closest to this audience"
+      ]
+    },
+    "case-study-detail": {
+      "displayName": "One Case in Depth",
+      "description": "One customer, in the order problem -> what was done -> result, with published figures only",
+      "answers": "What was that company stuck on, what did they do, and what happened?",
+      "guardrails": [
+        "**Only published cases.** No unpublished customer name or figure",
+        "Use the figures as the published material states them, and **always put the source (outlet and date) in source**",
+        "Cases and figures fall under the 3-month rule. **Re-check anything past its last-confirmed date before using it**",
+        "Name a customer only within what was agreed with them (the deal side records the promise in stage 5 §6 / stage 6 §5)",
+        "**Put before and after on the same dimension.** A before/after on shifting dimensions is not a comparison",
+        "One headline figure. **Several at once leaves no impression of which one is the effect**"
+      ]
+    },
+    "case-fit": {
+      "displayName": "Why This Case Applies to You",
+      "description": "Sets the case's situation beside the customer's, showing why it is worth their attention",
+      "answers": "How far does that case actually apply to us?",
+      "guardrails": [
+        "**Only published cases.** No unpublished customer name or figure",
+        "Use the figures as the published material states them, and **always put the source (outlet and date) in source**",
+        "Cases and figures fall under the 3-month rule. **Re-check anything past its last-confirmed date before using it**",
+        "Name a customer only within what was agreed with them (the deal side records the promise in stage 5 §6 / stage 6 §5)",
+        "**Always name one thing that does not apply** (caveat). No case applies entirely, and hiding it surfaces during the PoC",
+        "The customer's column carries only facts from the hearing. **Do not fill it with inference**"
+      ]
+    },
+    "challenge-solution-map": {
+      "displayName": "Challenge to Solution Mapping",
+      "description": "Sets each agreed challenge against what solves it and what changes as a result — the core of the proposal",
+      "answers": "Which challenge is solved by what, and how?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**Match the challenge slide in both order and wording.** Rephrased, it reads as a different subject",
+        "One challenge per row. **Do not claim one capability solves three** (it breaks down under verification)",
+        "A challenge you cannot solve gets no row; put it below as out of scope. **Do not force the fit**",
+        "Write the result as what happens to the work, not as a restatement of the capability"
+      ]
+    },
+    "scope-in-out": {
+      "displayName": "In Scope and Out of Scope",
+      "description": "Sets what is in against what is not, so expectations line up",
+      "answers": "How much of this is today's subject, and where does another conversation begin?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**Decide what is out first.** A proposal with an empty out-of-scope grows afterwards",
+        "Say why something is out. **'We won't' alone reads as 'we can't'**",
+        "State the ranges another vendor or project already owns"
+      ]
+    },
+    "poc-plan": {
+      "displayName": "PoC Objective and Pass Criteria",
+      "description": "What has to be confirmed for feasibility, and what happens after — as far as what follows a pass",
+      "answers": "What does the PoC confirm, and what happens if it passes?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**Pass criteria are numeric or answerable yes/no.** 'It works well' is not a criterion",
+        "**Always state what happens on a pass.** A PoC the customer cannot answer that for has not been designed yet",
+        "Say what happens on a fail. A one-way PoC is not a verification",
+        "State the people, effort and data needed from the customer. **Do not say 'no special burden'**"
+      ]
+    },
+    "outcome-before-after": {
+      "displayName": "Expected Outcome (how the work changes)",
+      "description": "States the effect as a change in daily work rather than as a set of capabilities",
+      "answers": "What actually changes for the people doing the work?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**Write work, not capability.** Not 'it becomes ACID' but 'the reconciliation goes away'",
+        "**Only quantified figures with a stated basis.** Without one, state it qualitatively and say it will be measured in the PoC",
+        "Put before and after on the same dimension. A shifted comparison is no comparison",
+        "Do not present a published case's figure as this customer's effect. Cases belong on their own page"
+      ]
+    },
+    "next-step-customer": {
+      "displayName": "What to Decide Today, and the Next Step",
+      "description": "Separates what is decided in the room from the homework each side takes away",
+      "answers": "What is being decided today, and who does what before the next meeting?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**One thing to decide today.** With several, none of them get decided",
+        "Homework carries an owner and a date. **Without both it does not move**",
+        "Always include something on our side. Not a page that only hands the customer homework"
+      ]
+    },
+    "iceberg-challenge": {
+      "displayName": "Structure Beneath the Problems",
+      "description": "Separates the problems on the surface from the structure underneath, distinguishing the proposal from a symptomatic fix",
+      "answers": "What sits beneath the problems we can see?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "The top is **what the customer actually said**; the bottom is our reading of the structure. **Do not mix them**",
+        "The top takes **two short noun phrases** (10 characters each); only two lines fit above the waterline. Wanting three means the surface problems are not narrowed down yet",
+        "Three at most below. **The more root causes you list, the less any of them looks like the root**",
+        "Leave room for this reading to be wrong. Do not assert it before it is agreed"
+      ]
+    },
+    "event-announce": {
+      "displayName": "Event and Seminar Announcement",
+      "description": "The essentials of an event — date, format, audience, price, how to register — on one page",
+      "answers": "When and where is this, who is it for, and how do I register?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "**Only confirmed information.** Speakers, venue and time go on once they are settled, not before",
+        "**Name the audience.** 'Anyone welcome' reaches nobody (and leaves the nurture stage undecided)",
+        "Do not drop price, capacity or the registration deadline. **If they will not fit in four rows, combine them into one** (extra rows push out the registration line)",
+        "mode is one of online / offline / hybrid",
+        "The first column of rows is a pictogram name. Only the ones in references/pictogram-catalog.md exist (date=calendar, venue=pin, audience=people, price=coin, deadline=clock)"
+      ]
+    },
+    "session-agenda": {
+      "displayName": "Session Programme",
+      "description": "The running order, by time, subject and speaker",
+      "answers": "What is covered on the day, in what order, and by whom?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "**Only confirmed times.** An unsettled slot says 'to be confirmed'; it is not left blank",
+        "Six slots at most. Beyond that, split across two pages (do not shrink to fit)",
+        "Always include time for questions. **Without it, nothing you needed to hear gets collected**"
+      ]
+    },
+    "speaker-intro": {
+      "displayName": "Speakers",
+      "description": "Who is speaking, and why this talk comes from them",
+      "answers": "Whose position does this talk come from?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "**Only confirmed details about real speakers.** Check the job title with the person",
+        "Do not list a career. It is enough to convey why this person gives this talk",
+        "A speaker from a customer company is handled like a case study: confirm the scope of their consent"
+      ]
+    },
+    "value-message": {
+      "displayName": "Improvement and Benefit (stages 0-1)",
+      "description": "Shows someone who does not yet see a problem what is worth settling at build or replacement time, and why it is worth it",
+      "answers": "What is worth fixing now so that something else does not happen later?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "**Stages 0-1 are the Why Change? stages. Do not load them with product detail** (nurture-map.md §1)",
+        "Fix the three cards in the order situation -> the drawback they have not noticed -> what happens if left alone",
+        "**Write in the buyer's words.** A sentence that opens with a product name is not read at this stage",
+        "Do not assert. End with a question to the reader"
+      ]
+    },
+    "use-case-one-pager": {
+      "displayName": "Use Case on One Page (stages 1-2)",
+      "description": "One way of using the product, in the order preconditions -> what you do -> where it helps",
+      "answers": "What does using this concretely look like?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "**One page, one use case.** The more general it reads, the less it is anyone's",
+        "Always state the preconditions this use holds under. **A use case without them becomes a sales story**",
+        "**Do not mix it with a case study.** A use case is a way of using; a case study is a record. They need different sourcing",
+        "Do not present a preview capability as an available way of using it"
+      ]
+    },
+    "whitepaper-abstract": {
+      "displayName": "Technical Paper Abstract (stage 3)",
+      "description": "The cover page that lets a reader judge, before reading, what the paper settles",
+      "answers": "What is in this paper, and what will I know after reading it?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "**Say what the reader will know afterwards.** A cover with only a table of contents gives nothing to decide on",
+        "**Name the intended reader.** Stage 3 is the technical-proof stage, and the reader is an evaluator",
+        "No unverified claim in the abstract. Hypotheses are handled as hypotheses in the body",
+        "Performance figures, prices and editions fall under the 3-month rule. Put the last-confirmed date in source"
+      ]
+    },
+    "partner-value": {
+      "displayName": "Partner Value and Shape of the Collaboration",
+      "description": "What a partner gains and what they carry — a page to show a partner",
+      "answers": "What does a partner get out of carrying this product?",
+      "guardrails": [
+        "**Partner-facing.** Keep customer-specific confidential detail to a minimum (playbook §3)",
+        "**Write it as standard, reusable information.** Mixing in one deal's circumstances makes it unusable elsewhere",
+        "State what is in it for the partner (deal size, services, recurring work). **Not only what suits us**",
+        "Do not name a competitor's weakness. Partners trade with the competition too",
+        "Treat prices as list price (excl. tax) reference-estimate material; discounts and multi-year terms stay off (they route to the AE)"
+      ]
+    },
+    "joint-proposal-policy": {
+      "displayName": "Joint Proposal Policy",
+      "description": "Settles the joint win theme, RACI, route to market, estimate boundary, IP and confidentiality, and contractual responsibility on one page",
+      "answers": "Who is responsible for what on this deal, and where does the estimate divide?",
+      "guardrails": [
+        "**Partner proposal material.** Do not present an unagreed item as agreed",
+        "**Always state the estimate boundary.** Left vague until it reaches the customer, it will be disputed later",
+        "Do not omit where IP, confidentiality and contractual responsibility sit (required by playbook §3)",
+        "An unagreed item stays as a row marked 未合意. **Do not ship it blank**",
+        "Before naming the customer or their terms, confirm the NDA is in place"
       ]
     }
   }

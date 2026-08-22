@@ -1,11 +1,6 @@
 *[English](slide-template-catalog.md)*
 
-# スライドテンプレート カタログ
-
-**以下の画像は登録内容より古い。** 描画した時点の 7 パックしか含んでおらず、
-`nexus` / `hearing` / `case-studies` / `proposal` / `marketing` / `partner` は
-登録済みだが画像が無い。下のコマンドで作り直す。**正本は
-`slide-templates/manifest.json`** である。
+# スライドテンプレート カタログ（全 92 種）
 
 `slide-templates/` に登録されたテンプレートを実際に 1 枚ずつ生成して
 書き出した画像カタログ。**どのテンプレートで 1 枚を作るかを見て選ぶ**ためのもの。
@@ -18,16 +13,18 @@
 
 ```bash
 # このカタログを作り直す（テンプレートを追加したときも同じ手順）
-for pack in marketing-analysis b2b-sales scalar-ae planning analysis \
-            read-alone business-plan nexus hearing case-studies \
-            proposal marketing partner; do
+for pack in marketing-analysis b2b-sales scalar-ae planning analysis read-alone business-plan nexus hearing case-studies proposal marketing partner; do
   .venv/bin/python scripts/build_slide_template_catalog.py \
       --pack $pack --out out/template-catalog/$pack.json
 done
-# 7 つの spec の slides を 1 つに結合して build_deck.py で生成し、
+# 各 spec の slides を 1 つに結合して build_deck.py で生成し、
 # fetch_thumbnails.py の PNG を references/images/slide-templates/<id>.png に配置
 .venv/bin/python scripts/build_template_catalog_doc.py
 ```
+
+> `architecture-exhibit` / `ui-mock-flow` / `ui-mock-detail` は、実行結果の
+> スクリーンショットを貼るページのため画像が無い。nexus-architect を実際に
+> 走らせた出力が要る。
 
 | パック | 数 | 何を作るための章か |
 |---|---|---|
@@ -38,6 +35,12 @@ done
 | [現状分析パック](#analysis) | 10 種 | コンサルティングの現状分析・課題特定フレームワークをページ化した群 |
 | [読み物パック](#read-alone) | 8 種 | 1 枚で読み切れる高密度スライド（外資コンサル型の配布資料）のページ群 |
 | [事業計画パック](#business-plan) | 8 種 | 事業計画・稟議で承認者が最初に見る「収益・投資・リスク・体制」のページ群 |
+| [Nexus レポートパック](#nexus) | 14 種 | nexus-architect の実行結果をスライドにするページ群 |
+| [ヒアリングパック](#hearing) | 6 種 | 伝えるためではなく**集めるため**のページ群 |
+| [事例パック](#case-studies) | 3 種 | 公表事例を資料に載せるページ群 |
+| [提案パック](#proposal) | 6 種 | 問題解決型提案のうち、再利用できるページが無かった節 |
+| [マーケティングパック](#marketing) | 6 種 | まだ商談になっていない相手に当てるページ群 |
+| [パートナーパック](#partner) | 2 種 | プレイブックが定義しながらテンプレートの無かった 2 種 |
 
 <a id="marketing-analysis"></a>
 
@@ -1125,3 +1128,759 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 - 深さ 4 以上・葉 8 超は文字が潰れる。部門ごとにスライドを分ける
 - ノードのラベルは「役割\n人数」の 2 行にすると読みやすい。個人名は社外提出時に伏せる
 - 立ち上げ期と拡大期で体制が変わるなら、時期を明記して 2 枚に分ける
+
+<a id="nexus"></a>
+
+## Nexus レポートパック（`nexus`）
+
+nexus-architect の実行結果をスライドにするページ群。どこまで分析したか・何が見つかったか・何を決めたか・何が未回答かを、拠って立つ根拠つきで示す。
+
+### パイプラインのカバレッジ（`pipeline-coverage`）
+
+![パイプラインのカバレッジ](images/slide-templates/pipeline-coverage.png)
+
+この資料がどこまでの分析に基づくか（完了・実行中・未着手）を最初に示す
+
+**答える問い**: この提案・報告は、どこまで終わった分析に基づいているのか
+
+**figures**: `governing_message`, `lead_in`, `hbars`, `table`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- デッキの 2 枚目に必ず置く。未完了のまま説明する資料は、前提を先に開示してからでないと読み手が誤解する
+- counts はフェーズ数の実数。レポートの枚数や作業時間に読み替えない
+- 未着手フェーズを『対象外』と書き換えない。skipped（意図的に飛ばした）と pending（まだ）は別物
+- source には収集時刻（asOf）を必ず入れる。パイプラインは動き続けるので、資料は常にある時点のスナップショット
+
+### フェーズ要約（章扉）（`phase-digest`）
+
+![フェーズ要約（章扉）](images/slide-templates/phase-digest.png)
+
+1 フェーズが何を明らかにしたかを、そのフェーズ自身の要約と出力ファイルで示す
+
+**答える問い**: このフェーズは何を明らかにし、どのレポートに書いたのか
+
+**figures**: `governing_message`, `lead_in`, `so_what`, `table`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- summary はフェーズが自分で記録した要約（pipeline-progress.json の summary）を土台にする。読み手向けに言い換えるのはよいが、新しい主張を足さない
+- outputs は実在するファイルだけ。宣言されているが書かれていないものは open-questions 側に回す
+- 章扉なので結論は 1 つ。複数の発見があるなら後続ページに分ける
+
+### 技術スタックの棚卸し（`stack-inventory`）
+
+![技術スタックの棚卸し](images/slide-templates/stack-inventory.png)
+
+現行システムが何でできているかを層で示し、版と制約を併記する
+
+**答える問い**: このシステムは何の上に建っているのか
+
+**figures**: `governing_message`, `lead_in`, `layers`, `table`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 層は実際に動いているものだけ。設定ファイルに書いてあるが呼ばれていないものは note で『宣言のみ』と明示する
+- 版は必ず書く。サポート期限や既知脆弱性の判断は版がないとできない
+- 評価（良い・悪い）はこのページに書かない。課題は issue-register へ
+
+### 課題・負債・指摘の一覧（`issue-register`）
+
+![課題・負債・指摘の一覧](images/slide-templates/issue-register.png)
+
+検出された課題を重大度の分布と個票で示す
+
+**答える問い**: 何が、どれくらいまずい状態で見つかっているのか
+
+**figures**: `governing_message`, `lead_in`, `hbars`, `table`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 重大度はレポートが付けた値をそのまま使う。デッキ側で上げ下げしない
+- counts の合計と issues の総数は一致させる（抜粋するなら lead でそう書く）
+- 打ち手はこのページに書かない。ここは『何が見つかったか』まで
+- 個票には根拠（ファイル名・行・エンドポイント）を必ず残す
+
+### 評価スコア（単一指標）（`score-card`）
+
+![評価スコア（単一指標）](images/slide-templates/score-card.png)
+
+成熟度・準備度などの単一スコアを帯域つきで示し、内訳を並べる
+
+**答える問い**: この評価軸で、いまどの水準にいるのか
+
+**figures**: `governing_message`, `lead_in`, `metric`, `hbars`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- スコアは必ず帯域（何点なら何を意味するか）と一緒に出す。数字だけでは判断できない
+- 内訳の軸名と重みはレポートの定義をそのまま使う。デッキ側で足したり丸めたりしない
+- verdict は数字から言えることだけ。改善策は roadmap / decision-record へ
+
+### スコアの内訳（対象 × 観点）（`score-breakdown`）
+
+![スコアの内訳（対象 × 観点）](images/slide-templates/score-breakdown.png)
+
+モジュールや観点ごとのスコアを面で比較し、どこが足を引っ張っているかを示す
+
+**答える問い**: 低いのはどの対象の、どの観点なのか
+
+**figures**: `governing_message`, `lead_in`, `rating_matrix`, `so_what`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 行と列の順序はレポートに合わせる。スコア順に並べ替えるなら、そう明記する
+- 点は 0〜levels の整数。小数のスコアを丸めて載せる場合は source に丸め方を書く
+- 空白（未評価）と 0 点を同じに見せない。未評価の行は載せないか、行ラベルに明記する
+
+### コンテキストマップ（`context-map`）
+
+![コンテキストマップ](images/slide-templates/context-map.png)
+
+中心となるコンテキストと周辺の関係を、関係種別つきで示す
+
+**答える問い**: どの境界が中心で、周辺とはどんな関係にあるのか
+
+**figures**: `governing_message`, `lead_in`, `hub`, `table`, `source_note`  
+**推論レベル**: 戦略（評価と方向づけ）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 関係種別（Shared Kernel / Conformist / Separate Ways など）はレポートの用語をそのまま使う
+- As-Is と To-Be を 1 枚に混ぜない。どちらの図かを title で明示する
+- 図で表せない多対多の関係は表側に逃がす。線を増やして読めなくしない
+- 元の mermaid をそのまま貼りたい場合は architecture-exhibit を使う
+
+### 構成図（画像＋読み取りポイント）（`architecture-exhibit`）
+
+レポートの構造図をそのまま図表として貼り、読み取るべき点を 3 つ添える
+
+**答える問い**: この構成図から何を読み取ればよいのか
+
+**figures**: `governing_message`, `exhibit_frame`, `image`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 画像は scripts/mermaid_export.py / drawio_export.py / html_shot.py で書き出したものを使い、生成後に Read で目視確認する
+- 画像枠は約 2:1。極端に縦長・横長の図は余白だらけになるので、分割するかネイティブ図に描き直す
+- スライドサイズで読めない図は貼らない。読めないなら分割するか、ネイティブ図に描き直す
+- readings は図に描かれていることだけ。図にない主張を 3 点に混ぜない
+- 図表番号は本文から参照できるように連番で管理する
+
+### 決定と根拠（ADR）（`decision-record`）
+
+![決定と根拠（ADR）](images/slide-templates/decision-record.png)
+
+検討した選択肢と採否、そして決定理由を 1 枚に残す
+
+**答える問い**: なぜこの方式を選んだのか、他は何を理由に落としたのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
+**推論レベル**: 戦略（評価と方向づけ）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 落とした選択肢を必ず 1 つ以上載せる。採用案だけの表は決定記録ではなく宣伝になる
+- 採否理由は評価軸（性能・整合性・運用・コスト）に紐づける。好みで書かない
+- 決定が未確定なら『未決』と書く。決まったように見せない
+- 決定の影響範囲（どのフェーズがこの決定に依存するか）を decision に含める
+
+### 移行・実装ロードマップ（`roadmap`）
+
+![移行・実装ロードマップ](images/slide-templates/roadmap.png)
+
+段取りと期間、依存関係を帯で示す
+
+**答える問い**: 何を、どの順で、どれくらいの期間でやるのか
+
+**figures**: `governing_message`, `lead_in`, `gantt`, `source_note`  
+**推論レベル**: 戦略（評価と方向づけ）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 期間の根拠がないなら期間を書かない。相対順序だけの図にする
+- 並行して走る帯は、本当に並行できる（依存がない）ものだけにする
+- マイルストーン（start == end）は意思決定点に使う。作業には使わない
+- 未着手フェーズに依存する工程は、その旨を lead に書く
+
+### ペルソナと体験の詰まり（`persona-journey`）
+
+![ペルソナと体験の詰まり](images/slide-templates/persona-journey.png)
+
+対象ユーザーの体験を時系列で並べ、どこで詰まるかを示す
+
+**答える問い**: 誰が、どの体験の、どこで詰まっているのか
+
+**figures**: `governing_message`, `lead_in`, `journey`, `cards`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- ペルソナの属性は調査で確認できたものだけ。年齢・年収などを埋めるために創作しない
+- 痛みは観察された事実（発言・行動・数値）に紐づける。推測なら『仮説』と明記する
+- 解決策をこのページに書かない。ここは現状の体験まで
+
+### 画面フロー（UI モック 3 枚）（`ui-mock-flow`）
+
+ドメインストーリーの順に並べた画面モックで、体験の流れを示す
+
+**答える問い**: この業務は、どの画面をどの順に通るのか
+
+**figures**: `governing_message`, `lead_in`, `image`, `cards`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- モックはストーリーの順（{STORY}-NN-{slug}.html の NN 順）に並べる。見栄えで順序を変えない
+- 画像は scripts/html_shot.py で撮り、Read で目視確認してから貼る（スタイルが当たらなくても撮影は成功する）
+- モックは仕様であって実装ではない。『実装済み』と読める書き方をしない
+- 3 枚に収まらないフローは、この枚数で切れる単位に分けて複数ページにする
+
+### 画面詳細（UI モック 1 枚）（`ui-mock-detail`）
+
+1 画面のモックを大きく見せ、注目点と仕様を並べる
+
+**答える問い**: この画面で何が決まっているのか
+
+**figures**: `governing_message`, `lead_in`, `image`, `table`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 注目点は画面上に見えていることだけ。裏の処理仕様はこのページに書かない
+- 画像は scripts/html_shot.py で撮り、Read で目視確認してから貼る
+- 未確定の要素は表側に『未確定』と書く。モックに描いてあることを確定事項として説明しない
+
+### 未回答の問いと次アクション（`open-questions`）
+
+![未回答の問いと次アクション](images/slide-templates/open-questions.png)
+
+まだ埋まっていない前提・未着手フェーズを、誰がどう埋めるかと一緒に示す
+
+**答える問い**: この資料でまだ答えられていないことは何で、どうすれば埋まるのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `cards`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+使うときの決まり:
+
+- 推測で埋めた項目をここから消さない。埋めていないから未回答なのであって、書けることがないわけではない
+- 各行に『誰が / どのコマンドで』埋まるかを必ず書く。宿題の一覧で終わらせない
+- 未着手フェーズ由来の未回答と、レポートが明示した open question を混ぜない（source で区別する）
+- 部分実行のデッキでは最終ページに必ず置く
+
+<a id="hearing"></a>
+
+## ヒアリングパック（`hearing`）
+
+伝えるためではなく**集めるため**のページ群。うかがいたいことの議題、こちらの理解を出して訂正してもらうページ、その場で記入してもらう欄、イベント用の選択、回答先の提示までを 1 枚ずつにしている。
+
+### 本日うかがいたいこと（`hearing-agenda`）
+
+![本日うかがいたいこと](images/slide-templates/hearing-agenda.png)
+
+空いている論点を、なぜうかがうのかと一緒に議題として先に出す 1 枚
+
+**答える問い**: この打ち合わせで何を教えてもらう必要があるのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
+- 「なぜうかがうのか」を書けない項目は載せない。質問は量ではなく順序で決まる
+- 空欄をこちらの推測で埋めた状態で持ち込まない。空いているから聞く
+- 5 項目まで。1 回の打ち合わせで返せる量を超えない
+
+### 理解の確認（違っていたら教えてください）（`hypothesis-check`）
+
+![理解の確認（違っていたら教えてください）](images/slide-templates/hypothesis-check.png)
+
+こちらの理解を仮説として出し、違っている点を顧客に訂正してもらう 1 枚
+
+**答える問い**: 我々の理解のどこが違っているのか
+
+**figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
+- **断定しない。** 確度が `推定` の行だけをここに出す。`確認済` を並べても確認にならない
+- 訂正してもらうのが目的。最後は必ず「違っていたら教えてください」で終える
+- 出典のない数値を載せない
+
+### その場でご記入いただく欄（`fill-in-sheet`）
+
+![その場でご記入いただく欄](images/slide-templates/fill-in-sheet.png)
+
+対面・画面共有・印刷で、その場で書き込んでもらうための記入欄
+
+**答える問い**: この場で埋めてもらいたい項目は何か
+
+**figures**: `governing_message`, `lead_in`, `table`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。内部の判断（確度・出典・製品適合）を載せない
+- 記入欄は空のまま出す。**こちらの推測を薄く入れて「確認してください」にしない**
+- 6 項目まで。書く時間が取れる量にする
+- その場で答えられない項目は、持ち帰り先（誰が答えられるか）を一緒に聞く
+
+### 当てはまるものはありますか（イベント用）（`event-poll`）
+
+![当てはまるものはありますか（イベント用）](images/slide-templates/event-poll.png)
+
+セミナー・登壇で、聴衆にどの状況に当てはまるかを選んでもらう 1 枚
+
+**答える問い**: この聴衆はどの状況にいるのか
+
+**figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用・不特定多数向け**。特定の企業や個人が分かる書き方をしない
+- 選択肢は買い手の状況で書く。**製品名で選ばせない**（それは製品紹介であって収集ではない）
+- 選んだ結果は型として集計する。誰が選んだかを資料に残さない
+- 回答を求めるなら、その場で何が返るのかも言う（資料を送る、個別に相談に乗る等）
+
+### 回答のお願いと次の一歩（`collect-cta`）
+
+![回答のお願いと次の一歩](images/slide-templates/collect-cta.png)
+
+どこに何を返してもらうか、返すと何が起きるかを示して回答を集める 1 枚
+
+**答える問い**: 回答は誰が、どこに、いつまでに返すのか
+
+**figures**: `governing_message`, `lead_in`, `flow`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。回答先の URL は、渡してよい相手の範囲を確認してから載せる
+- **返したら何が起きるかを書く。** 集めるだけで返さないと、次から埋まらなくなる
+- 期限と担当を書く。どちらも無い依頼は動かない
+
+### 回答フォーム（QR）（`collect-qr`）
+
+![回答フォーム（QR）](images/slide-templates/collect-qr.png)
+
+回答先の QR を大きく出す 1 枚。イベントの最後や、対面での持ち帰り依頼に使う
+
+**答える問い**: その場で回答するにはどこへ行けばよいのか
+
+**figures**: `governing_message`, `lead_in`, `image`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。QR の飛び先が誰に見えるのかを、貼る前に確認する
+- **URL を文字でも併記する。** QR が読めない席・環境が必ずある
+- 共有シートを飛び先にする場合、顧客配布版（内部の列と節を落としたもの）を指すこと
+
+<a id="case-studies"></a>
+
+## 事例パック（`case-studies`）
+
+公表事例を資料に載せるページ群。複数を抜粋で、1 社を詳細で、そして目の前の顧客に当てはまる理由で。公開許諾と日付つきの出典は templates/marketing/case-study.ja.md が管理する。
+
+### 事例（抜粋・3 社）（`case-study-card`）
+
+![事例（抜粋・3 社）](images/slide-templates/case-study-card.png)
+
+公表事例を 3 件、1 行ずつで並べる。関心を引いた後に信頼を補強する 1 枚
+
+**答える問い**: 同じような課題を、他社はどう解決したのか
+
+**figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **公表されている事例だけを載せる。** 未公表の顧客名・数値を出さない
+- 数値は公表資料の値をそのまま使い、**出典（媒体名と日付）を source に必ず書く**
+- 事例・数値は 3 ヶ月ルールの対象。**最終確認日を過ぎたものは再確認してから使う**
+- 顧客名の掲載は、その顧客と合意した範囲に限る（商談側の事例化の約束は stage-5 §6 / stage-6 §5）
+- 3 件まで。**並べるほど印象は薄くなる**。当てる相手に近い順で選ぶ
+
+### 事例（詳細・1 社）（`case-study-detail`）
+
+![事例（詳細・1 社）](images/slide-templates/case-study-detail.png)
+
+1 社を、課題 → 打ち手 → 結果の順で 1 枚に収める。数値は公表値のみ
+
+**答える問い**: その会社は何に困っていて、何をして、どうなったのか
+
+**figures**: `governing_message`, `lead_in`, `before_after`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **公表されている事例だけを載せる。** 未公表の顧客名・数値を出さない
+- 数値は公表資料の値をそのまま使い、**出典（媒体名と日付）を source に必ず書く**
+- 事例・数値は 3 ヶ月ルールの対象。**最終確認日を過ぎたものは再確認してから使う**
+- 顧客名の掲載は、その顧客と合意した範囲に限る（商談側の事例化の約束は stage-5 §6 / stage-6 §5）
+- **導入前と導入後を、同じ観点で並べる。** 観点がずれた before / after は比較にならない
+- 代表数値は 1 つに絞る。**複数出すと、どれが効果なのか伝わらない**
+
+### この事例が当てはまる理由（`case-fit`）
+
+![この事例が当てはまる理由](images/slide-templates/case-fit.png)
+
+事例の状況と目の前の顧客の状況を並べ、なぜ参考になるのかを示す
+
+**答える問い**: その事例は、うちの状況にどこまで当てはまるのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**status**: experimental
+
+使うときの決まり:
+
+- **公表されている事例だけを載せる。** 未公表の顧客名・数値を出さない
+- 数値は公表資料の値をそのまま使い、**出典（媒体名と日付）を source に必ず書く**
+- 事例・数値は 3 ヶ月ルールの対象。**最終確認日を過ぎたものは再確認してから使う**
+- 顧客名の掲載は、その顧客と合意した範囲に限る（商談側の事例化の約束は stage-5 §6 / stage-6 §5）
+- **当てはまらない点を必ず 1 つ書く**（caveat）。全部当てはまる事例は無く、隠すと PoC で露見する
+- 顧客側の欄は、ヒアリングで取れている事実だけを書く。**推測で埋めない**
+
+<a id="proposal"></a>
+
+## 提案パック（`proposal`）
+
+問題解決型提案のうち、再利用できるページが無かった節。見えている問題の下にある構造、課題→解決のマッピング、対象と対象外、業務がどう変わるか、PoC と合否基準、次の一歩。
+
+### 課題 → 解決のマッピング（`challenge-solution-map`）
+
+![課題 → 解決のマッピング](images/slide-templates/challenge-solution-map.png)
+
+合意した課題と、それを解く機能、その結果を 1 対 1 で並べる提案の核
+
+**答える問い**: どの課題が、何によって、どう解決されるのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
+**推論レベル**: 因果（原因の主張）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
+- **課題スライドと、順番も文言も一致させる。** 言い換えると「別の話」に見える
+- 1 課題 = 1 行。**1 つの機能で 3 つ解けると書かない**（検証時に破綻する）
+- 解けない課題は行を作らず、対象外として下段に書く。**無理に当てはめない**
+- 結果は業務がどうなるかで書く。機能名の言い換えにしない
+
+### 対象範囲と対象外（`scope-in-out`）
+
+![対象範囲と対象外](images/slide-templates/scope-in-out.png)
+
+本提案に入るものと入らないものを並べ、期待値をそろえる
+
+**答える問い**: どこまでが今回の話で、どこからが別の話なのか
+
+**figures**: `governing_message`, `lead_in`, `before_after`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
+- **対象外を先に決めてから対象を書く。** 対象外の空いた提案は、後から膨らむ
+- 対象外にした理由を書く。**「やらない」だけだと、できないと読まれる**
+- 他ベンダー・他プロジェクトが持っている範囲は、対象外に明記する
+
+### PoC の目的と合否基準（`poc-plan`）
+
+![PoC の目的と合否基準](images/slide-templates/poc-plan.png)
+
+何を確かめれば実現可能と判断できるか、その先に何が起きるかまで書く
+
+**答える問い**: PoC で何を確かめ、合格したら次に何が起きるのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
+- **合否基準は数値か、YES/NO で答えられる形にする。** 「うまくいくこと」は基準ではない
+- **「合格したら次に何が起きるか」を必ず書く。** 顧客がそこに答えられない PoC は、まだ設計されていない
+- 不合格だった場合にどうなるかも書く。片道の PoC は検証ではない
+- 顧客側に必要な体制・工数・データを明示する。**「特別な負担はありません」と言わない**
+
+### 期待効果（業務がどう変わるか）（`outcome-before-after`）
+
+![期待効果（業務がどう変わるか）](images/slide-templates/outcome-before-after.png)
+
+機能ではなく、日々の業務がどう変わるかで効果を語る 1 枚
+
+**答える問い**: 導入すると、現場の仕事は何が変わるのか
+
+**figures**: `governing_message`, `lead_in`, `before_after`, `so_what`, `source_note`  
+**推論レベル**: 予測（将来値の見通し）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
+- **機能ではなく業務で書く。** 「ACID になる」ではなく「突合が要らなくなる」
+- **算出根拠のある定量値しか書かない。** 無いなら定性で書き、PoC で実測すると明示する
+- before と after を同じ観点で並べる。観点がずれた対比は比較にならない
+- 公表事例の数値を自社の効果として書かない。事例は事例として別ページに置く
+
+### 本日決めたいことと次の一歩（`next-step-customer`）
+
+![本日決めたいことと次の一歩](images/slide-templates/next-step-customer.png)
+
+この場で決めることと、次回までに双方が持つ宿題を分けて示す
+
+**答える問い**: 今日決めるのは何で、次までに誰が何をするのか
+
+**figures**: `governing_message`, `lead_in`, `flow`, `so_what`, `table`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
+- **今日決めることを 1 つに絞る。** 複数あると、どれも決まらない
+- 宿題には担当と期日を書く。**どちらも無い宿題は動かない**
+- こちら側の宿題を必ず入れる。顧客にだけ宿題を出す資料にしない
+
+### 課題の構造（見えている問題と根本原因）（`iceberg-challenge`）
+
+![課題の構造（見えている問題と根本原因）](images/slide-templates/iceberg-challenge.png)
+
+表面に出ている問題と、その下にある構造を分けて示し、対症療法と差別化する
+
+**答える問い**: いま見えている問題の下に、何があるのか
+
+**figures**: `governing_message`, `lead_in`, `iceberg`, `source_note`  
+**推論レベル**: 因果（原因の主張）  
+**status**: experimental
+
+使うときの決まり:
+
+- **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
+- 上段は**顧客が実際に口にした問題**、下段はこちらの構造の読み。**混ぜない**
+- 上段は**短い名詞句を 2 つ**（各 10 文字まで）。図の水面上は 2 行しか入らない。3 つ以上並べたくなるなら、表面の問題がまだ絞れていない
+- 下段は 3 つまで。**根本原因を並べるほど、どれも根本に見えなくなる**
+- この読みが違っている可能性を残す。合意を取る前に断定しない
+
+<a id="marketing"></a>
+
+## マーケティングパック（`marketing`）
+
+まだ商談になっていない相手に当てるページ群。イベント・登壇の告知、課題を認識していない人への価値の提示、ユースケース 1 枚、技術資料の要旨。
+
+### イベント・セミナー告知（`event-announce`）
+
+![イベント・セミナー告知](images/slide-templates/event-announce.png)
+
+開催概要（日時・形式・対象・参加費・申込先）を 1 枚にまとめた告知
+
+**答える問い**: いつ・どこで・誰向けに開かれ、どう申し込むのか
+
+**figures**: `governing_message`, `lead_in`, `event_mode_badge`, `event_overview`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
+- **確定した情報だけを載せる。** 登壇者・会場・日時は、決まるまで書かない
+- **対象者を書く。** 「どなたでも」は誰にも刺さらない（ナーチャリングの段が決まらない）
+- 参加費・定員・申込期限を省かない。**4 行に収まらないなら、1 行にまとめる**（行を増やすと申込先が入らなくなる）
+- mode は online / offline / hybrid のいずれか
+- rows の 1 列目はピクトグラム名。使えるのは `references/pictogram-catalog.md` にあるものだけ（日時=calendar、会場=pin、対象=people、費用=coin、期限=clock）
+
+### セッションのプログラム（`session-agenda`）
+
+![セッションのプログラム](images/slide-templates/session-agenda.png)
+
+当日の進行を時刻・内容・話す人で並べる
+
+**答える問い**: 当日は何が、どの順で、誰から話されるのか
+
+**figures**: `governing_message`, `lead_in`, `event_timetable`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
+- **時刻は確定したものだけ。** 未定の枠は「調整中」と書き、空欄にしない
+- 6 枠まで。それ以上は 2 枚に分ける（詰めて小さくしない）
+- 質疑の時間を必ず入れる。**質疑の無いセッションでは、聞くべきことが集まらない**
+
+### 登壇者紹介（`speaker-intro`）
+
+![登壇者紹介](images/slide-templates/speaker-intro.png)
+
+話す人の立場と、なぜこの話をするのかを示す
+
+**答える問い**: この話は、どういう立場の人から聞くことになるのか
+
+**figures**: `governing_message`, `lead_in`, `event_speakers`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
+- **実在する登壇者の、確認済みの情報だけを書く。** 肩書きは本人に確認する
+- 経歴を並べない。**なぜこの人がこの話をするのか**が伝わればよい
+- 顧客企業の登壇者を載せる場合は、公開許諾の範囲を確認する（事例と同じ扱い）
+
+### 改善効果とメリット（段 0〜1）（`value-message`）
+
+![改善効果とメリット（段 0〜1）](images/slide-templates/value-message.png)
+
+課題を認識していない相手に、構築・刷新時に解くべき論点とその価値を示す
+
+**答える問い**: いま何を直しておくと、後で何が起きずに済むのか
+
+**figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**status**: experimental
+
+使うときの決まり:
+
+- **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
+- **段 0〜1 は Why Change? の段。製品説明を厚く盛らない**（`nurture-map.ja.md` §1）
+- 3 枚は 状況 → 気づいていない不都合 → 放置した場合、の順に固定する
+- **顧客の言葉で書く。** 製品名から始まる文は、この段では読まれない
+- 断定しない。最後は読み手への問いで終える
+
+### ユースケース 1 枚（段 1〜2）（`use-case-one-pager`）
+
+![ユースケース 1 枚（段 1〜2）](images/slide-templates/use-case-one-pager.png)
+
+1 つの使い方を、前提・やること・効くところの順で 1 枚に収める
+
+**答える問い**: この製品は、具体的にどういう使い方をするのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
+- **1 枚 = 1 ユースケース。** 汎用的に書くほど、誰の話でもなくなる
+- 前提（この使い方が成り立つ条件）を必ず書く。**条件を書かないユースケースは営業の作り話になる**
+- **事例と混ぜない。** ユースケースは使い方、事例は実績。出典の要否が違う
+- プレビュー機能を、提供済みの使い方として書かない
+
+### ホワイトペーパーの要旨（段 3）（`whitepaper-abstract`）
+
+![ホワイトペーパーの要旨（段 3）](images/slide-templates/whitepaper-abstract.png)
+
+技術資料の中身を、読む前に判断できる形で示す表紙 1 枚
+
+**答える問い**: この資料には何が書いてあって、読むと何が分かるのか
+
+**figures**: `governing_message`, `lead_in`, `flow`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
+- **読むと何が分かるかを書く。** 目次だけの表紙は、読むかどうかの判断材料にならない
+- **想定読者を書く。** 段 3 は技術的裏付けの段で、読み手は評価者である
+- 検証していない主張を要旨に置かない。仮説は本文で仮説として扱う
+- 性能値・価格・エディションは 3 ヶ月ルールの対象。最終確認日を source に書く
+
+<a id="partner"></a>
+
+## パートナーパック（`partner`）
+
+プレイブックが定義しながらテンプレートの無かった 2 種。担ぐとパートナーに何が得られるかと、RACI・商流・見積境界・責任の所在を決める共同提案方針書。
+
+### パートナー向け 価値と協業の形（`partner-value`）
+
+![パートナー向け 価値と協業の形](images/slide-templates/partner-value.png)
+
+パートナーにとって何が得られ、何を担うのかを示す提示用の 1 枚
+
+**答える問い**: この製品を担ぐと、パートナーにとって何が良いのか
+
+**figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **パートナー提示用**。顧客固有の機密情報は必要最小限にする（プレイブック §3）
+- **再利用しやすい標準情報で書く。** 特定商談の事情を混ぜると、他案件で使えなくなる
+- パートナー側の利益（案件規模・役務・継続収益）を書く。**自社の都合だけ書かない**
+- 競合の弱点を名指ししない。パートナーは競合とも取引している
+- 価格は定価（税別）の参考見積として扱い、割引・複数年条件は載せない（AE に回す）
+
+### 共同提案方針書（`joint-proposal-policy`）
+
+![共同提案方針書](images/slide-templates/joint-proposal-policy.png)
+
+共同勝ち筋・RACI・商流・見積境界・知財と守秘・契約責任を 1 枚で合意する
+
+**答える問い**: この案件で、誰が何に責任を持ち、どこで見積を分けるのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- **パートナー提案用**。合意していない項目を、合意済みのように書かない
+- **見積境界を必ず書く。** ここが曖昧なまま顧客に出すと、後で必ずもめる
+- 知財・守秘と契約責任の所在を省かない（プレイブック §3 の必須要件）
+- 未合意の項目は「未合意」と書いた行として残す。**空欄で出さない**
+- 顧客名・顧客固有の条件を書く場合、NDA の締結状況を確認してから入れる
