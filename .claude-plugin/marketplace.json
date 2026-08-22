@@ -12,7 +12,7 @@
     {
       "name": "slide-forge",
       "strict": false,
-      "description": "Claude Code is the primary host for 19 shared slide-forge skills. Use /slide-forge:forge for the common route, intake, outline approval, strict validation, generation, optional visual QA, cleanup, and delivery workflow. Codex and Antigravity use the same skills and Python engine through thin adapters.",
+      "description": "Claude Code is the primary host for 21 shared slide-forge skills. Use /slide-forge:forge for the common route, intake, outline approval, strict validation, generation, optional visual QA, cleanup, and delivery workflow. Codex and Antigravity use the same skills and Python engine through thin adapters.",
       "version": "1.27.0",
       "author": {
         "name": "Wataru Fukatsu",
@@ -75,6 +75,8 @@
         "./skills/scalar-account-plan",
         "./skills/scalar-account-planning-session",
         "./skills/scalar-ae-materials",
+        "./skills/scalar-deal-intake",
+        "./skills/scalar-nurture-intake",
         "./skills/settings",
         "./skills/nexus-report-slides"
       ],

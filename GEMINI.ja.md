@@ -33,6 +33,8 @@
 | 分析フレームワークのスライドテンプレートの作成・変更 | `analysis-template-creator` |
 | Scalar 社製品・提案スライドの作成 | `scalar-product-slides`, `scalar-proposal-slides` |
 | 顧客ごとの活動計画・訪問資料（AE の営業活動） | `scalar-account-plan`, `scalar-ae-materials` |
+| 議事録・メールをステージ別の記録に整理する／未確認事項を洗い出す | `scalar-deal-intake` |
+| 商談化前のリード育成の設計（セグメント・ナーチャリングトラック・コンテンツ充足） | `scalar-nurture-intake` |
 | Account Planning Session（年次の組織図・商談棚卸しデッキ） | `scalar-account-planning-session` |
 | B2B 商談の関与者マップ・ディスカバリーマップ作成 | `b2b-account-maps` |
 | draw.io による密なアーキテクチャ図作成 | `drawio-diagrams` |

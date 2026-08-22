@@ -33,6 +33,8 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Per-customer activity plan / deal ledger (AE's action plan) | `scalar-account-plan` |
 | Account Planning Session (annual/semi-annual stocktake and executive review) | `scalar-account-planning-session` |
 | Materials for a single visit / internal approval materials (WPS, Deal Desk) | `scalar-ae-materials` |
+| Organise minutes / email into per-stage records; work out what is still unconfirmed | `scalar-deal-intake` |
+| Design lead nurturing before a deal exists; segments, nurture tracks, content coverage | `scalar-nurture-intake` |
 | Scalar product/company deck | `scalar-product-slides` |
 | Scalar customer proposal | `scalar-proposal-slides` |
 | Dense draw.io diagram | `drawio-diagrams` |

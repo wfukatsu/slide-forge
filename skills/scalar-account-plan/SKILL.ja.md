@@ -42,6 +42,7 @@ description: >-
 | Account Planning Session の資料を作る | `scalar-account-planning-session` |
 | 訪問 1 回分の資料一式を作る | `scalar-ae-materials` |
 | 関与者マップ・ディスカバリーマップそのものの作図 | `b2b-account-maps` |
+| 議事録・メールをステージ別の記録に整理する | `scalar-deal-intake` |
 | 顧客向けの正式提案書 | `scalar-proposal-slides` |
 | 見積もり明細 | `spreadsheets` |
 | 生成したデッキの目視検査 | `slide-qa` |

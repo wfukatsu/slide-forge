@@ -10,6 +10,10 @@ redefines what is written here.
 It maps to the structure of the original document (§1 Principles → §3 Process → §4 Forecast →
 §5 Material types → §6 Phase requirements → §8 Meeting bodies → §9 Information management → §10 Checkpoints).
 
+The finer grain — who you meet inside a stage, what you hand them, what you must
+come back with — lives in [stage-io-map.md](stage-io-map.md). That document cites
+this one; **the gates and their criteria stay here, and only here.**
+
 ---
 
 ## 1. Foundational principles for decision-making

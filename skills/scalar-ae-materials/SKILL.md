@@ -45,6 +45,7 @@ standards in §4, meeting bodies in §6).
 | Annual Account Planning Session (org chart / deal review deck) | `scalar-account-planning-session` |
 | Formal proposal / quotation | `scalar-proposal-slides` + `spreadsheets` |
 | Stakeholder map / discovery map | `b2b-account-maps` |
+| Organise minutes / email into per-stage records | `scalar-deal-intake` |
 | Scalar company/product introduction (not customer-specific) | `scalar-product-slides` |
 | Visual inspection of a generated deck | `slide-qa` |
 
