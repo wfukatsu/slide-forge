@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "id": "case-study-detail",
+  "displayName": "事例（詳細・1 社）",
+  "pack": "case-studies",
+  "category": "evidence",
+  "description": "1 社を、課題 → 打ち手 → 結果の順で 1 枚に収める。数値は公表値のみ",
+  "answers": [
+    "その会社は何に困っていて、何をして、どうなったのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "before": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "maxLength": 22
+      }
+    },
+    "after": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "maxLength": 22
+      }
+    },
+    "result": {
+      "type": "string",
+      "required": true,
+      "maxLength": 90
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**公表されている事例だけを載せる。** 未公表の顧客名・数値を出さない",
+    "数値は公表資料の値をそのまま使い、**出典（媒体名と日付）を source に必ず書く**",
+    "事例・数値は 3 ヶ月ルールの対象。**最終確認日を過ぎたものは再確認してから使う**",
+    "顧客名の掲載は、その顧客と合意した範囲に限る（商談側の事例化の約束は stage-5 §6 / stage-6 §5）",
+    "**導入前と導入後を、同じ観点で並べる。** 観点がずれた before / after は比較にならない",
+    "代表数値は 1 つに絞る。**複数出すと、どれが効果なのか伝わらない**"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "before_after",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 2.2,
+        "before": {
+          "$slot": "before"
+        },
+        "after": {
+          "$slot": "after"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.85,
+        "w": 9.0,
+        "h": 0.85,
+        "text": {
+          "$slot": "result"
+        },
+        "label": "公表されている結果"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

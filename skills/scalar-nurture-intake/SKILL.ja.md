@@ -135,6 +135,7 @@ cp templates/nurture/content-inventory.ja.md  accounts/_nurture/content-inventor
 
 | 材料 | 効く場所 |
 |---|---|
+| イベントで集めた回答（`hearing-slides` の `event-poll` / `collect-qr`） | §1〜§5 のストーリー、§10 コンテンツの充足状況 |
 | ウェビナー・コミュニティで出た質問 | §7 パワースクリプトの想定反論と分岐 |
 | 問い合わせメールの文面 | §1〜§5 のストーリー（買い手の言葉のまま） |
 | 何をどの順にダウンロードしたか | §10 コンテンツの充足状況、および段の判定 |
@@ -147,6 +148,11 @@ cp templates/nurture/content-inventory.ja.md  accounts/_nurture/content-inventor
 ### 5. コンテンツ台帳を更新する
 
 `content-inventory.md` §2（ステージ別の充足状況）を埋める。
+**足りない段のコンテンツには、対応するテンプレートがある** — 段 0〜1 は
+`value-message`、段 1〜2 は `use-case-one-pager`、段 3 は `whitepaper-abstract`、
+事例は `case-studies` パック、イベントは `event-announce` / `session-agenda` /
+`speaker-intro`（すべて `slide-templates/`）。企画の様式は
+`templates/marketing/` にある。
 **`無` が最も多い段が、そのトラックの詰まっている場所**である。欠落を平坦に並べず、
 どこが詰まっているかを名指しする。
 
@@ -205,6 +211,10 @@ discovery を短縮せざるを得ない場合は、落としたものを `deal-
 - **同意記録・配信停止記録を `accounts/_nurture/` に書かない。** 個人に紐づく情報で、
   置き場は MA / CRM 側（`nurture-map.ja.md` §8）。ここに書くのは、到達手段ごとの
   同意の根拠という型の情報だけ（`segment-sheet.ja.md` §4）。
+- **イベントで集めた回答を、そのまま `accounts/_nurture/` に写さない。**
+  収集用スライドは `hearing-slides`、回答の器は `hearing-sheet` が持つ。
+  ここに入れてよいのは**型と件数に集約したもの**だけで、企業や個人が特定できる
+  回答は商談として `scalar-deal-intake` に回す（`references/hearing-kit.ja.md` §4）。
 - **配信の適法性について判断を下さない。** 同意・配信停止・表示義務は
   `nurture-map.ja.md` §8 の論点一覧を提示するに留め、**法務の確認が要ると報告する**。
   到達手段の同意根拠が空欄のトラックは、**配信可能として報告しない**。

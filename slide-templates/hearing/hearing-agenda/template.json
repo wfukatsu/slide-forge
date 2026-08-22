@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "hearing-agenda",
+  "displayName": "本日うかがいたいこと",
+  "pack": "hearing",
+  "category": "customer",
+  "description": "空いている論点を、なぜうかがうのかと一緒に議題として先に出す 1 枚",
+  "answers": [
+    "この打ち合わせで何を教えてもらう必要があるのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "items": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 5,
+      "maxLength": 40
+    },
+    "ask": {
+      "type": "string",
+      "required": true,
+      "maxLength": 60
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない",
+    "「なぜうかがうのか」を書けない項目は載せない。質問は量ではなく順序で決まる",
+    "空欄をこちらの推測で埋めた状態で持ち込まない。空いているから聞く",
+    "5 項目まで。1 回の打ち合わせで返せる量を超えない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.16,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.62,
+        "w": 9.0,
+        "headers": [
+          "うかがいたいこと",
+          "なぜうかがうのか"
+        ],
+        "rows": {
+          "$slot": "items"
+        },
+        "colWidths": [
+          4.3,
+          4.7
+        ],
+        "size": 9,
+        "rowH": 0.38
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.95,
+        "w": 9.0,
+        "h": 0.78,
+        "text": {
+          "$slot": "ask"
+        },
+        "label": "お願い"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

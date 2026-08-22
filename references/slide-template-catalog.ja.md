@@ -1,6 +1,11 @@
 *[English](slide-template-catalog.md)*
 
-# スライドテンプレート カタログ（全 55 種）
+# スライドテンプレート カタログ
+
+**以下の画像は登録内容より古い。** 描画した時点の 7 パックしか含んでおらず、
+`nexus` / `hearing` / `case-studies` / `proposal` / `marketing` / `partner` は
+登録済みだが画像が無い。下のコマンドで作り直す。**正本は
+`slide-templates/manifest.json`** である。
 
 `slide-templates/` に登録されたテンプレートを実際に 1 枚ずつ生成して
 書き出した画像カタログ。**どのテンプレートで 1 枚を作るかを見て選ぶ**ためのもの。
@@ -14,7 +19,8 @@
 ```bash
 # このカタログを作り直す（テンプレートを追加したときも同じ手順）
 for pack in marketing-analysis b2b-sales scalar-ae planning analysis \
-            read-alone business-plan; do
+            read-alone business-plan nexus hearing case-studies \
+            proposal marketing partner; do
   .venv/bin/python scripts/build_slide_template_catalog.py \
       --pack $pack --out out/template-catalog/$pack.json
 done

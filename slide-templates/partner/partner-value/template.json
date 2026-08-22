@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "id": "partner-value",
+  "displayName": "パートナー向け 価値と協業の形",
+  "pack": "partner",
+  "category": "partner",
+  "description": "パートナーにとって何が得られ、何を担うのかを示す提示用の 1 枚",
+  "answers": [
+    "この製品を担ぐと、パートナーにとって何が良いのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 16
+          },
+          {
+            "type": "string",
+            "maxLength": 60
+          }
+        ]
+      }
+    },
+    "ask": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**パートナー提示用**。顧客固有の機密情報は必要最小限にする（プレイブック §3）",
+    "**再利用しやすい標準情報で書く。** 特定商談の事情を混ぜると、他案件で使えなくなる",
+    "パートナー側の利益（案件規模・役務・継続収益）を書く。**自社の都合だけ書かない**",
+    "競合の弱点を名指ししない。パートナーは競合とも取引している",
+    "価格は定価（税別）の参考見積として扱い、割引・複数年条件は載せない（AE に回す）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.16,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.7,
+        "w": 9.0,
+        "h": 1.75,
+        "items": {
+          "$slot": "items"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.58,
+        "w": 9.0,
+        "h": 0.95,
+        "text": {
+          "$slot": "ask"
+        },
+        "label": "ご相談したいこと"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "speaker-intro",
+  "displayName": "登壇者紹介",
+  "pack": "marketing",
+  "category": "event",
+  "description": "話す人の立場と、なぜこの話をするのかを示す",
+  "answers": [
+    "この話は、どういう立場の人から聞くことになるのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "speakers": {
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 14
+          },
+          {
+            "type": "string",
+            "maxLength": 26
+          },
+          {
+            "type": "string",
+            "maxLength": 30
+          }
+        ]
+      }
+    },
+    "why": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**不特定多数向け**。特定の企業・個人が推測できる書き方をしない",
+    "**実在する登壇者の、確認済みの情報だけを書く。** 肩書きは本人に確認する",
+    "経歴を並べない。**なぜこの人がこの話をするのか**が伝わればよい",
+    "顧客企業の登壇者を載せる場合は、公開許諾の範囲を確認する（事例と同じ扱い）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "event_speakers",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "speakers": {
+          "$slot": "speakers"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.5,
+        "w": 9.0,
+        "h": 0.95,
+        "text": {
+          "$slot": "why"
+        },
+        "label": "なぜこの話をするのか"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

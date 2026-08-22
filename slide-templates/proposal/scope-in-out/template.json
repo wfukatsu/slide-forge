@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "id": "scope-in-out",
+  "displayName": "対象範囲と対象外",
+  "pack": "proposal",
+  "category": "solution",
+  "description": "本提案に入るものと入らないものを並べ、期待値をそろえる",
+  "answers": [
+    "どこまでが今回の話で、どこからが別の話なのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "inside": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "maxLength": 22
+      }
+    },
+    "outside": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "maxLength": 22
+      }
+    },
+    "why": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない",
+    "**対象外を先に決めてから対象を書く。** 対象外の空いた提案は、後から膨らむ",
+    "対象外にした理由を書く。**「やらない」だけだと、できないと読まれる**",
+    "他ベンダー・他プロジェクトが持っている範囲は、対象外に明記する"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "before_after",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 2.2,
+        "before": {
+          "$slot": "inside"
+        },
+        "after": {
+          "$slot": "outside"
+        },
+        "before_title": "本提案の対象",
+        "after_title": "対象外（別途ご相談）"
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.85,
+        "w": 9.0,
+        "h": 0.85,
+        "text": {
+          "$slot": "why"
+        },
+        "label": "この線を引いた理由"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

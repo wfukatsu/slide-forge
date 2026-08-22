@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "id": "collect-qr",
+  "displayName": "回答フォーム（QR）",
+  "pack": "hearing",
+  "category": "customer",
+  "description": "回答先の QR を大きく出す 1 枚。イベントの最後や、対面での持ち帰り依頼に使う",
+  "answers": [
+    "その場で回答するにはどこへ行けばよいのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "qr": {
+      "type": "string",
+      "required": true,
+      "maxLength": 400
+    },
+    "where": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。QR の飛び先が誰に見えるのかを、貼る前に確認する",
+    "**URL を文字でも併記する。** QR が読めない席・環境が必ずある",
+    "共有シートを飛び先にする場合、顧客配布版（内部の列と節を落としたもの）を指すこと"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "image",
+        "x": 6.3,
+        "y": 1.7,
+        "w": 2.6,
+        "h": 2.6,
+        "source": {
+          "$slot": "qr"
+        },
+        "fit": "contain"
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 2.2,
+        "w": 5.5,
+        "h": 1.6,
+        "text": {
+          "$slot": "where"
+        },
+        "label": "回答はこちらへ"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

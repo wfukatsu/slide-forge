@@ -149,6 +149,11 @@ marked `（仮説）` — the source sheet does this and it is worth copying.
 
 ### 5. Update the content ledger
 
+**The thin stages have templates**: `value-message` for 0–1,
+`use-case-one-pager` for 1–2, `whitepaper-abstract` for 3, the `case-studies`
+pack for cases, and `event-announce` / `session-agenda` / `speaker-intro` for
+events. The briefs behind them live in `templates/marketing/`.
+
 Fill §2 (coverage by stage) in `content-inventory.md`. **The stage with the most
 `無` is where the track is stuck** — say so explicitly rather than listing every
 gap flatly.
@@ -209,6 +214,11 @@ In Japanese:
   (`nurture-map.md` §7-8). Say so when a segment is built on the old framing.
 - Do not invent metrics targets. The source has none (`nurture-map.md` §7-10);
   leave the target column empty and say it needs a decision.
+- **Never copy event answers straight into `accounts/_nurture/`.** The
+  collection slides are `hearing-slides` and the sheet behind them is
+  `hearing-sheet`. Only aggregates — type and count — belong here; an answer
+  that identifies a company or a person is a deal, and goes to
+  `scalar-deal-intake` (`references/hearing-kit.md` §4).
 - **Never write consent or opt-out records into `accounts/_nurture/`.** They are
   tied to individuals and belong in MA/CRM (`nurture-map.md` §8). What goes in the
   nurture files is the type-level fact of which consent basis each reach channel

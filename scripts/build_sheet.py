@@ -171,6 +171,7 @@ def build_xlsx(spec: dict, path: str) -> None:
     from openpyxl import Workbook
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
     from openpyxl.utils import get_column_letter
+    from openpyxl.worksheet.datavalidation import DataValidation
 
     wb = Workbook()
     wb.remove(wb.active)
@@ -217,6 +218,8 @@ def build_xlsx(spec: dict, path: str) -> None:
                 c.number_format = NUMBER_FORMATS[col.get("type", "text")]
                 if col.get("type") in ("int", "currency", "percent"):
                     c.alignment = Alignment(horizontal="right")
+                elif col.get("wrap"):
+                    c.alignment = Alignment(wrap_text=True, vertical="top")
 
         summary_first = last + 1
         for gi, item in enumerate(sheet.get("summary") or []):
@@ -238,6 +241,17 @@ def build_xlsx(spec: dict, path: str) -> None:
         for ci, col in enumerate(cols, 1):
             values = [row[ci - 1] for row in rows]
             ws.column_dimensions[get_column_letter(ci)].width = _col_width(col, values)
+            # A closed vocabulary stays closed: give the column a dropdown rather
+            # than trusting whoever fills the sheet in to retype it.
+            if col.get("choices") and rows:
+                letter = get_column_letter(ci)
+                dv = DataValidation(
+                    type="list",
+                    formula1='"' + ",".join(str(v) for v in col["choices"]) + '"',
+                    allow_blank=True, showDropDown=False)
+                dv.error = "一覧から選んでください: " + " / ".join(str(v) for v in col["choices"])
+                ws.add_data_validation(dv)
+                dv.add(f"{letter}{first}:{letter}{last}")
 
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     wb.save(path)

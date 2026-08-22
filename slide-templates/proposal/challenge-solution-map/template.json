@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "id": "challenge-solution-map",
+  "displayName": "課題 → 解決のマッピング",
+  "pack": "proposal",
+  "category": "solution",
+  "description": "合意した課題と、それを解く機能、その結果を 1 対 1 で並べる提案の核",
+  "answers": [
+    "どの課題が、何によって、どう解決されるのか"
+  ],
+  "inferenceLevel": "causal",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "maxLength": 34
+    },
+    "scope_out": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない",
+    "**課題スライドと、順番も文言も一致させる。** 言い換えると「別の話」に見える",
+    "1 課題 = 1 行。**1 つの機能で 3 つ解けると書かない**（検証時に破綻する）",
+    "解けない課題は行を作らず、対象外として下段に書く。**無理に当てはめない**",
+    "結果は業務がどうなるかで書く。機能名の言い換えにしない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 9.0,
+        "headers": [
+          "合意した課題",
+          "解決する機能",
+          "結果としてどうなるか"
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          2.9,
+          2.8,
+          3.3
+        ],
+        "size": 9,
+        "rowH": 0.46
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.85,
+        "w": 9.0,
+        "h": 0.85,
+        "text": {
+          "$slot": "scope_out"
+        },
+        "label": "本提案では解かないこと"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

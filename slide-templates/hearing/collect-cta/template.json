@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "id": "collect-cta",
+  "displayName": "回答のお願いと次の一歩",
+  "pack": "hearing",
+  "category": "customer",
+  "description": "どこに何を返してもらうか、返すと何が起きるかを示して回答を集める 1 枚",
+  "answers": [
+    "回答は誰が、どこに、いつまでに返すのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "steps": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "maxLength": 22
+      }
+    },
+    "where": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。回答先の URL は、渡してよい相手の範囲を確認してから載せる",
+    "**返したら何が起きるかを書く。** 集めるだけで返さないと、次から埋まらなくなる",
+    "期限と担当を書く。どちらも無い依頼は動かない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.7,
+        "w": 9.0,
+        "h": 1.1,
+        "items": {
+          "$slot": "steps"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.3,
+        "w": 9.0,
+        "h": 1.2,
+        "text": {
+          "$slot": "where"
+        },
+        "label": "回答はこちらへ"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "id": "fill-in-sheet",
+  "displayName": "その場でご記入いただく欄",
+  "pack": "hearing",
+  "category": "customer",
+  "description": "対面・画面共有・印刷で、その場で書き込んでもらうための記入欄",
+  "answers": [
+    "この場で埋めてもらいたい項目は何か"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "items": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "maxLength": 44
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。内部の判断（確度・出典・製品適合）を載せない",
+    "記入欄は空のまま出す。**こちらの推測を薄く入れて「確認してください」にしない**",
+    "6 項目まで。書く時間が取れる量にする",
+    "その場で答えられない項目は、持ち帰り先（誰が答えられるか）を一緒に聞く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 9.0,
+        "headers": [
+          "うかがいたいこと",
+          "ご記入欄"
+        ],
+        "rows": {
+          "$slot": "items"
+        },
+        "colWidths": [
+          4.0,
+          5.0
+        ],
+        "size": 10,
+        "rowH": 0.52
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

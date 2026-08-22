@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "id": "poc-plan",
+  "displayName": "PoC の目的と合否基準",
+  "pack": "proposal",
+  "category": "plan",
+  "description": "何を確かめれば実現可能と判断できるか、その先に何が起きるかまで書く",
+  "answers": [
+    "PoC で何を確かめ、合格したら次に何が起きるのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 5,
+      "maxItems": 7,
+      "maxLength": 50
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない",
+    "**合否基準は数値か、YES/NO で答えられる形にする。** 「うまくいくこと」は基準ではない",
+    "**「合格したら次に何が起きるか」を必ず書く。** 顧客がそこに答えられない PoC は、まだ設計されていない",
+    "不合格だった場合にどうなるかも書く。片道の PoC は検証ではない",
+    "顧客側に必要な体制・工数・データを明示する。**「特別な負担はありません」と言わない**"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.45,
+        "w": 9.0,
+        "headers": [
+          "項目",
+          "内容"
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          2.4,
+          6.6
+        ],
+        "size": 9,
+        "rowH": 0.4
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

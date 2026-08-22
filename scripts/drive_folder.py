@@ -53,6 +53,11 @@ register({
     "files to upload": "アップロードするファイル",
     "move Drive files into a folder": "Drive 上のファイルをフォルダへ移動する",
     "file URLs or IDs to move": "移動するファイルの URL または ID",
+    "Downloaded: {path}": "ダウンロード: {path}",
+    "download a Drive file (Google-native files are exported)":
+        "Drive のファイルをダウンロードする（Google 形式は変換して書き出す）",
+    "output path (extension is added for exports)":
+        "出力パス（変換のときは拡張子を補う）",
 })
 
 FOLDER_MIME = "application/vnd.google-apps.folder"
@@ -102,6 +107,53 @@ def ensure_folder(drive, name: str, parent: str | None = None) -> tuple[str, boo
     fid = drive.files().create(body=body, fields="id",
                                supportsAllDrives=True).execute()["id"]
     return fid, True
+
+
+EXPORT_MIME = {
+    "application/vnd.google-apps.spreadsheet":
+        ("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx"),
+    "application/vnd.google-apps.document":
+        ("application/vnd.openxmlformats-officedocument.wordprocessingml.document", ".docx"),
+    "application/vnd.google-apps.presentation":
+        ("application/vnd.openxmlformats-officedocument.presentationml.presentation", ".pptx"),
+}
+
+
+def download(drive, fid: str, out_path: str) -> str:
+    """Download a Drive file to `out_path`.
+
+    Google-native files (Spreadsheet / Document / Slides) are exported to their
+    Office equivalent, which is what makes a filled-in Google Spreadsheet
+    readable with the Drive scope alone — no Sheets scope, so no re-auth.
+    """
+    import io
+    from googleapiclient.http import MediaIoBaseDownload
+
+    meta = drive.files().get(fileId=fid, fields="name,mimeType",
+                             supportsAllDrives=True).execute()
+    mime = meta.get("mimeType", "")
+    if mime in EXPORT_MIME:
+        target, ext = EXPORT_MIME[mime]
+        if not out_path.endswith(ext):
+            out_path += ext
+        request = drive.files().export_media(fileId=fid, mimeType=target)
+    else:
+        request = drive.files().get_media(fileId=fid, supportsAllDrives=True)
+
+    os.makedirs(os.path.dirname(os.path.abspath(out_path)) or ".", exist_ok=True)
+    with io.FileIO(out_path, "wb") as fh:
+        downloader = MediaIoBaseDownload(fh, request)
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+    return out_path
+
+
+def cmd_download(drive, source: str, out: str | None) -> int:
+    fid = file_id(source)
+    path = download(drive, fid, out or os.path.join("out", "drive", fid))
+    print(t("Downloaded: {path}", path=path))
+    return 0
 
 
 def cmd_create(drive, name: str, parent: str | None) -> int:
@@ -194,6 +246,11 @@ def main() -> int:
     m.add_argument("folder", help=t("folder URL or ID"))
     m.add_argument("sources", nargs="+", help=t("file URLs or IDs to move"))
 
+    d = sub.add_parser("download",
+                       help=t("download a Drive file (Google-native files are exported)"))
+    d.add_argument("source", help=t("file URL or ID"))
+    d.add_argument("--out", help=t("output path (extension is added for exports)"))
+
     args = p.parse_args()
     _, drive = _auth.services()
 
@@ -201,6 +258,8 @@ def main() -> int:
         return cmd_create(drive, args.name, args.parent)
     if args.cmd == "upload":
         return cmd_upload(drive, args.folder, args.paths)
+    if args.cmd == "download":
+        return cmd_download(drive, args.source, args.out)
     return cmd_move(drive, args.folder, args.sources)
 
 

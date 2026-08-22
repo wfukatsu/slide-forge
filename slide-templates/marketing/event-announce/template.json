@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "id": "event-announce",
+  "displayName": "イベント・セミナー告知",
+  "pack": "marketing",
+  "category": "event",
+  "description": "開催概要（日時・形式・対象・参加費・申込先）を 1 枚にまとめた告知",
+  "answers": [
+    "いつ・どこで・誰向けに開かれ、どう申し込むのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 4,
+      "maxLength": 44
+    },
+    "mode": {
+      "type": "string",
+      "required": true,
+      "maxLength": 10
+    },
+    "cta": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**不特定多数向け**。特定の企業・個人が推測できる書き方をしない",
+    "**確定した情報だけを載せる。** 登壇者・会場・日時は、決まるまで書かない",
+    "**対象者を書く。** 「どなたでも」は誰にも刺さらない（ナーチャリングの段が決まらない）",
+    "参加費・定員・申込期限を省かない。**4 行に収まらないなら、1 行にまとめる**（行を増やすと申込先が入らなくなる）",
+    "mode は online / offline / hybrid のいずれか",
+    "rows の 1 列目はピクトグラム名。使えるのは `references/pictogram-catalog.md` にあるものだけ（日時=calendar、会場=pin、対象=people、費用=coin、期限=clock）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "event_mode_badge",
+        "x": 0.5,
+        "y": 1.45,
+        "mode": {
+          "$slot": "mode"
+        }
+      },
+      {
+        "type": "event_overview",
+        "x": 0.5,
+        "y": 1.9,
+        "w": 9.0,
+        "rows": {
+          "$slot": "rows"
+        },
+        "row_h": 0.46
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.82,
+        "w": 9.0,
+        "h": 0.88,
+        "text": {
+          "$slot": "cta"
+        },
+        "label": "お申し込み"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

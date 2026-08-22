@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "id": "hypothesis-check",
+  "displayName": "理解の確認（違っていたら教えてください）",
+  "pack": "hearing",
+  "category": "customer",
+  "description": "こちらの理解を仮説として出し、違っている点を顧客に訂正してもらう 1 枚",
+  "answers": [
+    "我々の理解のどこが違っているのか"
+  ],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 16
+          },
+          {
+            "type": "string",
+            "maxLength": 68
+          }
+        ]
+      }
+    },
+    "ask": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない",
+    "**断定しない。** 確度が `推定` の行だけをここに出す。`確認済` を並べても確認にならない",
+    "訂正してもらうのが目的。最後は必ず「違っていたら教えてください」で終える",
+    "出典のない数値を載せない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.16,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.7,
+        "w": 9.0,
+        "h": 1.72,
+        "items": {
+          "$slot": "items"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.55,
+        "w": 9.0,
+        "h": 1.0,
+        "text": {
+          "$slot": "ask"
+        },
+        "label": "違っていたら教えてください"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

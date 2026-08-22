@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "id": "use-case-one-pager",
+  "displayName": "ユースケース 1 枚（段 1〜2）",
+  "pack": "marketing",
+  "category": "message",
+  "description": "1 つの使い方を、前提・やること・効くところの順で 1 枚に収める",
+  "answers": [
+    "この製品は、具体的にどういう使い方をするのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 5,
+      "maxLength": 50
+    },
+    "fit": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**不特定多数向け**。特定の企業・個人が推測できる書き方をしない",
+    "**1 枚 = 1 ユースケース。** 汎用的に書くほど、誰の話でもなくなる",
+    "前提（この使い方が成り立つ条件）を必ず書く。**条件を書かないユースケースは営業の作り話になる**",
+    "**事例と混ぜない。** ユースケースは使い方、事例は実績。出典の要否が違う",
+    "プレビュー機能を、提供済みの使い方として書かない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "headers": [
+          "観点",
+          "内容"
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          2.4,
+          6.6
+        ],
+        "size": 9,
+        "rowH": 0.42
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.9,
+        "w": 9.0,
+        "h": 0.85,
+        "text": {
+          "$slot": "fit"
+        },
+        "label": "当てはまる方"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

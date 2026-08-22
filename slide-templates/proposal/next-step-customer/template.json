@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "id": "next-step-customer",
+  "displayName": "本日決めたいことと次の一歩",
+  "pack": "proposal",
+  "category": "plan",
+  "description": "この場で決めることと、次回までに双方が持つ宿題を分けて示す",
+  "answers": [
+    "今日決めるのは何で、次までに誰が何をするのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "steps": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "items": {
+        "type": "string",
+        "maxLength": 20
+      }
+    },
+    "decide": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "maxLength": 30
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない",
+    "**今日決めることを 1 つに絞る。** 複数あると、どれも決まらない",
+    "宿題には担当と期日を書く。**どちらも無い宿題は動かない**",
+    "こちら側の宿題を必ず入れる。顧客にだけ宿題を出す資料にしない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "flow",
+        "x": 0.5,
+        "y": 1.45,
+        "w": 9.0,
+        "h": 0.9,
+        "items": {
+          "$slot": "steps"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 2.45,
+        "w": 9.0,
+        "h": 0.85,
+        "text": {
+          "$slot": "decide"
+        },
+        "label": "本日決めたいこと"
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 3.35,
+        "w": 9.0,
+        "headers": [
+          "次回までの宿題",
+          "担当",
+          "期日"
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          5.4,
+          2.2,
+          1.4
+        ],
+        "size": 9,
+        "rowH": 0.34
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

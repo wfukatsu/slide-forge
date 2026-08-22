@@ -102,6 +102,12 @@ cp templates/sales/products/scalar.ja.md accounts/<AE 名>/<顧客名>/stages/pr
 `templates/sales/products/` の製品補遺が持つ（規則: `templates/sales/products/README.md`）。
 シート §4.2 / §5 の回答を補遺の B / C / D に当てて判定し、結論をシート §1 に書き戻す。
 
+**ヒアリングシートを 3 形式で扱うなら `hearing-sheet` スキルを使う。**
+`hearing.json` を正本に Markdown / Excel / Google Spreadsheet を出し、顧客が
+記入したものを読み戻せる。このスキルは議事録・メールから記録を埋める側で、
+**顧客に渡す・返してもらう側は `hearing-sheet` が持つ**。
+どちらも同じ確度の語彙（`確認済` / `推定` / `未確認`）を使う。
+
 様式は 2 種類ある。混ぜない。
 
 | | ステージ記録（`stage-*.md`） | 商談ログ（`deal-log.md`） |

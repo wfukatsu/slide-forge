@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "id": "iceberg-challenge",
+  "displayName": "課題の構造（見えている問題と根本原因）",
+  "pack": "proposal",
+  "category": "solution",
+  "description": "表面に出ている問題と、その下にある構造を分けて示し、対症療法と差別化する",
+  "answers": [
+    "いま見えている問題の下に、何があるのか"
+  ],
+  "inferenceLevel": "causal",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "above": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "string",
+        "maxLength": 10
+      }
+    },
+    "below": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "string",
+        "maxLength": 30
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 200
+    }
+  },
+  "guardrails": [
+    "**顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない",
+    "上段は**顧客が実際に口にした問題**、下段はこちらの構造の読み。**混ぜない**",
+    "上段は**短い名詞句を 2 つ**（各 10 文字まで）。図の水面上は 2 行しか入らない。3 つ以上並べたくなるなら、表面の問題がまだ絞れていない",
+    "下段は 3 つまで。**根本原因を並べるほど、どれも根本に見えなくなる**",
+    "この読みが違っている可能性を残す。合意を取る前に断定しない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "iceberg",
+        "x": 0.5,
+        "y": 1.4,
+        "w": 9.0,
+        "h": 3.2,
+        "above": {
+          "$slot": "above"
+        },
+        "below": {
+          "$slot": "below"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

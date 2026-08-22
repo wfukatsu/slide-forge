@@ -116,7 +116,11 @@ description: >-
 `visit-plan` は台帳の `visits[]` のうち `status: "planned"` のものから作る。
 訪問の目的・問い・想定反論を先に台帳へ書けば、資料は台帳から出てくる。
 
-台帳に無いページ（顧客提示用の事例など）は、`slide-templates` のテンプレートか
+顧客提示用の事例は `case-studies` パック（`case-study-card` / `case-study-detail` /
+`case-fit`）を使う。**公開許諾と出典は `templates/marketing/case-study.ja.md`**
+が持ち、許諾が「未取得」の事例は顧客に出さない。
+
+その他の台帳に無いページは、`slide-templates` のテンプレートか
 `references/slide-pattern-catalog.md` の型で書く。組み上げと検証:
 
 ```bash

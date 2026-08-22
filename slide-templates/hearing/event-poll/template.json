@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "id": "event-poll",
+  "displayName": "当てはまるものはありますか（イベント用）",
+  "pack": "hearing",
+  "category": "customer",
+  "description": "セミナー・登壇で、聴衆にどの状況に当てはまるかを選んでもらう 1 枚",
+  "answers": [
+    "この聴衆はどの状況にいるのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 4,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 8
+          },
+          {
+            "type": "string",
+            "maxLength": 56
+          }
+        ]
+      }
+    },
+    "ask": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
+  },
+  "guardrails": [
+    "**顧客提示用・不特定多数向け**。特定の企業や個人が分かる書き方をしない",
+    "選択肢は買い手の状況で書く。**製品名で選ばせない**（それは製品紹介であって収集ではない）",
+    "選んだ結果は型として集計する。誰が選んだかを資料に残さない",
+    "回答を求めるなら、その場で何が返るのかも言う（資料を送る、個別に相談に乗る等）"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "h": 1.7,
+        "items": {
+          "$slot": "items"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.45,
+        "w": 9.0,
+        "h": 1.05,
+        "text": {
+          "$slot": "ask"
+        },
+        "label": "当てはまるものはありますか"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}
