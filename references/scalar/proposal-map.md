@@ -109,6 +109,14 @@ ScalarDL:
 
 ## 5. Pricing / editions (as of 2026-08-05)
 
+**Source of record: the OKF bundle (`okf-bundle.md` → `okf/pricing/`).** Read it
+before writing any figure — it carries the internal list price, the billing
+model, the Pod-counting rules, and the edition/feature matrix, none of which are
+on the public site. The table below keeps the **public Marketplace** figures,
+which are the only prices citable on a customer-facing slide as published values.
+The bundle's JPY list prices are for a reference estimate and AE review, not for
+a customer deck.
+
 | Product | Billing | Notes |
 |---|---|---|
 | ScalarDB Community | Free (Apache 2.0) | No commercial features |
@@ -118,8 +126,15 @@ ScalarDL:
 
 - The unit for hourly billing cannot be confirmed from the Marketplace page (`research-2026-08.md`
   records Pod=2vCPU/4GB. In the deck, keep it to something like "× number of Pods" and don't state a firm amount)
-- ScalarDB Analytics pricing could not be confirmed publicly (unknown). Whether Azure Marketplace
-  offers consumption-based pricing is unknown (BYOL container listing and non-availability listing are both present)
+- ScalarDB Analytics is **not** priced per Pod: it is metered per SDBU-hour with a 6 SDBU minimum
+  (`okf/pricing/scalardb-analytics-pricing.md`). Nothing is published publicly, so a customer deck
+  states the model, not the rate. Whether Azure Marketplace offers consumption-based pricing is
+  unknown (BYOL container listing and non-availability listing are both present)
+- ScalarDL Auditor requires Ledger, in a **separate administrative domain** (separate account /
+  cluster) — co-locating them in one cluster does not satisfy the Auditor premise. Quote both
+  (`okf/pricing/scalardl-pricing.md`)
+- 3-year list prices, prepaid credit prices, and discount rates are 非公開 even inside the bundle.
+  Route them to the AE; never interpolate them from the monthly/annual figures
 - Always place a `source_note` (AWS Marketplace published value + date) on the estimated cost slide
 
 ## 6. Standard initial-proposal environment configuration and BOM

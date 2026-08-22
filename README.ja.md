@@ -96,6 +96,12 @@ Drive ルートは最初に一度だけ聞かれ、`config/sales.json` に記憶
 フェーズ、ゲート ID、5 つの資料タイプ、10 のチェックポイントはすべて
 `references/scalar/sales-playbook.ja.md` にある。
 
+Scalar 製品の事実と価格 — 機能・エディション・バージョン・リリース状況・課金モデル・
+定価・Pod 数の数え方 — は、記憶や Web 検索ではなく OKF バンドル
+([OKF-ScalarDB-ScalarDL](https://github.com/wfukatsu/OKF-ScalarDB-ScalarDL)) から取る。
+所在と引用ルールは `references/scalar/okf-bundle.ja.md`。バンドルの価格は社内定価で、
+参考見積の材料としてのみ使う。
+
 ## リポジトリ構成
 
 ```
