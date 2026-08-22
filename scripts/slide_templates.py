@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -30,9 +31,30 @@ def _read_json(path: Path) -> Any:
 
 _MANIFEST_FIELDS = ("id", "displayName", "pack", "category", "path")
 
+# The manifest is read once per process. Every load_template() goes through it,
+# so a 92-template sweep would otherwise re-read and re-validate the same file
+# 92 times over. Template bodies are deliberately *not* cached: callers get a
+# fresh dict they are free to resolve densities on and edit.
+_MANIFEST_CACHE: dict | None = None
+_BY_ID: dict[str, dict] = {}
+
+
+def clear_cache() -> None:
+    """Drop the cached manifest. For tests, and for tools that rewrite it in place."""
+    global _MANIFEST_CACHE
+    _MANIFEST_CACHE = None
+    _BY_ID.clear()
+
 
 def load_manifest() -> dict:
-    manifest = _read_json(MANIFEST_PATH)
+    global _MANIFEST_CACHE
+    if _MANIFEST_CACHE is None:
+        _MANIFEST_CACHE = _validate_manifest(_read_json(MANIFEST_PATH))
+        _BY_ID.update({entry["id"]: entry for entry in _MANIFEST_CACHE["templates"]})
+    return _MANIFEST_CACHE
+
+
+def _validate_manifest(manifest: Any) -> dict:
     if manifest.get("schemaVersion") != 1:
         raise SlideTemplateError("manifest.schemaVersion must be 1")
     entries = manifest.get("templates")
@@ -48,8 +70,7 @@ def load_manifest() -> dict:
                 f"manifest.templates[{i}]: missing or non-string: {', '.join(missing)}")
         if not isinstance(entry.get("tags", []), list):
             raise SlideTemplateError(f"manifest.templates[{i}]: tags must be an array")
-    ids = [entry["id"] for entry in entries]
-    duplicates = sorted({i for i in ids if ids.count(i) > 1})
+    duplicates = sorted(i for i, n in Counter(e["id"] for e in entries).items() if n > 1)
     if duplicates:
         raise SlideTemplateError(
             f"manifest contains duplicate ids: {', '.join(duplicates)}")
@@ -62,10 +83,11 @@ def template_entries(*, pack: str | None = None) -> list[dict]:
 
 
 def template_entry(template_id: str) -> dict:
-    for entry in template_entries():
-        if entry["id"] == template_id:
-            return entry
-    raise SlideTemplateError(f"unknown slide template: {template_id}")
+    load_manifest()
+    entry = _BY_ID.get(template_id)
+    if entry is None:
+        raise SlideTemplateError(f"unknown slide template: {template_id}")
+    return entry
 
 
 def load_template(template_id: str) -> tuple[dict, Path]:

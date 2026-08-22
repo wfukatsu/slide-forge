@@ -50,11 +50,11 @@ import math
 import os
 import re
 import sys
-import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 from _i18n import t, register  # noqa: E402
+from _text import em  # noqa: E402
 # Color utilities were moved to colors.py. Re-exported from here so existing
 # imports like `from diagrams import lighten` keep working.
 from colors import (  # noqa: E402,F401
@@ -731,9 +731,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     TEXT_SLACK = 0.04       # allowance (in) against the text's required height
     LINE_EM = 1.45          # Noto Sans JP line height (multiplier relative to font size)
 
-    @staticmethod
-    def _em(t):
-        return sum(1.0 if unicodedata.east_asian_width(c) in "WFA" else 0.5 for c in t)
+    _em = staticmethod(em)
 
     @staticmethod
     def _overlap_area(a, b):
@@ -798,6 +796,15 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         m = override if override is not None else self.text_margin
         return self.TEXT_INSET_X if m is None else max(0.0, float(m))
 
+    # A text entry never changes after it is registered, so its measurements are
+    # computed once and kept on the entry. The overlap audit compares every pair
+    # of labels; without this, each label's rectangle is rebuilt once per pair
+    def _line_widths(self, m):
+        widths = m.get("_ems")
+        if widths is None:
+            widths = m["_ems"] = [self._em(ln) for ln in m["text"].split("\n")]
+        return widths
+
     def _text_lines(self, m):
         """Return the number of lines accounting for wrapping, and the number of characters that fit per line."""
         w = max(m["rect"][2] - m.get("inset", self.TEXT_INSET_X) * 2, 0.01)
@@ -805,8 +812,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         if per <= 0:
             return 1, per
         n = 0
-        for ln in m["text"].split("\n"):
-            e = self._em(ln)
+        for e in self._line_widths(m):
             n += max(1, int(e / per) + (1 if e % per else 0))
         return n, per
 
@@ -830,9 +836,12 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         check), so use this one instead for checks that only need the character
         range.
         """
+        cached = m.get("_glyph")
+        if cached is not None:
+            return cached
         x, y, w, h = m["rect"]
         lines, per = self._text_lines(m)
-        longest = max((self._em(l) for l in m["text"].split("\n")), default=0)
+        longest = max(self._line_widths(m), default=0)
         tw = min(w, min(longest, per) * m["size"] / 72.0
                  + m.get("inset", self.TEXT_INSET_X))
         th = min(h, lines * m["size"] * self.LINE_EM * (m["ls"] / 100.0) / 72.0)
@@ -844,7 +853,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             y += (h - th) / 2
         elif m["valign"] in ("BOTTOM", "END"):
             y += h - th
-        return (x, y, tw, th)
+        m["_glyph"] = (x, y, tw, th)
+        return m["_glyph"]
 
     def audit_overlaps(self) -> list[str]:
         """Report places where text is hidden or colliding.
@@ -930,6 +940,19 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                        ("cross", ta, conn["oid"]))
         return out
 
+    def audit_all(self, *, connectors: bool = True) -> list[str]:
+        """Every offline check on this slide, in reporting order.
+
+        The four audits answer different questions and are always wanted
+        together; calling them one by one is how a caller ends up silently
+        missing one. Pass ``connectors=False`` for a slide drawn without
+        connectors, where the endpoint check has nothing to say.
+        """
+        out = self.audit_bounds()
+        if connectors:
+            out += self.audit_connectors()
+        return out + self.audit_overlaps() + self.audit_text_fit()
+
     BOUNDS_SLACK = 0.02     # allow overflow up to this amount (rounding error)
 
     def audit_bounds(self) -> list[str]:
@@ -965,6 +988,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return out
 
     ORPHAN_EM = 1.0     # if the wrapped last line is at or below this, treat it as "a single stray character"
+    ORPHAN_MIN_PER = 2.0    # below this many characters per line the text is a stack, not a paragraph
 
     def audit_text_fit(self) -> list[str]:
         """Report text that doesn't fit its box, and ugly line wraps.
@@ -990,6 +1014,12 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 out.append(t("Too much text for the box (needs {need:.2f}in > box "
                              "{h:.2f}in / {lines} lines): \"{text}\"",
                              need=need, h=h, lines=lines, text=txt))
+                continue
+            if per < self.ORPHAN_MIN_PER:
+                # A box this narrow holds one character per line — a vertical
+                # axis label, say. Every line is a "stray character" there, so
+                # the rule below would fire on the design rather than a defect.
+                # Overflow above still covers a stack that runs past its box
                 continue
             for ln in m["text"].split("\n"):
                 e = self._em(ln)

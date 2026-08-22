@@ -28,10 +28,10 @@ from __future__ import annotations
 import math
 import os
 import sys
-import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from _text import em, fit_em  # noqa: E402,F401
 from diagrams import Canvas, Palette, darken, lighten, mix, readable_on  # noqa: E402,F401
 
 __all__ = [
@@ -52,7 +52,7 @@ __all__ = [
     "quadrant", "matrix_map", "roadmap", "pyramid", "cycle", "funnel",
     "callouts", "stats", "checklist", "pipeline", "legend",
     # Measurement
-    "em", "fits_one_line",
+    "em", "fit_em", "fits_one_line",
     # Re-exports
     "Canvas", "Palette", "lighten", "darken", "mix", "readable_on",
 ]
@@ -119,10 +119,9 @@ def configure_layout(*, page_w=None, page_h=None, margin=None,
 # ---------------------------------------------------------------------------
 # Measurement
 # ---------------------------------------------------------------------------
-
-def em(s: str) -> float:
-    """Full-width-equivalent width of a string. Counts full-width chars as 1.0, half-width as 0.5."""
-    return sum(1.0 if unicodedata.east_asian_width(c) in "WFA" else 0.5 for c in s)
+# `em` lives in _text.py and is re-exported here: the auditor in diagrams.py
+# measures with the same function, so a title this says fits is a title the
+# audit agrees fits.
 
 
 def fits_one_line(title: str) -> bool:
@@ -337,11 +336,18 @@ def kv_rows(d, x, y, w, items, *, key_w=1.85, row_h=0.32, gap=0.06,
     return y + len(items) * (row_h + gap) - gap
 
 
-def pill(d, x, y, w, h, text, *, fill=None, color=None, size=8.5):
-    """A single rounded chip."""
+def pill(d, x, y, w, h, text, *, fill=None, color=None, size=8.5,
+         text_margin=0.04):
+    """A single rounded chip.
+
+    A chip's padding is its own geometry — the 0.10in a text frame carries by
+    default would take most of the width of a chip a few tenths of an inch
+    wide, and wrap a word like TIMESTAMP that was meant to sit on one line.
+    """
     return d.shape(x, y, w, h, kind="ROUND_RECTANGLE",
                    fill=fill or lighten(d.P.primary, 0.85), stroke=None,
-                   text=text, size=size, color=color or d.P.primaryDark, bold=True)
+                   text=text, size=size, color=color or d.P.primaryDark, bold=True,
+                   text_margin=text_margin)
 
 
 def pills(d, x, y, w, items, *, per_row=5, h=0.26, gap=0.08, fill=None,
@@ -362,15 +368,18 @@ def pills(d, x, y, w, items, *, per_row=5, h=0.26, gap=0.08, fill=None,
 def xmark(d, cx, cy, *, r=0.14, color=None):
     """Circled X mark indicating no/failure. Positioned by center coordinates."""
     c = color or d.P.danger
+    # A badge this small is all glyph: the margin Slides bakes into a text
+    # frame is wider than the badge itself, and a full-width mark like × has
+    # nowhere to sit. Pull it back out
     d.shape(cx - r, cy - r, r * 2, r * 2, kind="ELLIPSE", fill=c, stroke=None,
-            text="×", size=11, bold=True, color="#FFFFFF")
+            text="×", size=11, bold=True, color="#FFFFFF", text_margin=0.0)
 
 
 def checkmark(d, cx, cy, *, r=0.14, color=None):
     """Circled check mark indicating yes/success. Positioned by center coordinates."""
     c = color or d.P.success
     d.shape(cx - r, cy - r, r * 2, r * 2, kind="ELLIPSE", fill=c, stroke=None,
-            text="✓", size=10, bold=True, color="#FFFFFF")
+            text="✓", size=10, bold=True, color="#FFFFFF", text_margin=0.0)
 
 
 # ---------------------------------------------------------------------------
@@ -603,15 +612,23 @@ def decision(d, x, y, w, question, branches, *, dia_w=3.70, dia_h=0.78,
     n = len(branches)
     by = y + dia_h + drop
     bw = (w - 0.30 * (n - 1)) / n
+    # Every arrow first, then the labels on top of them. The outer branches'
+    # arrows cross the whole width of their own box on the way down, so no
+    # side of the box is clear of the path — the label has to ride over it
+    for i, (_, _, tone) in enumerate(branches):
+        bx = x + i * (bw + 0.30)
+        # Land slightly right of the box's center so the arrowhead and the
+        # left-aligned label don't stack up on the same point
+        d.arrow(cx + (i - (n - 1) / 2) * 0.55, y + dia_h + 0.02,
+                bx + bw * 0.62, by - 0.02, color=tone_solid(d, tone), weight=1.5)
     for i, (label, text, tone) in enumerate(branches):
         fill, stroke, col = tone_colors(d, tone)
         bx = x + i * (bw + 0.30)
-        # Drop the arrow slightly right of the box's center, and left-align
-        # the label, to keep them clear of the path
-        d.arrow(cx + (i - (n - 1) / 2) * 0.55, y + dia_h + 0.02,
-                bx + bw * 0.62, by - 0.02, color=tone_solid(d, tone), weight=1.5)
-        d.label(bx, by - 0.26, bw * 0.46, 0.22, label, size=7.5,
-                align="START", color=d.P.muted)
+        # Backed by the page color, not drawn bare: the arrow passing under it
+        # would otherwise run straight through the wording
+        d.shape(bx, by - 0.26, bw * 0.46, 0.22, kind="RECTANGLE",
+                fill=d.P.page, stroke=None, text=label, size=7.5,
+                align="START", valign="MIDDLE", color=d.P.muted)
         d.shape(bx, by, bw, box_h, kind="ROUND_RECTANGLE", fill=fill,
                 stroke=stroke, text=text, size=9, color=col, line_spacing=110)
     return by + box_h
