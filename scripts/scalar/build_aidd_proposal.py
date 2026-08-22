@@ -19,7 +19,6 @@ Ground rules when rewriting (same as the original worked example):
 """
 from __future__ import annotations
 
-import argparse
 import os
 import sys
 
@@ -418,7 +417,7 @@ def build(deck, template) -> list[str]:
         ref = deck.add_slide("TITLE_ONLY", title=title, notes=notes)
         d = Canvas(deck, ref["slideId"], template)
         fn(d, *fn_args)
-        audits = d.audit_bounds() + d.audit_overlaps() + d.audit_text_fit()
+        audits = d.audit_all(connectors=False)
         if connectors:
             audits += d.audit_connectors()
         problems.extend(f"{title[:16]}…: {m}" for m in audits)
@@ -438,7 +437,7 @@ def build(deck, template) -> list[str]:
     d.exec_summary(0.6, 1.1, 8.8, 3.95, s["situation"], s["complication"],
                    s["resolution"], points=s["points"], size=10)
     problems.extend(f"サマリ: {m}" for m in
-                    (d.audit_bounds() + d.audit_overlaps() + d.audit_text_fit()))
+                    d.audit_all(connectors=False))
 
     # 2. Building agreement on the challenge
     drawn("背景と現状 — AI コーディングは導入したが、開発サイクルは速くなっていない",
@@ -514,32 +513,10 @@ def build(deck, template) -> list[str]:
 
 
 def main() -> int:
-    p = argparse.ArgumentParser()
-    p.add_argument("--folder", default=None)
-    p.add_argument("--dry-run", action="store_true",
-                   help="API を呼ばずに座標・文字量だけ検査する")
-    args = p.parse_args()
-
-    template = bd.load_template(TEMPLATE)
-    P = PROPOSAL
-    if args.dry_run:
-        deck = bd.DryRunDeck(template)
-    else:
-        deck = bd.TemplateDeck.create(
-            template, title=f"{P['customer']}様向け {P['title']}", folder=args.folder)
-
-    problems = build(deck, template)
-    for m in problems:
-        print(t("  audit: {message}", message=m))
-
-    if args.dry_run:
-        print(f"\ndry-run: {len(problems)} problems")
-        return 1 if problems else 0
-
-    url = deck.commit()
-    print(t("Done! Open: {url}", url=url))
-    print_bom(P["architecture"])
-    return 0
+    return bd.run_build_cli(
+        build, template=TEMPLATE,
+        title=lambda: f"{PROPOSAL['customer']}様向け {PROPOSAL['title']}",
+        epilogue=lambda: print_bom(PROPOSAL["architecture"]))
 
 
 if __name__ == "__main__":

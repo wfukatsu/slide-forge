@@ -10,7 +10,6 @@ feature is laid out in a common "figure / overview / use cases / value" format.
 """
 from __future__ import annotations
 
-import argparse
 import os
 import sys
 
@@ -803,18 +802,7 @@ DL_MAP = [
 
 # ---------------------------------------------------------------- Generation
 
-def main() -> int:
-    p = argparse.ArgumentParser()
-    p.add_argument("--folder", default=None)
-    p.add_argument("--dry-run", action="store_true",
-                   help="API を呼ばずに座標・文字量だけ検査する")
-    args = p.parse_args()
-
-    template = bd.load_template(TEMPLATE)
-    if args.dry_run:
-        deck = bd.DryRunDeck(template)
-    else:
-        deck = bd.TemplateDeck.create(template, title=TITLE, folder=args.folder)
+def build(deck, template) -> list[str]:
     problems: list[str] = []
 
     deck.add_slide("COVER", title=TITLE, subtitle=SUBTITLE,
@@ -836,15 +824,14 @@ def main() -> int:
         d = Canvas(deck, ref["slideId"], template)
         draw_feature_map(d, map_groups, getattr(d.P, accent_key))
         problems.extend(f"{map_title[:12]}…: {m}" for m in
-                        (d.audit_bounds() + d.audit_overlaps() + d.audit_text_fit()))
+                        d.audit_all(connectors=False))
         for f in features:
             ref = deck.add_slide("TITLE_ONLY", title=f["title"],
                                  notes=f.get("notes"))
             d = Canvas(deck, ref["slideId"], template)
             draw_feature(d, f, getattr(d.P, accent_key))
             problems.extend(f"{f['title'][:12]}…: {m}" for m in
-                            (d.audit_bounds() + d.audit_connectors()
-                             + d.audit_overlaps() + d.audit_text_fit()))
+                            d.audit_all())
 
     product_section(
         "ScalarDB", "Universal HTAP エンジン — 15 機能",
@@ -858,16 +845,13 @@ def main() -> int:
     deck.add_slide("CLOSING")
 
     deck.add_page_numbers()
-    for m in problems:
-        print(t("  audit: {message}", message=m))
-    if args.dry_run:
-        print(f"\ndry-run: {len(problems)} problems")
-        return 1 if problems else 0
+    return problems
 
-    url = deck.commit()
-    total = 2 + 2 * 2 + len(FEATURES_DB) + len(FEATURES_DL) + 1
-    print(t("Done! {n} slides. Open: {url}", n=total, url=url))
-    return 0
+
+def main() -> int:
+    return bd.run_build_cli(
+        build, template=TEMPLATE, title=TITLE,
+        count=2 + 2 * 2 + len(FEATURES_DB) + len(FEATURES_DL) + 1)
 
 
 if __name__ == "__main__":

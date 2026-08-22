@@ -13,7 +13,6 @@ web research (conducted 2026-08-01) at their final positions.
 """
 from __future__ import annotations
 
-import argparse
 import os
 import sys
 
@@ -425,25 +424,12 @@ def draw_page_number(deck, ref, number: int) -> None:
     ]
 
 
-def main() -> int:
-    p = argparse.ArgumentParser()
-    p.add_argument("--folder", default=None)
-    p.add_argument("--dry-run", action="store_true",
-                   help="API を呼ばずに座標・文字量だけ検査する")
-    args = p.parse_args()
-
-    template = bd.load_template(TEMPLATE)
-    if args.dry_run:
-        deck = bd.DryRunDeck(template)
-    else:
-        deck = bd.TemplateDeck.create(template, title=TITLE, folder=args.folder,
-                                      keep_existing=True)
-
+def build(deck, template) -> list[str]:
     # Thinning out the remaining bundled slides and the cover text replacement.
     # Both need the real duplicated deck (calling the API to look up IDs), so
     # they're skipped entirely under --dry-run. This only builds requests here
     # and has no effect on the drawing and validation that follow
-    if not args.dry_run:
+    if not deck.dry_run:
         pres = deck.slides.presentations().get(
             presentationId=deck.presentation_id, fields="slides.objectId").execute()
         ids = [s["objectId"] for s in pres.get("slides", [])]
@@ -481,22 +467,19 @@ def main() -> int:
             d = Canvas(deck, ref["slideId"], template)
             spec["draw"](d)
             problems += [f"p{i + 1} {spec['title'][:14]}…: {m}" for m in
-                         (d.audit_bounds() + d.audit_connectors()
-                          + d.audit_overlaps() + d.audit_text_fit())]
+                         d.audit_all()]
         else:
             raise ValueError(kind)
         draw_page_number(deck, ref, i + 1)
 
-    for m in problems:
-        print(t("  audit: {message}", message=m))
+    return problems
 
-    if args.dry_run:
-        print(f"\ndry-run: {len(problems)} problems")
-        return 1 if problems else 0
 
-    url = deck.commit()
-    print(t("Done! {n} slides. Open: {url}", n=len(plan), url=url))
-    return 0
+def main() -> int:
+    return bd.run_build_cli(
+        build, template=TEMPLATE, title=TITLE,
+        create_kwargs={"keep_existing": True},
+        count=lambda: len(build_plan()))
 
 
 if __name__ == "__main__":

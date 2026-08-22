@@ -20,7 +20,6 @@ Ground rules when rewriting:
 """
 from __future__ import annotations
 
-import argparse
 import os
 import sys
 
@@ -402,30 +401,16 @@ def print_bom(arch: dict) -> None:
 
 # ============================================================ Assembly
 
-def main() -> int:
-    p = argparse.ArgumentParser()
-    p.add_argument("--folder", default=None)
-    p.add_argument("--dry-run", action="store_true",
-                   help="API を呼ばずに座標・文字量だけ検査する")
-    args = p.parse_args()
-
+def build(deck, template) -> list[str]:
     P = PROPOSAL
-    template = bd.load_template(TEMPLATE)
-    if args.dry_run:
-        deck = bd.DryRunDeck(template)
-    else:
-        deck = bd.TemplateDeck.create(
-            template, title=f"{P['customer']}様向け {P['title']}", folder=args.folder)
     problems: list[str] = []
 
     def drawn(title, fn, *fn_args, notes=None, connectors=False):
         ref = deck.add_slide("TITLE_ONLY", title=title, notes=notes)
         d = Canvas(deck, ref["slideId"], template)
         fn(d, *fn_args)
-        audits = d.audit_bounds() + d.audit_overlaps() + d.audit_text_fit()
-        if connectors:
-            audits += d.audit_connectors()
-        problems.extend(f"{title[:14]}…: {m}" for m in audits)
+        problems.extend(f"{title[:14]}…: {m}"
+                        for m in d.audit_all(connectors=connectors))
 
     # 0. Cover
     deck.add_slide("COVER", title=f"{P['customer']}様向け\n{P['title']}",
@@ -442,7 +427,7 @@ def main() -> int:
     d.exec_summary(0.6, 1.1, 8.8, 3.95, s["situation"], s["complication"],
                    s["resolution"], points=s["points"], size=10)
     problems.extend(f"サマリ: {m}" for m in
-                    (d.audit_bounds() + d.audit_overlaps() + d.audit_text_fit()))
+                    d.audit_all(connectors=False))
 
     # 2. Building agreement on the challenge (placed before the solution)
     drawn("背景と現状 — システムごとにデータが分断されている", draw_current, P["current"],
@@ -511,16 +496,14 @@ def main() -> int:
     deck.add_slide("CLOSING")
 
     deck.add_page_numbers()
-    for m in problems:
-        print(t("  audit: {message}", message=m))
-    if args.dry_run:
-        print(f"\ndry-run: {len(problems)} problems")
-        return 1 if problems else 0
+    return problems
 
-    url = deck.commit()
-    print(t("Done! Open: {url}", url=url))
-    print_bom(P["architecture"])
-    return 0
+
+def main() -> int:
+    return bd.run_build_cli(
+        build, template=TEMPLATE,
+        title=lambda: f"{PROPOSAL['customer']}様向け {PROPOSAL['title']}",
+        epilogue=lambda: print_bom(PROPOSAL["architecture"]))
 
 
 if __name__ == "__main__":
