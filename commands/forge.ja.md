@@ -20,6 +20,7 @@ Claude Code をこのコマンドの主ホストとする。`$ARGUMENTS` を起�
 | 素材からの現状分析・課題特定（SWOT、PEST、5 フォース、なぜなぜ、ロジックツリー、ギャップ分析など） | `current-state-analysis` |
 | 分析フレームワークのテンプレート自体の追加・変更 | `analysis-template-creator` |
 | B2B 関与者／ディスカバリーマップ | `b2b-account-maps` |
+| 顧客から情報を集めるためのスライド（ヒアリング議題、記入シート、イベントアンケート） | `hearing-slides` |
 | nexus-architect のレポート・UI モックの説明 | `nexus-report-slides` |
 | 登録テンプレート／マスターを使用 | `google-slides-template` |
 | コーポレートマスターなし | `google-slides` |
