@@ -1,16 +1,13 @@
 ---
 name: b2b-account-maps
 description: >-
-  Build the two account maps a B2B software deal turns on: an influence map of
-  the buying committee (who decides, who blocks, who can be moved) and a
-  discovery map of what is confirmed versus still assumed. Use when asked to map
-  stakeholders, a buying committee, decision makers or an approval path; to
-  qualify or review a deal (MEDDPICC, discovery, pipeline review); to work out
-  what is still unknown before writing a proposal; or to turn hearing notes and
-  meeting minutes into those maps as slides. Produces slides from the
-  `b2b-sales` templates in `slide-templates/`. Route the proposal deck itself to
-  `scalar-proposal-slides` or `google-slides-template`, and new reusable page
-  templates to `slide-template-creator`.
+  Build the two maps a B2B deal turns on: an influence map of the buying
+  committee (who decides, who blocks, who can be moved) and a discovery map of
+  what is confirmed versus still assumed. Renders from the b2b-sales templates.
+  Use for: ステークホルダーを整理, 関与者マップ, 意思決定者と承認経路, MEDDPICC,
+  ディスカバリー, パイプラインレビュー, 提案前に何が未確認かを洗い出す.
+  Not: the proposal deck itself (scalar-proposal-slides / google-slides-template);
+  new reusable page templates (slide-template-creator).
 ---
 *[English](SKILL.md)*
 

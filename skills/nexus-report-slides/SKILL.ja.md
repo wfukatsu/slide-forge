@@ -1,21 +1,15 @@
 ---
 name: nexus-report-slides
 description: >-
-  Turn a nexus-architect project's output reports and UI mocks into an
-  explanation deck, including while the pipeline is still unfinished: read
-  work/pipeline-progress.json first to establish what is actually known, build
-  only from the reports that exist, embed the product UI mocks as screenshots
-  and the structure diagrams as rendered mermaid, and carry every unanswered
-  phase into an open-questions page instead of guessing. Covers all four
-  plugins (architect, product, infra, scalardb) via the slide-templates/nexus
-  pack.
-  Triggers: "nexus-architect のレポートを説明資料にして", "分析結果をスライドに",
-  "アーキテクチャ分析の報告資料", "UI モックを貼ったスライド", "途中まででいいので資料化",
-  "nexus-report-slides", "turn the architect reports into slides",
-  "report deck from the pipeline".
-  Out of scope: producing the reports themselves (that is nexus-architect's
-  own skills), authoring new slide templates (slide-template-creator), deck
-  generation mechanics (google-slides-template), and visual QA (slide-qa).
+  Turn a nexus-architect project's reports and UI mocks into an explanation deck,
+  including while the pipeline is still unfinished: build only from the reports
+  that exist, embed UI mocks as screenshots and structure diagrams as rendered
+  mermaid, and carry every unanswered phase into an open-questions page instead
+  of guessing. Covers architect / product / infra / scalardb.
+  Use for: nexus-architect のレポートを説明資料にして, 分析結果をスライドに,
+  アーキテクチャ分析の報告資料, 途中まででいいので資料化.
+  Not: producing the reports themselves (nexus-architect's own skills); new
+  slide templates (slide-template-creator); visual QA (slide-qa).
 ---
 
 *[English](SKILL.md)*

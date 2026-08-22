@@ -1,321 +1,73 @@
 *[日本語](basic.ja.md)*
+# Composing the Structural Pages
 
-# Basic Composer Specification
-
-Composer function specification for the basic category (6 types).
-
----
-
-## compose_title
-
-**Master**: COVER | **Pattern**: Custom
-
-Cover slide. Places the title, subtitle, and presenter information on a primary-colored background.
-
-### Layout
-
-```
-┌──────────────────────────────────────┐
-│                         [Logo] ──→ (8.3, 0.4) w=1.18 h=0.34
-│                                      │
-│  タイトル ─────────────→ (0.5, 1.3) w=8.9 h=1.2    30pt bold
-│  サブタイトル ─────────→ (0.5, 2.6) w=8.9 h=0.5    14pt
-│                                      │
-│             発表者 / 日付 ──→ (5.9, 3.4) w=3.6      12pt
-│  ┌──────────────────────────────────┐│
-│  │      decorative bottom band      ││
-│  └──────────────────────────────────┘│
-└──────────────────────────────────────┘
-```
-
-### Code
+The pages that hold a deck together rather than carry its argument: cover,
+agenda, section divider, summary, closing, appendix. They are the ones a
+template's own layouts already handle, so the rule for all of them is the same
+— **use the placeholder layout, do not draw them**. A hand-drawn cover stops
+following the master the moment the brand changes.
 
 ```python
-def compose_title(sb, content, theme, slide_id):
-    apply_master_cover(sb, theme, slide_id)
-    t = theme["layouts"]["COVER"]["elements"]
-
-    # タイトル
-    sb.add_text(f"{slide_id}_title", content["title"],
-        t["title"]["x"], t["title"]["y"], t["title"]["w"], t["title"]["h"],
-        font=theme["fonts"]["fontFaceTitle"], size=theme["fontSizes"]["coverTitle"],
-        color=theme["colors"]["textOnDark"], bold=True)
-
-    # サブタイトル
-    if content.get("subtitle"):
-        sb.add_text(f"{slide_id}_subtitle", content["subtitle"],
-            t["subtitle"]["x"], t["subtitle"]["y"], t["subtitle"]["w"], t["subtitle"]["h"],
-            font=theme["fonts"]["fontFaceBody"], size=theme["fontSizes"]["subtitle"],
-            color=theme["colors"]["textOnDark"])
-
-    # 発表者 + 日付
-    info_parts = []
-    if content.get("presenter"): info_parts.append(content["presenter"])
-    if content.get("date"): info_parts.append(content["date"])
-    if info_parts:
-        sb.add_text(f"{slide_id}_info", " | ".join(info_parts),
-            t["body"]["x"], t["body"]["y"], t["body"]["w"], t["body"]["h"],
-            font=theme["fonts"]["fontFaceBody"], size=theme["fontSizes"]["bodyLevel3"],
-            color=theme["colors"]["textOnDark"], align="END")
+plain(layout="COVER", title="…", subtitle="…", body="2026-08-22\n株式会社Scalar")
 ```
 
----
+or, in a deck spec:
 
-## compose_agenda
-
-**Master**: SECTION | **Pattern**: Pattern 7 (Icon+Text Row) applied
-
-Table-of-contents slide. Displays the section structure as a numbered list. When currentIndex is specified, that item is highlighted.
-
-### Layout
-
-```
-┌──────────────────────────────────────┐
-│ [Logo] (0.1, 0.2)                    │
-│                                      │
-│      アジェンダ ──→ (1.4, 1.5) 24pt  │
-│      ──────── separator ────────     │
-│                                      │
-│   1. セクション名 ──→ y=2.2         │
-│   2. セクション名 ──→ y=2.6  ← current: primary色  │
-│   3. セクション名 ──→ y=3.0         │
-│   4. セクション名 ──→ y=3.4         │
-│                                      │
-│  ┌──────────────────────────────────┐│
-│  │      decorative bottom band      ││
-│  └──────────────────────────────────┘│
-└──────────────────────────────────────┘
+```json
+{"layout": "COVER", "title": "…", "subtitle": "…", "body": "2026-08-22"}
 ```
 
-### Code
+Which role names a template offers is in `templates/<id>.json` and printed by
+`list_templates.py`. The standard six are COVER / SECTION / CONTENT /
+TITLE_ONLY / BLANK / CLOSING.
 
-```python
-def compose_agenda(sb, content, theme, slide_id):
-    apply_master_section(sb, theme, slide_id)
-    colors = theme["colors"]
+## Cover
 
-    # タイトル
-    sb.add_text(f"{slide_id}_title", content["title"],
-        1.438, 1.5, 7.125, 0.590,
-        font=theme["fonts"]["fontFaceTitle"], size=theme["fontSizes"]["sectionTitle"],
-        color=colors["textTitle"], bold=True)
+Title, subtitle, and who is presenting on what date. The master owns the
+background, the logo and the band; the deck supplies three strings.
 
-    # アジェンダ項目
-    items = content["items"]
-    current = content.get("currentIndex")
-    start_y = 2.2
-    item_h = 0.40
+**Build it with**: `layout="COVER"` — `title`, `subtitle`, `body` (presenter
+and date, one per line).
 
-    for i, item in enumerate(items):
-        is_current = (current is not None and i == current)
-        text_color = colors["primary"] if is_current else colors["textPrimary"]
-        weight = True if is_current else False
+Keep the title to one line. `deckkit.fits_one_line()` is the check
+(`TITLE_EM_MAX`, 30.5 full-width equivalents at 20pt); a wrapped cover title
+pushes into the subtitle.
 
-        # 番号バッジ
-        badge_x = 1.5
-        badge_r = 0.14
-        fill = colors["primary"] if is_current else colors["surfaceLight"]
-        badge_text_color = colors["textOnDark"] if is_current else colors["textPrimary"]
-        sb.add_badge(f"{slide_id}_badge_{i}", str(i + 1),
-            badge_x, start_y + i * item_h, badge_r,
-            fill=fill, text_color=badge_text_color, size=10)
+## Agenda
 
-        # 項目テキスト
-        sb.add_text(f"{slide_id}_item_{i}", item,
-            badge_x + badge_r * 2 + 0.2, start_y + i * item_h - 0.05,
-            6.0, item_h,
-            font=theme["fonts"]["fontFaceBody"], size=theme["fontSizes"]["bodyLevel1"],
-            color=text_color, bold=weight)
-```
+The section structure as a numbered list, so the reader knows how long the
+argument is. Worth a page from about eight slides on; below that it costs more
+attention than it saves.
 
----
+**Build it with**: `layout="CONTENT"` — `body` as a list, one section per line.
+For a progress-marked agenda repeated at each divider, use `layout="SECTION"`
+per section instead of dimming entries.
 
-## compose_section_divider
+## Section divider
 
-**Master**: SECTION | **Pattern**: Custom
+Section number and title, centered. Its job is the pause, not the information.
 
-Section divider. Centers the section number (optional) and title.
+**Build it with**: `layout="SECTION"` — `title`, optional `body` for a
+one-line description of what the section covers.
 
-### Code
+## Executive summary
 
-```python
-def compose_section_divider(sb, content, theme, slide_id):
-    apply_master_section(sb, theme, slide_id)
-    t = theme["layouts"]["SECTION"]["elements"]
-    colors = theme["colors"]
+The conclusion, before the argument. This one is *not* a placeholder page: it
+carries structure, so it is a figure.
 
-    # セクション番号（オプション）
-    if content.get("sectionNumber"):
-        sb.add_text(f"{slide_id}_num", f"Section {content['sectionNumber']}",
-            t["title"]["x"], t["title"]["y"] - 0.5, t["title"]["w"], 0.4,
-            font=theme["fonts"]["fontFaceEn"], size=theme["fontSizes"]["bodyLevel2"],
-            color=colors["primary"], bold=True)
+**Build it with**: the `exec_summary` figure (situation / complication /
+resolution plus supporting points), or the `exec-summary-readable` slide
+template for a read-alone document. See [slide-patterns.md](../slide-patterns.md).
 
-    # セクションタイトル
-    sb.add_text(f"{slide_id}_title", content["title"],
-        t["title"]["x"], t["title"]["y"], t["title"]["w"], t["title"]["h"],
-        font=theme["fonts"]["fontFaceTitle"], size=theme["fontSizes"]["sectionTitle"],
-        color=colors["textTitle"], bold=True)
+## Closing
 
-    # サブタイトル（オプション）
-    if content.get("subtitle"):
-        sb.add_text(f"{slide_id}_subtitle", content["subtitle"],
-            t["body"]["x"], t["body"]["y"], t["body"]["w"], t["body"]["h"],
-            font=theme["fonts"]["fontFaceBody"], size=theme["fontSizes"]["bodyLevel1"],
-            color=colors["textSecondary"])
-```
+Logo and contact details. The master usually has this page already.
 
----
+**Build it with**: `layout="CLOSING"`, no content. `deck.add_slide("CLOSING")`.
 
-## compose_summary
+## Appendix divider
 
-**Master**: HIGHLIGHT | **Pattern**: Pattern 8 (Stat Card) + text
+Marks where the main line of argument ends and the backup material begins.
 
-Executive summary / conclusion. Emphasizes key points with white text on a dark background.
-
-### Layout
-
-```
-┌──────────────────────────────────────┐
-│ ████████ primary 背景 ████████████████│
-│                                      │
-│  アクションタイトル ─→ 24pt white bold│
-│                                      │
-│  ● キーポイント 1 ─────→ 14pt white  │
-│  ● キーポイント 2                    │
-│  ● キーポイント 3                    │
-│                                      │
-│  推奨事項:                           │
-│    テキスト ──────────→ 12pt white    │
-│                                      │
-│  ネクストステップ:                    │
-│    1. ステップ 1                     │
-│    2. ステップ 2                     │
-└──────────────────────────────────────┘
-```
-
-### Code
-
-```python
-def compose_summary(sb, content, theme, slide_id):
-    apply_master_highlight(sb, theme, slide_id)
-    colors = theme["colors"]
-
-    # タイトル
-    sb.add_text(f"{slide_id}_title", content["title"],
-        0.5, 0.5, 9.0, 0.6,
-        font=theme["fonts"]["fontFaceTitle"], size=24,
-        color=colors["textOnDark"], bold=True)
-
-    # キーポイント
-    y = 1.3
-    for i, point in enumerate(content["keyPoints"]):
-        sb.add_text(f"{slide_id}_kp_{i}", f"  {point}",
-            0.7, y + i * 0.45, 8.5, 0.4,
-            font=theme["fonts"]["fontFaceBody"], size=14,
-            color=colors["textOnDark"])
-
-    y_offset = 1.3 + len(content["keyPoints"]) * 0.45 + 0.3
-
-    # 推奨事項
-    if content.get("recommendation"):
-        sb.add_text(f"{slide_id}_rec_label", "推奨事項:",
-            0.5, y_offset, 2.0, 0.3,
-            font=theme["fonts"]["fontFaceTitle"], size=12,
-            color=colors["accent"], bold=True)
-        sb.add_text(f"{slide_id}_rec", content["recommendation"],
-            0.7, y_offset + 0.3, 8.3, 0.4,
-            font=theme["fonts"]["fontFaceBody"], size=12,
-            color=colors["textOnDark"])
-        y_offset += 0.8
-
-    # ネクストステップ
-    if content.get("nextSteps"):
-        sb.add_text(f"{slide_id}_ns_label", "ネクストステップ:",
-            0.5, y_offset, 3.0, 0.3,
-            font=theme["fonts"]["fontFaceTitle"], size=12,
-            color=colors["accent"], bold=True)
-        for i, step in enumerate(content["nextSteps"]):
-            sb.add_text(f"{slide_id}_ns_{i}", f"  {i+1}. {step}",
-                0.7, y_offset + 0.3 + i * 0.35, 8.3, 0.3,
-                font=theme["fonts"]["fontFaceBody"], size=12,
-                color=colors["textOnDark"])
-```
-
----
-
-## compose_closing
-
-**Master**: CLOSING | **Pattern**: Custom
-
-Closing slide. Centers the logo and contact information.
-
-### Placement constraints
-
-The CLOSING master places a decorative band (image) at the bottom. **Contact information and text elements must be placed above the top edge (y coordinate) of the decorative band.**
-
-| Element | Recommended Y position | Note |
-|------|-----------|-----|
-| "Thank you for your attention" etc. | decorative band y − 0.4" or more | Must not overlap the band |
-| Contact information | decorative band y − 0.2" or more | The bottom edge of the text must not be hidden by the band |
-
-> For the Scalar theme, `bottomBand.y = 3.667"`, so contact text should be adjusted to fit within y + h < 3.65".
-
-### Code
-
-```python
-def compose_closing(sb, content, theme, slide_id):
-    apply_master_closing(sb, theme, slide_id)
-    colors = theme["colors"]
-
-    # メッセージ（オプション）
-    if content.get("message"):
-        sb.add_text(f"{slide_id}_msg", content["message"],
-            2.0, 1.5, 6.0, 0.5,
-            font=theme["fonts"]["fontFaceBody"], size=16,
-            color=colors["textPrimary"], align="CENTER")
-
-    # 連絡先情報
-    ci = content.get("contactInfo", {})
-    if ci:
-        info_lines = []
-        if ci.get("name"): info_lines.append(ci["name"])
-        if ci.get("email"): info_lines.append(ci["email"])
-        if ci.get("phone"): info_lines.append(ci["phone"])
-        if ci.get("url"): info_lines.append(ci["url"])
-
-        sb.add_text(f"{slide_id}_contact", "\n".join(info_lines),
-            2.5, 3.5, 5.0, 1.5,
-            font=theme["fonts"]["fontFaceBody"], size=12,
-            color=colors["textSecondary"], align="CENTER",
-            line_spacing=180)
-```
-
----
-
-## compose_appendix
-
-**Master**: BLANK | **Pattern**: Custom
-
-Appendix cover. Simply displays the "Appendix" title centered.
-
-### Code
-
-```python
-def compose_appendix(sb, content, theme, slide_id):
-    apply_master_blank(sb, theme, slide_id)
-    colors = theme["colors"]
-
-    # タイトル
-    sb.add_text(f"{slide_id}_title", content.get("title", "Appendix"),
-        2.0, 2.0, 6.0, 0.8,
-        font=theme["fonts"]["fontFaceTitle"], size=theme["fontSizes"]["sectionTitle"],
-        color=colors["textTitle"], bold=True, align="CENTER")
-
-    # サブタイトル
-    if content.get("subtitle"):
-        sb.add_text(f"{slide_id}_subtitle", content["subtitle"],
-            2.0, 3.0, 6.0, 0.5,
-            font=theme["fonts"]["fontFaceBody"], size=theme["fontSizes"]["subtitle"],
-            color=colors["textSecondary"], align="CENTER")
-```
+**Build it with**: `layout="SECTION"`, title "Appendix". Anything the reader
+must see to follow the argument does not belong behind it.

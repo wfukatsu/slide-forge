@@ -6,17 +6,17 @@ A 55-slide deck (46 of which are diagrams). A reference example of a structure t
 
 ```bash
 # Coordinate inspection (does not call the API)
-python ../../scripts/validate_layout.py deck.py
+../../.venv/bin/python ../../scripts/validate_layout.py deck.py
 
 # List the composition
-python ../../scripts/render_deck.py deck.py --dry-run
+../../.venv/bin/python ../../scripts/render_deck.py deck.py --dry-run
 
 # Generate
-python ../../scripts/render_deck.py deck.py
+../../.venv/bin/python ../../scripts/render_deck.py deck.py
 
 # Generating with your own company master
 SLIDE_FORGE_TEMPLATE=../../templates/my-brand.json \
-    python ../../scripts/render_deck.py deck.py
+    ../../.venv/bin/python ../../scripts/render_deck.py deck.py
 ```
 
 ## Composition

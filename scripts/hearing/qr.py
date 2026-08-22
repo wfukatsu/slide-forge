@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Make the QR PNG for a collect-qr page.
 
-    python scripts/hearing/qr.py "https://docs.google.com/..." --out out/hearing/qr.png
+    .venv/bin/python scripts/hearing/qr.py "https://docs.google.com/..." --out out/hearing/qr.png
 
 `qrcode` is optional. When it is missing this writes a clearly-marked
 placeholder carrying the URL as text instead of failing, so the deck still

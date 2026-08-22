@@ -6,9 +6,9 @@ omitting x/y/w/h). This script instead targets a **deck that already
 exists**, adding pictures after the fact to slots — like a cover or
 chapter-divider image — that were left empty.
 
-    list:  python scripts/fill_image_slots.py <URL> --dry-run
-    run:   python scripts/fill_image_slots.py <URL>
-    pick:  python scripts/fill_image_slots.py <URL> --slide 1 --prompt "夜間のビル"
+    list:  .venv/bin/python scripts/fill_image_slots.py <URL> --dry-run
+    run:   .venv/bin/python scripts/fill_image_slots.py <URL>
+    pick:  .venv/bin/python scripts/fill_image_slots.py <URL> --slide 1 --prompt "夜間のビル"
 
 Slot discovery works the same as inspect_template.py, but by default only
 targets **slots the template declares** (PICTURE-family placeholders / empty

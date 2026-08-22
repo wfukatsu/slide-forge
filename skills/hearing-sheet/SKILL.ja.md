@@ -1,14 +1,15 @@
 ---
 name: hearing-sheet
 description: >-
-  ヒアリングシートをデータとして持ち、Markdown / Excel / Google Spreadsheet の
-  間を双方向に動かす。顧客やパートナーに渡して記入してもらい、返ってきた回答を
-  読み戻し、まだ聞けていないことを洗い出す。トリガー:「ヒアリングシートを作って」
-  「ヒアリング項目を Excel で」「スプレッドシートで顧客に渡したい」「記入して
-  もらったシートを取り込んで」「何が聞けていないか」。製品非依存で、製品適合の
-  判定は `templates/sales/products/` の補遺が持つ。空いている項目を聞くための
-  スライドは `hearing-slides`、議事録・メールから記録を埋めるのは
-  `scalar-deal-intake`。
+  Keep the hearing sheet as data and move it between Markdown, Excel and Google
+  Spreadsheet in both directions — hand one to a customer or partner to fill in,
+  read the answers back, and report what is still unconfirmed. Product-neutral;
+  product-fit judgements live in templates/sales/products/.
+  Use for: ヒアリングシートを作って, ヒアリング項目を Excel で,
+  スプレッドシートで顧客に渡したい, 記入してもらったシートを取り込んで,
+  何が聞けていないか.
+  Not: slides that do the asking (hearing-slides); minutes and email into the
+  record (scalar-deal-intake).
 ---
 
 *[English](SKILL.md)*

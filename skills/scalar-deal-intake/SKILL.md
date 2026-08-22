@@ -2,16 +2,14 @@
 name: scalar-deal-intake
 description: >-
   Turn raw deal material — meeting minutes, email threads, Slack, CRM exports,
-  customer documents — into per-stage records and a hearing sheet, using the
-  stage input/output map derived from the Scalar sales sheet. Use when asked to
-  「議事録を整理して」「メールから商談情報をまとめて」「ヒアリングシートを埋めて」
-  「ステージごとに整理して」, to work out what is still unconfirmed in a deal, or
-  to check whether a stage may advance. Extracts facts with a source and a
-  confidence level, never invents an answer, and turns every gap into a question
-  with an owner and a due date. The Markdown records feed `scalar-account-plan`
-  (the account.json ledger and the activity-plan deck); one visit's materials go
-  to `scalar-ae-materials`, the maps to `b2b-account-maps`, and the customer
-  proposal to `scalar-proposal-slides`.
+  customer documents — into per-stage records and a hearing sheet. Extracts facts
+  with a source and a confidence level, never invents an answer, and turns every
+  gap into a question with an owner and a due date.
+  Use for: 議事録を整理して, メールから商談情報をまとめて, ヒアリングシートを埋めて,
+  ステージごとに整理して, ステージを上げてよいかの判断.
+  Not: the ledger and activity plan (scalar-account-plan); one visit's materials
+  (scalar-ae-materials); the maps (b2b-account-maps); the proposal
+  (scalar-proposal-slides).
 ---
 
 *[日本語](SKILL.ja.md)*

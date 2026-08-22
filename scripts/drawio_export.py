@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Export a draw.io (.drawio) file to PNG (for inserting into slides).
 
-    python scripts/drawio_export.py <in.drawio> [--out out/diagrams/x.png]
+    .venv/bin/python scripts/drawio_export.py <in.drawio> [--out out/diagrams/x.png]
         [--scale 2] [--page N] [--transparent] [--border 4]
 
 Uses the drawio desktop CLI's headless export (`/opt/homebrew/bin/drawio`,

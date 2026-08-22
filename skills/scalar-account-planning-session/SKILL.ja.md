@@ -1,16 +1,15 @@
 ---
 name: scalar-account-planning-session
 description: >-
-  Build the Account Planning Session (APS / アカウントプランニングセッション)
-  decks for a customer a Scalar Account Executive already keeps a ledger for:
-  a full Plan Document for the account team and a nine-page executive review
-  deck, from one aps.json. Works out who to meet next per legal entity from
-  published officer lists and org charts, ties the proposals to the customer's
-  own mid-term management plan, and gives a chapter to each deal. Use for an
-  APS / アカウントプランニングセッション / 年次のアカウント棚卸し / 役員レビュー
-  資料, or when asked to map a customer group's organisation, officers or key
-  people. The per-visit ledger and the activity-plan deck stay in
-  `scalar-account-plan`; one visit's materials go to `scalar-ae-materials`.
+  Build the Account Planning Session decks for a customer that already has a
+  ledger: a full Plan Document for the account team and a nine-page executive
+  review deck, from one aps.json. Works out who to meet next per legal entity
+  from published officer lists, and ties the proposals to the customer's own
+  mid-term management plan.
+  Use for: APS, 年次・半期のアカウントレビュー, 役員向けレビュー資料,
+  企業グループの組織・役員・キーパーソンを整理.
+  Not: the per-visit ledger and activity plan (scalar-account-plan); one visit's
+  materials (scalar-ae-materials).
 ---
 
 *[English](SKILL.md)*

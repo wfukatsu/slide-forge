@@ -27,11 +27,23 @@ from __future__ import annotations
 import os
 
 _CATALOG_JA: dict[str, str] = {}
+_LANG: str | None = None
 
 
 def lang() -> str:
-    v = os.environ.get("GSLIDES_LANG", "")
-    return "ja" if v.lower().startswith("ja") else "en"
+    """The active language. Resolved once — ``t()`` is called from inside the
+    audit loops, and re-reading the environment there is pure overhead."""
+    global _LANG
+    if _LANG is None:
+        _LANG = "ja" if os.environ.get("GSLIDES_LANG", "").lower().startswith("ja") else "en"
+    return _LANG
+
+
+def set_lang(value: str | None = None) -> str:
+    """Override the language, or re-read the environment when given None. For tests."""
+    global _LANG
+    _LANG = None if value is None else ("ja" if value.lower().startswith("ja") else "en")
+    return lang()
 
 
 def register(ja: dict[str, str]) -> None:

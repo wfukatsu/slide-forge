@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Build and register a new template (master) from a design spec (JSON).
 
-    python scripts/build_template.py --spec design.json --dry-run
-    python scripts/build_template.py --spec design.json \
+    .venv/bin/python scripts/build_template.py --spec design.json --dry-run
+    .venv/bin/python scripts/build_template.py --spec design.json \
         [--base blank|<template-id>|<URL>] [--emit templates/<id>.json] \
         [--title "<master name>"] [--folder <Drive URL/ID>] [--replace]
 

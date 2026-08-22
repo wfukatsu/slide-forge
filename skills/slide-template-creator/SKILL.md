@@ -1,15 +1,13 @@
 ---
 name: slide-template-creator
 description: >-
-  Create, register, update, and catalog reusable single-slide templates for
-  slide-forge. Use when a user asks to add a slide pattern or page template
-  such as SWOT, cohort retention, KPI dashboard, comparison, process, or
-  analysis slides; turn an existing slide or screenshot into a reusable page
-  template; define semantic input slots; or list and maintain registered slide
-  templates. This creates content-level slide templates, not Google Slides
-  masters. Route brand/master creation to template-forge, deck generation to
-  google-slides or google-slides-template, and visual QA of finished decks to
-  slide-qa.
+  Create, register, update and catalog reusable single-slide templates: define
+  the semantic input slots, validate, register. These are content-level page
+  templates, not Google Slides masters.
+  Use for: ページテンプレートを追加, SWOT・比較・プロセスなどのスライド型を作って,
+  既存スライドやスクリーンショットをテンプレート化, 登録済みテンプレートの一覧と保守.
+  Not: brand/master creation (template-forge); deck generation (google-slides /
+  google-slides-template); visual QA of finished decks (slide-qa).
 ---
 
 # Slide Template Creator

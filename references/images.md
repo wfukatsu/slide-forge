@@ -188,7 +188,7 @@ to the slot's, with the composition instructed to account for what will be cropp
 
 ```bash
 # See which layouts have which slots
-python scripts/inspect_template.py <URL>        # the report shows imageSlot[N]
+.venv/bin/python scripts/inspect_template.py <URL>        # the report shows imageSlot[N]
 ```
 
 If a slot exists but you place the image elsewhere, `--dry-run` warns (`--strict` turns it into
@@ -198,8 +198,8 @@ To fill empty slots in **a deck that's already been built**, use `scripts/fill_i
 (the `image-slots` skill). This targets decks with no spec, or decks whose URL can't change.
 
 ```bash
-python scripts/fill_image_slots.py <URL> --dry-run   # see which slots would be filled
-python scripts/fill_image_slots.py <URL>
+.venv/bin/python scripts/fill_image_slots.py <URL> --dry-run   # see which slots would be filled
+.venv/bin/python scripts/fill_image_slots.py <URL>
 ```
 
 ### Generating with AI
@@ -212,7 +212,7 @@ d.ai_image(5.2, 1.1, 4.2, 2.6,
 
 ```bash
 # Try it standalone (--show-prompt shows just the prompt, without calling the API)
-python scripts/images.py --prompt "…" --style flat_vector \
+.venv/bin/python scripts/images.py --prompt "…" --style flat_vector \
     --template templates/aixdevops.json --out out/hero.png
 ```
 

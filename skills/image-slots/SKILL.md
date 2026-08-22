@@ -1,20 +1,15 @@
 ---
 name: image-slots
 description: >-
-  Fill the empty image slots of an **existing** Google Slides deck with
-  AI-generated pictures: find the frames the template reserves for a picture
-  (PICTURE-family placeholders, empty image elements left in a layout, frames
-  the deck reuses), generate a picture composed for each frame's shape, and
-  place it so it fills the frame. Runs standalone on any accessible deck URL,
-  including decks slide-forge did not generate, and works without a registered
-  template by analyzing the deck itself.
-  Triggers: "表紙に絵を入れて", "章扉の画像枠を埋めて", "空いている画像枠に画像を生成",
-  "このデッキに画像を足して", "image-slots", "fill the image placeholders",
-  "generate images into the slots".
-  Out of scope: decks still being generated from a deck spec (put `aiImage`
-  in the spec and let build_deck.py fill the slot — see below), drawing
-  diagrams with shapes (google-slides-template's figure families), replacing
-  pictures that are already in place, and visual verification (slide-qa).
+  Fill the empty image slots of an existing Google Slides deck with AI-generated
+  pictures: find the frames the template reserves for a picture, generate one
+  composed for each frame's shape, and place it so it fills the frame. Runs on
+  any accessible deck URL, including decks slide-forge did not generate.
+  Use for: 表紙に絵を入れて, 章扉の画像枠を埋めて, 空いている画像枠に画像を生成,
+  fill the image placeholders.
+  Not: decks still being generated (put aiImage in the spec instead);
+  shape-drawn diagrams; replacing pictures already in place; verification
+  (slide-qa).
 ---
 *[日本語](SKILL.ja.md)*
 

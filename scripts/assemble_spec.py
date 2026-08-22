@@ -6,7 +6,7 @@ agent writes **only its own assigned page** to `pages/NNN-<slug>.json` and
 never touches the main spec file. Since there's no overlap, agents can write
 in parallel.
 
-    python scripts/assemble_spec.py --out deck.json --title "Document Title" pages/
+    .venv/bin/python scripts/assemble_spec.py --out deck.json --title "Document Title" pages/
 
 A fragment's contents can be any of:
 

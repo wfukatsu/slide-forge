@@ -1,13 +1,11 @@
 ---
 name: google-slides
 description: >-
-  Generate Google Slides presentations and infographics from scratch (no registered
-  corporate master) with Python + the Google Slides API, using the shared slide-forge
-  engine: spec-driven decks on a blank 16:9 template, or code-first decks with offline
-  layout validation for diagram-heavy material.
-  Triggers: "Google Slides を作って", "スライドを生成", "gslides", "インフォグラフィクスを作って",
-  "create Google Slides", "generate slides", "create infographic", or when a Google Slides
-  URL is included.
+  Generate Google Slides decks and infographics from scratch, with no registered
+  corporate master: spec-driven decks on a blank 16:9 template, or code-first
+  decks with offline layout validation for diagram-heavy material.
+  Use for: Google Slides を作って, スライドを生成, インフォグラフィクスを作って,
+  create Google Slides, generate slides, create infographic.
 ---
 *[English](SKILL.md)*
 
@@ -49,7 +47,7 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 | 高密度なクラウド/データフロー図（draw.io → PNG） | `drawio-diagrams` スキル + `scripts/drawio_export.py` + `references/drawio.md` |
 | デッキごとの Drive フォルダ（作成 / ファイル収集） | `scripts/drive_folder.py` |
 | チャートと表 | `scripts/charts.py` + `references/charts.md` |
-| 図形描画のピクトグラムとメタファー図 | `scripts/illustrations.py` + `references/pictogram-catalog.md` |
+| 図形描画のピクトグラムとメタファー図 | 名前は `scripts/illustrations.py --list`、配置は `references/diagrams.md` |
 | ビジネスフレームワーク図（posmap、gantt、orgchart…） | `scripts/patterns.py` + `references/patterns.md` |
 | ページ骨格と分析図 | `scripts/pages.py` + `references/slide-patterns.md` |
 | Scalar ブランドピクトグラム | `scripts/icons.py` + `assets/scalar/pictograms` + `references/icons.md` |

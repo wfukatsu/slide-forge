@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Secure a "version" of an existing presentation before editing it (for rollback).
 
-    python scripts/snapshot_version.py <URL or ID> [--out out/backups] [--no-export]
+    .venv/bin/python scripts/snapshot_version.py <URL or ID> [--out out/backups] [--no-export]
 
 What it does:
 

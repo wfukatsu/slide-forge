@@ -6,10 +6,10 @@ slides with `createSlide(layoutId)`. Decoration, logo, and footer defined by
 the template's master are inherited automatically.
 
     # validate the spec only (no API calls)
-    python scripts/build_deck.py --template templates/x.json --spec deck.json --dry-run
+    .venv/bin/python scripts/build_deck.py --template templates/x.json --spec deck.json --dry-run
 
     # generate
-    python scripts/build_deck.py --template templates/x.json --spec deck.json \
+    .venv/bin/python scripts/build_deck.py --template templates/x.json --spec deck.json \
         --title "Document Title" [--folder <DRIVE_FOLDER_URL_OR_ID>]
 
 As a library:
@@ -32,6 +32,13 @@ import settings  # noqa: E402
 from _i18n import t, register  # noqa: E402
 
 register({
+    "Drive folder URL or ID to create the deck in":
+        "デッキを作成する Drive フォルダの URL または ID",
+    "check coordinates and text volume without calling the API":
+        "API を呼ばずに座標・文字量だけ検査する",
+    "\ndry-run: {n} problems": "\ndry-run: 指摘 {n} 件",
+    "Done! Open: {url}": "完了! URL: {url}",
+    "Done! {n} slides. Open: {url}": "完了! スライド {n} 枚。URL: {url}",
     "{where}: 'aiImage' needs Gemini image generation, which is off in the "
     "settings (imageGeneration: off). Turn it on with "
     "scripts/settings.py --image-generation on, or replace the figure with a "
@@ -525,6 +532,8 @@ def load_template(path: str) -> dict:
 
 class TemplateDeck:
     """Builder that stacks slides on top of a duplicated template."""
+
+    dry_run = False
 
     def __init__(self, slides_service, drive_service, presentation_id: str, template: dict):
         self.slides = slides_service
@@ -1704,11 +1713,59 @@ class DryRunDeck(_StubDeck):
             "layoutKey": resolved,
         }
 
+    dry_run = True
+
     def add_page_numbers(self, start=None):
         return 0
 
     def commit(self, chunk_size=500):
         return t("(dry-run: nothing was generated)")
+
+
+def run_build_cli(build, *, template, title, create_kwargs=None, epilogue=None,
+                  count=None, description=None, argv=None) -> int:
+    """The CLI every hand-built deck script wants.
+
+    `build(deck, template)` draws the slides and returns the audit findings;
+    this owns everything around it — the ``--folder`` / ``--dry-run`` pair,
+    choosing between a stand-in deck and a real one, printing the findings, and
+    the exit code that lets ``--dry-run`` stand as a gate in a pipeline. Written
+    once because five scripts had drifted into five copies of it.
+
+    `title` may be a callable, for a title that depends on the deck's data.
+    `count` (int or callable) adds the slide count to the closing line.
+    `epilogue` runs after a successful commit (a bill of materials, say).
+    """
+    p = argparse.ArgumentParser(description=description)
+    p.add_argument("--folder", default=None,
+                   help=t("Drive folder URL or ID to create the deck in"))
+    p.add_argument("--dry-run", action="store_true",
+                   help=t("check coordinates and text volume without calling the API"))
+    args = p.parse_args(argv)
+
+    tpl = load_template(template) if isinstance(template, str) else template
+    if args.dry_run:
+        deck = DryRunDeck(tpl)
+    else:
+        deck = TemplateDeck.create(tpl, title=title() if callable(title) else title,
+                                   folder=args.folder, **(create_kwargs or {}))
+
+    problems = build(deck, tpl)
+    for message in problems:
+        print(t("  audit: {message}", message=message))
+    if args.dry_run:
+        print(t("\ndry-run: {n} problems", n=len(problems)))
+        return 1 if problems else 0
+
+    url = deck.commit()
+    if count is None:
+        print(t("Done! Open: {url}", url=url))
+    else:
+        print(t("Done! {n} slides. Open: {url}",
+                n=count() if callable(count) else count, url=url))
+    if epilogue is not None:
+        epilogue()
+    return 0
 
 
 def audit_figures(template: dict, spec: dict) -> list[str]:
@@ -1733,8 +1790,7 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
             out.append(t("slides[{i}]: failed to draw figures: {etype}: {e}",
                          i=i, etype=type(e).__name__, e=e))
             continue
-        for msg in (canvas.audit_bounds() + canvas.audit_connectors()
-                    + canvas.audit_overlaps() + canvas.audit_text_fit()):
+        for msg in canvas.audit_all():
             out.append(f"slides[{i}]: {msg}")
     out += audit_body_fit(template, spec)
     out += audit_image_slots(template, spec)
@@ -2032,8 +2088,7 @@ def build_from_spec(
         canvas = Canvas(deck, ref["slideId"], deck.template)
         canvas.text_margin = _text_margin(spec, s)
         draw_figures(canvas, figs)
-        for msg in (canvas.audit_bounds() + canvas.audit_connectors()
-                    + canvas.audit_overlaps() + canvas.audit_text_fit()):
+        for msg in canvas.audit_all():
             warnings.append(f"slides[{i}] ({s.get('title') or s['layout']}): {msg}")
         if selected_indices is not None:
             deck.requests.append({"deleteObject": {

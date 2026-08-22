@@ -1,17 +1,14 @@
 ---
 name: pptx-export
 description: >-
-  Export a generated Google Slides deck to PowerPoint (.pptx) as a delivery
-  format: Drive API export preserving the deck exactly as generated, saved
-  locally and optionally archived in the deck's Drive folder next to the spec.
-  Invoked by the slide-forge generation skills when the user chooses PPTX
-  output at intake, and runs standalone on any accessible deck URL.
-  Triggers: "PPTX でも出力して", "PowerPoint 形式でほしい", "pptx に変換",
-  "パワポで納品", "pptx-export", "export to PowerPoint",
-  "download as pptx", "PowerPoint 版もください".
-  Out of scope: authoring or editing PPTX files directly
-  (document-skills:pptx), QA of the exported file (QA happens on the
-  Google Slides deck via slide-qa, before export), and non-Slides sources.
+  Export a generated Google Slides deck to PowerPoint (.pptx) via the Drive API,
+  preserving it exactly as generated, saved locally and optionally archived in
+  the deck's Drive folder. Invoked by the generation skills when the user chooses
+  PPTX at intake, and runs standalone on any accessible deck URL.
+  Use for: PPTX でも出力して, PowerPoint 形式でほしい, パワポで納品,
+  export to PowerPoint.
+  Not: authoring or editing PPTX files directly (document-skills:pptx); QA, which
+  runs on the Slides deck via slide-qa before export.
 ---
 
 *[English](SKILL.md)*

@@ -4,9 +4,9 @@
 Assets live in `assets/cloud-icons/`. Fetch them with `scripts/fetch_cloud_icons.py`
 (the directory is gitignored; run this once after checking out the repo to restore it).
 
-    python scripts/cloud_icons.py --search s3
-    python scripts/cloud_icons.py --list --vendor aws --category groups
-    python scripts/cloud_icons.py --render aws:ec2 --px 512 --out out/ec2.png
+    .venv/bin/python scripts/cloud_icons.py --search s3
+    .venv/bin/python scripts/cloud_icons.py --list --vendor aws --category groups
+    .venv/bin/python scripts/cloud_icons.py --render aws:ec2 --px 512 --out out/ec2.png
 
 Names can be looked up as `aws:ec2` / `ec2` / `s3` (alias) / `Cloud SQL` (display name).
 
@@ -52,9 +52,9 @@ register({
         "'{name}' が複数に当たります（{count} 件）: {hits}\n"
         "  vendor 付きの slug で指定するか、--search で絞り込んでください",
     "Cloud icon '{name}' not found.\n"
-    "  Search with: python scripts/cloud_icons.py --search <word>":
+    "  Search with: .venv/bin/python scripts/cloud_icons.py --search <word>":
         "クラウドアイコン '{name}' が見つかりません。\n"
-        "  python scripts/cloud_icons.py --search <語> で探せます",
+        "  .venv/bin/python scripts/cloud_icons.py --search <語> で探せます",
     "Asset file missing: {path}": "素材がありません: {path}",
     "Could not convert the SVG to PNG: {key}\n  Run pip install cairosvg":
         "SVG を PNG にできませんでした: {key}\n"
@@ -157,7 +157,7 @@ def resolve(name: str, *, vendor: str | None = None) -> str:
               name=name, count=len(hits), hits=hits[:8]))
     raise CloudIconError(
         t("Cloud icon '{name}' not found.\n"
-          "  Search with: python scripts/cloud_icons.py --search <word>", name=name))
+          "  Search with: .venv/bin/python scripts/cloud_icons.py --search <word>", name=name))
 
 
 def search(query: str, *, vendor: str | None = None, category: str | None = None,

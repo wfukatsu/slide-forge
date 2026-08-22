@@ -1739,7 +1739,7 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 - **対象者を書く。** 「どなたでも」は誰にも刺さらない（ナーチャリングの段が決まらない）
 - 参加費・定員・申込期限を省かない。**4 行に収まらないなら、1 行にまとめる**（行を増やすと申込先が入らなくなる）
 - mode は online / offline / hybrid のいずれか
-- rows の 1 列目はピクトグラム名。使えるのは `references/pictogram-catalog.md` にあるものだけ（日時=calendar、会場=pin、対象=people、費用=coin、期限=clock）
+- rows の 1 列目はピクトグラム名。使えるのは `scripts/illustrations.py --list` に出るものだけ（日時=calendar、会場=pin、対象=people、費用=coin、期限=clock）
 
 ### セッションのプログラム（`session-agenda`）
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Fetches thumbnails of a generated presentation (for visual QA).
 
-    python scripts/fetch_thumbnails.py <URL or ID> --out out/qa [--size LARGE]
-    python scripts/fetch_thumbnails.py <URL> --out out/qa --pages 1,3,5
+    .venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa [--size LARGE]
+    .venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa --pages 1,3,5
 
 Open the fetched PNGs with the Read tool and eyeball them. Clipped text,
 overflow, and overlap with decorations can't be told from the API response

@@ -1,66 +1,21 @@
 *[English](google-slides-api.md)*
-# Google Slides API パターンガイド
+# Google Slides API — 生リファレンス
 
-> Python + Google Slides API でプレゼンテーションを生成するための実装パターン集。
-> SlideBuilder クラスパターンとリクエストビルダー関数を定義する。
+Slides REST API そのもののリクエスト形・単位・上限・癖をまとめる。
 
-### 規約
+**先に `references/api-notes.md` を読むこと。** 実際に踏んだ失敗とその対処は
+そちらにある。この文書は、そこに答えが無く、API 自身の挙動を確かめる必要が
+あるときに開く — 送ったことのないリクエストボディ、これから当たりそうな上限、
+エンジンが露出していない図形やコネクタのプロパティなど。
 
-本ドキュメントで使用する識別子:
+**デッキの作り方ではない。** slide-forge は API を手書きしない。
+`scripts/build_deck.py` が spec をリクエストに変換し、`scripts/diagrams.py` が
+描画し、`scripts/deckkit.py` が記述面である。認証は `scripts/_auth.py`。
+以下の Python は説明用で、エンジンの実装ではなくリクエスト JSON を示すための
+素の関数である。通常書くべきものは
+[diagrams.md](diagrams.md) と [template-schema.md](template-schema.md) を参照。
 
-- **`C`** — `templates/<theme>/theme.json` の `colors` セクションから展開した色定数クラス（SKILL.md Phase 1 参照）
-- **`L`** — `templates/<theme>/theme.json` の `layouts` セクションから展開したレイアウト定数クラス
-- **`sb`** — `SlideBuilder` インスタンス
-
----
-
-## 1. セットアップ
-
-### OAuth 2.0 フロー
-
-```python
-import os
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-
-SCOPES = [
-    "https://www.googleapis.com/auth/presentations",
-    "https://www.googleapis.com/auth/drive.file",
-]
-```
-
-### credentials / token 管理
-
-```python
-def get_credentials(creds_file, token_file):
-    """OAuth 2.0 Desktop フローで認証情報を取得・更新する。"""
-    creds = None
-    if os.path.exists(token_file):
-        creds = Credentials.from_authorized_user_file(token_file, SCOPES)
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(creds_file, SCOPES)
-            creds = flow.run_local_server(port=0)
-        with open(token_file, "w") as f:
-            f.write(creds.to_json())
-    return creds
-```
-
-### 必要な pip パッケージ
-
-```
-google-auth-oauthlib
-google-auth-httplib2
-google-api-python-client
-```
-
----
-
-## 2. 座標系
+## 1. 座標系
 
 ### EMU（English Metric Units）
 
@@ -101,7 +56,7 @@ def calc_layout(sw, sh):
 
 ---
 
-## 3. ヘルパー関数
+## 2. ヘルパー関数
 
 ### 色変換
 
@@ -137,7 +92,7 @@ def text_style(font_size=18, bold=False, color=None, font_family="M PLUS 1p"):
 
 ---
 
-## 4. リクエストビルダー
+## 3. リクエストビルダー
 
 ### シェイプ作成
 
@@ -258,243 +213,7 @@ def page_bg_request(page_id, color):
 
 ---
 
-## 5. SlideBuilder クラスパターン
-
-リクエストを蓄積し、最後に一括送信するビルダーパターン。
-
-```python
-class SlideBuilder:
-    def __init__(self):
-        self.requests = []
-        self.slide_ids = []
-        self._counter = 0
-
-    def _id(self, prefix="obj"):
-        """ユニークな objectId を生成する。5文字以上が必要。"""
-        self._counter += 1
-        return f"{prefix}_{self._counter:04d}"
-
-    def add_slide(self):
-        """BLANK レイアウトの新しいスライドを追加する。"""
-        slide_id = self._id("slide")
-        self.requests.append({"createSlide": {
-            "objectId": slide_id,
-            "slideLayoutReference": {"predefinedLayout": "BLANK"},
-        }})
-        self.slide_ids.append(slide_id)
-        return slide_id
-
-    def set_bg(self, slide_id, color):
-        """スライドの背景色を設定する。"""
-        self.requests.append(page_bg_request(slide_id, color))
-
-    def add_rect(self, slide_id, x, y, w, h, fill=None, border_color=None, border_weight=1.0):
-        """矩形を追加する。fill/border はオプション。"""
-        shape_id = self._id("rect")
-        self.requests.append(create_shape_request(slide_id, shape_id, x, y, w, h))
-        if fill:
-            self.requests.append(shape_fill_request(shape_id, fill))
-        if border_color:
-            self.requests.append(shape_border_request(shape_id, border_color, border_weight))
-        else:
-            self.requests.append(shape_no_border_request(shape_id))
-        return shape_id
-
-    def add_text(self, slide_id, text, x, y, w, h, *,
-                 font_size=18, bold=False, color=None,
-                 font_family="M PLUS 1p", alignment="START", valign="TOP"):
-        """テキストボックスを追加する。スタイル・アラインメント・垂直位置を一括設定。"""
-        box_id = self._id("txt")
-        self.requests.append(create_textbox_request(slide_id, box_id, x, y, w, h))
-        self.requests.append(insert_text_request(box_id, text))
-        style = text_style(font_size, bold, color, font_family)
-        self.requests.append(update_text_style_request(box_id, style, 0, len(text), text))
-        self.requests.append(update_paragraph_style_request(box_id, alignment, 0, len(text), text))
-        self.requests.append({"updateShapeProperties": {
-            "objectId": box_id,
-            "shapeProperties": {"contentAlignment": valign},
-            "fields": "contentAlignment",
-        }})
-        return box_id
-
-    def add_bullets(self, slide_id, items, x, y, w, h, *, font_size=14, color=None):
-        """箇条書きテキストボックスを追加する。items はリスト。"""
-        text = "\n".join(items)
-        box_id = self._id("bul")
-        self.requests.append(create_textbox_request(slide_id, box_id, x, y, w, h))
-        self.requests.append(insert_text_request(box_id, text))
-        style = text_style(font_size, False, color)
-        self.requests.append(update_text_style_request(box_id, style, 0, len(text), text))
-        self.requests.append({"createParagraphBullets": {
-            "objectId": box_id,
-            "textRange": {"type": "ALL"},
-            "bulletPreset": "BULLET_DISC_CIRCLE_SQUARE",
-        }})
-        return box_id
-
-    def add_line(self, slide_id, x, y, w, color=None, weight=0.75):
-        """水平線を追加する。"""
-        line_id = self._id("line")
-        self.requests.append({"createLine": {
-            "objectId": line_id,
-            "lineCategory": "STRAIGHT",
-            "elementProperties": {
-                "pageObjectId": slide_id,
-                "size": {
-                    "width": {"magnitude": inches(w), "unit": "EMU"},
-                    "height": {"magnitude": 0, "unit": "EMU"},
-                },
-                "transform": {
-                    "scaleX": 1, "scaleY": 1,
-                    "translateX": inches(x), "translateY": inches(y),
-                    "unit": "EMU",
-                },
-            },
-        }})
-        self.requests.append({"updateLineProperties": {
-            "objectId": line_id,
-            "lineProperties": {
-                "lineFill": solid_fill(color),
-                "weight": {"magnitude": weight, "unit": "PT"},
-            },
-            "fields": "lineFill,weight",
-        }})
-        return line_id
-```
-
----
-
-## 6. コンポジットメソッド
-
-テーマの `C`（色定数）と `L`（レイアウト定数）を使う高レベルメソッド。
-
-### add_footer
-
-```python
-def add_footer(self, slide_id, source=None):
-    """コンテンツスライドの標準フッターを追加する。"""
-    self.add_text(slide_id, "Scalar",
-                  L.footerLogoX, L.footerLogoY, L.footerLogoW, L.footerLogoH,
-                  font_size=9, bold=True, color=C.primary,
-                  font_family="Noto Sans JP", valign="MIDDLE")
-    self.add_text(slide_id, "(C) 2026 Scalar, Inc.",
-                  L.copyrightX, L.copyrightY, L.copyrightW, L.copyrightH,
-                  font_size=7, color=C.textMuted,
-                  font_family="Arial", alignment="CENTER", valign="MIDDLE")
-    if source:
-        self.add_text(slide_id, source,
-                      L.MX, L.bodyBottom - 0.25, L.CW, 0.20,
-                      font_size=10, color=C.textMuted)
-```
-
-### add_content_slide
-
-```python
-def add_content_slide(self, action_title, source=None):
-    """標準コンテンツスライドを作成する。タイトル + フッター付き。"""
-    sid = self.add_slide()
-    self.set_bg(sid, C.background)
-    self.add_text(sid, action_title,
-                  L.titleX, L.titleY, L.titleW, L.titleH,
-                  font_size=20, bold=True, color=C.textTitle,
-                  font_family="Noto Sans JP")
-    self.add_footer(sid, source)
-    return sid
-```
-
-### add_section_divider
-
-```python
-def add_section_divider(self, title, subtitle=None):
-    """セクション区切りスライドを作成する。ロゴ + タイトル + セパレーター + 青バンド。"""
-    sid = self.add_slide()
-    self.set_bg(sid, C.background)
-    # ロゴ (top-left)
-    self.add_text(sid, "Scalar", 0.118, 0.179, 1.181, 0.342,
-                  font_size=12, bold=True, color=C.primary,
-                  font_family="Noto Sans JP", valign="MIDDLE")
-    # タイトル
-    self.add_text(sid, title, 1.438, 2.039, 7.125, 0.590,
-                  font_size=24, bold=True, color=C.textTitle,
-                  font_family="Noto Sans JP", alignment="CENTER", valign="MIDDLE")
-    # セパレーター
-    self.add_line(sid, 1.438, 2.686, 8.562, color=C.primary, weight=2.25)
-    # サブタイトル（オプション）
-    if subtitle:
-        self.add_text(sid, subtitle, 1.438, 2.759, 7.125, 1.088,
-                      font_size=14, color=C.textSecondary, alignment="CENTER")
-    # 下部バンド
-    self.add_rect(sid, 0, 3.667, 10.0, 1.958, fill=C.primary)
-    return sid
-```
-
-### add_callout
-
-```python
-def add_callout(self, slide_id, text, x=6.5, y=1.2, w=3.0, h=0.8):
-    """コールアウトボックスを追加する。左端に青のアクセントバー付き。"""
-    self.add_rect(slide_id, x, y, w, h, fill=C.calloutBg)
-    self.add_rect(slide_id, x, y, 0.06, h, fill=C.calloutBorder)
-    self.add_text(slide_id, text,
-                  x + 0.15, y, w - 0.2, h,
-                  font_size=12, color=C.textPrimary, valign="MIDDLE")
-```
-
-### add_feature_slide
-
-```python
-def add_feature_slide(self, title, description, bullets, *,
-                      source=None, callout=None):
-    """機能紹介スライドを作成する。タイトル + 説明 + 箇条書き + オプションのコールアウト。"""
-    sid = self.add_content_slide(title, source)
-    if callout:
-        bul_w = 5.8
-        self.add_text(sid, description,
-                      L.MX, L.bodyY + 0.05, L.CW, 0.50,
-                      font_size=13, color=C.textSecondary)
-        self.add_bullets(sid, bullets,
-                         L.MX + 0.1, L.bodyY + 0.60, bul_w, 3.5,
-                         font_size=13)
-        cx = L.MX + bul_w + 0.3
-        cw = L.CW - bul_w - 0.3
-        self.add_callout(sid, callout,
-                         x=cx, y=L.bodyY + 0.70, w=cw, h=1.2)
-    else:
-        self.add_text(sid, description,
-                      L.MX, L.bodyY + 0.05, L.CW, 0.50,
-                      font_size=13, color=C.textSecondary)
-        self.add_bullets(sid, bullets,
-                         L.MX + 0.1, L.bodyY + 0.60, L.CW - 0.1, 3.5,
-                         font_size=13)
-    return sid
-```
-
-### add_card_slide
-
-```python
-def add_card_slide(self, title, cards, *, source=None, card_h=3.0):
-    """カードレイアウトスライドを作成する。cards: list of (card_title, card_body_text)。"""
-    sid = self.add_content_slide(title, source)
-    n = len(cards)
-    card_w = (L.CW - 0.3 * (n - 1)) / n
-    for i, (ct, cb) in enumerate(cards):
-        x = L.MX + i * (card_w + 0.3)
-        y = L.bodyY + 0.10
-        self.add_rect(sid, x, y, card_w, card_h,
-                      fill=C.background, border_color=C.border)
-        # アクセントバー（上部カラーバー）は不使用。ボーダー色で差別化する。
-        self.add_text(sid, ct,
-                      x + 0.15, y + 0.20, card_w - 0.3, 0.35,
-                      font_size=14, bold=True, color=C.primary)
-        self.add_text(sid, cb,
-                      x + 0.15, y + 0.65, card_w - 0.3, card_h - 0.8,
-                      font_size=12, color=C.textPrimary)
-    return sid
-```
-
----
-
-## 7. バッチ実行
+## 4. バッチ実行
 
 ### 500件ずつチャンク分割
 
@@ -533,22 +252,21 @@ def main():
 
     # デフォルトの最初のスライドを削除
     first_slide_id = presentation["slides"][0]["objectId"]
-    sb = SlideBuilder()
-    sb.requests.append({"deleteObject": {"objectId": first_slide_id}})
+    requests.append({"deleteObject": {"objectId": first_slide_id}})
 
     # ... スライドを構築 ...
 
     # 一括実行
-    execute_batch(slides_service, pres_id, sb.requests)
+    execute_batch(slides_service, pres_id, requests)
 
     url = f"https://docs.google.com/presentation/d/{pres_id}/edit"
-    print(f"Done! {len(sb.slide_ids)} slides created.")
+    print(f"Done! {len(slide_ids)} slides created.")
     print(f"Open: {url}")
 ```
 
 ---
 
-## 8. Sheets API チャート連携
+## 5. Sheets API チャート連携
 
 Google Slides のネイティブチャートは Sheets API と連携が必要。
 
@@ -559,10 +277,10 @@ Google Slides のネイティブチャートは Sheets API と連携が必要。
 3. `createSheetsChart` リクエストでスライドに埋め込む
 
 ```python
-def add_linked_chart(self, slide_id, spreadsheet_id, chart_id, x, y, w, h):
-    """Sheets のチャートをスライドに埋め込む（SlideBuilder メソッド）。"""
-    chart_obj_id = self._id("chart")
-    self.requests.append({"createSheetsChart": {
+def add_linked_chart(slide_id, spreadsheet_id, chart_id, x, y, w, h):
+    """Sheets のチャートをスライドに埋め込む。"""
+    chart_obj_id = _id("chart")
+    requests.append({"createSheetsChart": {
         "objectId": chart_obj_id,
         "spreadsheetId": spreadsheet_id,
         "chartId": chart_id,
@@ -585,7 +303,7 @@ def add_linked_chart(self, slide_id, spreadsheet_id, chart_id, x, y, w, h):
 
 ---
 
-## 9. API 制約・Pitfalls
+## 6. API 制約・Pitfalls
 
 ### 重要な制約
 
@@ -616,7 +334,7 @@ def add_linked_chart(self, slide_id, spreadsheet_id, chart_id, x, y, w, h):
 
 ---
 
-## 10. サムネイル取得（視覚的 QA 用）
+## 7. サムネイル取得（視覚的 QA 用）
 
 ```python
 def export_thumbnails(slides_service, pres_id, output_dir):
@@ -653,16 +371,16 @@ def share_presentation(drive_service, pres_id):
 
 ---
 
-## 11. 汎用シェイプ作成
+## 8. 汎用シェイプ作成
 
 ### add_shape（任意の shapeType）
 
 ```python
-def add_shape(self, slide_id, shape_type, x, y, w, h,
+def add_shape(slide_id, shape_type, x, y, w, h,
               fill=None, border_color=None, border_weight=1.0):
     """任意の shapeType でシェイプを作成する。"""
-    shape_id = self._id("shp")
-    self.requests.append({"createShape": {
+    shape_id = _id("shp")
+    requests.append({"createShape": {
         "objectId": shape_id,
         "shapeType": shape_type,
         "elementProperties": {
@@ -679,30 +397,30 @@ def add_shape(self, slide_id, shape_type, x, y, w, h,
         },
     }})
     if fill:
-        self.requests.append(shape_fill_request(shape_id, fill))
+        requests.append(shape_fill_request(shape_id, fill))
     if border_color:
-        self.requests.append(shape_border_request(shape_id, border_color, border_weight))
+        requests.append(shape_border_request(shape_id, border_color, border_weight))
     else:
-        self.requests.append(shape_no_border_request(shape_id))
+        requests.append(shape_no_border_request(shape_id))
     return shape_id
 ```
 
 ### 便利メソッド
 
 ```python
-def add_circle(self, slide_id, cx, cy, r, fill=None, border_color=None):
+def add_circle(slide_id, cx, cy, r, fill=None, border_color=None):
     """円を追加する。cx, cy は中心座標、r は半径（インチ）。"""
-    return self.add_shape(slide_id, "ELLIPSE",
+    return add_shape(slide_id, "ELLIPSE",
                           cx - r, cy - r, 2 * r, 2 * r,
                           fill=fill, border_color=border_color)
 
-def add_rounded_rect(self, slide_id, x, y, w, h,
+def add_rounded_rect(slide_id, x, y, w, h,
                      fill=None, border_color=None):
     """角丸矩形を追加する。"""
-    return self.add_shape(slide_id, "ROUND_RECTANGLE", x, y, w, h,
+    return add_shape(slide_id, "ROUND_RECTANGLE", x, y, w, h,
                           fill=fill, border_color=border_color)
 
-def add_arrow(self, slide_id, x, y, w, h, direction="right", fill=None):
+def add_arrow(slide_id, x, y, w, h, direction="right", fill=None):
     """矢印シェイプを追加する。direction: right/left/up/down/left_right/up_down/quad。"""
     arrow_types = {
         "right":      "RIGHT_ARROW",
@@ -713,16 +431,16 @@ def add_arrow(self, slide_id, x, y, w, h, direction="right", fill=None):
         "up_down":    "UP_DOWN_ARROW",
         "quad":       "QUAD_ARROW",
     }
-    return self.add_shape(slide_id, arrow_types[direction], x, y, w, h,
+    return add_shape(slide_id, arrow_types[direction], x, y, w, h,
                           fill=fill)
 
-def add_diamond(self, slide_id, cx, cy, size, fill=None, border_color=None):
+def add_diamond(slide_id, cx, cy, size, fill=None, border_color=None):
     """ひし形を追加する。cx, cy は中心座標、size は対角線の半分。"""
-    return self.add_shape(slide_id, "DIAMOND",
+    return add_shape(slide_id, "DIAMOND",
                           cx - size, cy - size, 2 * size, 2 * size,
                           fill=fill, border_color=border_color)
 
-def add_speech_bubble(self, slide_id, x, y, w, h, text, fill=None,
+def add_speech_bubble(slide_id, x, y, w, h, text, fill=None,
                       style="rect", text_color=None, font_size=10):
     """吹出しシェイプを追加しテキストを挿入する。style: rect/rounded/ellipse/cloud。
     セクション6の add_callout（青バー付きコールアウトボックス）とは別物。
@@ -734,53 +452,53 @@ def add_speech_bubble(self, slide_id, x, y, w, h, text, fill=None,
         "ellipse": "WEDGE_ELLIPSE_CALLOUT",
         "cloud":   "CLOUD_CALLOUT",
     }
-    shape_id = self.add_shape(slide_id, callout_types[style], x, y, w, h,
+    shape_id = add_shape(slide_id, callout_types[style], x, y, w, h,
                               fill=fill)
     # シェイプ自体にテキストを挿入（別テキストボックスを重ねない）
-    self.requests.append(insert_text_request(shape_id, text))
+    requests.append(insert_text_request(shape_id, text))
     style_dict = text_style(font_size, False, text_color)
-    self.requests.append(update_text_style_request(shape_id, style_dict, 0, len(text), text))
-    self.requests.append(update_paragraph_style_request(shape_id, "CENTER", 0, len(text), text))
-    self.requests.append({"updateShapeProperties": {
+    requests.append(update_text_style_request(shape_id, style_dict, 0, len(text), text))
+    requests.append(update_paragraph_style_request(shape_id, "CENTER", 0, len(text), text))
+    requests.append({"updateShapeProperties": {
         "objectId": shape_id,
         "shapeProperties": {"contentAlignment": "MIDDLE"},
         "fields": "contentAlignment",
     }})
     return shape_id
 
-def add_star(self, slide_id, cx, cy, r, points=5, fill=None):
+def add_star(slide_id, cx, cy, r, points=5, fill=None):
     """星形を追加する。points: 4/5/6/7/8/10/12/16/24/32。"""
     star_types = {
         4: "STAR_4", 5: "STAR_5", 6: "STAR_6", 7: "STAR_7",
         8: "STAR_8", 10: "STAR_10", 12: "STAR_12", 16: "STAR_16",
         24: "STAR_24", 32: "STAR_32",
     }
-    return self.add_shape(slide_id, star_types[points],
+    return add_shape(slide_id, star_types[points],
                           cx - r, cy - r, 2 * r, 2 * r, fill=fill)
 
-def add_polygon(self, slide_id, cx, cy, r, sides, fill=None, border_color=None):
+def add_polygon(slide_id, cx, cy, r, sides, fill=None, border_color=None):
     """正多角形を追加する。sides: 3(三角)/5(五角)/6(六角)/7/8/10/12。"""
     poly_types = {
         3: "TRIANGLE", 5: "PENTAGON", 6: "HEXAGON", 7: "HEPTAGON",
         8: "OCTAGON", 10: "DECAGON", 12: "DODECAGON",
     }
-    return self.add_shape(slide_id, poly_types[sides],
+    return add_shape(slide_id, poly_types[sides],
                           cx - r, cy - r, 2 * r, 2 * r,
                           fill=fill, border_color=border_color)
 
-def add_cylinder(self, slide_id, x, y, w, h, fill=None, border_color=None):
+def add_cylinder(slide_id, x, y, w, h, fill=None, border_color=None):
     """シリンダー（DB アイコン用）を追加する。"""
-    return self.add_shape(slide_id, "CAN", x, y, w, h,
+    return add_shape(slide_id, "CAN", x, y, w, h,
                           fill=fill, border_color=border_color)
 
-def add_chevron(self, slide_id, x, y, w, h, fill=None):
+def add_chevron(slide_id, x, y, w, h, fill=None):
     """シェブロン（プロセスステップ用）を追加する。"""
-    return self.add_shape(slide_id, "CHEVRON", x, y, w, h, fill=fill)
+    return add_shape(slide_id, "CHEVRON", x, y, w, h, fill=fill)
 
-def add_badge(self, slide_id, cx, cy, r, text, fill, text_color):
+def add_badge(slide_id, cx, cy, r, text, fill, text_color):
     """円バッジ（円 + 中央テキスト）を追加する。"""
-    self.add_circle(slide_id, cx, cy, r, fill=fill)
-    self.add_text(slide_id, text,
+    add_circle(slide_id, cx, cy, r, fill=fill)
+    add_text(slide_id, text,
                   cx - r, cy - r, 2 * r, 2 * r,
                   font_size=max(int(r * 28), 10), bold=True,
                   color=text_color, alignment="CENTER", valign="MIDDLE")
@@ -992,15 +710,15 @@ def add_badge(self, slide_id, cx, cy, r, text, fill, text_color):
 
 ---
 
-## 12. 画像挿入
+## 9. 画像挿入
 
 ### add_image
 
 ```python
-def add_image(self, slide_id, image_url, x, y, w, h):
+def add_image(slide_id, image_url, x, y, w, h):
     """公開 URL から画像を挿入する。"""
-    img_id = self._id("img")
-    self.requests.append({"createImage": {
+    img_id = _id("img")
+    requests.append({"createImage": {
         "objectId": img_id,
         "url": image_url,
         "elementProperties": {
@@ -1036,7 +754,7 @@ Drive 上の画像は直接 URL で挿入できない。以下のいずれかで
 1. Drive API で一時的に公開共有 → URL で挿入 → 共有解除
 2. Drive API でダウンロード → ローカルサーバーから配信 → URL で挿入
 
-### 12.1 ローカルアセットの Drive API アップロード
+### 9.1 ローカルアセットの Drive API アップロード
 
 ローカルの画像ファイル（ロゴ、アイコン等）をスライドに挿入するには、Drive API で一時アップロードし公開 URL を取得する。OAuth スコープ `drive.file` は既にセクション1で設定済み。
 
@@ -1073,7 +791,7 @@ def delete_uploaded_asset(drive_service, file_id):
     drive_service.files().delete(fileId=file_id).execute()
 ```
 
-### 12.2 SVG → PNG 変換
+### 9.2 SVG → PNG 変換
 
 Google Slides API は SVG 非対応のため、PNG に変換してからアップロードする。
 
@@ -1087,7 +805,7 @@ def convert_svg_to_png(svg_path, png_path=None, width=512):
     return png_path
 ```
 
-### 12.3 アセット解決ヘルパー
+### 9.3 アセット解決ヘルパー
 
 カスタムアセットフォルダ（ユーザー指定）→ スキルデフォルト（`assets/`）の順でアセットを検索する。
 
@@ -1118,44 +836,44 @@ def resolve_asset(theme_name, category, filename, custom_assets_dir=None):
     return None
 ```
 
-### 12.4 SlideBuilder 拡張: add_image_from_asset
+### 9.4 アセットアップロード補助: add_image_from_asset
 
 ```python
-def add_image_from_asset(self, slide_id, theme_name, category, filename, x, y, w, h):
+def add_image_from_asset(slide_id, theme_name, category, filename, x, y, w, h):
     """ローカルアセットを解決 → Drive アップロード → スライドに挿入。
-    アップロードした file_id を self._uploaded_assets に記録。
-    self.custom_assets_dir が設定されている場合、カスタムフォルダを優先検索する。
+    アップロードした file_id を _uploaded_assets に記録。
+    custom_assets_dir が設定されている場合、カスタムフォルダを優先検索する。
 
     使用例:
-        sb.add_image_from_asset(sid, "scalar", "logos", "scalar-logo.png",
+        add_image_from_asset(sid, "scalar", "logos", "scalar-logo.png",
                                 0.3, 0.2, 1.0, 0.5)
     """
     path = resolve_asset(theme_name, category, filename,
-                         custom_assets_dir=self.custom_assets_dir)
+                         custom_assets_dir=custom_assets_dir)
     if path is None:
         raise FileNotFoundError(f"Asset not found: {category}/{filename}")
-    file_id, url = upload_asset(self.drive_service, path)
-    self._uploaded_assets.append(file_id)
-    return self.add_image(slide_id, url, x, y, w, h)
+    file_id, url = upload_asset(drive_service, path)
+    _uploaded_assets.append(file_id)
+    return add_image(slide_id, url, x, y, w, h)
 ```
 
-> **注意**: `SlideBuilder.__init__` で `self._uploaded_assets = []`、`self.drive_service`、`self.custom_assets_dir = None` を初期化すること。`drive_service` は `build("drive", "v3", credentials=creds)` で取得する。
+> **注意**: アップロードした file id は後始末のためリストに保持する。`drive_service` は `build("drive", "v3", credentials=creds)` で取得する。
 
-### 12.5 クリーンアップ
+### 9.5 クリーンアップ
 
 ```python
-def cleanup_uploaded_assets(self):
+def cleanup_uploaded_assets():
     """Drive にアップロードした一時アセットを全て削除する。
     main() の最後（execute_batch 後）に呼び出す。"""
-    for file_id in self._uploaded_assets:
+    for file_id in _uploaded_assets:
         try:
-            delete_uploaded_asset(self.drive_service, file_id)
+            delete_uploaded_asset(drive_service, file_id)
         except Exception:
             pass
-    self._uploaded_assets.clear()
+    _uploaded_assets.clear()
 ```
 
-### 12.6 出力先フォルダ
+### 9.6 出力先フォルダ
 
 プレゼンテーションを指定の Google Drive フォルダに配置するためのヘルパー関数。
 
@@ -1247,21 +965,19 @@ creds = get_credentials(CREDS_FILE, TOKEN_FILE)
 slides_service = build("slides", "v1", credentials=creds)
 drive_service = build("drive", "v3", credentials=creds)
 
-sb = SlideBuilder()
-sb.drive_service = drive_service
-sb._uploaded_assets = []
-sb.custom_assets_dir = CUSTOM_ASSETS_DIR
+_uploaded_assets = []
+custom_assets_dir = CUSTOM_ASSETS_DIR
 
 # スライド構築
-sid = sb.add_slide()
-sb.add_image_from_asset(sid, "scalar", "logos", "scalar-logo.png",
+sid = add_slide()
+add_image_from_asset(sid, "scalar", "logos", "scalar-logo.png",
                         0.3, 0.2, 1.0, 0.5)
 
 # 一括実行
-execute_batch(slides_service, pres_id, sb.requests)
+execute_batch(slides_service, pres_id, requests)
 
 # クリーンアップ（必須）
-sb.cleanup_uploaded_assets()
+cleanup_uploaded_assets()
 
 # 出力先フォルダに移動
 if OUTPUT_FOLDER_ID:
@@ -1270,20 +986,20 @@ if OUTPUT_FOLDER_ID:
 
 ---
 
-## 13. テーブル作成
+## 10. テーブル作成
 
 ### add_table
 
 ```python
-def add_table(self, slide_id, rows, cols, x, y, w, h,
+def add_table(slide_id, rows, cols, x, y, w, h,
               data=None, header_fill=None):
     """テーブルを作成し、オプションでデータとヘッダースタイルを適用する。
 
     data: list of lists (行×列) のテキストデータ。None の場合は空テーブル。
     header_fill: 1行目の背景色（RGB dict）。
     """
-    table_id = self._id("tbl")
-    self.requests.append({"createTable": {
+    table_id = _id("tbl")
+    requests.append({"createTable": {
         "objectId": table_id,
         "rows": rows,
         "columns": cols,
@@ -1304,7 +1020,7 @@ def add_table(self, slide_id, rows, cols, x, y, w, h,
     if data:
         for r, row_data in enumerate(data):
             for c, cell_text in enumerate(row_data):
-                self.requests.append({"insertText": {
+                requests.append({"insertText": {
                     "objectId": table_id,
                     "cellLocation": {"rowIndex": r, "columnIndex": c},
                     "text": str(cell_text),
@@ -1313,7 +1029,7 @@ def add_table(self, slide_id, rows, cols, x, y, w, h,
     # ヘッダー行の背景色
     if header_fill:
         for c in range(cols):
-            self.requests.append({"updateTableCellProperties": {
+            requests.append({"updateTableCellProperties": {
                 "objectId": table_id,
                 "tableRange": {
                     "location": {"rowIndex": 0, "columnIndex": c},
@@ -1330,9 +1046,9 @@ def add_table(self, slide_id, rows, cols, x, y, w, h,
 ### テーブルのテキストスタイル適用
 
 ```python
-def style_table_cell(self, table_id, row, col, style):
+def style_table_cell(table_id, row, col, style):
     """テーブルセルのテキストにスタイルを適用する。"""
-    self.requests.append({"updateTextStyle": {
+    requests.append({"updateTextStyle": {
         "objectId": table_id,
         "cellLocation": {"rowIndex": row, "columnIndex": col},
         "style": style,
@@ -1349,15 +1065,15 @@ def style_table_cell(self, table_id, row, col, style):
 - **`header_fill` 使用時は必ず白文字を適用する**: `header_fill` で色付き背景を設定した場合、デフォルトの黒テキストは読みにくい。以下のように `style_table_cell` でヘッダー行の全セルに白太字を適用すること:
 
 ```python
-tbl_id = sb.add_table(sid, rows, cols, x, y, w, h, data=data, header_fill=C.tableHeader)
+tbl_id = add_table(sid, rows, cols, x, y, w, h, data=data, header_fill=C.tableHeader)
 style_w = text_style(10, True, C.WHITE, "Arial")
 for c in range(cols):
-    sb.style_table_cell(tbl_id, 0, c, style_w)
+    style_table_cell(tbl_id, 0, c, style_w)
 ```
 
 ---
 
-## 14. コネクタ線・矢印付き線
+## 11. コネクタ線・矢印付き線
 
 2種類のコネクタを用途で使い分ける:
 
@@ -1388,7 +1104,7 @@ CONN_TOP, CONN_LEFT, CONN_BOTTOM, CONN_RIGHT = 0, 1, 2, 3
 ### add_connector
 
 ```python
-def add_connector(self, slide_id, x1, y1, x2, y2,
+def add_connector(slide_id, x1, y1, x2, y2,
                   color=None, weight=1.0,
                   start_arrow=None, end_arrow=None,
                   dash_style="SOLID"):
@@ -1400,14 +1116,14 @@ def add_connector(self, slide_id, x1, y1, x2, y2,
                              OPEN_ARROW, FILL_CIRCLE, FILL_DIAMOND 等
     dash_style: SOLID, DASH, DOT, DASH_DOT, LONG_DASH, LONG_DASH_DOT
     """
-    line_id = self._id("conn")
+    line_id = _id("conn")
     # 左上原点とサイズを計算
     lx, ly = min(x1, x2), min(y1, y2)
     lw, lh = abs(x2 - x1), abs(y2 - y1)
     # 方向に応じた scaleX/scaleY（右下方向を正とする）
     sx = 1 if x2 >= x1 else -1
     sy = 1 if y2 >= y1 else -1
-    self.requests.append({"createLine": {
+    requests.append({"createLine": {
         "objectId": line_id,
         "lineCategory": "STRAIGHT",
         "elementProperties": {
@@ -1439,7 +1155,7 @@ def add_connector(self, slide_id, x1, y1, x2, y2,
     if end_arrow:
         line_props["endArrow"] = end_arrow
         fields.append("endArrow")
-    self.requests.append({"updateLineProperties": {
+    requests.append({"updateLineProperties": {
         "objectId": line_id,
         "lineProperties": line_props,
         "fields": ",".join(fields),
@@ -1454,7 +1170,7 @@ def add_connector(self, slide_id, x1, y1, x2, y2,
 #   0 = TOP, 1 = LEFT, 2 = BOTTOM, 3 = RIGHT
 CONN_TOP, CONN_LEFT, CONN_BOTTOM, CONN_RIGHT = 0, 1, 2, 3
 
-def add_connected_connector(self, slide_id,
+def add_connected_connector(slide_id,
                             start_shape_id, start_site,
                             end_shape_id, end_site,
                             color=None, weight=1.0,
@@ -1470,9 +1186,9 @@ def add_connected_connector(self, slide_id,
         STRAIGHT は垂直/水平の直接接続（1対1）に使用。
     Google Slides が自動的にシェイプの接続ポイントにスナップする。
     """
-    line_id = self._id("cconn")
+    line_id = _id("cconn")
     # 仮の位置で作成（接続設定後に自動調整される）
-    self.requests.append({"createLine": {
+    requests.append({"createLine": {
         "objectId": line_id,
         "lineCategory": line_category,
         "elementProperties": {
@@ -1507,7 +1223,7 @@ def add_connected_connector(self, slide_id,
     if end_arrow:
         line_props["endArrow"] = end_arrow
         fields.append("endArrow")
-    self.requests.append({"updateLineProperties": {
+    requests.append({"updateLineProperties": {
         "objectId": line_id,
         "lineProperties": line_props,
         "fields": ",".join(fields),
@@ -1540,7 +1256,7 @@ def add_connected_connector(self, slide_id,
 
 ---
 
-## 15. スタイル拡張
+## 12. スタイル拡張
 
 ### グラデーション塗り
 
@@ -1550,7 +1266,7 @@ def add_connected_connector(self, slide_id,
 ### グラデーション近似（半透明矩形の重ね合わせ）
 
 ```python
-def add_gradient_fill(self, slide_id, x, y, w, h,
+def add_gradient_fill(slide_id, x, y, w, h,
                       color_start, color_end, steps=5):
     """半透明矩形の重ね合わせでグラデーションを近似する。
 
@@ -1566,7 +1282,7 @@ def add_gradient_fill(self, slide_id, x, y, w, h,
             "green": color_start["green"] * (1 - t) + color_end["green"] * t,
             "blue":  color_start["blue"]  * (1 - t) + color_end["blue"]  * t,
         }
-        self.add_rect(slide_id, x + i * strip_w, y, strip_w + 0.01, h,
+        add_rect(slide_id, x + i * strip_w, y, strip_w + 0.01, h,
                       fill=blended)
 ```
 
@@ -1575,7 +1291,7 @@ def add_gradient_fill(self, slide_id, x, y, w, h,
 ### 透明度（alpha）
 
 ```python
-def shape_opacity(self, shape_id, alpha):
+def shape_opacity(shape_id, alpha):
     """シェイプの背景塗りに透明度を設定する。alpha: 0.0（透明）〜 1.0（不透明）。
     前提: add_shape(fill=...) で solidFill が設定済みであること。fill 未設定のシェイプには効果なし。
 
@@ -1584,7 +1300,7 @@ def shape_opacity(self, shape_id, alpha):
     - 白背景上の薄色カード: 0.05-0.15
     - ベン図の円: 0.30-0.40
     """
-    self.requests.append({"updateShapeProperties": {
+    requests.append({"updateShapeProperties": {
         "objectId": shape_id,
         "shapeProperties": {
             "shapeBackgroundFill": {
@@ -1600,7 +1316,7 @@ def shape_opacity(self, shape_id, alpha):
 ### 回転
 
 ```python
-def shape_rotation(self, shape_id, angle_deg, x=None, y=None, w=None, h=None):
+def shape_rotation(shape_id, angle_deg, x=None, y=None, w=None, h=None):
     """シェイプをその場（中心基準）で回転させる。angle_deg: 回転角度（度、時計回りが正）。
 
     x, y, w, h: createShape 時に指定したシェイプの位置・サイズ（インチ）。
@@ -1609,8 +1325,8 @@ def shape_rotation(self, shape_id, angle_deg, x=None, y=None, w=None, h=None):
 
     使用例:
         # createShape 時と同じ座標を渡す
-        sb.add_shape(slide_id, "RECTANGLE", x=2.0, y=1.5, w=3.0, h=2.0, fill=C.primary)
-        sb.shape_rotation(shape_id, 45, x=2.0, y=1.5, w=3.0, h=2.0)
+        add_shape(slide_id, "RECTANGLE", x=2.0, y=1.5, w=3.0, h=2.0, fill=C.primary)
+        shape_rotation(shape_id, 45, x=2.0, y=1.5, w=3.0, h=2.0)
     """
     import math
     rad = math.radians(angle_deg)
@@ -1626,7 +1342,7 @@ def shape_rotation(self, shape_id, angle_deg, x=None, y=None, w=None, h=None):
         h_emu = inches(h)
         tx = x_emu + w_emu / 2 * (1 - cos_a) + h_emu / 2 * sin_a
         ty = y_emu + h_emu / 2 * (1 - cos_a) - w_emu / 2 * sin_a
-        self.requests.append({"updatePageElementTransform": {
+        requests.append({"updatePageElementTransform": {
             "objectId": shape_id,
             "applyMode": "ABSOLUTE",
             "transform": {
@@ -1641,7 +1357,7 @@ def shape_rotation(self, shape_id, angle_deg, x=None, y=None, w=None, h=None):
         }})
     else:
         # RELATIVE モード（原点基準回転。小角度やデコレーション用途向け）
-        self.requests.append({"updatePageElementTransform": {
+        requests.append({"updatePageElementTransform": {
             "objectId": shape_id,
             "applyMode": "RELATIVE",
             "transform": {
@@ -1659,11 +1375,11 @@ def shape_rotation(self, shape_id, angle_deg, x=None, y=None, w=None, h=None):
 ### ドロップシャドウ
 
 ```python
-def shape_shadow(self, shape_id, blur_radius=3.0, offset_x=2.0, offset_y=2.0,
+def shape_shadow(shape_id, blur_radius=3.0, offset_x=2.0, offset_y=2.0,
                  color=None, alpha=0.3):
     """シェイプにドロップシャドウを適用する。単位は PT。"""
     shadow_color = color or {"red": 0, "green": 0, "blue": 0}
-    self.requests.append({"updateShapeProperties": {
+    requests.append({"updateShapeProperties": {
         "objectId": shape_id,
         "shapeProperties": {
             "shadow": {
@@ -1688,17 +1404,17 @@ def shape_shadow(self, shape_id, blur_radius=3.0, offset_x=2.0, offset_y=2.0,
 
 ---
 
-## 16. グループ化と Z-order
+## 13. グループ化と Z-order
 
 ### グループ化
 
 ```python
-def group_objects(self, object_ids):
+def group_objects(object_ids):
     """複数のオブジェクトをグループ化する。object_ids: list of objectId。
     全オブジェクトは同一スライド上にある必要がある。
     """
-    group_id = self._id("grp")
-    self.requests.append({"groupObjects": {
+    group_id = _id("grp")
+    requests.append({"groupObjects": {
         "groupObjectId": group_id,
         "childrenObjectIds": object_ids,
     }})
@@ -1708,12 +1424,12 @@ def group_objects(self, object_ids):
 ### Z-order 操作
 
 ```python
-def set_z_order(self, shape_id, operation):
+def set_z_order(shape_id, operation):
     """シェイプの重なり順を変更する。
 
     operation: BRING_TO_FRONT, BRING_FORWARD, SEND_BACKWARD, SEND_TO_BACK
     """
-    self.requests.append({"updatePageElementsZOrder": {
+    requests.append({"updatePageElementsZOrder": {
         "pageElementObjectIds": [shape_id],
         "operation": operation,
     }})
@@ -1727,7 +1443,7 @@ def set_z_order(self, shape_id, operation):
 
 ---
 
-## 17. カスタムページサイズ
+## 14. カスタムページサイズ
 
 ### プリセット
 

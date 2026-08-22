@@ -63,9 +63,9 @@ Do not preload every file named by a skill. Read the complete selected
 | Chart or table | Matching section of `charts.md` |
 | Business framework | Matching section of `patterns.md` |
 | Page skeleton | Matching section of `slide-patterns.md` |
-| Ready-made one-page template (`$template`) | The template's entry in `slide-template-catalog.md` |
+| Ready-made one-page template (`$template`) | `list_slide_templates.py --tag <term>` to find it, then that template's `template.json` for its slots. Open `slide-template-catalog.md` only to browse the rendered images |
 | Seminar / event announcement figure | Matching section of `events.md` |
-| Pictogram or icon by name | `pictogram-catalog.md` for the valid names; `icons.md` for placement |
+| Pictogram or icon by name | `illustrations.py --list` (or `--search <term>`) for the valid names; `diagrams.md` for placement |
 | Image or image slot | Matching sections of `images.md` |
 | Cloud icon | Matching section of `cloud-icons.md` |
 | Code block | `code-blocks.md` |

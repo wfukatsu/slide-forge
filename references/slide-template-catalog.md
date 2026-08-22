@@ -1738,7 +1738,7 @@ Guardrails:
 - **Name the audience.** 'Anyone welcome' reaches nobody (and leaves the nurture stage undecided)
 - Do not drop price, capacity or the registration deadline. **If they will not fit in four rows, combine them into one** (extra rows push out the registration line)
 - mode is one of online / offline / hybrid
-- The first column of rows is a pictogram name. Only the ones in references/pictogram-catalog.md exist (date=calendar, venue=pin, audience=people, price=coin, deadline=clock)
+- The first column of rows is a pictogram name. Only the ones listed by scripts/illustrations.py --list exist (date=calendar, venue=pin, audience=people, price=coin, deadline=clock)
 
 ### Session Programme (`session-agenda`)
 

@@ -1,14 +1,12 @@
 ---
 name: drawio-diagrams
 description: >-
-  Create dense, complex diagrams — cloud architecture (AWS/GCP/Azure), data
-  flow, and network diagrams — as draw.io (.drawio) files, export them to PNG
-  headlessly, QA them visually, and insert the PNG into Google Slides decks
-  built with the slide-forge skills. The editable .drawio source is archived in
-  the deck's Drive folder so the user can keep editing it in draw.io.
-  Triggers: "draw.io で図を作って", "drawio", "クラウド構成図", "データフロー図",
-  "ネットワーク構成図", "緻密な構成図", "cloud architecture diagram",
-  "data flow diagram", or when a diagram is too dense for native Slides shapes.
+  Draw dense diagrams — cloud architecture (AWS/GCP/Azure), data flow, network —
+  as draw.io files, export them to PNG headlessly, and place the PNG in a
+  slide-forge deck. The editable .drawio source is archived in the deck's Drive
+  folder so the user can keep editing it.
+  Use for: draw.io で図を作って, クラウド構成図, データフロー図, ネットワーク構成図,
+  cloud architecture diagram, or any diagram too dense for native Slides shapes.
 ---
 *[English](SKILL.md)*
 

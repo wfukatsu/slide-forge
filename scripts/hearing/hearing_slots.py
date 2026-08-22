@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Turn the gaps in a hearing sheet into slide-template data.
 
-    python scripts/hearing/hearing_slots.py <hearing.json> hearing-agenda \
+    .venv/bin/python scripts/hearing/hearing_slots.py <hearing.json> hearing-agenda \
         --out out/hearing/agenda.json [--section 4] [--limit 5]
 
 Mirrors `scripts/scalar/account_ledger.py`'s `to_slot_data`: one builder per

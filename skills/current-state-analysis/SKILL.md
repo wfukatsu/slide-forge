@@ -1,16 +1,14 @@
 ---
 name: current-state-analysis
 description: >-
-  Run current-state analysis and problem-identification frameworks
-  (current-state analysis, problem identification) on user-supplied material
-  and render the results as slides from the analysis template pack. Covers
-  PEST, Five Forces, business-process pain-point mapping, logic tree, KPI
-  tree, why-why (5 Whys), fishbone, Pareto, As-Is/To-Be gap analysis and an
-  impact-effort priority matrix, plus SWOT / 3C from the marketing-analysis
-  pack. Use when asked to 現状分析, 課題を特定・構造化, 真因分析, As-Is/To-Be
-  整理, 課題の優先順位付け, or to turn hearing notes / data into analysis
-  slides. Route new-template authoring to analysis-template-creator, deck
-  generation mechanics to google-slides, and visual QA to slide-qa.
+  Run current-state and problem-identification frameworks on the user's material
+  and render the results as slides: PEST, Five Forces, process pain-points, logic
+  tree, KPI tree, why-why, fishbone, Pareto, As-Is/To-Be gap, impact-effort
+  priority matrix, plus SWOT / 3C.
+  Use for: 現状分析, 課題を特定・構造化, 真因分析, As-Is/To-Be 整理,
+  課題の優先順位付け, ヒアリングメモを分析スライドに.
+  Not: authoring new templates (analysis-template-creator); deck generation
+  mechanics (google-slides); visual QA (slide-qa).
 ---
 *[日本語](SKILL.ja.md)*
 

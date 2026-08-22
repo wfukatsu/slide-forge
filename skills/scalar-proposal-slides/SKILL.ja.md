@@ -1,18 +1,15 @@
 ---
 name: scalar-proposal-slides
 description: >-
-  Builds customer-specific Scalar solution-proposal decks in Google Slides —
-  starting from the customer's challenges (hearing notes, meeting minutes) and
-  mapping them to ScalarDB / ScalarDL, following the problem-solving proposal
-  structure (exec summary → challenge agreement → solution → effects → PoC plan
-  → costs → risks → next steps). A Scalar-specific workflow layered on top of
-  google-slides-template (scalar-2026 template) alongside scalar-product-slides.
-  Triggers: "提案書を作って", "提案スライド", "顧客課題", "ソリューション提案",
-  "〈顧客名〉向けの提案資料", "scalar-proposal-slides", "ScalarDB/ScalarDL の提案資料".
-  Out of scope: product/company introduction decks with no specific customer
-  (use scalar-product-slides), non-Scalar proposals (google-slides-template),
-  and from-scratch PPTX authoring (document-skills:pptx; exporting the
-  generated proposal to .pptx is pptx-export).
+  Build a customer-specific Scalar solution proposal: start from the customer's
+  challenges (hearing notes, meeting minutes), map them to ScalarDB / ScalarDL,
+  and follow the problem-solving structure — exec summary, challenge agreement,
+  solution, effects, PoC plan, costs, risks, next steps.
+  Use for: 提案書を作って, 提案スライド, 顧客課題, ソリューション提案,
+  〈顧客名〉向けの提案資料.
+  Not: introduction decks with no specific customer (scalar-product-slides);
+  non-Scalar proposals (google-slides-template); PPTX authoring
+  (document-skills:pptx).
 ---
 
 *[English](SKILL.md)*

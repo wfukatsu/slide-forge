@@ -1,13 +1,11 @@
 ---
 name: google-slides
 description: >-
-  Generate Google Slides presentations and infographics from scratch (no registered
-  corporate master) with Python + the Google Slides API, using the shared slide-forge
-  engine: spec-driven decks on a blank 16:9 template, or code-first decks with offline
-  layout validation for diagram-heavy material.
-  Triggers: "Google Slides を作って", "スライドを生成", "gslides", "インフォグラフィクスを作って",
-  "create Google Slides", "generate slides", "create infographic", or when a Google Slides
-  URL is included.
+  Generate Google Slides decks and infographics from scratch, with no registered
+  corporate master: spec-driven decks on a blank 16:9 template, or code-first
+  decks with offline layout validation for diagram-heavy material.
+  Use for: Google Slides を作って, スライドを生成, インフォグラフィクスを作って,
+  create Google Slides, generate slides, create infographic.
 ---
 *[日本語](SKILL.ja.md)*
 
@@ -50,7 +48,7 @@ capability table below.
 | Dense cloud/data-flow diagrams (draw.io → PNG) | `drawio-diagrams` skill + `scripts/drawio_export.py` + `references/drawio.md` |
 | Drive folder per deck (create / collect files) | `scripts/drive_folder.py` |
 | Charts and tables | `scripts/charts.py` + `references/charts.md` |
-| Shape-drawn pictograms and metaphor figures | `scripts/illustrations.py` + `references/pictogram-catalog.md` |
+| Shape-drawn pictograms and metaphor figures | `scripts/illustrations.py --list` for the names; `references/diagrams.md` for placement |
 | Business-framework figures (posmap, gantt, orgchart…) | `scripts/patterns.py` + `references/patterns.md` |
 | Page scaffolding and analysis figures | `scripts/pages.py` + `references/slide-patterns.md` |
 | Scalar brand pictograms | `scripts/icons.py` + `assets/scalar/pictograms` + `references/icons.md` |

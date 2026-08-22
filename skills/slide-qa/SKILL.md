@@ -1,19 +1,14 @@
 ---
 name: slide-qa
 description: >-
-  Visual QA of a generated Google Slides deck from thumbnails: fetch every page
-  as PNG, inspect with a defect checklist (overflow, overlaps, wrong
-  connectors, weak contrast), drive the fix-and-regenerate loop, and clean up
-  the local QA files when done. Extracted from the slide-forge generation
-  skills (google-slides-template / google-slides / scalar-*) so QA can be
-  chosen at generation time — those skills invoke this one when the user opts
-  in (the default), and it also runs standalone on any deck URL.
-  Triggers: "スライドを検証して", "デッキを QA して", "サムネイルで確認して",
-  "生成したスライドをチェック", "slide-qa", "visual QA", "verify the deck",
-  "check the generated slides".
-  Out of scope: pre-generation offline checks (--dry-run / validate_layout.py
-  stay in the generation skills), content fact-checking, and PPTX files
-  (exporting a verified deck to .pptx is the pptx-export skill).
+  Visual QA of a generated deck from thumbnails: fetch every page as PNG, inspect
+  against a defect checklist (overflow, overlaps, wrong connectors, weak
+  contrast), drive the fix-and-regenerate loop, and clean up the local QA files.
+  The generation skills invoke it when the user opts in (the default); it also
+  runs standalone on any deck URL.
+  Use for: スライドを検証して, デッキを QA して, サムネイルで確認して, visual QA.
+  Not: pre-generation offline checks (--dry-run / validate_layout.py stay in the
+  generation skills); content fact-checking; PPTX files (pptx-export).
 ---
 
 *[日本語](SKILL.ja.md)*

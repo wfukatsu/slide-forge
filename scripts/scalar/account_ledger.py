@@ -36,6 +36,11 @@ from typing import Any
 REPO_DIR = Path(__file__).resolve().parents[2]
 ACCOUNTS_DIR = REPO_DIR / "accounts"
 
+sys.path.insert(0, str(REPO_DIR / "scripts"))
+
+from _text import em, fit_em  # noqa: E402
+from slide_templates import load_template as _load_slide_template  # noqa: E402
+
 SCHEMA_VERSION = 1
 
 
@@ -593,6 +598,65 @@ def _fit(text: Any, limit: int) -> str:
     return s[: max(1, limit - 1)] + "…"
 
 
+# A slot's maxLength counts characters; the box that draws it measures width.
+# The two disagree by a factor of two between scripts: 24 Latin characters and
+# 24 Japanese ones are the same to maxLength and twice apart on the slide. The
+# figure audit goes by width, so the ledger has to fit by width as well —
+# otherwise `--dry-run --strict` rejects a page over wording that came from
+# here rather than from the ledger, and the operator has nothing to edit.
+_AUDIT_INSET = 0.10   # diagrams.Canvas.TEXT_INSET_X: the padding the audit assumes per side
+_ORPHAN_EM = 1.0      # diagrams.Canvas.ORPHAN_EM: a wrapped last line this short is rejected
+
+
+def _fit_em(text: Any, per_em: float, *, lines: int = 1, limit: int | None = None) -> str:
+    """Fit to a box that shows `lines` lines of `per_em` full-width equivalents.
+
+    Beyond truncating to the box, this pulls back text that lands just past a
+    line break: a wrapped last line of one full-width character or less is what
+    the figure audit calls out, and one character over is the common case for
+    generated wording. `limit` additionally keeps the slot's maxLength.
+    """
+    s = "" if text is None else str(text).replace("\n", " ").strip()
+    if limit is not None:
+        s = _fit(s, limit)
+    s = fit_em(s, per_em * lines)
+    width = em(s)
+    for k in range(1, lines):
+        if k * per_em < width <= k * per_em + _ORPHAN_EM:
+            return fit_em(s, k * per_em)
+    return s
+
+
+def _table_capacity(template_id: str) -> tuple[float, ...]:
+    """Per-column capacity of a template's table, in full-width equivalents per line.
+
+    Read from the template rather than copied here, so resizing a column in the
+    template does not silently leave this page overflowing it.
+    """
+    template, _ = _load_slide_template(template_id)
+    figure = next(f for f in template["slide"]["figures"] if f.get("type") == "table")
+    widths = [float(c) for c in figure["colWidths"]]
+    scale = float(figure["w"]) / sum(widths)
+    size = float(figure.get("size", 10))
+    return tuple(max(1.0, (w * scale - _AUDIT_INSET * 2) * 72.0 / size) for w in widths)
+
+
+# diagrams.Canvas.cards: the cards divide the row evenly with `gap` between
+# them, and the body text sits in a label inset 0.14in on each side
+_CARD_GAP = 0.22
+_CARD_PAD = 0.28
+
+
+def _cards_capacity(template_id: str, count: int) -> float:
+    """Capacity of one card's body line in a template's cards figure, in full-width equivalents."""
+    template, _ = _load_slide_template(template_id)
+    figure = next(f for f in template["slide"]["figures"] if f.get("type") == "cards")
+    gap = float(figure.get("gap", _CARD_GAP))
+    card_w = (float(figure["w"]) - gap * (count - 1)) / count
+    size = float(figure.get("bodySize", 10))
+    return max(1.0, (card_w - _CARD_PAD - _AUDIT_INSET * 2) * 72.0 / size)
+
+
 def _source(ledger: dict, extra: str = "") -> str:
     meta = ledger.get("meta") or {}
     parts = [f"{meta.get('customer', '')} 商談台帳（{meta.get('updatedAt', today())} 時点）"]
@@ -619,6 +683,7 @@ def _page_account_snapshot(ledger: dict) -> dict | None:
                   if isinstance(p, dict) and p.get("role") == "決裁"), None)
     next_gate = next((f"{gid} — {label}" for gid, label, item in _current_gates(ledger)
                       if item.get("status") != "met"), "現ステージの条件は充足")
+    card = _cards_capacity("account-snapshot", 4)
     rows = [
         ["顧客 / 商談名", _fit(f"{meta.get('customer', '')} / {meta.get('opportunity', '')}", 46)],
         ["Champion", _fit(_person_line(champion), 46)],
@@ -627,11 +692,16 @@ def _page_account_snapshot(ledger: dict) -> dict | None:
     ]
     return {
         "title": _fit(meta.get("headline") or _default_headline(ledger), 70),
+        # The stage names are English, so 24 characters is only half the width
+        # 24 Japanese ones would be. Fit to the card, not to the character
+        # count — the full stage name is spelled out in the page title
         "headline": [
-            ["ステージ", _fit(f"{meta.get('stage')} {STAGES.get(meta.get('stage'), '')}", 24)],
-            ["フォーキャスト", _fit(meta.get("forecast", ""), 24)],
-            ["想定 TCV", _fit(meta.get("amount") or "未確定", 24)],
-            ["決定予定日", _fit(meta.get("closeDate") or "未確定", 24)],
+            [head, _fit_em(value, card, lines=2, limit=24)] for head, value in (
+                ("ステージ", f"{meta.get('stage')} {STAGES.get(meta.get('stage'), '')}"),
+                ("フォーキャスト", meta.get("forecast", "")),
+                ("想定 TCV", meta.get("amount") or "未確定"),
+                ("決定予定日", meta.get("closeDate") or "未確定"),
+            )
         ],
         "rows": rows,
         "source": _source(ledger),
@@ -717,15 +787,19 @@ def _bant_title(weak: list[str]) -> str:
 
 def _page_action_plan(ledger: dict) -> dict | None:
     rows = []
+    # Five columns of different widths. 36 characters is the slot's limit, but
+    # the narrow ones ("相手" / "期限") draw far less than that, and a 0.42in
+    # row holds two lines at 8.5pt
+    cols = _table_capacity("action-plan")
     for action in _as_list(ledger.get("actions")):
         if not isinstance(action, dict) or action.get("status") not in LIVE_ACTIONS:
             continue
         rows.append([
-            _fit(action.get("what"), 36),
-            _fit(action.get("why"), 36),
-            _fit(action.get("whom"), 36),
-            _fit(action.get("due") or "未定", 36),
-            _fit(action.get("doneWhen"), 36),
+            _fit_em(action.get("what"), cols[0], lines=2, limit=36),
+            _fit_em(action.get("why"), cols[1], lines=2, limit=36),
+            _fit_em(action.get("whom"), cols[2], lines=2, limit=36),
+            _fit_em(action.get("due") or "未定", cols[3], lines=2, limit=36),
+            _fit_em(action.get("doneWhen"), cols[4], lines=2, limit=36),
         ])
     if len(rows) < 3:
         return None

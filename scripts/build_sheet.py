@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Build an Excel / Google Spreadsheet from a line-item spec (JSON).
 
-    python scripts/build_sheet.py spec.json --dry-run          # validate only (offline, free)
-    python scripts/build_sheet.py spec.json                    # build the xlsx (out/sheets/<title>.xlsx)
-    python scripts/build_sheet.py spec.json --out path.xlsx
-    python scripts/build_sheet.py spec.json --gsheet [--folder <Drive folder URL/ID>]
+    .venv/bin/python scripts/build_sheet.py spec.json --dry-run          # validate only (offline, free)
+    .venv/bin/python scripts/build_sheet.py spec.json                    # build the xlsx (out/sheets/<title>.xlsx)
+    .venv/bin/python scripts/build_sheet.py spec.json --out path.xlsx
+    .venv/bin/python scripts/build_sheet.py spec.json --gsheet [--folder <Drive folder URL/ID>]
 
 Describe a "line items + summary" table -- like a quote, BOM, or cost
 breakdown -- in a single JSON file, and assemble it into an xlsx with

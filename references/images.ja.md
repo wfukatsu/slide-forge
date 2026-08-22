@@ -177,7 +177,7 @@ Slides が受け付けるのは **PNG / JPEG / GIF のみ**、50MB 未満・25 �
 
 ```bash
 # どのレイアウトにどんな枠があるかを見る
-python scripts/inspect_template.py <URL>        # レポートに imageSlot[N] が出る
+.venv/bin/python scripts/inspect_template.py <URL>        # レポートに imageSlot[N] が出る
 ```
 
 枠があるのに別の場所へ置くと `--dry-run` が警告する（`--strict` ならエラー）。
@@ -187,8 +187,8 @@ python scripts/inspect_template.py <URL>        # レポートに imageSlot[N] �
 （`image-slots` スキル）。仕様の無いデッキや、URL を変えられないデッキが対象。
 
 ```bash
-python scripts/fill_image_slots.py <URL> --dry-run   # どの枠が埋まるかを見る
-python scripts/fill_image_slots.py <URL>
+.venv/bin/python scripts/fill_image_slots.py <URL> --dry-run   # どの枠が埋まるかを見る
+.venv/bin/python scripts/fill_image_slots.py <URL>
 ```
 
 ### AI で生成する
@@ -201,7 +201,7 @@ d.ai_image(5.2, 1.1, 4.2, 2.6,
 
 ```bash
 # 単体で試す（--show-prompt なら API を呼ばずにプロンプトだけ見られる）
-python scripts/images.py --prompt "…" --style flat_vector \
+.venv/bin/python scripts/images.py --prompt "…" --style flat_vector \
     --template templates/aixdevops.json --out out/hero.png
 ```
 

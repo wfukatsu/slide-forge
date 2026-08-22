@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check a deck module's coordinates without calling the Google Slides API.
 
-    python scripts/validate_layout.py path/to/mydeck.py [--template templates/x.json]
+    .venv/bin/python scripts/validate_layout.py path/to/mydeck.py [--template templates/x.json]
 
 What it checks:
 
