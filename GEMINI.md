@@ -33,6 +33,8 @@ Load exactly one generation skill completely, then read only the reference secti
 | Create/change an analysis-framework slide template | `analysis-template-creator` |
 | Create Scalar product/proposal slides | `scalar-product-slides`, `scalar-proposal-slides` |
 | Per-customer activity plan / visit materials (AE sales activity) | `scalar-account-plan`, `scalar-ae-materials` |
+| Organise minutes / email into per-stage records; work out what is still unconfirmed | `scalar-deal-intake` |
+| Design lead nurturing before a deal exists; segments, nurture tracks, content coverage | `scalar-nurture-intake` |
 | Account Planning Session (annual org-chart / deal-stocktake deck) | `scalar-account-planning-session` |
 | Create B2B deal stakeholder maps / discovery maps | `b2b-account-maps` |
 | Create dense architecture diagrams with draw.io | `drawio-diagrams` |

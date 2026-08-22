@@ -37,6 +37,7 @@ description: >-
 | 年次の Account Planning Session（組織図・商談棚卸しのデッキ） | `scalar-account-planning-session` |
 | 正式提案書・見積 | `scalar-proposal-slides` + `spreadsheets` |
 | 関与者マップ・ディスカバリーマップ | `b2b-account-maps` |
+| 議事録・メールをステージ別の記録に整理する | `scalar-deal-intake` |
 | Scalar の会社・製品紹介（顧客固有でない） | `scalar-product-slides` |
 | 生成したデッキの目視検査 | `slide-qa` |
 

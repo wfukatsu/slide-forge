@@ -43,6 +43,7 @@ Working directory: the slide-forge root. Run commands with `.venv/bin/python`.
 | Create / append to the activity plan, or answer about status | This skill (§5) |
 | Build materials for an Account Planning Session | `scalar-account-planning-session` |
 | Build a full set of materials for one visit | `scalar-ae-materials` |
+| Organise minutes / email into per-stage records | `scalar-deal-intake` |
 | Draw the stakeholder map / discovery map itself | `b2b-account-maps` |
 | Formal customer-facing proposal | `scalar-proposal-slides` |
 | Itemized quotation | `spreadsheets` |

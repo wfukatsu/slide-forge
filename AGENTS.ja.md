@@ -33,6 +33,8 @@ Claude Code を主ホスト兼配布経路とする。Codex は同じ共有 Pyth
 | 顧客ごとの活動計画・商談台帳（AE の行動計画） | `scalar-account-plan` |
 | Account Planning Session（年次・半期の棚卸しと役員レビュー） | `scalar-account-planning-session` |
 | 訪問 1 回分の資料 / 社内承認資料（WPS・Deal Desk） | `scalar-ae-materials` |
+| 議事録・メールをステージ別の記録に整理する／未確認事項を洗い出す | `scalar-deal-intake` |
+| 商談化前のリード育成の設計（セグメント・ナーチャリングトラック・コンテンツ充足） | `scalar-nurture-intake` |
 | Scalar の製品・会社紹介デッキ | `scalar-product-slides` |
 | Scalar の顧客向け提案書 | `scalar-proposal-slides` |
 | 密な draw.io 図 | `drawio-diagrams` |
