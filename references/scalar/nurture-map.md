@@ -76,6 +76,27 @@ gates as the hand-off bar (`sales-playbook.md` §2, phase 1).
 **"Downloaded a whitepaper" and "attended a webinar" are not grounds for SQO.**
 Same principle as the deal side: stages move on customer agreement, not activity.
 
+### The nurture stage does not decide the deal stage to hand into
+
+The table above says **which deal stage's subject matter the lead's interest sits in**;
+it does not name the deal stage to open. The deal stage is the **highest stage whose
+gates are actually met** (`sales-playbook.md` §2).
+
+Nurture 4 (Selection) needs the most care. The customer's own selection may be well
+advanced while our discovery is still zero. That state is not "in deal stage 4" — it is
+**"in deal stage 1, with only the customer's clock at stage 4."**
+
+| Handling a lead arriving from nurture 4 | |
+|---|---|
+| Stage to open | **Deal stage 1.** Judge `g1.*` first |
+| Never skipped | `g2.goal-agreed` (agreed business goal) and `decisionCriteria`. A proposal written without those is simply scored against criteria someone else wrote |
+| When discovery must be compressed | Record what was dropped as a risk in `deal-log.md` §3. Do not skip it silently |
+| Danger sign | The customer brings an RFP, a deadline or a spec and gives no time for discovery — **someone else may already have written the requirements**. Treat it as win-rate evidence |
+
+The same holds for nurture 2 and 3: **do not copy the nurture number into the deal
+stage**. The nurture stage marks where the buyer's interest is; the deal stage marks
+what has been agreed. They are different rulers.
+
 ---
 
 ## 3. Product layer — ScalarDB
@@ -267,12 +288,61 @@ This sheet **stopped mid-design.** Know the following before using it.
 | 8 | Stale positioning | §3's problem list is from 2021, centred on Cosmos DB / DynamoDB / Cassandra / MongoDB. It has **no ScalarDB Cluster, no ScalarDB Analytics, no cross-RDB transactions, no breaking up existing RDB silos** — the same staleness flagged for the fit sheet in `stage-io-map.md` §8 |
 | 9 | No MQL / SQO definition | Nothing says when marketing hands over to sales (§2 borrows the deal-side gates) |
 | 10 | No metrics | No targets anywhere — conversion rate, lead volume, SQO rate |
+| 11 | Nothing on the legality of sending | The design assumes email, yet consent, opt-out, disclosure and non-Japan leads appear nowhere |
 
-**Items 7–10 are not patched here.** Filling them requires a decision on Scalar's side.
+**How each is handled here**
+
+| # | Handling |
+|---|---|
+| 7 | Not patched (a data-entry error in the source sheet; fix it in the sheet) |
+| 8 | Not patched, but **§3 and §7-8 state explicitly that the messaging is dated** |
+| 9 | **Partially patched.** §2 adopts the deal side's `g1.*` as the SQO handover criteria. **There is still no MQL threshold** (nurture stages 0→1→2) |
+| 10 | **Only the shell.** `templates/nurture/nurture-track.ja.md` §9 has the metrics table; the **targets are empty** and filling them requires a decision on Scalar's side |
+| 11 | **The list of points is added in §8.** The judgement is not — legal must confirm |
+
+For the MQL threshold (9) and the targets (10), **do not put in placeholder values**.
+Do not write what has not been decided as though it had been.
 
 ---
 
-## 8. Which tool for what
+## 8. Delivery prerequisites — consent, opt-out, disclosure (not in the sheet; added here)
+
+**The source sheet says nothing about the legality of sending.** The design assumes
+email delivery, so settle this before a track goes live. **What follows is a list of
+points to check, not legal advice — get legal to confirm before operating.**
+
+### Act on Regulation of Transmission of Specified Electronic Mail (特定電子メール法)
+
+| Point | What to confirm |
+|---|---|
+| Opt-in | Prior consent is required as a rule. Record and retain the date, the method, and who consented |
+| Business-card and similar exceptions | Sending to an address notified on a business card, or to an existing business counterparty, may fall under an exception. **Work out which reach channel rests on which basis, channel by channel** |
+| Disclosure | Show the sender's name, the opt-out contact, the sender's address, and a complaints/enquiries contact in the body |
+| Opt-out | Never send again to someone who has opted out. **Make sure they are excluded from Re-Engagement** — it runs alongside every stage (§1), which is where this leaks |
+
+### Act on the Protection of Personal Information
+
+| Point | What to confirm |
+|---|---|
+| Purpose of use | Does the purpose notified or published at collection cover nurture delivery |
+| Third-party provision | For lists obtained via co-hosted events or partners, does the use stay inside the consent given at the source |
+| Retention | Where the consent and opt-out records are held, and for how long |
+
+### Leads outside Japan
+
+The EU/UK (GDPR / PECR) and the US (CAN-SPAM) differ. **Do not assume the Japanese
+requirements carry over.** Check separately before including them.
+
+### Where the records live
+
+Consent and opt-out records are **tied to individuals**. `accounts/_nurture/` holds
+types only, so **they do not go there** — keep them in MA/CRM. What goes in the nurture
+files is the type-level fact of **which consent basis each reach channel rests on**
+(`templates/nurture/segment-sheet.ja.md` §4).
+
+---
+
+## 9. Which tool for what
 
 | Task | Use |
 |---|---|
