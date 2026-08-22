@@ -72,7 +72,21 @@ Record what was read as counts and dates — "webinar 2026-07-15, 42 attendees,
 
 ```bash
 ls accounts/_nurture/segments/
+ls accounts/*/            # live deals — always check before segmenting
 ```
+
+**First, check whether the signal came from someone already in a live deal.**
+Sending nurture content to a contact inside a running deal is an incident.
+
+| Outcome of the check | What to do |
+|---|---|
+| From a customer with a live deal | **Keep it out of the segment.** Route to `scalar-deal-intake`; the material belongs in that deal's `deal-log.md` §1 |
+| Same customer, different division or use case | **Tell the AE first.** Whether it goes into nurture is the AE's call |
+| No deal | Proceed with segmentation as normal |
+
+Recording that the check happened is fine, but **never write the company or personal
+names used for the check into `accounts/_nurture/`** — record counts only, e.g.
+"1 overlap with a live deal, excluded".
 
 Match each signal against the existing segment definitions and against
 `nurture-map.md` §5. For each signal, one of three outcomes:

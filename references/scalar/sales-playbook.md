@@ -23,7 +23,7 @@ an end in itself — it is evidence that makes the next decision possible.**
 
 | # | Principle | Implication for material creation |
 |---|---|---|
-| 1 | Sales is managed probabilistically (touchpoint count, win rate, cycle, TCV) | Don't spend formal-proposal effort on deals with low win rate and low value |
+| 1 | Sales is managed probabilistically (touchpoint count, win rate, cycle, TCV) | Don't spend formal-proposal effort on deals with low win rate and low value. **Those numbers live in the CRM** (§8) |
 | 2 | Propose from WHAT and WHY | Don't produce materials that answer the customer's requirements with HOW alone. Put the target state and "why now" first |
 | 3 | Coach the customer and support their decision-making (Challenger-style) | Customer-facing materials are structured in the order: reframe → reconstruct → reinforce → make it personal → new way → action plan |
 | 4 | Build trust first | Include information, options, and risks to avoid beyond your own product. Don't rush the sale |
@@ -267,6 +267,11 @@ into candidate actions.
 - Treat the CRM as the **single source of truth** for deal stage, amount, expected date,
   activity, and Next Action. slide-forge's `account.json` is a working ledger for material
   generation, and does not replace the CRM.
+- **The territory-level numbers — win rate by stage, average cycle, pipeline coverage,
+  nurture stage-to-stage conversion — are the CRM's and the MA tool's too.** That is where
+  principle 1 is exercised. **Do not add an aggregation form to slide-forge**:
+  `templates/sales/` is scoped to one deal and `templates/nurture/` to one segment.
+  The individual records are the input to the aggregation, not the place to keep it.
 - Store contracts and formal documents received from the customer in the managed folder tied to the deal
 - Keep the customer name, deal name, date, amount, and stage consistent across the CRM, meeting minutes, and files
 - When a stage changes, register the required deliverables and a **link to the transition evidence**
