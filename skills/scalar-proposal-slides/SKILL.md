@@ -57,10 +57,11 @@ from an installed plugin, `/path/to/slide-forge` on a local clone
 - **Product facts and prices come from the OKF bundle** —
   `references/scalar/okf-bundle.md` tells you where it is and how to cite it.
   Capability, edition, version, release status, billing model, list price, and
-  Pod counting are looked up there, never written from memory. Its prices are
-  internal list prices: use them for the reference estimate and AE review, keep
-  the customer-facing slide to published Marketplace values, and route the items
-  marked 非公開 (3-year terms, prepaid credits, discounts) to the AE.
+  Pod counting are looked up there, never written from memory. The bundle is a
+  public repository, so its figures are citable — label them 定価 (tax-excluded)
+  and treat them as reference-estimate material, with the AE reviewing any quote
+  that goes to the customer. What it marks 非公開 (3-year terms, prepaid credits,
+  discounts) routes to the AE instead.
 - **Research freshness**: facts come from `references/scalar/research-2026-08.md`
   and `references/scalar/proposal-map.md` (§3/§5 dated 2026-08-05). Both follow
   the **3-month rule** — refresh only affected claims using

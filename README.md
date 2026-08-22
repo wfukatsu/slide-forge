@@ -104,8 +104,9 @@ Scalar product facts and prices — capability, edition, version, release status
 billing model, list price, Pod counting — come from the OKF bundle
 ([OKF-ScalarDB-ScalarDL](https://github.com/wfukatsu/OKF-ScalarDB-ScalarDL)), not
 from memory or a web search. `references/scalar/okf-bundle.md` says where to find
-it and how to cite it; its prices are internal list prices, usable as material for
-a reference estimate only.
+it and how to cite it; the bundle is public, so its list prices are citable as 定価
+(tax-excluded) reference-estimate material — never as a confirmed price, and never
+for the items it marks 非公開.
 
 ## Repository layout
 

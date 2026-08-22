@@ -112,8 +112,9 @@ in the ledger and the audience is specified, decide without asking.
       transcribed from a generated quotation (`scalar-quotation`), and their
       edition contents, Pod counting, and billing model come from the OKF
       bundle (`references/scalar/okf-bundle.md`). The bundle's list prices are
-      internal: reference-estimate material only, and 3-year terms, prepaid
-      credits, and discount rates are 非公開 — never put them on a customer page
+      published and citable as 定価 (tax-excluded) reference-estimate material,
+      but 3-year terms, prepaid credits, and discount rates are 非公開 there —
+      never put those on a customer page
   to this audience
 
 The `challenge-hypothesis` guardrails say the same thing. If even one item

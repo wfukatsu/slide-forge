@@ -67,27 +67,29 @@ do not soften them.
 
 ## Rules when citing prices
 
-`okf/pricing/` is the one section with no upstream source: it derives from
-Scalar's internal price list (ScalarDB / ScalarDL 2024-07-01, ScalarDB Analytics
-2024-09-10). Treat it accordingly.
+`okf/pricing/` is the one section with no upstream source: it was written from
+Scalar's price list (ScalarDB / ScalarDL 2024-07-01, ScalarDB Analytics
+2024-09-10). **The bundle repository is public, so everything it carries is
+published information and may be cited** — including the list prices. The
+boundary is not "internal vs external"; it is what the bundle chose to publish
+versus what it deliberately withheld.
 
-- Every figure is a **list price, tax-excluded, JPY**. Use it as **material for a
-  reference estimate only** — never present it as a confirmed or submittable
-  price. Any quote that leaves the building goes through the account executive.
-- The bundle deliberately carries only three things: Analytics' SDBU-hour rate,
-  and the monthly and annual list prices of the four Pod-subscription products.
-  **3-year list prices, prepaid credit prices, discount rates, and customer-specific
-  terms are marked 非公開 and are absent on purpose.** When a proposal needs one,
-  say it is not public and route to the AE — do not interpolate it from the
-  monthly/annual figures.
+- **Published, citable**: the SDBU-hour rate for ScalarDB Analytics, and the
+  monthly and annual list prices of the four Pod-subscription products, plus the
+  billing models, Pod-counting rules, and edition contents.
+- **Withheld, not citable**: 3-year list prices, prepaid credit prices, discount
+  rates, and customer-specific terms are all marked 非公開 and are absent on
+  purpose. When a proposal needs one, say it is not public and route to the
+  account executive — never interpolate it from the monthly/annual figures.
+- Every figure is a **list price, tax-excluded, JPY**. Cite it as a list price
+  and as **material for a reference estimate** — not as a confirmed or
+  submittable amount. Actual terms adjust by volume and contract, so a quote
+  that goes to the customer is reviewed by the account executive first.
 - **Unit prices for an actual quotation still come from the quotation master**
   (`scalar-quotation` → `/Users/wfukatsu/work/price-master/data/scalar-pricing.json`),
   which is the single source of truth for numbers that land in a 見積書. Use the
   bundle to cross-check that master, and to source what the master does not carry:
   edition contents, Pod-counting rules, and the sample-quotation checklist.
-- Price tables from `pricing/` are internal-sourced. Do not paste one into a
-  customer-facing deck as-is; put the derived per-customer figures in the
-  quotation deliverable instead.
 
 ## Division of labour with other references
 

@@ -110,12 +110,14 @@ ScalarDL:
 ## 5. Pricing / editions (as of 2026-08-05)
 
 **Source of record: the OKF bundle (`okf-bundle.md` → `okf/pricing/`).** Read it
-before writing any figure — it carries the internal list price, the billing
-model, the Pod-counting rules, and the edition/feature matrix, none of which are
-on the public site. The table below keeps the **public Marketplace** figures,
-which are the only prices citable on a customer-facing slide as published values.
-The bundle's JPY list prices are for a reference estimate and AE review, not for
-a customer deck.
+before writing any figure — it carries the JPY list prices, the billing model,
+the Pod-counting rules, and the edition/feature matrix, none of which are on
+scalar-labs.com. The bundle repository is public, so those figures are citable;
+label them as 定価 (tax-excluded) and treat them as reference-estimate material,
+with the AE reviewing anything that goes to the customer as a quote. What the
+bundle marks 非公開 — 3-year terms, prepaid credits, discount rates — stays out.
+The table below keeps the **Marketplace** figures, which are the published
+per-hour prices for the same products.
 
 | Product | Billing | Notes |
 |---|---|---|
@@ -126,10 +128,11 @@ a customer deck.
 
 - The unit for hourly billing cannot be confirmed from the Marketplace page (`research-2026-08.md`
   records Pod=2vCPU/4GB. In the deck, keep it to something like "× number of Pods" and don't state a firm amount)
-- ScalarDB Analytics is **not** priced per Pod: it is metered per SDBU-hour with a 6 SDBU minimum
-  (`okf/pricing/scalardb-analytics-pricing.md`). Nothing is published publicly, so a customer deck
-  states the model, not the rate. Whether Azure Marketplace offers consumption-based pricing is
-  unknown (BYOL container listing and non-availability listing are both present)
+- ScalarDB Analytics is **not** priced per Pod: it is metered per SDBU-hour with a 6 SDBU minimum,
+  ¥33.5 / SDBU-hour list (`okf/pricing/scalardb-analytics-pricing.md` — the minimum configuration
+  works out to 4,464 SDBU-hours ≈ ¥149,544 / month). scalar-labs.com publishes nothing on this, so
+  the bundle is the source. Whether Azure Marketplace offers consumption-based pricing is unknown
+  (BYOL container listing and non-availability listing are both present)
 - ScalarDL Auditor requires Ledger, in a **separate administrative domain** (separate account /
   cluster) — co-locating them in one cluster does not satisfy the Auditor premise. Quote both
   (`okf/pricing/scalardl-pricing.md`)
