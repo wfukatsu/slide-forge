@@ -152,6 +152,14 @@ cp templates/nurture/content-inventory.ja.md  accounts/_nurture/content-inventor
 判定は `met` / `partial` / `unmet`。**資料のダウンロードやウェビナーの参加は
 `met` の根拠にならない。**
 
+**引き渡し先の商談ステージを、ナーチャリングの段から決めない。** 段は買い手の関心の
+位置、商談ステージは合意の到達点で、別の物差しである（`nurture-map.ja.md` §2）。
+**起票は原則、商談 1 から**。段 4（Selection）から来たリードはとくに、
+「商談 4 に居る」のではなく**「商談 1 に居て、顧客の時計だけが商談 4 に進んでいる」**
+と読む。`g2.goal-agreed` と `decisionCriteria` を飛ばしたまま提案に進める提案をしない。
+discovery を短縮せざるを得ない場合は、落としたものを `deal-log.md` §3 のリスクとして
+引き渡す。
+
 引き渡すときに渡すもの: 接触履歴／閲覧したコンテンツ／出てきた質問／未回答の質問。
 **個人名を伴う情報は商談側にだけ置く**（`accounts/<AE 名>/<顧客名>/`）。
 以降の記録は `scalar-deal-intake` が持つ。
@@ -180,3 +188,10 @@ cp templates/nurture/content-inventory.ja.md  accounts/_nurture/content-inventor
   古い訴求の上に立ったセグメントは、そう言う。
 - 指標の目標値を作らない。元シートに指標が無い（`nurture-map.ja.md` §7-10）。
   目標欄は空のままにして、決めるべき事項として報告する。
+- **同意記録・配信停止記録を `accounts/_nurture/` に書かない。** 個人に紐づく情報で、
+  置き場は MA / CRM 側（`nurture-map.ja.md` §8）。ここに書くのは、到達手段ごとの
+  同意の根拠という型の情報だけ（`segment-sheet.ja.md` §4）。
+- **配信の適法性について判断を下さない。** 同意・配信停止・表示義務は
+  `nurture-map.ja.md` §8 の論点一覧を提示するに留め、**法務の確認が要ると報告する**。
+  到達手段の同意根拠が空欄のトラックは、**配信可能として報告しない**。
+- ナーチャリングの段番号を商談ステージに写さない（上記 §6）。

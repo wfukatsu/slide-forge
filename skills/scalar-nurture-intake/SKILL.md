@@ -157,6 +157,14 @@ The sheet defines neither MQL nor SQO, so use the deal-side gates
 Verdicts are `met` / `partial` / `unmet`. A download or a webinar seat is never
 evidence for `met`.
 
+**Do not derive the deal stage from the nurture stage.** The nurture stage marks
+where the buyer's interest sits; the deal stage marks what has been agreed — two
+different rulers (`nurture-map.md` §2). **Open at deal stage 1 as a rule.** A lead
+arriving from nurture 4 (Selection) is not "in deal stage 4"; it is **"in deal
+stage 1, with only the customer's clock at stage 4."** Do not propose moving to a
+proposal with `g2.goal-agreed` and `decisionCriteria` skipped. Where discovery has
+to be compressed, hand over what was dropped as a risk for `deal-log.md` §3.
+
 When a lead does cross over, hand to `scalar-deal-intake` with: the contact
 history, which content they consumed, the questions they asked, and the
 questions still unanswered. **The named-individual detail lives only on the deal
@@ -187,3 +195,12 @@ In Japanese:
   (`nurture-map.md` §7-8). Say so when a segment is built on the old framing.
 - Do not invent metrics targets. The source has none (`nurture-map.md` §7-10);
   leave the target column empty and say it needs a decision.
+- **Never write consent or opt-out records into `accounts/_nurture/`.** They are
+  tied to individuals and belong in MA/CRM (`nurture-map.md` §8). What goes in the
+  nurture files is the type-level fact of which consent basis each reach channel
+  rests on (`segment-sheet.ja.md` §4).
+- **Do not rule on whether sending is lawful.** Present the consent / opt-out /
+  disclosure points from `nurture-map.md` §8 and **report that legal must confirm**.
+  A track whose reach channels have no consent basis recorded is **never reported as
+  ready to send**.
+- Do not copy the nurture stage number into the deal stage (see §6).

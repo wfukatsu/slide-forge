@@ -21,7 +21,7 @@
 
 **ナーチャリングは 0〜4、商談は 0〜6。別物である。**
 
-| ナーチャリング | 引き渡し先の商談ステージ |
+| ナーチャリング | 関心が当たる商談ステージ |
 |---|---|
 | 0. Education / 1. Need | （まだ商談ではない） |
 | 2. Research | 商談 1. Assessment & Qualification |
@@ -29,6 +29,17 @@
 | 4. Selection | 商談 4. Solution Presentation |
 
 文書内では必ず「ナーチャリング 2」「商談 2」と書き分ける。
+
+> **この表は引き渡し先を指定するものではない。** 商談ステージは、ゲートが実際に
+> 満たされている最上位のステージで決める。**起票は原則、商談 1 から**
+> （`references/scalar/nurture-map.ja.md` §2）。
+
+## 配信の前提
+
+メール配信の同意・配信停止・表示義務の論点は
+[`nurture-map.ja.md`](../../references/scalar/nurture-map.ja.md) §8 にある。
+**同意記録・配信停止記録は個人に紐づくため、`accounts/_nurture/` に置かない**
+（MA / CRM 側に持つ）。ここに書くのは、到達手段ごとの同意の根拠という型の情報だけ。
 
 ## `templates/sales/` との違い
 
