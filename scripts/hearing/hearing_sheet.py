@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Hearing sheet I/O — one JSON of record, three interchangeable surfaces.
 
-    python scripts/hearing/hearing_sheet.py init templates/sales/hearing-sheet.ja.md \
+    .venv/bin/python scripts/hearing/hearing_sheet.py init templates/sales/hearing-sheet.ja.md \
         --out accounts/<AE>/<customer>/stages/hearing.json
-    python scripts/hearing/hearing_sheet.py render hearing.json --format md   --out sheet.md
-    python scripts/hearing/hearing_sheet.py render hearing.json --format xlsx --out sheet.xlsx
-    python scripts/hearing/hearing_sheet.py render hearing.json --format gsheet --folder <URL>
-    python scripts/hearing/hearing_sheet.py read sheet.xlsx --into hearing.json
-    python scripts/hearing/hearing_sheet.py gaps hearing.json
-    python scripts/hearing/hearing_sheet.py validate hearing.json
+    .venv/bin/python scripts/hearing/hearing_sheet.py render hearing.json --format md   --out sheet.md
+    .venv/bin/python scripts/hearing/hearing_sheet.py render hearing.json --format xlsx --out sheet.xlsx
+    .venv/bin/python scripts/hearing/hearing_sheet.py render hearing.json --format gsheet --folder <URL>
+    .venv/bin/python scripts/hearing/hearing_sheet.py read sheet.xlsx --into hearing.json
+    .venv/bin/python scripts/hearing/hearing_sheet.py gaps hearing.json
+    .venv/bin/python scripts/hearing/hearing_sheet.py validate hearing.json
 
 The JSON is the record; Markdown, Excel and the Google Spreadsheet are renders
 of it. Every question carries a stable ID, so whichever surface someone edited

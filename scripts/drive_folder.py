@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Create Drive folders and gather deck-related files into them.
 
-    python scripts/drive_folder.py create "<folder name>" [--parent <URL/ID>]
-    python scripts/drive_folder.py upload <folder URL/ID> <file> [file ...]
-    python scripts/drive_folder.py move <folder URL/ID> <file URL/ID> [...]
+    .venv/bin/python scripts/drive_folder.py create "<folder name>" [--parent <URL/ID>]
+    .venv/bin/python scripts/drive_folder.py upload <folder URL/ID> <file> [file ...]
+    .venv/bin/python scripts/drive_folder.py move <folder URL/ID> <file URL/ID> [...]
 
 Typical workflow when generating slides: first create a folder named after
 the deck, then pass its ID to build_deck.py / render_deck.py's --folder so

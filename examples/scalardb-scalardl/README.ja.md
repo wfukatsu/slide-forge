@@ -6,17 +6,17 @@
 
 ```bash
 # 座標検査（API を呼ばない）
-python ../../scripts/validate_layout.py deck.py
+../../.venv/bin/python ../../scripts/validate_layout.py deck.py
 
 # 構成の一覧
-python ../../scripts/render_deck.py deck.py --dry-run
+../../.venv/bin/python ../../scripts/render_deck.py deck.py --dry-run
 
 # 生成
-python ../../scripts/render_deck.py deck.py
+../../.venv/bin/python ../../scripts/render_deck.py deck.py
 
 # 自社マスターで生成する場合
 SLIDE_FORGE_TEMPLATE=../../templates/my-brand.json \
-    python ../../scripts/render_deck.py deck.py
+    ../../.venv/bin/python ../../scripts/render_deck.py deck.py
 ```
 
 ## 構成

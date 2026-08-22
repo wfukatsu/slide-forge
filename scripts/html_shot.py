@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Screenshot a local HTML file to PNG with headless Chrome (for slide insertion).
 
-    python scripts/html_shot.py <page.html> [--out out/nexus/shots/x.png]
+    .venv/bin/python scripts/html_shot.py <page.html> [--out out/nexus/shots/x.png]
         [--width 1280] [--height 900] [--scale 2]
 
 Built for the self-contained UI mocks a nexus-architect product run writes to

@@ -5,10 +5,10 @@ developers.scalar-labs.com の公開ドキュメントに基づく機能カタ�
 1 機能 1 ページで、全ページに図解を持つ構成の見本として同梱している。
 
     # 座標検査（API を呼ばない）
-    python ../../scripts/validate_layout.py deck.py
+    ../../.venv/bin/python ../../scripts/validate_layout.py deck.py
 
     # 生成
-    python ../../scripts/render_deck.py deck.py
+    ../../.venv/bin/python ../../scripts/render_deck.py deck.py
 
 TEMPLATE は環境変数 SLIDE_FORGE_TEMPLATE で差し替えられる。既定は
 templates/blank-16x9.json（マスター無しで新規プレゼンを作る設定）なので、
@@ -154,7 +154,7 @@ def s_arch3(d):
         db(d, bx + 0.06, y3, bw - 0.12, 0.44, nm, sub=ad)
 
     foot(d, ["・Core が正しさを担保し、Cluster が OLTP のサーバ機能、Analytics が OLAP を担う。"
-             "3者は同じ Core のデータモデル上で成立する"])
+             "3者は同じ Core のデータモデル上に載る"])
 
 
 @slide("エディションによって利用できる機能範囲が決まる",
@@ -397,7 +397,9 @@ def s_recovery(d):
     # No 分岐（右下へ。右側の補足パネルと重ならない位置に置く）
     no_x = cx + 1.30
     d.arrow(cx + 1.86, y + 0.37, no_x + 0.62, y2 - 0.02, color=d.P.muted, weight=1.3)
-    d.label(cx + 1.72, y + 0.44, 0.50, 0.20, "No", size=8, align="START", color=d.P.muted)
+    # To the right of the arrow, not on it: this branch leaves the diamond
+    # almost vertically, so a label started at its origin sits on the line
+    d.label(cx + 1.95, y + 0.42, 0.45, 0.20, "No", size=8, align="START", color=d.P.muted)
     d.shape(no_x, y2, 1.24, bh, kind="ROUND_RECTANGLE", fill="#FFFFFF",
             stroke=lighten(d.P.muted, 0.3), text="そのまま\n読み進める", size=8,
             color=d.P.text, line_spacing=105)
@@ -625,9 +627,11 @@ def s_datamodel(d):
     rx = X0 + lw + 0.30
     rw = XE - rx
     zone(d, rx, DY0, rw, 1.62, "テーブルのキー構成")
-    cols = [("パーティションキー", 1.85, d.P.primary, "パーティションを一意に識別\nハッシュで分散配置"),
-            ("クラスタリングキー", 1.85, d.P.info, "パーティション内でレコードを識別\nこの順にソート→レンジスキャン"),
-            ("一般カラム", 1.50, lighten(d.P.muted, 0.3), "アプリのデータ")]
+    # Widths follow the longest description line: at 8pt the clustering key's
+    # wording needs 2.25in to stay on one line, and the zone has the room
+    cols = [("パーティションキー", 2.10, d.P.primary, "パーティションを一意に識別\nハッシュで分散配置"),
+            ("クラスタリングキー", 2.25, d.P.info, "パーティション内でレコードを識別\nこの順にソート→レンジスキャン"),
+            ("一般カラム", 1.70, lighten(d.P.muted, 0.3), "アプリのデータ")]
     cx = rx + 0.14
     for nm, cw, col, desc in cols:
         d.shape(cx, DY0 + 0.36, cw, 0.32, kind="RECTANGLE", fill=col, stroke="#FFFFFF",
@@ -723,8 +727,10 @@ def s_admin(d):
     d.shape(X0 + 5.1, DY0 + 0.60, 3.9, 0.44, kind="ROUND_RECTANGLE", fill=d.P.primary,
             stroke=None, text="Admin API（DistributedTransactionAdmin）", size=9.5,
             bold=True, color="#FFFFFF")
-    d.label(X0, DY0 + 1.08, 3.9, 0.22, "Cluster 版は Cluster 経由で適用", size=8,
-            align="CENTER", valign="TOP", color=d.P.muted)
+    # Kept to the left half of the box: the arrow down to the shared row leaves
+    # from the box's center and would run straight through a centered caption
+    d.label(X0, DY0 + 1.08, 2.00, 0.22, "Cluster 版は Cluster 経由で適用", size=8,
+            align="START", valign="TOP", color=d.P.muted)
 
     # 下位DB
     y = DY0 + 1.38
@@ -794,7 +800,7 @@ def s_exceptions(d):
             line_spacing=120)
 
     foot(d, ["・再試行可 / 状態確認要 / ロジック修正の3分類で捉えると実装が整理できる。"
-             "適切に扱わないと anomaly やデータ不整合につながる"],
+             "扱いを誤ると anomaly やデータ不整合につながる"],
          "提供: Community / Enterprise Standard / Enterprise Premium ｜ 状況: GA")
 
 
@@ -926,7 +932,7 @@ def s_cluster(d):
     zone(d, X0 + hw + 0.3, y2, hw, 0.92, "得られること")
     d.label(X0 + hw + 0.44, y2 + 0.32, hw - 0.28, 0.56,
             "・自動フェイルオーバー　・動的なスケーリング\n"
-            "・セッションアフィニティや双方向 gRPC ストリーミングの作り込みが不要",
+            "・セッションアフィニティや双方向 gRPC の作り込みが不要",
             size=8.5, align="START", valign="TOP", color=d.P.text, line_spacing=125)
 
     foot(d, ["・従来は同一サーバへ寄せるための作り込みが必要だった部分を、クラスタ側が引き受ける"],
@@ -1046,7 +1052,7 @@ def s_microservices(d):
        note="SQL インターフェースは Enterprise Premium 限定です。JDBC 経由で BI ツールや既存 ORM を繋げられる点が実用上大きいです。")
 def s_sql(d):
     clients = [("ScalarDB SQL API", "Java", d.P.primary),
-               ("JDBC ドライバ", "既存の JDBC 資産・BI ツール", d.P.primary),
+               ("JDBC ドライバ", "既存 JDBC 資産・BI ツール", d.P.primary),
                ("Spring Data JDBC", "Spring アプリ（2PC のみ）", d.P.info),
                ("LINQ / SQL", ".NET（1PC / 2PC）", d.P.info),
                ("SQL gRPC API", "低レベル統合", lighten(d.P.muted, 0.15))]
@@ -1795,16 +1801,16 @@ def s_analytics_query(d):
     # 結合図
     y = DY0 + 1.26
     zone(d, X0, y, W, 1.30, "異種ソースを跨いだ結合")
-    # 円柱は横並びにする。縦に重ねると、上のラベルが下の円柱に隠れる
     # 縦積みにする。横並びだと片方への矢印がもう片方を横切る
-    src1 = d.shape(X0 + 0.30, y + 0.34, 0.95, 0.26, kind="CAN", fill="#FFFFFF",
+    # 名前は円柱の左側に置く。右に置くと、円柱から JOIN へ向かう線が通る
+    d.label(X0 + 0.16, y + 0.34, 1.30, 0.26, "PostgreSQL・orders", size=7.5,
+            align="END", valign="MIDDLE", color=d.P.text)
+    src1 = d.shape(X0 + 1.50, y + 0.34, 0.95, 0.26, kind="CAN", fill="#FFFFFF",
                    stroke=d.P.muted)
-    d.label(X0 + 1.34, y + 0.34, 1.30, 0.26, "PostgreSQL・orders", size=7.5,
-            align="START", valign="MIDDLE", color=d.P.text)
-    src2 = d.shape(X0 + 0.30, y + 0.84, 0.95, 0.26, kind="CAN", fill="#FFFFFF",
+    d.label(X0 + 0.16, y + 0.84, 1.30, 0.26, "Cassandra・sessions", size=7.5,
+            align="END", valign="MIDDLE", color=d.P.text)
+    src2 = d.shape(X0 + 1.50, y + 0.84, 0.95, 0.26, kind="CAN", fill="#FFFFFF",
                    stroke=d.P.muted)
-    d.label(X0 + 1.34, y + 0.84, 1.30, 0.26, "Cassandra・sessions", size=7.5,
-            align="START", valign="MIDDLE", color=d.P.text)
     join = d.shape(X0 + 2.90, y + 0.44, 1.75, 0.50, kind="ROUND_RECTANGLE",
                    fill=d.P.info, stroke=None, text="Spark SQL で JOIN", size=9,
                    bold=True, color="#FFFFFF")
@@ -2039,7 +2045,7 @@ def s_manager(d):
     feats = [("クラスタの可視化と監視",
               "健全性・Pod ログ・ハードウェア使用率・RPS。Grafana ダッシュボードを統合し、リアルタイムと時系列で参照"),
              ("pause / unpause 管理",
-              "複数 DB の整合性を確保する pause ジョブを実行・スケジュールし、ジョブと停止状態を GUI で管理"),
+              "複数 DB の整合性を確保する pause ジョブを実行・スケジュールし、停止状態を GUI で管理"),
              ("ユーザー管理とアクセス制御",
               "アカウント作成・ロール割当・Grafana との SSO 連携")]
     for i, (nm, sub) in enumerate(feats):
@@ -2362,7 +2368,9 @@ def s_auditor(d):
     d.shape(X0 + 2.27, y + 0.42, 1.58, 0.46, kind="ROUND_RECTANGLE",
             fill=lighten(d.P.danger, 0.86), stroke=lighten(d.P.danger, 0.5),
             text="Auditor の状態", size=8, color=darken(d.P.danger, 0.25))
-    d.label(X0 + 1.88, y + 0.50, 0.34, 0.30, "≠", size=13, bold=True, align="CENTER",
+    # Fill the whole gap between the two boxes: ≠ is a full-width glyph, and
+    # 0.34in leaves it less room than the margin a text frame carries
+    d.label(X0 + 1.83, y + 0.50, 0.44, 0.30, "≠", size=13, bold=True, align="CENTER",
             valign="MIDDLE", color=d.P.danger)
     d.arrow(X0 + 3.87, y + 0.65, X0 + 4.15, y + 0.65, color=d.P.danger, weight=1.6)
     d.shape(X0 + 4.17, y + 0.42, 1.20, 0.46, kind="ROUND_RECTANGLE", fill=d.P.danger,

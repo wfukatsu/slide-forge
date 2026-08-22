@@ -2,13 +2,13 @@
 """Analyzes a Google Slides template (master slides) and generates template.json.
 
     # Analyze and print a human-readable report
-    python scripts/inspect_template.py <URL or ID>
+    .venv/bin/python scripts/inspect_template.py <URL or ID>
 
     # Write out template.json
-    python scripts/inspect_template.py <URL> --emit templates/my-brand.json --name my-brand
+    .venv/bin/python scripts/inspect_template.py <URL> --emit templates/my-brand.json --name my-brand
 
     # Also fetch layout thumbnails (for visual verification)
-    python scripts/inspect_template.py <URL> --thumbnails out/thumbs
+    .venv/bin/python scripts/inspect_template.py <URL> --thumbnails out/thumbs
 
 The generated template.json's `roles` are only a **guess** based on display
 names and placeholder composition, so always verify and fix them by looking

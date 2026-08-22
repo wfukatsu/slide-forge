@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Export a generated Google Slides deck to PowerPoint (.pptx).
 
-    python scripts/export_pptx.py <URL or ID> [--out <path.pptx>]
-    python scripts/export_pptx.py <URL> --folder <Drive folder URL/ID>
+    .venv/bin/python scripts/export_pptx.py <URL or ID> [--out <path.pptx>]
+    .venv/bin/python scripts/export_pptx.py <URL> --folder <Drive folder URL/ID>
 
 Writes the .pptx via the Drive API's files.export. The appearance is
 preserved exactly as generated in Slides, but the export is **a snapshot at

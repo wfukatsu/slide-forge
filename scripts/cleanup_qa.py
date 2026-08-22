@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Delete local verification files used for visual QA (thumbnail PNGs, etc).
 
-    python scripts/cleanup_qa.py                 # delete out/qa and out/*/qa
-    python scripts/cleanup_qa.py out/mydeck/qa   # delete only the specified directory
-    python scripts/cleanup_qa.py --dry-run       # only show what would be deleted
+    .venv/bin/python scripts/cleanup_qa.py                 # delete out/qa and out/*/qa
+    .venv/bin/python scripts/cleanup_qa.py out/mydeck/qa   # delete only the specified directory
+    .venv/bin/python scripts/cleanup_qa.py --dry-run       # only show what would be deleted
 
 QA thumbnails are disposable temp files that can be refetched, so run this
 script to remove them before reporting results. To prevent accidental

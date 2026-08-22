@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Render the mermaid blocks of a Markdown report to PNG (for slide insertion).
 
-    python scripts/mermaid_export.py <report.md> [--out-dir out/nexus/shots]
-    python scripts/mermaid_export.py <report.md> --index 2 --out out/x.png
-    python scripts/mermaid_export.py <report.md> --list
+    .venv/bin/python scripts/mermaid_export.py <report.md> [--out-dir out/nexus/shots]
+    .venv/bin/python scripts/mermaid_export.py <report.md> --index 2 --out out/x.png
+    .venv/bin/python scripts/mermaid_export.py <report.md> --list
 
 Built for nexus-architect reports, which carry their structure diagrams as
 fenced ```mermaid blocks. Uses the mermaid CLI (`mmdc`, `npm i -g

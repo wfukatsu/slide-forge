@@ -6,8 +6,8 @@ A catalog for checking, with actual text flowed in, how each layout looks,
 which placeholders it has, and which role it's assigned to. Also used to
 visually verify that role assignments are correct.
 
-    python scripts/layout_sample.py --template templates/scalar-2026.json
-    python scripts/layout_sample.py --template templates/aixdevops.json --only-roles
+    .venv/bin/python scripts/layout_sample.py --template templates/scalar-2026.json
+    .venv/bin/python scripts/layout_sample.py --template templates/aixdevops.json --only-roles
 """
 from __future__ import annotations
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Collect what a nexus-architect project currently knows, as one coverage.json.
 
-    python scripts/nexus/collect.py --project ../nexus-architect
-    python scripts/nexus/collect.py --project ../nexus-architect --json | head -40
-    python scripts/nexus/collect.py --project ../nexus-architect \
+    .venv/bin/python scripts/nexus/collect.py --project ../nexus-architect
+    .venv/bin/python scripts/nexus/collect.py --project ../nexus-architect --json | head -40
+    .venv/bin/python scripts/nexus/collect.py --project ../nexus-architect \
         --report reports/02_evaluation/mmi-overview.md      # one report's tables
 
 A nexus-architect pipeline is **normally unfinished**: phases pending, one

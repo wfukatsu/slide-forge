@@ -14,9 +14,9 @@ Successor to `download-cloud-icons.sh`. Three differences:
    name. The old layout left you digging through 1,500 files with `ls`, and
    Azure names like `02390-icon-service-azure-sql.png` weren't searchable.
 
-    python scripts/fetch_cloud_icons.py                 # fetch all 3 vendors
-    python scripts/fetch_cloud_icons.py --vendor azure  # update just one
-    python scripts/fetch_cloud_icons.py --dry-run       # resolve URLs only, no fetch
+    .venv/bin/python scripts/fetch_cloud_icons.py                 # fetch all 3 vendors
+    .venv/bin/python scripts/fetch_cloud_icons.py --vendor azure  # update just one
+    .venv/bin/python scripts/fetch_cloud_icons.py --dry-run       # resolve URLs only, no fetch
 
 Places icons under the repo's `assets/cloud-icons/` (single shared destination).
 

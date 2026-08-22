@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """レイアウトパターンのギャラリー。slide-forge が持つ図のパターンを一覧する。
 
-    python ../../scripts/validate_layout.py deck.py
-    python ../../scripts/render_deck.py deck.py
+    ../../.venv/bin/python ../../scripts/validate_layout.py deck.py
+    ../../.venv/bin/python ../../scripts/render_deck.py deck.py
 
 各パターンは戻り値として描画領域の下端 y を返す。次のブロックはその値を起点に
 置くこと。この規約を守ればブロック同士が重ならない。

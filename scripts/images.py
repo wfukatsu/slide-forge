@@ -20,7 +20,7 @@ style, and aspect ratio won't be regenerated). The prompt is kept in a
 sidecar .json file, so it can be traced later.
 
     # From the command line
-    python scripts/images.py --prompt "…" --style flat_vector --out out/x.png
+    .venv/bin/python scripts/images.py --prompt "…" --style flat_vector --out out/x.png
 
 Requires `GEMINI_API_KEY`. The image model sometimes has zero free-tier
 quota, in which case it returns 429 (a key from a project with billing

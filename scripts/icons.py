@@ -26,9 +26,9 @@ How this compares to the pictograms in `illustrations`:
 Names can be looked up by slug (`evidence-chain`) or by Japanese name
 (`証拠チェーン`). Listing and search:
 
-    python scripts/icons.py --list
-    python scripts/icons.py --search 鍵
-    python scripts/icons.py --render 証拠チェーン --color '#2673BB' --out /tmp/x.png
+    .venv/bin/python scripts/icons.py --list
+    .venv/bin/python scripts/icons.py --search 鍵
+    .venv/bin/python scripts/icons.py --render 証拠チェーン --color '#2673BB' --out /tmp/x.png
 
 Rasterization is tried in this order: cairosvg → rsvg-convert →
 ImageMagick (if cairosvg from `requirements.txt` is installed, it wins
@@ -55,13 +55,13 @@ register({
         "アイコンのマニフェストがありません: {path}\n"
         "  assets/scalar/pictograms/ is broken; re-fetch the repo.",
     "Icon name '{name}' matches multiple icons: {hits}\n"
-    "  Specify a slug (python scripts/icons.py --search lists candidates)":
+    "  Specify a slug (.venv/bin/python scripts/icons.py --search lists candidates)":
         "アイコン名 '{name}' が複数に当たります: {hits}\n"
-        "  slug で指定してください（python scripts/icons.py --search で一覧）",
+        "  slug で指定してください（.venv/bin/python scripts/icons.py --search で一覧）",
     "Unknown icon '{name}'. Did you mean: {near}":
         "未知のアイコン '{name}'。もしかして: {near}",
-    "Unknown icon '{name}'. Run python scripts/icons.py --list to see all icons":
-        "未知のアイコン '{name}'。python scripts/icons.py --list で一覧を出せます",
+    "Unknown icon '{name}'. Run .venv/bin/python scripts/icons.py --list to see all icons":
+        "未知のアイコン '{name}'。.venv/bin/python scripts/icons.py --list で一覧を出せます",
     "  * artwork identical to {slug}": "  ※ 素材の絵が {slug} と同一",
     "  warn: cairosvg conversion failed ({error}); trying rsvg-convert / magick":
         "  warn: cairosvg での変換に失敗しました（{error}）。"
@@ -161,14 +161,14 @@ def resolve(name: str) -> str:
     if hits:
         raise ValueError(
             t("Icon name '{name}' matches multiple icons: {hits}\n"
-              "  Specify a slug (python scripts/icons.py --search lists candidates)",
+              "  Specify a slug (.venv/bin/python scripts/icons.py --search lists candidates)",
               name=name, hits=sorted(hits)))
     near = search(name)[:6]
     if near:
         raise ValueError(t("Unknown icon '{name}'. Did you mean: {near}",
                            name=name, near=near))
     raise ValueError(
-        t("Unknown icon '{name}'. Run python scripts/icons.py --list to see all icons",
+        t("Unknown icon '{name}'. Run .venv/bin/python scripts/icons.py --list to see all icons",
           name=name))
 
 

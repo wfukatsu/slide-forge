@@ -5,8 +5,8 @@ Hand-writing the AskUserQuestion choices would go stale as soon as a template
 is added, so this reads the real data from `templates/*.json` and prints it.
 `--json` gives a machine-readable form.
 
-    python scripts/list_templates.py
-    python scripts/list_templates.py --json
+    .venv/bin/python scripts/list_templates.py
+    .venv/bin/python scripts/list_templates.py --json
 """
 from __future__ import annotations
 

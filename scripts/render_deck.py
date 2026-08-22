@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Render a deck module to Google Slides.
 
-    python scripts/render_deck.py path/to/mydeck.py --title "Title"
-    python scripts/render_deck.py mydeck.py --only 1-12        # partial render (for prototyping)
-    python scripts/render_deck.py mydeck.py --folder <URL/ID>  # destination folder
-    python scripts/render_deck.py mydeck.py --dry-run          # just list the structure
+    .venv/bin/python scripts/render_deck.py path/to/mydeck.py --title "Title"
+    .venv/bin/python scripts/render_deck.py mydeck.py --only 1-12        # partial render (for prototyping)
+    .venv/bin/python scripts/render_deck.py mydeck.py --folder <URL/ID>  # destination folder
+    .venv/bin/python scripts/render_deck.py mydeck.py --dry-run          # just list the structure
 
 Always run the validate_layout.py checks before generating (can be skipped
 with --skip-validate, but that's not recommended). The checks don't call the

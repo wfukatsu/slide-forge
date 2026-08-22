@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Build the spine of a nexus-architect explanation deck from coverage.json.
 
-    python scripts/nexus/collect.py --project ../nexus-architect
-    python scripts/nexus/build_nexus_deck.py \
+    .venv/bin/python scripts/nexus/collect.py --project ../nexus-architect
+    .venv/bin/python scripts/nexus/build_nexus_deck.py \
         --coverage out/nexus/ec-monolith/coverage.json --profile deep
-    python scripts/assemble_spec.py --out out/nexus/ec-monolith/deck.json \
+    .venv/bin/python scripts/assemble_spec.py --out out/nexus/ec-monolith/deck.json \
         out/nexus/ec-monolith/pages/
 
 What this writes is only what the pipeline's own records already settle:
