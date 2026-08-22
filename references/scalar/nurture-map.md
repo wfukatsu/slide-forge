@@ -54,7 +54,7 @@ interval**. Five channels are in scope.
 
 | Channel | Mode | Stages it serves | How cadence works | Legal note |
 |---|---|---|---|---|
-| Email (MA tool) | Push | 0–4 (all) | Designed as an **interval** (e.g. fortnightly), tightening as the stage rises | §8 consent, opt-out and disclosure are **mandatory** |
+| Email (MA tool) | Push | 0–4 (all) | Designed as an **interval**; the defaults are monthly at stages 0–1, fortnightly at 2, weekly at 3–4 (tightening as the stage rises) | §8 consent, opt-out and disclosure are **mandatory** |
 | Webinars and seminars | Event | 1–3 | Designed around **dates**; the invitation rides on the email channel | Co-hosted lists are third-party provision (§8) |
 | Owned media and the engineering blog | Pull (search) | 0–3 | Not an interval — **publish and wait**. What you design is the CTA and the route to the next stage | Not a transmission, so outside §8 |
 | Community, social and partner referral | Trigger | 1–4 | Not an interval — designed around a **firing condition** (a question appears, a partner raises a case) | Close to 1:1; partner lists fall under §8 |
@@ -63,6 +63,13 @@ interval**. Five channels are in scope.
 **Only email is designed as an interval.** The rest are event dates, firing conditions,
 or publish-and-wait. Each stage of a track records an **interval *or* a trigger**
 (`templates/nurture/nurture-track.ja.md`).
+
+The default intervals are a starting point, not a rule — override them to suit the
+segment's evaluation cycle, but **record why you changed them** in the track.
+
+> **The same person can sit on several tracks.** Keeping to the per-stage interval
+> still means three tracks send three times as much. Cap it at **four sends per
+> month to one lead**; past that, decide which track stops.
 
 ---
 
@@ -334,7 +341,7 @@ This sheet **stopped mid-design.** Know the following before using it.
 | 7 | Not patched (a data-entry error in the source sheet; fix it in the sheet) |
 | 8 | Not patched, but **§3 and §7-8 state explicitly that the messaging is dated** |
 | 9 | **Patched.** §2 defines the MQL threshold as a **buyer state** (reaching stage 1, Need); past that, the deal side's `g1.*` apply |
-| 10 | **Only the shell.** `templates/nurture/nurture-track.ja.md` §9 has the metrics table; the **targets are empty** and filling them requires a decision on Scalar's side |
+| 10 | **The shell and the measurement source.** `templates/nurture/nurture-track.ja.md` §9 has the metrics table; the **targets stay empty** until one or two quarters of actuals exist (a decision on Scalar's side) |
 | 11 | **The list of points is added in §8.** The judgement is not — legal must confirm |
 | 12 | **Patched.** The five in-scope channels and how cadence works are in §1; the track template carries an interval-or-trigger field |
 

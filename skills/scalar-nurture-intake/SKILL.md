@@ -212,8 +212,13 @@ In Japanese:
 - Do not treat the sheet's product positioning as current — it is from 2021 and
   omits ScalarDB Cluster, ScalarDB Analytics and cross-RDB transactions
   (`nurture-map.md` §7-8). Say so when a segment is built on the old framing.
-- Do not invent metrics targets. The source has none (`nurture-map.md` §7-10);
-  leave the target column empty and say it needs a decision.
+- Do not invent metrics targets. The policy is to **take one or two quarters of
+  actuals first** (`nurture-map.md` §7-10); leave the target column as "（実績待ち）".
+  **Do fill the measurement source** (which MA/CRM field it is read from) — without
+  it there are no actuals to take.
+- Email has default intervals (monthly at stages 0–1, fortnightly at 2, weekly at
+  3–4). Override them if the segment needs it, but **say why in the track**, and
+  keep to **at most four sends a month to one lead**.
 - **Never copy event answers straight into `accounts/_nurture/`.** The
   collection slides are `hearing-slides` and the sheet behind them is
   `hearing-sheet`. Only aggregates — type and count — belong here; an answer
