@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "id": "weekly-timetable",
+  "displayName": "週間タイムテーブル",
+  "pack": "calendar",
+  "category": "week",
+  "description": "曜日の列と時間の行に予定を置き、1 週間のどの時間帯にどこで何があるかを示す",
+  "answers": ["この週の、何時にどこで何があるか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 36},
+    "week": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "days": {"type": "integer", "default": 5, "minimum": 5, "maximum": 7},
+    "startHour": {"type": "integer", "default": 9, "minimum": 0, "maximum": 23},
+    "endHour": {"type": "integer", "default": 18, "minimum": 1, "maximum": 24},
+    "events": {
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "maxItems": 25,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 4, "maxLength": 5},
+          {"type": "string", "minLength": 4, "maxLength": 5},
+          {"type": "string", "minLength": 1, "maxLength": 14},
+          {"type": "string", "maxLength": 10},
+          {"type": "string", "maxLength": 7}
+        ]
+      }
+    },
+    "breaks": {
+      "type": "array",
+      "default": [["12:00", "13:00", "昼休憩"]],
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 4, "maxLength": 5},
+          {"type": "string", "minLength": 4, "maxLength": 5},
+          {"type": "string", "maxLength": 6}
+        ]
+      }
+    },
+    "extraHolidays": {
+      "type": "array",
+      "default": [],
+      "maxItems": 7,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 10}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "タイトル（結論）は 1 行・全角 36 字まで。2 行になると見出しに重なる",
+    "予定は [日付, 開始, 終了, 件名, 場所, 分類]。時刻は HH:MM。week にはその週の任意の日付を入れ、月曜始まりの週として描かれる",
+    "9〜18 時（9 時間）なら 1 時間 ≈ 0.37in。30 分未満の予定は描けないので、時間を丸めずに一覧（daily-agenda）へ回す",
+    "同じ時間に重なる予定は 2 件まで横に並ぶ。3 件以上重なる週は部屋別・トラック別にページを分ける",
+    "休憩（breaks、既定は 12:00〜13:00 の昼休憩）は予定のない日だけ灰色の帯で出る。予定のない祝日は休日名で塗られる",
+    "土日を含める場合は days を 7 にする。列が狭くなり、1 時間の予定は件名だけ、重なる予定の件名は全角 4 字程度で切れる",
+    "予定であることと、いつ時点の予定かを source に書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "week_timetable", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+       "week": {"$slot": "week"}, "events": {"$slot": "events"}, "days": {"$slot": "days"},
+       "startHour": {"$slot": "startHour"}, "endHour": {"$slot": "endHour"},
+       "breaks": {"$slot": "breaks"}, "extraHolidays": {"$slot": "extraHolidays"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "id": "month-calendar",
+  "displayName": "月間カレンダー",
+  "pack": "calendar",
+  "category": "month",
+  "description": "1 週 1 行の月カレンダーに予定と複数日の期間を書き込み、月内の混み具合と休日を示す",
+  "answers": ["この月のどの日に何があり、どこが混んでいるか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 36},
+    "month": {"type": "string", "required": true, "minLength": 6, "maxLength": 7},
+    "weekStart": {"type": "string", "default": "mon", "minLength": 3, "maxLength": 3},
+    "events": {
+      "type": "array",
+      "required": true,
+      "maxItems": 40,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 20},
+          {"type": "string", "maxLength": 7},
+          {"type": "string", "maxLength": 5}
+        ]
+      }
+    },
+    "extraHolidays": {
+      "type": "array",
+      "default": [],
+      "maxItems": 20,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 10}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "タイトル（結論）は 1 行・全角 36 字まで。2 行になるとカレンダーの見出しに重なる",
+    "予定は [開始日, 終了日, 件名, 分類, 時刻]。日付は YYYY-MM-DD で書き、年のない日付（9/3 など）を推測で補わない",
+    "終了日が空なら 1 日の予定としてマスに書き、終了日があれば帯で描く。週をまたぐ帯は週ごとに分かれ「（続き）」が付く",
+    "週始まりは weekStart で切り替える（mon / sun）。月曜始まりは ISO 週番号を左に出し、日曜始まりでは出さない",
+    "1 マスに入る予定は約 2 件。超えた分は「+N件」に畳まれるので、詳細は daily-agenda のページで補う",
+    "件名は全角 8 字程度で省略される。時刻は入りきらなければ省かれ、件名が優先される",
+    "祝日は同梱の内閣府 CSV の収録年だけ自動で判定する。会社独自の休業日は extraHolidays で渡す",
+    "予定（計画）であることと、いつ時点の予定かを source に書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "month_calendar", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+       "month": {"$slot": "month"}, "events": {"$slot": "events"},
+       "weekStart": {"$slot": "weekStart"}, "extraHolidays": {"$slot": "extraHolidays"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Calendar Slides"
+  short_description: "Build month calendars, daily gantts and daily task lists from dated data"
+  default_prompt: "Use $calendar-slides to turn dated tasks and events into calendar slides."

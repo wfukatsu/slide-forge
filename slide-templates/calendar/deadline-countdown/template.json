@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "deadline-countdown",
+  "displayName": "期限カウントダウン",
+  "pack": "calendar",
+  "category": "deadline",
+  "description": "期限までの残り日数を暦日と営業日で示し、今日から期限までをカレンダーに塗る",
+  "answers": ["期限まで残り何日（何営業日）で、途中の節目はいつか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 36},
+    "label": {"type": "string", "required": true, "minLength": 1, "maxLength": 12},
+    "deadline": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "today": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "checkpoints": {
+      "type": "array",
+      "default": [],
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 12}
+        ]
+      }
+    },
+    "extraHolidays": {
+      "type": "array",
+      "default": [],
+      "maxItems": 20,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 10}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "タイトル（結論）は 1 行・全角 36 字まで。2 行になると見出しに重なる",
+    "today は資料の基準日で必須。残り日数は today から期限までの暦日、営業日は today から期限前日までの平日から祝日と extraHolidays を除いた日数",
+    "期限は today の月か翌月にあること。それより先の期限は month-calendar や daily-gantt で見せる",
+    "節目は [日付, 名前] で 3 件まで。today から期限までの間の日付にする",
+    "label は「本番切替まで」のように、何の期限かが分かる短い言葉にする",
+    "基準日を過ぎた資料は数字が古くなる。配布時に today を更新し、source にも基準日を書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "deadline_countdown", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+       "deadline": {"$slot": "deadline"}, "today": {"$slot": "today"},
+       "label": {"$slot": "label"}, "checkpoints": {"$slot": "checkpoints"},
+       "extraHolidays": {"$slot": "extraHolidays"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

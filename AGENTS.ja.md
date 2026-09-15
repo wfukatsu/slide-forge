@@ -29,6 +29,7 @@ Claude Code を主ホスト兼配布経路とする。Codex は同じ共有 Pyth
 | 再利用可能な 1 枚ものコンテンツテンプレートの作成・登録 | `slide-template-creator` |
 | 提供素材からの現状分析 / 課題特定 | `current-state-analysis` |
 | 分析フレームワークのスライドテンプレートの作成・変更 | `analysis-template-creator` |
+| 日付つきのタスク・予定からカレンダースライド（月間カレンダー、日単位ガント、日次タスクリスト、週間タイムテーブル、スプリントカレンダー、年間カレンダー、期限カウントダウン、日次ヒートマップ、当番表） | `calendar-slides` |
 | B2B の関与者マップ / ディスカバリー整理 | `b2b-account-maps` |
 | 顧客ごとの活動計画・商談台帳（AE の行動計画） | `scalar-account-plan` |
 | Account Planning Session（年次・半期の棚卸しと役員レビュー） | `scalar-account-planning-session` |

@@ -31,9 +31,9 @@ I18N = ROOT / "references/i18n/slide-template-catalog.en.json"
 IMG_DIR = ROOT / "references/images/slide-templates"
 IMG_REL = "images/slide-templates"
 
-PACK_ORDER = ["marketing-analysis", "b2b-sales", "scalar-ae", "planning", "analysis",
-              "read-alone", "business-plan", "nexus", "hearing", "case-studies",
-              "proposal", "marketing", "partner"]
+PACK_ORDER = ["marketing-analysis", "b2b-sales", "scalar-ae", "planning", "calendar",
+              "analysis", "read-alone", "business-plan", "nexus", "hearing",
+              "case-studies", "proposal", "marketing", "partner"]
 
 PACK_INTRO_JA = {
     "marketing-analysis": (
@@ -57,6 +57,14 @@ PACK_INTRO_JA = {
         "計画パック",
         "時間軸を持つ計画を示すページ群。線表（ガント）・年表・マイルストーンの "
         "3 形式で、粒度と用途が異なる。",
+    ),
+    "calendar": (
+        "カレンダーパック",
+        "日付を軸にした予定・タスクのページ群。月間カレンダー（月曜/日曜始まり）・"
+        "日単位ガント・日次タスクリスト・週間タイムテーブル・スプリントカレンダー・"
+        "年間カレンダー・期限カウントダウン・日次ヒートマップ・当番表の 9 形式で、"
+        "土日祝の色分けと営業日数の計算、"
+        "期間の自動分割（scripts/calendar_pages.py）を備える。",
     ),
     "analysis": (
         "現状分析パック",

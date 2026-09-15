@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "activity-heatmap",
+  "displayName": "日次ヒートマップ",
+  "pack": "calendar",
+  "category": "heatmap",
+  "description": "日ごとの量を週 × 曜日のマスの濃淡で並べ、曜日・時期による偏りと月別の合計を示す",
+  "answers": ["どの曜日・時期に量が集中しているか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 36},
+    "start": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "end": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "values": {
+      "type": "array",
+      "required": true,
+      "minItems": 7,
+      "maxItems": 371,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "number", "minimum": 0}
+        ]
+      }
+    },
+    "unit": {"type": "string", "default": "件", "maxLength": 4},
+    "levels": {"type": "integer", "default": 5, "minimum": 3, "maximum": 7},
+    "monthly": {"type": "boolean", "default": true},
+    "summary": {"type": "boolean", "default": true},
+    "extraHolidays": {
+      "type": "array",
+      "default": [],
+      "maxItems": 30,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 10}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "タイトル（結論）は 1 行・全角 36 字まで。2 行になると月の見出しに重なる",
+    "値は [日付, 数値]。期間は 53 週まで。それより長い系列は scripts/calendar_pages.py で 52 週ごとに分ける",
+    "数値を扱うので source は必須。期間、集計の定義（何を 1 件と数えたか）、単位、データの出どころを書く",
+    "濃淡はこの期間の値の分位（levels 段階）で決まる相対的な区分で、絶対的な閾値ではない。別の期間の図と色を比べない",
+    "値のない日は白、0 の日は最も薄い色。欠測と 0 を混ぜない（欠測を 0 で埋めない）",
+    "祝日・連休に値が低いのは暦の影響で、異常ではない。カードの祝日平均と合わせて読む",
+    "下のカードは集計値だけを出す。原因や評価はタイトルか本文に分け、相関を因果として書かない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "calendar_heatmap", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+       "start": {"$slot": "start"}, "end": {"$slot": "end"}, "values": {"$slot": "values"},
+       "unit": {"$slot": "unit"}, "levels": {"$slot": "levels"},
+       "monthly": {"$slot": "monthly"}, "summary": {"$slot": "summary"},
+       "extraHolidays": {"$slot": "extraHolidays"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}
