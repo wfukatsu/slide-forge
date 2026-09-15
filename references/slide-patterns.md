@@ -43,11 +43,11 @@ A page is the product of two choices. **There are only 6 skeletons.**
 | E: Full-width figure + implication band below | Figure full width, `so_what` laid below it | Figures that need the full width, like `matrix` / `posmap` |
 | F: Text only | Table or bullet list only | Content that needs precision — premises, definitions, conditions |
 
-The content (what goes inside the figure frame) spans 7 families and 35
-types; Chapters 2–8 of `slide-pattern-index.json` are the complete set of
+The content (what goes inside the figure frame) spans 8 families and 44
+types; Chapters 2–9 of `slide-pattern-index.json` are the complete set of
 real examples. The families are: composition / quantitative / comparison
-& evaluation / structure & logic / planning & organization / qualitative &
-technical / closing & appendix.
+& evaluation / structure & logic / planning & organization / calendar /
+qualitative & technical / closing & appendix.
 
 ## Standard Coordinates by Skeleton (10 × 5.625in — use as-is)
 

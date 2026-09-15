@@ -1,5 +1,5 @@
 *[日本語](slide-pattern-catalog.ja.md)*
-# Slide Pattern Catalog (43 real examples)
+# Slide Pattern Catalog (52 real examples)
 
 An image catalog built by actually rendering `examples/slide-pattern-index.json` and exporting it one slide at a time.
 It's meant for **choosing a page by looking at what can be built**; the layout rules themselves live in
@@ -27,8 +27,9 @@ Each pattern's **figures** line is the exact `type` name you write into `figures
 | [4. Comparison / evaluation pages](#4-comparison--evaluation-pages) | 6 | Putting options side by side for a decision |
 | [5. Structure / logic pages](#5-structure--logic-pages) | 7 | Turning relationships into a diagram |
 | [6. Planning / organization pages](#6-planning--organization-pages) | 5 | Showing time and people |
-| [7. Qualitative / technical pages](#7-qualitative--technical-pages) | 5 | Making a case without numbers |
-| [8. Closing / appendix pages](#8-closing--appendix-pages) | 3 | Decisions and what follows |
+| [7. Calendar pages](#7-calendar-pages) | 9 | Showing dates |
+| [8. Qualitative / technical pages](#8-qualitative--technical-pages) | 5 | Making a case without numbers |
+| [9. Closing / appendix pages](#9-closing--appendix-pages) | 3 | Decisions and what follows |
 
 > Only "System Architecture" draws official cloud vendor icons, so it requires
 > running `.venv/bin/python scripts/fetch_cloud_icons.py` beforehand.
@@ -378,7 +379,101 @@ Fits the overall picture of a business onto one slide. Don't use it while you st
 
 **figures**: `lean_canvas`
 
-## 7. Qualitative / technical pages
+## 7. Calendar pages
+
+Pages drawn from dates rather than coordinates: pass dates and events, and national holidays come from the bundled `assets/holidays/jp.csv`. For a month-level plan use `gantt`. Component details are in [calendars.md](calendars.md).
+
+### Month calendar
+
+![Month calendar](images/slide-patterns/month-calendar.png)
+
+Places a month's events in the day cells. Events spanning several days are drawn as bars, and a day that can't hold them all collapses to "+N".
+
+Example heading: "Verification and the go/no-go meeting cluster in week 3"
+
+**figures**: `month_calendar` / `source_note`
+
+### Day-by-day gantt
+
+![Day-by-day gantt](images/slide-patterns/daily-gantt.png)
+
+Lays tasks out in one column per day with weekends and holidays shaded. Past 60 days it switches to one column per week.
+
+Example heading: "Verification finishes before the go/no-go meeting, holidays included"
+
+**figures**: `day_gantt` / `source_note`
+
+### Daily task list
+
+![Daily task list](images/slide-patterns/daily-agenda.png)
+
+Lists each day's tasks from top to bottom. Tasks on the same day share a merged date cell, and a run of days off collapses to one row.
+
+Example heading: "Clear the two tasks before the holidays, ahead of the go/no-go meeting"
+
+**figures**: `day_agenda` / `source_note`
+
+### Weekly timetable
+
+![Weekly timetable](images/slide-patterns/weekly-timetable.png)
+
+Divides a week into weekday columns and time rows. Up to two overlapping events sit side by side.
+
+Example heading: "Thursday's on-site practice turns lectures into practice"
+
+**figures**: `week_timetable` / `source_note`
+
+### Sprint calendar
+
+![Sprint calendar](images/slide-patterns/sprint-calendar.png)
+
+Lays out consecutive sprints with their working days, and places planning, review and release days automatically.
+
+Example heading: "Cut scope for the sprint with only 9 working days"
+
+**figures**: `sprint_calendar` / `source_note`
+
+### Year at a glance
+
+![Year at a glance](images/slide-patterns/year-at-a-glance.png)
+
+Shows the fiscal year's 12 months as mini calendars, marking busy periods, days off and key dates. Meant for handouts.
+
+Example heading: "The busy season falls in April and January–March"
+
+**figures**: `year_calendar` / `source_note`
+
+### Deadline countdown
+
+![Deadline countdown](images/slide-patterns/deadline-countdown.png)
+
+Shows the calendar days and working days left to a deadline, with the days to each checkpoint along the way.
+
+Example heading: "17 working days left — bring verification forward"
+
+**figures**: `deadline_countdown` / `source_note`
+
+### Daily heatmap
+
+![Daily heatmap](images/slide-patterns/activity-heatmap.png)
+
+Shades daily volume on a week × weekday grid, with monthly totals and the weekday and month trends beside it.
+
+Example heading: "Inquiries peak on Mondays and in March"
+
+**figures**: `calendar_heatmap` / `source_note`
+
+### Shift roster
+
+![Shift roster](images/slide-patterns/shift-roster.png)
+
+Lists who covers which day with one-character codes, and marks days short of the required headcount in red.
+
+Example heading: "Cover the 4 days with fewer than 3 people on duty"
+
+**figures**: `shift_roster` / `source_note`
+
+## 8. Qualitative / technical pages
 
 Pages that make their case without numbers — quotes, case studies, architecture diagrams, code, and the like.
 
@@ -426,7 +521,7 @@ Organizes business vocabulary with icons. Can be placed at the opening in place 
 
 **figures**: `asset_icon_grid` / `source_note`
 
-## 8. Closing / appendix pages
+## 9. Closing / appendix pages
 
 Pages that handle decisions and what comes after. The principle is to keep the main body thin and the appendix thick.
 

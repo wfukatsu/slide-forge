@@ -38,7 +38,7 @@ IMG_REL = "images/slide-patterns"
 
 # Links in the Japanese output are retargeted to the .ja.md siblings of these
 # in-repo documents (the English output keeps the original .md targets).
-JA_LINK_SIBLINGS = ["slide-patterns", "patterns", "charts", "diagrams"]
+JA_LINK_SIBLINGS = ["slide-patterns", "patterns", "charts", "diagrams", "calendars"]
 
 # stable word found in the heading -> image file name. Matched by word rather
 # than by number, so inserting a page doesn't change existing image names.
@@ -60,6 +60,11 @@ SLUGS = [
     ("スケジュール", "gantt-schedule"), ("ロードマップ", "roadmap"),
     ("体制図", "org-chart"), ("市場規模", "market-sizing"),
     ("リーンキャンバス", "lean-canvas"),
+    ("月間カレンダー", "month-calendar"), ("日単位ガント", "daily-gantt"),
+    ("日次タスクリスト", "daily-agenda"), ("週間タイムテーブル", "weekly-timetable"),
+    ("スプリントカレンダー", "sprint-calendar"), ("年間カレンダー", "year-at-a-glance"),
+    ("期限カウントダウン", "deadline-countdown"), ("日次ヒートマップ", "activity-heatmap"),
+    ("当番表", "shift-roster"),
     ("現場の声", "testimonial"), ("事例カード", "case-cards"),
     ("システム構成", "cloud-architecture"), ("コードサンプル", "code-sample"),
     ("ピクトグラム一覧", "pictogram-grid"),
@@ -81,6 +86,11 @@ NAME = {
     "quadrant-matrix": "4 象限", "venn-iceberg": "重なりと深層",
     "gantt-schedule": "スケジュール", "roadmap": "ロードマップ",
     "org-chart": "体制図", "market-sizing": "市場規模", "lean-canvas": "リーンキャンバス",
+    "month-calendar": "月間カレンダー", "daily-gantt": "日単位ガント",
+    "daily-agenda": "日次タスクリスト", "weekly-timetable": "週間タイムテーブル",
+    "sprint-calendar": "スプリントカレンダー", "year-at-a-glance": "年間カレンダー",
+    "deadline-countdown": "期限カウントダウン", "activity-heatmap": "日次ヒートマップ",
+    "shift-roster": "当番表",
     "testimonial": "現場の声", "case-cards": "事例カード",
     "cloud-architecture": "システム構成", "code-sample": "コードサンプル",
     "pictogram-grid": "ピクトグラム一覧",
@@ -106,6 +116,15 @@ USE = {
     "org-chart": "責任者と役割を明示する。論点の分解は `mece_tree` で、体制はこちら。",
     "market-sizing": "対象範囲を入れ子で示す（TAM / SAM / SOM）。外側から順に渡す。",
     "lean-canvas": "事業の全体像を 1 枚に収める。項目を埋めきれない段階では使わない。",
+    "month-calendar": "1 か月の予定を日付の枠に置く。複数日にまたがる予定は帯で描き、入りきらない日は「+N件」にまとめる。",
+    "daily-gantt": "工程を日単位の列に並べ、土日祝を網掛けする。60 日を超えたら週単位の列に切り替える。",
+    "daily-agenda": "日ごとの作業を上から順に並べる。同じ日は日付セルを結合し、休みが続く日はまとめて 1 行にする。",
+    "weekly-timetable": "1 週間を曜日 × 時間帯で区切る。重なる予定は 2 つまで横に並べる。",
+    "sprint-calendar": "連続するスプリントを稼働日つきで並べ、計画・レビュー・リリース日を自動で置く。",
+    "year-at-a-glance": "年度の 12 か月を小さなカレンダーで並べ、繁忙・休み・重要日を印で示す。配布資料向け。",
+    "deadline-countdown": "期限までの暦日と稼働日を示し、途中のチェックポイントまでの日数も添える。",
+    "activity-heatmap": "日ごとの量を週 × 曜日の格子に濃淡で置き、月合計と曜日・月ごとの傾向を添える。",
+    "shift-roster": "人 × 日の担当を 1 文字のコードで一覧にし、必要人数に届かない日を赤で示す。",
     "testimonial": "数値では出ない痛点を引用で示す。定量ページの後ろに置くと効く。",
     "case-cards": "打ち手をカードで並べ、全体像を掴ませる。個々の詳細は付録へ。",
     "cloud-architecture": "クラウド公式アイコンで配置を示す。**ベンダーアイコンの取得が必要**（下記参照）。",
@@ -130,6 +149,10 @@ SECTION_INTRO = {
         "3 案前後 × 基準 4 前後なら評価マトリクス、正確さが要るなら表。",
     "構造・論理ページ": "関係を図にするページ。数値ではなく**構造**が主張になる。",
     "計画・体制ページ": "時間と人を示すページ。いつ・誰が・どの範囲かを扱う。",
+    "カレンダーページ":
+        "日付を入力にして描くページ。座標ではなく日付と予定を渡し、祝日は同梱の "
+        "`assets/holidays/jp.csv` から入る。月単位の計画なら `gantt`。部品の詳細は "
+        "[calendars.md](calendars.md)。",
     "定性・技術ページ": "数値以外で語るページ。引用・事例・構成図・コードなど。",
     "締め・付録ページ": "意思決定と、その後を扱うページ。本編を薄く、付録を厚くするのが原則。",
 }
@@ -138,6 +161,7 @@ SHORT = {
     "骨格 6 種": "ページの組み方", "構成ページ": "デッキの骨組み",
     "定量ページ（推移・構成・増減）": "数字で主張する", "比較・評価ページ": "案を並べて選ばせる",
     "構造・論理ページ": "関係を図にする", "計画・体制ページ": "時間と人を示す",
+    "カレンダーページ": "日付で見せる",
     "定性・技術ページ": "数値以外で語る", "締め・付録ページ": "意思決定とその後",
 }
 

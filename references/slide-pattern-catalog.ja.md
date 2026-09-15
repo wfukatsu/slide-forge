@@ -1,5 +1,5 @@
 *[English](slide-pattern-catalog.md)*
-# スライドパターン カタログ（実物 43 種）
+# スライドパターン カタログ（実物 52 種）
 
 `examples/slide-pattern-index.json` を実際に生成して 1 枚ずつ書き出した画像カタログ。
 **どのページが作れるかを見て選ぶ**ためのもので、組み方の規則そのものは
@@ -27,8 +27,9 @@
 | [4. 比較・評価ページ](#4-比較評価ページ) | 6 | 案を並べて選ばせる |
 | [5. 構造・論理ページ](#5-構造論理ページ) | 7 | 関係を図にする |
 | [6. 計画・体制ページ](#6-計画体制ページ) | 5 | 時間と人を示す |
-| [7. 定性・技術ページ](#7-定性技術ページ) | 5 | 数値以外で語る |
-| [8. 締め・付録ページ](#8-締め付録ページ) | 3 | 意思決定とその後 |
+| [7. カレンダーページ](#7-カレンダーページ) | 9 | 日付で見せる |
+| [8. 定性・技術ページ](#8-定性技術ページ) | 5 | 数値以外で語る |
+| [9. 締め・付録ページ](#9-締め付録ページ) | 3 | 意思決定とその後 |
 
 > 「システム構成」だけはクラウドベンダーの公式アイコンを描くため、
 > 事前に `.venv/bin/python scripts/fetch_cloud_icons.py` が必要。
@@ -378,7 +379,101 @@
 
 **figures**: `lean_canvas`
 
-## 7. 定性・技術ページ
+## 7. カレンダーページ
+
+日付を入力にして描くページ。座標ではなく日付と予定を渡し、祝日は同梱の `assets/holidays/jp.csv` から入る。月単位の計画なら `gantt`。部品の詳細は [calendars.ja.md](calendars.ja.md)。
+
+### 月間カレンダー
+
+![月間カレンダー](images/slide-patterns/month-calendar.png)
+
+1 か月の予定を日付の枠に置く。複数日にまたがる予定は帯で描き、入りきらない日は「+N件」にまとめる。
+
+見出しの例: 「第 3 週に検証と判定会議が集中する」
+
+**figures**: `month_calendar` / `source_note`
+
+### 日単位ガント
+
+![日単位ガント](images/slide-patterns/daily-gantt.png)
+
+工程を日単位の列に並べ、土日祝を網掛けする。60 日を超えたら週単位の列に切り替える。
+
+見出しの例: 「連休を挟んでも判定会議までに検証を終える」
+
+**figures**: `day_gantt` / `source_note`
+
+### 日次タスクリスト
+
+![日次タスクリスト](images/slide-patterns/daily-agenda.png)
+
+日ごとの作業を上から順に並べる。同じ日は日付セルを結合し、休みが続く日はまとめて 1 行にする。
+
+見出しの例: 「判定会議までに連休前の 2 件を片付ける」
+
+**figures**: `day_agenda` / `source_note`
+
+### 週間タイムテーブル
+
+![週間タイムテーブル](images/slide-patterns/weekly-timetable.png)
+
+1 週間を曜日 × 時間帯で区切る。重なる予定は 2 つまで横に並べる。
+
+見出しの例: 「木曜の実習を境に講義から実践へ」
+
+**figures**: `week_timetable` / `source_note`
+
+### スプリントカレンダー
+
+![スプリントカレンダー](images/slide-patterns/sprint-calendar.png)
+
+連続するスプリントを稼働日つきで並べ、計画・レビュー・リリース日を自動で置く。
+
+見出しの例: 「稼働 9 日の回はスコープを絞る」
+
+**figures**: `sprint_calendar` / `source_note`
+
+### 年間カレンダー
+
+![年間カレンダー](images/slide-patterns/year-at-a-glance.png)
+
+年度の 12 か月を小さなカレンダーで並べ、繁忙・休み・重要日を印で示す。配布資料向け。
+
+見出しの例: 「繁忙は 4 月と 1〜3 月に偏る」
+
+**figures**: `year_calendar` / `source_note`
+
+### 期限カウントダウン
+
+![期限カウントダウン](images/slide-patterns/deadline-countdown.png)
+
+期限までの暦日と稼働日を示し、途中のチェックポイントまでの日数も添える。
+
+見出しの例: 「残り 17 営業日、検証を前倒しする」
+
+**figures**: `deadline_countdown` / `source_note`
+
+### 日次ヒートマップ
+
+![日次ヒートマップ](images/slide-patterns/activity-heatmap.png)
+
+日ごとの量を週 × 曜日の格子に濃淡で置き、月合計と曜日・月ごとの傾向を添える。
+
+見出しの例: 「問い合わせは月曜と 3 月に集中する」
+
+**figures**: `calendar_heatmap` / `source_note`
+
+### 当番表
+
+![当番表](images/slide-patterns/shift-roster.png)
+
+人 × 日の担当を 1 文字のコードで一覧にし、必要人数に届かない日を赤で示す。
+
+見出しの例: 「出勤 3 人未満の 4 日を手当てする」
+
+**figures**: `shift_roster` / `source_note`
+
+## 8. 定性・技術ページ
 
 数値以外で語るページ。引用・事例・構成図・コードなど。
 
@@ -426,7 +521,7 @@
 
 **figures**: `asset_icon_grid` / `source_note`
 
-## 8. 締め・付録ページ
+## 9. 締め・付録ページ
 
 意思決定と、その後を扱うページ。本編を薄く、付録を厚くするのが原則。
 
