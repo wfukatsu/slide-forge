@@ -15,7 +15,7 @@ d.flow(0.5, 1.3, 9.0, 0.8, ["受付", "審査", "記録"])
 ```
 
 図の系統は [diagrams.md](../diagrams.md)、spec の形は
-[template-schema.md](../template-schema.md)、既製の 92 ページは
+[template-schema.md](../template-schema.md)、既製の 95 ページは
 `list_slide_templates.py` を参照。
 
 ## 箇条書き

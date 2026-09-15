@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "id": "daily-agenda",
+  "displayName": "日次タスクリスト",
+  "pack": "calendar",
+  "category": "agenda",
+  "description": "1 行 1 タスクで日付を下方向に並べ、日ごとの担当・期日・状態を一覧で示す",
+  "answers": ["日ごとに誰が何をいつまでにやるか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 36},
+    "start": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "end": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "maxItems": 11,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 24},
+          {"type": "string", "maxLength": 6},
+          {"type": "string", "maxLength": 5},
+          {"type": "string", "minLength": 2, "maxLength": 9}
+        ]
+      }
+    },
+    "today": {"type": "string", "default": "", "maxLength": 10},
+    "extraHolidays": {
+      "type": "array",
+      "default": [],
+      "maxItems": 20,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 10}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "タイトル（結論）は 1 行・全角 36 字まで。2 行になるとカレンダーの見出しに重なる",
+    "項目は [日付, 内容, 担当, 期日, 状態]。1 行 1 タスクで、同じ日の複数タスクは日付セルが縦に結合される",
+    "予定のない土日・祝日の連続は 1 行に畳まれ、休日名が添えられる。休日の行も 1 行として数える",
+    "1 枚は約 11 行まで。超える期間は scripts/calendar_pages.py で週ごとに分割する",
+    "状態は 完了 / 進行中 / 予定 / 遅延 / 中止（done / doing / todo / late / cancelled も可）。色だけでなく文字でも示される",
+    "期日の列には時刻か締切を書き、未定は空にする（「—」と表示される）。推測で埋めない",
+    "today を渡すとその日の日付セルが赤で強調される。資料の作成日と揃え、source にも時点を書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "day_agenda", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+       "start": {"$slot": "start"}, "end": {"$slot": "end"}, "items": {"$slot": "items"},
+       "today": {"$slot": "today"}, "extraHolidays": {"$slot": "extraHolidays"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

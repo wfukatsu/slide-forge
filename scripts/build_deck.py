@@ -1461,6 +1461,13 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "event_timetable":  ("event_timetable",  ["x", "y", "w", "rows"]),
     "event_speakers":   ("event_speakers",   ["x", "y", "w", "speakers"]),
     "event_access":     ("event_access",     ["x", "y", "w", "h"]),
+    # Calendar diagrams (calendars.py; drawn purely from shapes, holidays come
+    # from the bundled assets/holidays/jp.csv, no network needed)
+    "month_calendar":   ("month_calendar",   ["x", "y", "w", "h", "month", "events"]),
+    "day_gantt":        ("day_gantt",        ["x", "y", "w", "h", "start", "end",
+                                              "rows"]),
+    "day_agenda":       ("day_agenda",       ["x", "y", "w", "h", "start", "end",
+                                              "items"]),
     # Page components and analysis diagrams (pages.py; drawn purely from shapes, no network needed)
     "governing_message": ("governing_message", ["x", "y", "w", "text"]),
     "lead_in":           ("lead_in",           ["x", "y", "w", "text"]),

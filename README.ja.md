@@ -4,7 +4,7 @@
 
 Claude Code を主ホストとするエージェント駆動 Google Slides デッキ生成。Codex と
 Antigravity は薄いホスト互換レイヤーを通じて同じ共有スキルを利用する。共有 Python
-エンジンの上に、23 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
+エンジンの上に、24 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
 Claude Code のプラグインコマンドと共有 `skills/` を動作の正本とし、ホスト固有文書へ
 ワークフローを複製しない。コーポレートテンプレートのデッキ、ゼロからのアーキテクチャ図、デザイン
 仕様からのテンプレート作成、生成前の検証、任意のサムネイルベース視覚 QA
@@ -26,6 +26,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `slide-template-creator` | 意味づけされた入力スロット・作例・オフライン検証・カタログプレビューを備えた、再利用可能な**1 枚ものコンテンツテンプレート**を作成・登録する。`slide-templates/` 配下に置かれ、Google Slides のマスターからは独立している。 |
 | `current-state-analysis` | ユーザー提供の材料に対して**現状分析・課題の特定フレームワーク**を実行し、結果を `analysis` パックで描画する: PEST、Five Forces、業務プロセスのペインポイント、ロジックツリー、KPI ツリー、なぜなぜ分析、フィッシュボーン、パレート、As-Is/To-Be ギャップ分析、インパクト×工数の優先度マトリクス（SWOT / 3C は `marketing-analysis` パックを再利用）。事実は図に、解釈は示唆に置き、出典は必須。各テンプレートのガードレールには手法ごとの誤用パターンを織り込んである。 |
 | `analysis-template-creator` | **分析フレームワークのスライドテンプレート**そのもの（`slide-templates/analysis/` パック）とその描画プリミティブ（先例は `fishbone`、`pareto`）を作成・保守する: フレームワーク固有のデザインルール — 1 テンプレート 1 問い、事実/解釈のスロット分離、出典必須、誤用ガードレール — をここで定め、それ以外はすべて `slide-template-creator` のスキーマ・検証・登録ルールに従う。 |
+| `calendar-slides` | 日付つきのタスク・予定を**カレンダースライド**にし、`slide-templates/calendar/` パックとその描画プリミティブ（`month_calendar`、`day_gantt`、`day_agenda`）を保守する: 月間カレンダー（月曜/日曜始まり、1 週 1 行、複数日の帯、「+N件」への畳み込み）、日単位ガント（60 日までは 1 列 1 日、26 週までは 1 列 1 ISO 週に切り替え。土日祝の網掛け、今日線、営業日数）、日次タスクリスト（1 行 1 タスクで下方向、日付セルの結合、連続する休日の畳み込み、状態チップ）。祝日は同梱の内閣府 CSV `assets/holidays/jp.csv`（`scripts/update_holidays.py` で更新）、会社独自の休業日は `extraHolidays` で渡し、長い期間は `scripts/calendar_pages.py` がページに分割する。スキーマ・検証・登録は `slide-template-creator` のルールに従う。月単位の計画（`planning/gantt-schedule`）やマイルストーン年表（`planning/milestone-timeline`）には使わない。 |
 | `b2b-account-maps` | B2B ソフトウェア商談の帰趨を左右する 2 つのアカウントマップを作る: 購買委員会の**インフルエンスマップ**（影響力 × 賛否、チャンピオンを強調表示）と、MEDDPICC の各項目を確認済み / 一部把握 / 推測のままで塗り分ける**ディスカバリーマップ**。加えて委員会テーブル、承認経路、ペインチェーン、そして「誰にいつまでに聞くか」つきのギャップ一覧。8 つのページテンプレートを `b2b-sales` パックとして `slide-templates/` に同梱。顧客提示用ではなく社内の作業成果物。 |
 | `scalar-account-plan` | 顧客ごとに 1 つの**営業台帳**（`accounts/<AE>/<customer>/account.json`）を維持する — 発言 / 観察 / 推測のラベルつき事実、購買委員会、MEDDPICC の状況、ペインチェーン、BANT リスク、現在のステージの Exit 条件とその顧客側エビデンス、未完了アクション — そしてそれを **URL の変わらない** 9 ページの活動計画としてレンダリングする（`build_deck.py --into` が既存デッキのページを差し替える）。台帳が答えられないことがそのまま成果物になる: `account_ledger.py gaps` がプレイブックの 10 のレビュー質問を照合し、未回答の質問をすべて「誰に聞くか・期限・完了条件」つきのアクションに変換して実行間で引き継ぎ、スライドと CRM 向け Markdown の両方に書き出す。社内専用。 |
 | `scalar-account-planning-session` | 台帳が既にカバーしているアカウントについて、年次の **Account Planning Session** デッキ — アカウントチーム向けのフル Plan Document と 9 ページのエグゼクティブレビューデッキ — を、顧客の公開資料を台帳に加えた 1 つの `aps.json` から作る。各提案を顧客自身の中期経営計画の一文に結びつけ、商談ごとに独立した章を与え、公開されている役員一覧と組織図から法人ごとに**次に誰と会うべきか**を導き、各人名には経由すべき人物を添える。ビルダーが持つのはレイアウトだけで、文字列はすべて gitignore された `accounts/` ツリー配下の `aps.json` にある。社内専用。 |
@@ -118,7 +119,7 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
   settings.py     画像生成と出力先のスイッチ (config/settings.json)
   build_deck.py   テンプレート駆動ジェネレーター (TemplateDeck)。--dry-run 検証
   diagrams.py     Canvas 描画ハブ (下記の mixin を集約)
-  charts.py illustrations.py patterns.py pages.py events.py   図表ライブラリ
+  charts.py illustrations.py patterns.py pages.py events.py calendars.py   図表ライブラリ
   icons.py cloud_icons.py images.py                 ピクトグラム、ベンダーアイコン、AI 画像
   inspect_template.py assemble_spec.py layout_sample.py list_templates.py
   build_template.py               デザイン仕様 -> 新規マスター (template-forge)
@@ -147,8 +148,8 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
 templates/    登録済みマスター (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge のデザインプリセット)
   masters/        マスター .pptx をここに置いてインポートする (gitignored。同ディレクトリの README 参照)
   sales/ nurture/ marketing/   Markdown 様式: 段階記録とヒアリングシート、ナーチャリングトラックとセグメント、コンテンツブリーフとイベント計画
-slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (13 パック 92 種、manifest.json)
-assets/       scalar/ (ブランド: ピクトグラム、ロゴ、製品ロゴ), cloud-icons/ (gitignored)
+slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (14 パック 95 種、manifest.json)
+assets/       scalar/ (ブランド: ピクトグラム、ロゴ、製品ロゴ), holidays/ (日本の祝日 CSV), cloud-icons/ (gitignored)
 references/   エンジン・ワークフロー・ホスト互換のドキュメント
   images/slide-patterns/  パターンカタログ画像 (コミット済み。セットアップ 6 で再生成)
   i18n/           生成される 2 つのカタログ用の英語サイドカー文字列
@@ -160,7 +161,7 @@ cache/ out/   一時レンダーキャッシュと QA 出力 (gitignored)
 ## Claude Code プラグインとしてのインストール
 
 このリポジトリはプラグインマーケットプレイスを兼ねる
-（`.claude-plugin/marketplace.json`、23 スキルすべてを束ねた 1 プラグイン）:
+（`.claude-plugin/marketplace.json`、24 スキルすべてを束ねた 1 プラグイン）:
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -179,7 +180,7 @@ venv、OAuth 認証情報、クラウドアイコンはマシンローカルで�
 ## Codex での利用
 
 Codex も同じスキルと Python エンジンを使う。リポジトリのクローンでは、
-`.agents/skills/` のエントリが 23 の生成/支援スキルすべてと、エンドツー
+`.agents/skills/` のエントリが 24 の生成/支援スキルすべてと、エンドツー
 エンドの `forge` スキルを公開する。リポジトリルートから Codex を起動し、
 `forge` を名前で呼び出せばよい。Claude 固有の `/slide-forge:forge`
 コマンドやプラグインマーケットプレイスのマニフェストは不要。
@@ -524,6 +525,7 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | `slide-template-creator` | ✔（カタログ画像の生成時） | — | — | — | — |
 | `current-state-analysis` | ✔ | ✔ copy モードのテンプレートで必要 | — | — | — |
 | `analysis-template-creator` | ✔（カタログ画像の生成時） | — | — | — | — |
+| `calendar-slides` | ✔（デッキ生成とカタログ画像の生成時） | — | — | — | — |
 | `b2b-account-maps` | ✔ | ✔ copy モードのテンプレートで必要 | — | 出力したマップを編集するとき | — |
 | `scalar-account-plan` | ✔ | ✔ scalar-2026 | — | — | — |
 | `scalar-account-planning-session` | ✔ | ✔ scalar-2026 | — | — | — |
@@ -585,7 +587,7 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 
 ## クイックスタート（スライドテンプレート）
 
-`slide-templates/` には 13 パック・92 種の 1 枚ものテンプレートがある。座標では
+`slide-templates/` には 14 パック・95 種の 1 枚ものテンプレートがある。座標では
 なく意味のある入力スロットを受け取って 1 枚分の spec を生成するので、登録済みの
 どのマスターとも組み合わせられる。
 
@@ -622,10 +624,10 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | 定性・技術ページ | 5 | 数字でないものすべて |
 | 締め・付録ページ | 3 | 決定とその後 |
 
-これらのページパターンに加えて、`slide-templates/` には 13 のパック
-（marketing-analysis、b2b-sales、scalar-ae、planning、analysis、read-alone、
+これらのページパターンに加えて、`slide-templates/` には 14 のパック
+（marketing-analysis、b2b-sales、scalar-ae、planning、calendar、analysis、read-alone、
 business-plan、nexus、hearing、case-studies、proposal、marketing、partner）で
-92 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
+95 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
 答える問い、ガードレールつきで
 [`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md)
 にカタログ化されている。read-alone と business-plan パックのテンプレートは `$density`

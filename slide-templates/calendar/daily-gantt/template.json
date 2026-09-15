@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "daily-gantt",
+  "displayName": "日単位ガント",
+  "pack": "calendar",
+  "category": "schedule",
+  "description": "日付の列にタスクの帯を置き、休日を挟んだ実際の稼働日数と節目を日単位で示す",
+  "answers": ["指定期間の作業が日単位でどう並行し、休日を挟んでいつ終わるか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 36},
+    "start": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "end": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "rows": {
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 4, "maxLength": 9},
+          {"type": "string", "minLength": 1, "maxLength": 14},
+          {"type": "string", "maxLength": 6},
+          {"type": "string", "maxLength": 10},
+          {"type": "string", "maxLength": 10},
+          {"type": "number", "minimum": 0, "maximum": 1}
+        ]
+      }
+    },
+    "today": {"type": "string", "default": "", "maxLength": 10},
+    "extraHolidays": {
+      "type": "array",
+      "default": [],
+      "maxItems": 20,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 10}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "タイトル（結論）は 1 行・全角 36 字まで。2 行になるとカレンダーの見出しに重なる",
+    "行は [種類, 名前, 担当, 開始日, 終了日, 進捗]。種類は group（見出し）/ task（期間）/ milestone（節目・◆）。milestone は開始日の列に置き、終了日は空、進捗は 0 にする",
+    "期間が 31 日までは毎日、60 日までは月曜だけに日付を出し、61 日〜26 週は 1 列 1 週に自動で切り替わる。それより長い計画は planning/gantt-schedule（月単位）を使う",
+    "バーの右には営業日数（土日・祝日・extraHolidays を除く）が出る。期間の根拠がない作業に日付を入れない",
+    "行は 12 件まで。超える計画は scripts/calendar_pages.py でグループごとにページを分ける",
+    "依存関係の矢印は描かない。前後関係を見せたい計画は nexus/roadmap を使う",
+    "計画値と実績を混ぜない。進捗率を入れるときは source に集計時点を書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "day_gantt", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+       "start": {"$slot": "start"}, "end": {"$slot": "end"}, "rows": {"$slot": "rows"},
+       "today": {"$slot": "today"}, "extraHolidays": {"$slot": "extraHolidays"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

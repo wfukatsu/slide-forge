@@ -1334,6 +1334,51 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "month-calendar",
+      "displayName": "月間カレンダー",
+      "pack": "calendar",
+      "category": "month",
+      "path": "calendar/month-calendar/template.json",
+      "tags": [
+        "calendar",
+        "month",
+        "schedule",
+        "holiday"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "daily-gantt",
+      "displayName": "日単位ガント",
+      "pack": "calendar",
+      "category": "schedule",
+      "path": "calendar/daily-gantt/template.json",
+      "tags": [
+        "calendar",
+        "gantt",
+        "schedule",
+        "holiday"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "daily-agenda",
+      "displayName": "日次タスクリスト",
+      "pack": "calendar",
+      "category": "agenda",
+      "path": "calendar/daily-agenda/template.json",
+      "tags": [
+        "calendar",
+        "agenda",
+        "task",
+        "schedule"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

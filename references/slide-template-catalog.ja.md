@@ -1,6 +1,6 @@
 *[English](slide-template-catalog.md)*
 
-# スライドテンプレート カタログ（全 92 種）
+# スライドテンプレート カタログ（全 95 種）
 
 `slide-templates/` に登録されたテンプレートを実際に 1 枚ずつ生成して
 書き出した画像カタログ。**どのテンプレートで 1 枚を作るかを見て選ぶ**ためのもの。
@@ -13,7 +13,7 @@
 
 ```bash
 # このカタログを作り直す（テンプレートを追加したときも同じ手順）
-for pack in marketing-analysis b2b-sales scalar-ae planning analysis read-alone business-plan nexus hearing case-studies proposal marketing partner; do
+for pack in marketing-analysis b2b-sales scalar-ae planning calendar analysis read-alone business-plan nexus hearing case-studies proposal marketing partner; do
   .venv/bin/python scripts/build_slide_template_catalog.py \
       --pack $pack --out out/template-catalog/$pack.json
 done
@@ -32,6 +32,7 @@ done
 | [B2B セールスパック](#b2b-sales) | 8 種 | 商談のステークホルダー構造とディスカバリー（課題探索）を可視化するページ群 |
 | [Scalar AE パック](#scalar-ae) | 10 種 | Scalar のアカウントエグゼクティブが商談レビュー・活動計画で使う定型ページ群 |
 | [計画パック](#planning) | 3 種 | 時間軸を持つ計画を示すページ群 |
+| [カレンダーパック](#calendar) | 3 種 | 日付を軸にした予定・タスクのページ群 |
 | [現状分析パック](#analysis) | 10 種 | コンサルティングの現状分析・課題特定フレームワークをページ化した群 |
 | [読み物パック](#read-alone) | 8 種 | 1 枚で読み切れる高密度スライド（外資コンサル型の配布資料）のページ群 |
 | [事業計画パック](#business-plan) | 8 種 | 事業計画・稟議で承認者が最初に見る「収益・投資・リスク・体制」のページ群 |
@@ -570,6 +571,79 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 - 節目は 6 件まで。時間軸は等間隔で、期間の長短は表現しない（長短を見せたい計画は gantt-schedule を使う）
 - 未来の節目は予定であることを source に明記する
 - 時点ラベルは 10 字以内（例: 2026/09）。粒度を揃える
+
+<a id="calendar"></a>
+
+## カレンダーパック（`calendar`）
+
+日付を軸にした予定・タスクのページ群。月間カレンダー（月曜/日曜始まり）・日単位ガント・日次タスクリストの 3 形式で、土日祝の色分けと営業日数の計算、期間の自動分割（scripts/calendar_pages.py）を備える。
+
+### 月間カレンダー（`month-calendar`）
+
+![月間カレンダー](images/slide-templates/month-calendar.png)
+
+1 週 1 行の月カレンダーに予定と複数日の期間を書き込み、月内の混み具合と休日を示す
+
+**答える問い**: この月のどの日に何があり、どこが混んでいるか
+
+**figures**: `governing_message`, `month_calendar`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- タイトル（結論）は 1 行・全角 36 字まで。2 行になるとカレンダーの見出しに重なる
+- 予定は [開始日, 終了日, 件名, 分類, 時刻]。日付は YYYY-MM-DD で書き、年のない日付（9/3 など）を推測で補わない
+- 終了日が空なら 1 日の予定としてマスに書き、終了日があれば帯で描く。週をまたぐ帯は週ごとに分かれ「（続き）」が付く
+- 週始まりは weekStart で切り替える（mon / sun）。月曜始まりは ISO 週番号を左に出し、日曜始まりでは出さない
+- 1 マスに入る予定は約 2 件。超えた分は「+N件」に畳まれるので、詳細は daily-agenda のページで補う
+- 件名は全角 8 字程度で省略される。時刻は入りきらなければ省かれ、件名が優先される
+- 祝日は同梱の内閣府 CSV の収録年だけ自動で判定する。会社独自の休業日は extraHolidays で渡す
+- 予定（計画）であることと、いつ時点の予定かを source に書く
+
+### 日単位ガント（`daily-gantt`）
+
+![日単位ガント](images/slide-templates/daily-gantt.png)
+
+日付の列にタスクの帯を置き、休日を挟んだ実際の稼働日数と節目を日単位で示す
+
+**答える問い**: 指定期間の作業が日単位でどう並行し、休日を挟んでいつ終わるか
+
+**figures**: `governing_message`, `day_gantt`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- タイトル（結論）は 1 行・全角 36 字まで。2 行になるとカレンダーの見出しに重なる
+- 行は [種類, 名前, 担当, 開始日, 終了日, 進捗]。種類は group（見出し）/ task（期間）/ milestone（節目・◆）。milestone は開始日の列に置き、終了日は空、進捗は 0 にする
+- 期間が 31 日までは毎日、60 日までは月曜だけに日付を出し、61 日〜26 週は 1 列 1 週に自動で切り替わる。それより長い計画は planning/gantt-schedule（月単位）を使う
+- バーの右には営業日数（土日・祝日・extraHolidays を除く）が出る。期間の根拠がない作業に日付を入れない
+- 行は 12 件まで。超える計画は scripts/calendar_pages.py でグループごとにページを分ける
+- 依存関係の矢印は描かない。前後関係を見せたい計画は nexus/roadmap を使う
+- 計画値と実績を混ぜない。進捗率を入れるときは source に集計時点を書く
+
+### 日次タスクリスト（`daily-agenda`）
+
+![日次タスクリスト](images/slide-templates/daily-agenda.png)
+
+1 行 1 タスクで日付を下方向に並べ、日ごとの担当・期日・状態を一覧で示す
+
+**答える問い**: 日ごとに誰が何をいつまでにやるか
+
+**figures**: `governing_message`, `day_agenda`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**status**: experimental
+
+使うときの決まり:
+
+- タイトル（結論）は 1 行・全角 36 字まで。2 行になるとカレンダーの見出しに重なる
+- 項目は [日付, 内容, 担当, 期日, 状態]。1 行 1 タスクで、同じ日の複数タスクは日付セルが縦に結合される
+- 予定のない土日・祝日の連続は 1 行に畳まれ、休日名が添えられる。休日の行も 1 行として数える
+- 1 枚は約 11 行まで。超える期間は scripts/calendar_pages.py で週ごとに分割する
+- 状態は 完了 / 進行中 / 予定 / 遅延 / 中止（done / doing / todo / late / cancelled も可）。色だけでなく文字でも示される
+- 期日の列には時刻か締切を書き、未定は空にする（「—」と表示される）。推測で埋めない
+- today を渡すとその日の日付セルが赤で強調される。資料の作成日と揃え、source にも時点を書く
 
 <a id="analysis"></a>
 

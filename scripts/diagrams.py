@@ -68,6 +68,7 @@ from images import ImageMixin  # noqa: E402
 from patterns import PatternMixin  # noqa: E402
 from pages import PageMixin  # noqa: E402
 from events import EventMixin  # noqa: E402
+from calendars import CalendarMixin  # noqa: E402
 
 register({
     "  warn: text inside a shape rotated {rotation} degrees will rotate with it "
@@ -146,7 +147,7 @@ def _default_align(kind: str) -> str:
 
 
 class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
-             ChartMixin, PatternMixin, PageMixin, EventMixin):
+             ChartMixin, PatternMixin, PageMixin, EventMixin, CalendarMixin):
     """Thin wrapper for drawing shapes on a single slide."""
 
     _seq = 0
