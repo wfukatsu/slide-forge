@@ -131,6 +131,23 @@ def indent_style(tighten_in: float) -> dict:
     return {"indentStart": d, "indentFirstLine": d, "indentEnd": d}
 
 
+def indent_sides(start_in: float, end_in: float) -> dict:
+    """Like indent_style, but pulls the start and end edges back separately.
+
+    Text fitting widens a column from the side its text is not aligned to,
+    so a left-aligned title keeps its left edge in line with the rest of the
+    page. `indentStart` and `indentFirstLine` move together (see above).
+    """
+    out = {}
+    if start_in and start_in > 1e-9:
+        d = {"magnitude": -start_in * 72.0, "unit": "PT"}
+        out["indentStart"] = d
+        out["indentFirstLine"] = d
+    if end_in and end_in > 1e-9:
+        out["indentEnd"] = {"magnitude": -end_in * 72.0, "unit": "PT"}
+    return out
+
+
 def to_inches(emu: float) -> float:
     return emu / EMU_PER_INCH
 
