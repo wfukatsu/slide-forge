@@ -36,9 +36,11 @@ class FitBoxTest(unittest.TestCase):
         self.assertEqual(_text.wrapped_lines("あ" * 15, 2.5, 12), 2)
 
     def test_font_shrinks_once_the_margin_is_not_enough(self):
+        # Two lines at 11pt need 0.367in even at the tightest margin; at 10pt
+        # the full 0.10in margin already fits, so it is kept
         fit = _text.fit_box(need_for("あ" * 13, 2.0), 0.3, 11, slack=0.04)
         self.assertEqual(fit.size, 10)
-        self.assertAlmostEqual(fit.inset, 0.04)
+        self.assertAlmostEqual(fit.inset, 0.10)
         self.assertTrue(fit.fits)
 
     def test_gives_up_at_the_floor(self):
@@ -108,7 +110,7 @@ class CanvasFitTest(unittest.TestCase):
         oid = self.canvas.shape(0, 1.0, 2.0, 0.3, text="あ" * 20, size=11,
                                 text_fit="grow")
         x, y, w, h, _ = self.canvas.rects[oid]
-        need = _text.text_height("あ" * 20, 2.0, 11)
+        need = _text.text_height("あ" * 20, 2.0, 11) + _text.FIT_INSET_Y
         self.assertAlmostEqual(h, need)
         self.assertAlmostEqual(y, 1.0 - (need - 0.3) / 2)
         self.assertEqual(self.canvas.texts[oid]["size"], 11)

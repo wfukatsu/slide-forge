@@ -551,17 +551,10 @@ def _drawn_text_styles(oid: str, spec: dict) -> list[dict]:
 # reproduces the fitting before the requests go out; audit_body_fit() runs
 # the same plan offline.
 
-# Line height the slot estimate assumes for a template font. Deliberately on
-# the low side (a false alarm costs more than a near miss). Noto Sans JP, the
-# font the blank template draws its slots in, is measured taller and uses
-# _text.LINE_EM like the drawing engine does.
-SLOT_LINE_EM = 1.2
-# Allowance against the slot height, as a fraction of it
+# Allowance against the slot height, as a fraction of it. Line height is
+# _text.LINE_EM for every font: Slides lays out Noto Sans JP and Arial lines
+# at the same measured height.
 SLOT_FIT_SLACK = 0.02
-
-
-def _slot_line_em(font: str | None) -> float:
-    return LINE_EM if font and font.startswith("Noto Sans JP") else SLOT_LINE_EM
 
 
 def _slot_one_sided(drawn: bool, align: str | None) -> bool:
@@ -689,7 +682,7 @@ def fit_slot(layout: dict, name: str, value, *, explicit_size=None,
     if not geo or not size:
         return None
     w, h = geo["w"], geo["h"]
-    line_em = _slot_line_em(style.get("fontFamily") or (draw or {}).get("fontFamily"))
+    line_em = LINE_EM
 
     one_side = _slot_one_sided(drawn, geo.get("align"))
 

@@ -55,7 +55,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 from _i18n import t, register  # noqa: E402
 from _text import (  # noqa: E402
-    DEFAULT_FIT, FIT_MODES, describe_fit, em, fit_box, grow_box, text_height)
+    DEFAULT_FIT, FIT_INSET_Y, FIT_MODES, LINE_EM as _LINE_EM, describe_fit, em,
+    fit_box, grow_box, text_height)
 # Color utilities were moved to colors.py. Re-exported from here so existing
 # imports like `from diagrams import lighten` keep working.
 from colors import (  # noqa: E402,F401
@@ -769,7 +770,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     # more than this
     LINE_CROSS_MIN = 0.06
     TEXT_SLACK = 0.04       # allowance (in) against the text's required height
-    LINE_EM = 1.45          # Noto Sans JP line height (multiplier relative to font size)
+    LINE_EM = _LINE_EM      # measured line height at lineSpacing 100 (see _text.LINE_EM)
+    # Sizing a value to a short box leaves room for the frame's top/bottom inset,
+    # so it keeps the roomier font-metric factor rather than the bare line height
+    VALUE_EM = 1.45
 
     _em = staticmethod(em)
 
@@ -884,15 +888,17 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         head = text.replace("\n", " ")[:22]
         if mode == "grow" and not rotation:
             n = need(size, inset)
-            if n > h + self.TEXT_SLACK:
-                ny, nh = grow_box(y, h, n, valign)
+            if n + FIT_INSET_Y > h:
+                ny, nh = grow_box(y, h, n + FIT_INSET_Y, valign)
                 self.fit_notes.append(t(
                     "Box grown to fit its text (height {h0:.2f}→{h1:.2f}in): "
                     "\"{text}\"", h0=h, h1=nh, text=head))
                 return ny, nh, size, inset, inset
             return y, h, size, inset, inset
-        fit = fit_box(need, fh, size, inset, min_size=self.min_font_size,
-                      slack=self.TEXT_SLACK)
+        # No slack: whole lines must fit the frame. The block's small top offset
+        # (FIT_INSET_Y) then lands in the frame's own bottom inset, while a
+        # one-line label in a tight box — which Slides draws fine — is left alone
+        fit = fit_box(need, fh, size, inset, min_size=self.min_font_size)
         detail = describe_fit(size, inset, fit)
         if detail:
             self.fit_notes.append(t("Text fitted to its box ({detail}): \"{text}\"",
@@ -1229,7 +1235,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                    fill=lighten(c, 0.9), stroke=lighten(c, 0.55))
         # Shrink the value when the box is short. A fixed size would collide with the caption
         vh = h * 0.52
-        vs = min(value_size, vh * 72.0 / self.LINE_EM)
+        vs = min(value_size, vh * 72.0 / self.VALUE_EM)
         self.label(x + 0.1, y + 0.08, w - 0.2, vh, value, size=vs,
                    bold=True, align="CENTER", valign="MIDDLE", color=c)
         self.label(x + 0.1, y + 0.10 + vh, w - 0.2, h - vh - 0.16, caption,

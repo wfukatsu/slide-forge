@@ -80,9 +80,10 @@ EY = 4.86                       # edition/availability line (1 line)
 TITLE_EM_MAX = 30.5
 
 # Recommended values when flowing text into the body placeholder.
-# Google's lineSpacing is a percentage of the font's native line height
-# (about 1.45em for Noto Sans JP), so 12pt / 120% gives roughly 0.29in per
-# line. h=4.068in fits about 14 lines.
+# Google's lineSpacing is a percentage of the base line height, measured at
+# 1.2em for Noto Sans JP and Arial (_text.LINE_EM), so 12pt / 120% gives about
+# 0.24in per line: h=4.068in holds about 16.9 bare lines. The cap of 14 leaves
+# room for paragraph spacing and wrapped lines.
 BODY_FONT_SIZE = 12
 BODY_LINE_SPACING = 120
 BODY_MAX_LINES = 14
@@ -900,7 +901,7 @@ def stats(d, x, y, w, items, *, h=0.92, gap=0.20, value_size=22):
     cw = (w - gap * (n - 1)) / n
     # Shrink the value's font when the box is short. A fixed size would overflow and get clipped
     vh = h * 0.54
-    vs = min(value_size, vh * 72.0 / Canvas.LINE_EM)
+    vs = min(value_size, vh * 72.0 / Canvas.VALUE_EM)
     for i, (value, cap, tone) in enumerate(items):
         col = tone_solid(d, tone)
         cx = x + i * (cw + gap)

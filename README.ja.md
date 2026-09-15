@@ -605,6 +605,32 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 [`references/slide-template-catalog.ja.md`](references/slide-template-catalog.ja.md)
 にカタログ化してある。
 
+## テキストの適合
+
+Slides API では Slides 自身の「はみ出す場合はテキストを縮小」を有効にできない
+（`autofitType` に書けるのは `NONE` だけ）。しかも枠からあふれた文字は枠の外に
+描かれ、下の要素やページの端に重なる。そこで slide-forge はリクエストを送る
+**前に**テキストを枠に合わせる。まず文字の揃えと反対側の内側余白を詰め、それでも
+入らなければ 0.5pt 刻みで元のサイズの 70%（8pt 未満にはしない）まで縮める。
+収まっているテキストは指定どおりに描く。
+
+| 調整なし（`"textFit": "none"`） | 調整あり（既定） |
+|---|---|
+| ![タイトルと本文が枠からあふれた例](references/images/text-fit/slot-none.png) | ![同じページを枠に合わせた例](references/images/text-fit/slot-shrink.png) |
+
+![図形のテキストの 3 つのモード: none / shrink / grow](references/images/text-fit/shapes.png)
+
+- タイトル・サブタイトル・本文の枠と、図のすべての図形が対象。表のセルは対象外
+  （行が自動で伸びる）。
+- `textFit`（`shrink` / `grow` / `none`）と `minFontSize` はスライド単位か
+  `defaults` に書く。`"density": "print"` のデッキは 8pt まで縮めてよい
+  （紙なら 8〜10pt も読める）。
+- `--dry-run` と生成時に、調整した箇所を `fit:` として表示する。下限まで縮めても
+  入らないテキストは指摘になり、`--strict` なら失敗する。
+
+詳細は [`references/api-notes.ja.md`](references/api-notes.ja.md) §14b と
+[`references/validation.ja.md`](references/validation.ja.md)。
+
 ## スライドパターンカタログ
 
 どんな形のページが作れるか?

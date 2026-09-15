@@ -63,7 +63,7 @@ Exit code is 1 when problems are found, so it drops into CI directly.
 | Connector buried inside a shape | Endpoint ≥ 0.06 in inside a shape's interior | Same as above; if the line is intentional, mark it `free=True` |
 | Text hidden behind a later shape | A banner or zone was drawn over an earlier block | Stack using each pattern's return value (bottom y) |
 | Text colliding with text | Unfilled labels overlap within their actual text extents | Separate positions, shorten wording |
-| Too much text for the box | Required line count exceeds the box height | Make the box taller, cut text |
+| Too much text for the box | Required line count exceeds the box height even at the smallest size fitting allows | Make the box taller, cut text, or lower `minFontSize` |
 
 ### What it cannot detect (thumbnail QA required)
 
@@ -98,11 +98,26 @@ Elements drawn by `foot()` sit intentionally below `DY1` and are excluded from
 the checks (controlled by the `FOOT_MODE` flag). Custom bottom-fixed elements
 should ride the same mechanism. Details in `references/layout-contract.md`.
 
-For template-driven JSON specs, remember the additional manual estimate: the
-API silently accepts overflowing placeholder text, and `--dry-run`'s
-`audit_text_fit` only inspects `figures`. Compute body-text fit with the
-formula in the skill's Phase 3 (paragraph spacing included — ignoring it cuts
-real capacity to roughly 60% of the estimate).
+### Text fitting runs before the audit
+
+The API silently accepts overflowing text and cannot turn on Slides' autofit
+(`references/api-notes.md` §14b), so text is fitted **before** it is audited —
+title, subtitle and body slots in `build_deck.py`, and every figure shape in
+both commands. The inner margin is tightened on the side the text is not
+aligned to, then the font shrinks down to the floor: 70% of the size and never
+below 8pt, or 8pt for a `"density": "print"` deck; an explicit `minFontSize`
+wins. `--dry-run` lists each adjustment under "Text fitted to its box" and
+reports only what still overflows at the floor, so `--strict` fails exactly on
+text that cannot be made to fit. `"textFit": "none"` turns fitting off and
+brings the plain overflow findings back.
+
+Slot estimates use the slot's `elements` geometry and the font size
+`template.json` records. At generation time the real deck's master-inherited
+font size and paragraph spacing are read as well. `--dry-run` cannot see
+them, so a body whose size is only inherited is not fitted offline and its
+estimate stays on the low side (ignoring paragraph spacing can cut real
+capacity to roughly 60% of the estimate). Set `bodyFontSize` /
+`bodySpaceBelow` explicitly for such a template, or check the page in Gate 2.
 
 ---
 
@@ -149,7 +164,7 @@ order:
 | Colors | Pale text on pale background, weak contrast | Use `readable_on()`. Body text needs ≥ 4.5:1 |
 | Footer | Your drawing overlaps the master's logo/copyright | Keep above `DY1` |
 | Whitespace | Figure hugs the top, large empty band below | Increase block heights to use the vertical space |
-| Placeholders | Text overflowing or truncated; decorations colliding with text | Cut text, adjust `bodyFontSize`/spacing, or pick a layout with more room |
+| Placeholders | Text overflowing or truncated; decorations colliding with text; a fitted title (`fit:` line) that no longer lines up or reads too small | Cut text, adjust `bodyFontSize`/spacing, or pick a layout with more room — prefer cutting text over lowering `minFontSize` |
 | Page numbers | Missing or clipped at 2 digits | Confirm `add_page_numbers()`; check position |
 | Logos/footers | Drawn twice | Template decorations are inherited by the copy — remove your own drawing |
 | Layout families | Proposal vs. Presentation mix-up | Fix the `layout` value in the spec |
