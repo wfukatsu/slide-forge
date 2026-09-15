@@ -165,6 +165,11 @@ pasted there).
 ```jsonc
 {
   "title": "生成するプレゼンテーションのタイトル",   // --title で上書き可
+  // Optional. What the deck is for: "print" (handout, proposal read on paper)
+  // or "presentation" (projected). With "print", text fitting may shrink text
+  // down to 8pt (8/9/10pt are fine on paper); otherwise it stops at 70% of the
+  // size. An explicit minFontSize still wins. assemble_spec.py --density sets it
+  "density": "print",
   "slides": [
     {
       "layout": "CONTENT",        // 必須。ロール名またはレイアウトキー

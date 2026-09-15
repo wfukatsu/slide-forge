@@ -29,6 +29,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _i18n import t, register  # noqa: E402
 
 register({
+    "what the deck is for: print lets text fitting shrink down to 8pt":
+        "デッキの用途。print にするとテキストの適合で 8pt まで縮められる",
     "Merge per-page spec fragments into one deck spec":
         "ページ単位のスペック断片を 1 つのデッキスペックに統合する",
     "{path}: not readable as JSON: {e}": "{path}: JSON として読めません: {e}",
@@ -114,6 +116,9 @@ def main() -> int:
     ap.add_argument("--defaults",
                     help=t("defaults as a JSON string "
                            "(e.g. '{\"bodyFontSize\": 14}')"))
+    ap.add_argument("--density", choices=("print", "presentation"),
+                    help=t("what the deck is for: print lets text fitting "
+                           "shrink down to 8pt"))
     args = ap.parse_args()
 
     paths = expand(args.inputs)
@@ -140,6 +145,8 @@ def main() -> int:
                            "either)"))
     if args.defaults:
         spec["defaults"] = json.loads(args.defaults)
+    if args.density:
+        spec["density"] = args.density
 
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(spec, f, ensure_ascii=False, indent=2)

@@ -189,6 +189,31 @@ class SlotFitTest(unittest.TestCase):
         self.assertEqual(len(problems), 2)
 
 
+class PrintDensityTest(unittest.TestCase):
+    def test_print_lets_fitting_reach_8pt(self):
+        self.assertEqual(bd._min_font_size({"density": "print"}, {}), 8.0)
+        self.assertIsNone(bd._min_font_size({"density": "presentation"}, {}))
+        self.assertIsNone(bd._min_font_size({}, {}))
+
+    def test_explicit_min_font_size_wins(self):
+        spec = {"density": "print", "defaults": {"minFontSize": 9}}
+        self.assertEqual(bd._min_font_size(spec, {}), 9)
+        self.assertEqual(bd._min_font_size(spec, {"minFontSize": 10}), 10)
+
+    def test_print_title_shrinks_below_the_presentation_floor(self):
+        # 40 full-width chars in a 4.0in x 0.6in / 24pt title: the
+        # presentation floor (17pt = 70%) still takes two lines too many,
+        # a print deck fits it at 13pt
+        spec = {"slides": [{"layout": "CONTENT", "title": "あ" * 40}]}
+        self.assertEqual(len(bd.audit_body_fit(template(), spec)), 1)
+        spec["density"] = "print"
+        self.assertEqual(bd.audit_body_fit(template(), spec), [])
+
+    def test_unknown_density_is_rejected(self):
+        spec = {"density": "poster", "slides": [{"layout": "CONTENT"}]}
+        self.assertEqual(len(bd.validate_figures(spec, {}, template())), 1)
+
+
 class InheritedStyleTest(unittest.TestCase):
     PRES = {
         "masters": [{"objectId": "m", "pageElements": [

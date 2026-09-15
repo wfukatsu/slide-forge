@@ -31,8 +31,8 @@ import _auth  # noqa: E402
 import settings  # noqa: E402
 from _i18n import t, register  # noqa: E402
 from _text import (  # noqa: E402
-    DEFAULT_FIT, FIT_MODES, LINE_EM, TEXT_INSET_X, Fit, describe_fit, fit_box,
-    wrapped_lines)
+    DEFAULT_FIT, DENSITIES, FIT_MODES, LINE_EM, PRINT_MIN_FONT_PT, TEXT_INSET_X,
+    Fit, describe_fit, fit_box, wrapped_lines)
 
 register({
     "Drive folder URL or ID to create the deck in":
@@ -236,6 +236,8 @@ register({
     "{where}: 'minFontSize' must be a positive number (pt)":
         "{where}: 'minFontSize' は正の数（pt）である必要があります",
     "Text fitted to its box ({n}):": "テキストを枠に合わせた箇所（{n} 件）:",
+    "'density' must be one of: {densities}":
+        "'density' は {densities} のいずれかです",
     "{slot} still overflows its slot at {size:g}pt; reduce the text, lower "
     "minFontSize, or split the slide":
         "{slot} は {size:g}pt まで縮めても枠に収まりません。文を減らすか "
@@ -1868,10 +1870,30 @@ def _text_fit(spec: dict, slide: dict) -> str | None:
 
 
 def _min_font_size(spec: dict, slide: dict) -> float | None:
-    """The smallest size fitting may shrink text to on this slide, in pt."""
+    """The smallest size fitting may shrink text to on this slide, in pt.
+
+    An explicit `minFontSize` (slide, then defaults) wins. Otherwise a print
+    deck (`"density": "print"`) may shrink down to PRINT_MIN_FONT_PT — 8, 9
+    and 10pt are fine on paper — and a presentation deck keeps the default
+    floor (70% of each size, never below 8pt). None means that default.
+    """
     if slide.get("minFontSize") is not None:
         return slide["minFontSize"]
-    return (spec.get("defaults") or {}).get("minFontSize")
+    explicit = (spec.get("defaults") or {}).get("minFontSize")
+    if explicit is not None:
+        return explicit
+    if spec.get("density") == "print":
+        return PRINT_MIN_FONT_PT
+    return None
+
+
+def _check_density(spec: dict) -> list[str]:
+    """Reject a spec-level density that is neither print nor presentation."""
+    density = spec.get("density")
+    if density is None or density in DENSITIES:
+        return []
+    return [t("'density' must be one of: {densities}",
+              densities=", ".join(DENSITIES))]
 
 
 def draw_figures(canvas, figures: list, *, skip_network: bool = False) -> None:
@@ -1902,6 +1924,7 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
     problems += _check_text_margin(
         (spec.get("defaults") or {}).get("textMargin"), "defaults")
     problems += _check_text_fit(spec.get("defaults") or {}, "defaults")
+    problems += _check_density(spec)
     for i, s in enumerate(spec.get("slides", [])):
         problems += _check_text_margin(s.get("textMargin"), f"slides[{i}]")
         problems += _check_text_fit(s, f"slides[{i}]")

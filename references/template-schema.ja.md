@@ -161,6 +161,11 @@
 ```jsonc
 {
   "title": "生成するプレゼンテーションのタイトル",   // --title で上書き可
+  // 任意。デッキの用途。"print"（配布資料・紙で読む提案書）か "presentation"
+  // （投影）。"print" ならテキストの適合で 8pt まで縮めてよい（紙なら 8/9/10pt も
+  // 読める）。それ以外は元のサイズの 70% で止める。minFontSize を明示すれば
+  // そちらが優先。assemble_spec.py --density でも設定できる
+  "density": "print",
   "slides": [
     {
       "layout": "CONTENT",        // 必須。ロール名またはレイアウトキー

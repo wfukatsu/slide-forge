@@ -72,6 +72,12 @@ DEFAULT_FIT = "shrink"
 MIN_FIT_INSET = 0.03        # in, per side
 MIN_FONT_RATIO = 0.7        # of the requested size
 MIN_FONT_PT = 8.0
+# A deck built for print (spec "density": "print" — a read-alone handout or
+# a proposal read on paper) is read at arm's length, where 8, 9 and 10pt stay
+# legible. Fitting there may go all the way down to this floor regardless of
+# MIN_FONT_RATIO; a projected deck keeps the ratio.
+PRINT_MIN_FONT_PT = 8.0
+DENSITIES = ("print", "presentation")
 FIT_STEP_PT = 0.5
 FIT_STEP_INSET = 0.01
 # Share of the column fitting counts as usable. Slides wraps a line that
