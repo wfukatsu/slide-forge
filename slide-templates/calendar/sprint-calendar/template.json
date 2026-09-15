@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "sprint-calendar",
+  "displayName": "スプリントカレンダー",
+  "pack": "calendar",
+  "category": "sprint",
+  "description": "連続するスプリントを週の行に並べ、祝日で減る稼働日数と計画・レビュー・リリースの日を示す",
+  "answers": ["各スプリントの期間・稼働日数・イベント日はいつか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 36},
+    "start": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "lengthDays": {"type": "integer", "default": 14, "minimum": 7, "maximum": 14},
+    "sprints": {
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 1, "maxLength": 6},
+          {"type": "string", "minLength": 1, "maxLength": 14},
+          {"type": "boolean"}
+        ]
+      }
+    },
+    "extraHolidays": {
+      "type": "array",
+      "default": [],
+      "maxItems": 20,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 10}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "タイトル（結論）は 1 行・全角 36 字まで。2 行になると見出しに重なる",
+    "スプリントは [番号, ゴール, リリースの有無]。start は最初のスプリントの月曜で、lengthDays（7 か 14）ずつ連続して並ぶ",
+    "1 枚は 8 週分まで（2 週スプリントなら 4 本、1 週なら 8 本）。それ以上は scripts/calendar_pages.py で分ける",
+    "稼働日数は平日から祝日と extraHolidays を除いて数える。「休日 -1」は平日に祝日が当たった日数で、ベロシティの見込みを下げる根拠になる",
+    "計画は最初の稼働日（初日が祝日なら「計画（振替）」）、レビューかリリースは最後の稼働日に自動で置かれる。実際の開催日が違うなら使わない",
+    "ゴールは 1 行・全角 14 字まで。成果として確認できる表現にし、作業名を書かない",
+    "未来のスプリントは計画であることを source に書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "sprint_calendar", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+       "start": {"$slot": "start"}, "sprints": {"$slot": "sprints"},
+       "lengthDays": {"$slot": "lengthDays"}, "extraHolidays": {"$slot": "extraHolidays"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

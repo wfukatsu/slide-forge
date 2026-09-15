@@ -257,4 +257,22 @@ JSON から呼べるプリミティブ（`build_deck.py::FIGURES` に登録）:
   年のない日付の拒否は `calendars.parse_date` が担う。
 - **デッキ仕様の `$template` 展開は存在しない**ため、`calendar_pages.py` はテンプレートを
   展開済みのスライド（`{"slides": [...]}`）を出力する。
-- `sprint-calendar` 等の P2 テンプレートは未着手。スキルの `form-selection.md` に代替手段を書いた。
+- P1 はコミット `a26a338`（ブランチ `feat/calendar-templates`）。
+
+## 10. P2 の実装状況（2026-09-15）
+
+`weekly-timetable` / `sprint-calendar` / `year-at-a-glance` / `deadline-countdown` と、
+プリミティブ `week_timetable` / `sprint_calendar` / `year_calendar` / `deadline_countdown` を追加した。
+
+計画・試作からの変更点:
+
+- **重なる予定の列分けは自動にした**（`assign_tracks`）。試作では手で列を指定していた。
+  3 件以上の重なりはエラーにし、部屋やトラックでページを分ける。
+- **30 分の予定は、枠を空で描いてラベルを重ねる。** 高さ約 0.18in の枠では
+  Slides の上下の余白に文字が収まらず、はみ出したため。
+- **スプリントの計画・レビュー・リリースの日は自動で置く**（最初と最後の稼働日）。
+  実際の開催日が違う運用ではこのテンプレートを使わない、とガードレールに書いた。
+- **期限カウントダウンは、期限が今日の月か翌月にある場合だけ**に絞った。
+  それより先の期限は月間カレンダーか日単位ガントで見せる。
+- 年間カレンダーは試作どおり 7pt の配布資料専用とし、投影には `planning/gantt-schedule` を案内する。
+- P3（日次ヒートマップ、当番表）は未着手。

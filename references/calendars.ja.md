@@ -11,6 +11,10 @@ figure として登録されている。`slide-templates/calendar` パックと 
 | 1 か月の予定をマスに書く | `month_calendar` | 月曜 / 日曜始まり、複数日の帯 |
 | 日（または週）単位の作業と休日の網掛け | `day_gantt` | 日列は 60 日、週列は 26 週まで |
 | 日ごとのタスク一覧 | `day_agenda` | 日付セルの結合、休日の畳み込み |
+| 1 週間を時間単位で | `week_timetable` | 5 列か 7 列、重なる予定は横に並べる |
+| 連続するスプリント | `sprint_calendar` | スプリントごとの稼働日数、イベント日は自動で配置 |
+| 年度全体の俯瞰 | `year_calendar` | 12 か月のミニカレンダー、繁忙期・休業・重要日（配布資料の密度） |
+| 期限までの残り日数 | `deadline_countdown` | 暦日と営業日、節目 |
 | 月単位の計画 | `gantt`（`patterns.ja.md`） | 列ラベルだけで日付を持たない |
 
 共通の約束:
@@ -105,6 +109,95 @@ d.day_agenda(x, y, w, h, start, end, items,
   "items": [["2026-09-15", "セキュリティ審査の資料提出", "情シス", "12:00", "完了"]] }
 ```
 
+## week_timetable — 週間タイムテーブル
+
+```python
+d.week_timetable(x, y, w, h, week, events,
+                 days=5,                 # 5（月〜金）か 7
+                 start_hour=9, end_hour=18,
+                 breaks=None,            # 既定 [["12:00", "13:00", "昼休憩"]]
+                 extra_holidays=None,
+                 size=8.5)
+```
+
+- `week` はその週の任意の日付。列はその週の月曜から始まる。
+- `events` は `[日付, 開始, 終了, 件名, 場所, 分類]`。時刻は `HH:MM`。同じ日に重なる予定は
+  横に並べ（`assign_tracks`）、3 件同時に重なるとエラーになる。
+- 1 時間に 0.30in 必要。予定の枠は 8pt 1 行が入る高さが必要
+  （テンプレートの 3.65in・9〜18 時なら 30 分）。
+- 高さ 0.62in 以上の枠は時間帯・件名・場所、それより低い枠は「9:30 件名」、
+  横に並んだ狭い枠は件名だけを表示する。
+- 休憩は、その時間に予定がない日だけ灰色の帯で出る。予定のない祝日は休日名で塗る。
+
+```json
+{ "type": "week_timetable", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "week": "2026-10-05", "days": 5, "startHour": 9, "endHour": 18,
+  "events": [["2026-10-05", "09:30", "12:00", "オリエンテーション", "大会議室", "primary"]],
+  "breaks": [["12:00", "13:00", "昼休憩"]] }
+```
+
+## sprint_calendar — スプリントカレンダー
+
+```python
+d.sprint_calendar(x, y, w, h, start, sprints,
+                  length_days=14,        # 7 か 14
+                  extra_holidays=None,
+                  size=8.5)
+```
+
+- `start` は月曜にする。`sprints` は `[番号, ゴール, リリースの有無]` で、連続して並ぶ。
+  週の行は 8 行まで（2 週スプリントなら 4 本、1 週なら 8 本）。
+- 左のパネルに期間、稼働日数と祝日で減った平日の数（「休日 -1」）、ゴールを出す
+  （1 週の行では期間を 2 行目にまとめる）。
+- 最初の稼働日に「計画」（月曜が休日なら「計画（振替）」）、最後の稼働日に「レビュー」、
+  `release` が true なら赤の「リリース」を置く。
+
+```json
+{ "type": "sprint_calendar", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "start": "2026-09-28", "lengthDays": 14,
+  "sprints": [["12", "検索 API の公開", false], ["13", "権限管理の追加", true]] }
+```
+
+## year_calendar — 年間カレンダー
+
+```python
+d.year_calendar(x, y, w, h, start_month, marks,
+                extra_holidays=None,
+                size=7)
+```
+
+- `start_month`（年度なら "2026-04"）から 12 か月を 6 か月ずつ 2 段に並べる。
+  日付は 7pt なので配布資料向け。
+- `marks` は `[開始, 終了, ラベル, 種類]`。`busy` は青、`off` は赤で期間を塗り、
+  `key` は開始日を丸で囲む（終了は空）。12 か月の外の日付はエラーになる。
+- 凡例には種類ごとのラベルが並ぶ。数字も赤くしたい休業日は `extra_holidays` にも入れる。
+
+```json
+{ "type": "year_calendar", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "startMonth": "2026-04",
+  "marks": [["2026-04-01", "2026-04-24", "決算", "busy"],
+            ["2026-06-25", "", "株主総会", "key"]] }
+```
+
+## deadline_countdown — 期限カウントダウン
+
+```python
+d.deadline_countdown(x, y, w, h, deadline, today, label,
+                     checkpoints=None,   # [日付, 名前] を 3 件まで
+                     extra_holidays=None)
+```
+
+- 暦日の残り日数（`deadline - today`）を大きく出し、今日から期限前日までの営業日数と、
+  「あとN日」つきの節目を並べる。
+- 右に今日の月と翌月を並べ、残りの日を塗る。期限はそのどちらかの月にあること
+  （それより先なら `month_calendar` / `day_gantt`）。h は 3.3in 以上必要。
+
+```json
+{ "type": "deadline_countdown", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "deadline": "2026-10-14", "today": "2026-09-15", "label": "本番切替まで",
+  "checkpoints": [["2026-09-18", "判定会議"]] }
+```
+
 ## 日付エンジン
 
 `calendars.py` の純粋関数。`tests/test_calendars.py` でテストしている。
@@ -120,9 +213,14 @@ d.day_agenda(x, y, w, h, start, end, items,
 | `choose_scale(start, end)` | `"day"` / `"week"` |
 | `pack_lanes(spans, nlanes)` | レーンの割り当てとあふれ |
 | `agenda_entries(start, end, items, holidays)` | 日・休日・予定なしの行 |
+| `parse_time(value)` / `format_time(hours)` | `9.5` / `"9:30"` |
+| `assign_tracks(intervals)` | 区間ごとの（列, 重なりのまとまりの列数） |
+| `sprint_ranges(start, count, length_days)` | 連続するスプリントの期間 |
+| `months_from(start_month, count)` | `[(年, 月), ...]` |
 
 ## 複数スライドへの分割
 
 `scripts/calendar_pages.py data.json --out pages.json` は、1 つのデータセットを
-テンプレートのスライドに分ける。月ごと、月曜〜日曜の週ごと（日次リスト）、
-グループの切れ目での行のまとまりごと（ガント）に分割する。入力形式は docstring を参照。
+テンプレートのスライドに分ける。月ごと、月曜〜日曜の週ごと（日次リスト・タイムテーブル）、
+グループの切れ目での行のまとまりごと（ガント）、週 8 行ごと（スプリント）に分割する。
+年間カレンダーとカウントダウンは 1 枚ずつ。入力形式は docstring を参照。

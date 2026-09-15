@@ -54,6 +54,48 @@ MAX_DAY_COLUMNS = 60
 MAX_WEEK_COLUMNS = 26
 MIN_GANTT_ROW_H = 0.24
 MIN_AGENDA_ROW_H = 0.24
+MIN_HOUR_H = 0.30          # week_timetable: height of one hour row
+MIN_EVENT_H = 0.17         # week_timetable: an event box must hold one 8pt line
+MAX_SPRINT_ROWS = 8        # sprint_calendar: week rows (4 two-week sprints)
+MIN_YEAR_H = 3.0
+MIN_COUNTDOWN_H = 3.3
+
+register({
+    "not a time (HH:MM): {value}": "時刻として読めません（HH:MM）: {value}",
+    "days must be 5 or 7: {value}": "days は 5 か 7 です: {value}",
+    "hours must satisfy 0 <= start < end <= 24: {start}-{end}":
+        "時間帯は 0 <= 開始 < 終了 <= 24 で指定します: {start}-{end}",
+    "week_timetable: {n} hours do not fit in h={h} (each hour needs {min}in)":
+        "week_timetable: {n} 時間分は h={h} に収まりません（1 時間 {min}in 必要）",
+    "'{title}': {start}-{end} is outside {h0}:00-{h1}:00":
+        "「{title}」: {start}-{end} は {h0}:00〜{h1}:00 の外です",
+    "'{title}': {start}-{end} is too short to draw at this height (at least {min} minutes)":
+        "「{title}」: {start}-{end} はこの高さでは短すぎて描けません（{min} 分以上必要）",
+    "week_timetable: more than two events overlap on {day}":
+        "week_timetable: {day} に 3 件以上の予定が重なっています",
+    "sprint_calendar: start must be a Monday: {day}":
+        "sprint_calendar: 開始日は月曜にします: {day}",
+    "length_days must be 7 or 14: {value}": "length_days は 7 か 14 です: {value}",
+    "sprint_calendar: needs at least one sprint":
+        "sprint_calendar: スプリントが 1 件以上必要です",
+    "sprint_calendar: {n} week rows do not fit (max {max}). Split the sprints with "
+    "scripts/calendar_pages.py":
+        "sprint_calendar: {n} 週分の行は収まりません（最大 {max}）。"
+        "scripts/calendar_pages.py でスプリントを分けてください",
+    "sprint {n} has no working days": "スプリント {n} に稼働日がありません",
+    "year_calendar: h={h} is too short (needs {min}in)":
+        "year_calendar: h={h} では低すぎます（{min}in 必要）",
+    "mark kind must be busy / off / key: {value}":
+        "印の種類は busy / off / key のいずれかです: {value}",
+    "deadline_countdown: {deadline} is not in {today}'s month or the next; use "
+    "month_calendar or day_gantt":
+        "deadline_countdown: 期限 {deadline} が {today} の月か翌月にありません。"
+        "month_calendar か day_gantt を使ってください",
+    "deadline_countdown: h={h} is too short (needs {min}in)":
+        "deadline_countdown: h={h} では低すぎます（{min}in 必要）",
+    "deadline_countdown: at most 3 checkpoints ({n} given)":
+        "deadline_countdown: 節目は 3 件までです（{n} 件指定）",
+})
 
 register({
     "not a date: {value}": "日付として読めません: {value}",
@@ -347,6 +389,68 @@ def agenda_entries(start, end, items, holidays: dict, *,
 
 def agenda_rows(entries) -> int:
     return sum(max(1, len(e[2])) if e[0] == "day" else 1 for e in entries)
+
+
+def parse_time(value) -> float:
+    """'9:30' -> 9.5 (hours). 24:00 is allowed as an end time."""
+    try:
+        hh_s, mm_s = str(value).strip().split(":")
+        hh, mm = int(hh_s), int(mm_s)
+    except ValueError:
+        raise ValueError(t("not a time (HH:MM): {value}", value=value)) from None
+    if not (0 <= hh <= 24 and 0 <= mm < 60 and hh * 60 + mm <= 1440):
+        raise ValueError(t("not a time (HH:MM): {value}", value=value))
+    return hh + mm / 60
+
+
+def format_time(hours: float) -> str:
+    whole = int(hours)
+    return f"{whole}:{round((hours - whole) * 60):02d}"
+
+
+def assign_tracks(intervals) -> list[tuple[int, int]]:
+    """Side-by-side tracks for overlapping (start, end) intervals.
+
+    Returns (track, tracks in its overlap cluster) per interval, in input
+    order. Touching intervals (one ends when the next starts) do not overlap.
+    """
+    order = sorted(range(len(intervals)), key=lambda i: (intervals[i][0], -intervals[i][1]))
+    track_of = [0] * len(intervals)
+    cluster_of = [0] * len(intervals)
+    sizes: dict[int, int] = {}
+    ends: list[float] = []
+    cluster, cluster_end = -1, None
+    for i in order:
+        start, end = intervals[i]
+        if cluster_end is None or start >= cluster_end:
+            cluster += 1
+            ends = []
+            cluster_end = end
+        else:
+            cluster_end = max(cluster_end, end)
+        track = next((k for k, busy_until in enumerate(ends) if busy_until <= start), None)
+        if track is None:
+            ends.append(end)
+            track = len(ends) - 1
+        else:
+            ends[track] = end
+        track_of[i], cluster_of[i] = track, cluster
+        sizes[cluster] = max(sizes.get(cluster, 0), track + 1)
+    return [(track_of[i], sizes[cluster_of[i]]) for i in range(len(intervals))]
+
+
+def sprint_ranges(start, count: int, length_days: int = 14) -> list[tuple[dt.date, dt.date]]:
+    """Consecutive fixed-length sprints from start."""
+    s = parse_date(start)
+    return [(s + dt.timedelta(days=k * length_days),
+             s + dt.timedelta(days=(k + 1) * length_days - 1)) for k in range(count)]
+
+
+def months_from(start_month, count: int = 12) -> list[tuple[int, int]]:
+    """[(year, month), ...] for count months from 'YYYY-MM'."""
+    year, month = parse_month(start_month)
+    base = year * 12 + month - 1
+    return [((base + i) // 12, (base + i) % 12 + 1) for i in range(count)]
 
 
 # Status label -> palette role. Japanese and English labels are both accepted.
@@ -839,3 +943,393 @@ class CalendarMixin:
                            text_margin=0.0)
             yy += span
         return yy
+
+    # ---- shared parts for the mini calendars ----
+
+    def _cal_mini_month(self, x, y, w, h, year, month, *, hol, fills=None, circles=None,
+                        size=7, head_size=6.5, title_size=9, title=None):
+        """A month with numbers only (6 week rows, Monday first)."""
+        P = self.P
+        fills, circles = fills or {}, circles or {}
+        title_h = 0.22 if h < 2.2 else 0.3
+        hd_h = 0.16 if h < 2.2 else 0.24
+        self._cal_text(x, y, w, title_h, title or f"{year}年{month}月", size=title_size,
+                       bold=True)
+        cw = w / 7
+        rh = (h - title_h - hd_h) / 6
+        for c in range(7):
+            self._cal_text(x + c * cw, y + title_h, cw, hd_h, WEEKDAYS_JA[c], size=head_size,
+                           align="CENTER", margin=0.0,
+                           color=self._cal_weekday_color(c) if c >= 5 else P.muted)
+        for r, week in enumerate(month_weeks(year, month, "mon")):
+            for c, day in enumerate(week):
+                if day.month != month:
+                    continue
+                cx, cy = x + c * cw, y + title_h + hd_h + r * rh
+                if day in fills:
+                    self.shape(cx + 0.01, cy + 0.01, cw - 0.02, rh - 0.02, fill=fills[day])
+                if day in circles:
+                    s = min(cw, rh) - 0.02
+                    self.shape(cx + (cw - s) / 2, cy + (rh - s) / 2, s, s, kind="ELLIPSE",
+                               fill=circles[day], text=str(day.day), size=size, bold=True,
+                               color=P.white, text_margin=0.0)
+                else:
+                    self._cal_text(cx, cy, cw, rh, str(day.day), size=size, align="CENTER",
+                                   margin=0.0, color=self._cal_num_color(day, hol))
+        return y + h
+
+    def _cal_legend(self, x, y, items, *, xmax, size=8.5, sw=0.16):
+        """[(fill, text, shape kind)] in one row; each label is cut to its share of the width."""
+        share = (xmax - x) / max(1, len(items))
+        for fill, text, kind in items:
+            self.shape(x, y + 0.04, sw, sw, kind=kind, fill=fill, stroke=self.P.border,
+                       stroke_weight=0.5)
+            width = min(em(text) * size / 72 * 1.1 + 0.08, share - sw - 0.18)
+            self._cal_text(x + sw + 0.04, y, width, 0.24,
+                           self._cal_fit(text, width, size, 0.02), size=size)
+            x += sw + 0.04 + width + 0.14
+        return x
+
+    # ---- D. week timetable ----
+
+    def week_timetable(self, x, y, w, h, week, events, *, days=5, start_hour=9,
+                       end_hour=18, breaks=None, extra_holidays=None, size=8.5) -> float:
+        """One week as day columns × hour rows. Returns the bottom y.
+
+        events are [date, start, end, title, place, category] with times as
+        HH:MM. Overlapping events on a day share the column side by side (up
+        to two). breaks ([[start, end, label]], default lunch 12:00–13:00) are
+        drawn as grey bands on days where nothing is scheduled over them. A
+        holiday with no events is shaded with its name.
+        """
+        P = self.P
+        day0 = parse_date(week)
+        monday = day0 - dt.timedelta(days=day0.weekday())
+        if days not in (5, 7):
+            raise ValueError(t("days must be 5 or 7: {value}", value=days))
+        if not 0 <= start_hour < end_hour <= 24:
+            raise ValueError(t("hours must satisfy 0 <= start < end <= 24: {start}-{end}",
+                               start=start_hour, end=end_hour))
+        cols = [monday + dt.timedelta(days=i) for i in range(days)]
+        hol = holidays_for({d.year for d in cols}, extra_holidays)
+        tw_, hh = 0.55, 0.3
+        cw = (w - tw_) / days
+        nh = end_hour - start_hour
+        rh = (h - hh) / nh
+        if rh < MIN_HOUR_H:
+            raise ValueError(t("week_timetable: {n} hours do not fit in h={h} (each hour "
+                               "needs {min}in)", n=nh, h=h, min=MIN_HOUR_H))
+        norm = []
+        for ev in events:
+            row = list(ev) + [""] * (6 - len(ev))
+            day = parse_date(row[0])
+            s, e = parse_time(row[1]), parse_time(row[2])
+            title, place, cat = str(row[3]), str(row[4] or ""), str(row[5] or "")
+            if day not in cols:
+                raise ValueError(t("'{name}': {day} is outside the chart period {start}-{end}",
+                                   name=title, day=day, start=cols[0], end=cols[-1]))
+            if not start_hour <= s < e <= end_hour:
+                raise ValueError(t("'{title}': {start}-{end} is outside {h0}:00-{h1}:00",
+                                   title=title, start=row[1], end=row[2], h0=start_hour,
+                                   h1=end_hour))
+            if (e - s) * rh - 0.01 < MIN_EVENT_H:
+                raise ValueError(t("'{title}': {start}-{end} is too short to draw at this "
+                                   "height (at least {min} minutes)", title=title,
+                                   start=row[1], end=row[2],
+                                   min=int(-(-(MIN_EVENT_H + 0.01) / rh * 60 // 1))))
+            self._cal_color(cat)
+            norm.append((day, s, e, title, place, cat))
+        default_breaks = [["12:00", "13:00", "昼休憩"]]
+        brk = []
+        for b in (default_breaks if breaks is None else breaks):
+            bs, be = parse_time(b[0]), parse_time(b[1])
+            if start_hour <= bs < be <= end_hour:
+                brk.append((bs, be, str(b[2]) if len(b) > 2 else ""))
+
+        def ty(hours):
+            return y + hh + (hours - start_hour) * rh
+
+        for i, day in enumerate(cols):
+            red, sat = is_red(day, hol), day.weekday() == 5
+            fill = (lighten(P.danger, 0.75) if red else
+                    lighten(P.info, 0.70) if sat else P.primary)
+            color = (darken(P.danger, 0.2) if red else
+                     darken(P.info, 0.3) if sat else P.white)
+            self.shape(x + tw_ + i * cw, y, cw, hh, fill=fill, stroke=P.white, text=md(day),
+                       size=9, bold=True, color=color)
+        for k in range(nh):
+            yy = y + hh + k * rh
+            self.shape(x + tw_, yy, w - tw_, rh, fill=P.white if k % 2 == 0 else P.surfaceAlt,
+                       stroke=P.border, stroke_weight=0.5)
+            self._cal_text(x, yy, tw_ - 0.04, 0.2, f"{start_hour + k}:00", size=8,
+                           align="END", valign="TOP", color=P.muted)
+        for i, day in enumerate(cols):
+            cx = x + tw_ + i * cw
+            day_evs = [ev for ev in norm if ev[0] == day]
+            if not day_evs and day in hol:
+                self.shape(cx + 0.03, y + hh + 0.03, cw - 0.06, h - hh - 0.06,
+                           fill=lighten(P.danger, 0.90),
+                           text=self._cal_fit(hol[day], cw - 0.06, 9, 0.05), size=9,
+                           color=darken(P.danger, 0.15))
+                continue
+            for bs, be, label in brk:
+                if any(ev[1] < be and ev[2] > bs for ev in day_evs):
+                    continue
+                self.shape(cx + 0.03, ty(bs) + 0.03, cw - 0.06, (be - bs) * rh - 0.06,
+                           fill="#E5E7EB", text=label or None, size=8.5, color=P.muted)
+            tracks = assign_tracks([(ev[1], ev[2]) for ev in day_evs])
+            if any(n > 2 for _, n in tracks):
+                raise ValueError(t("week_timetable: more than two events overlap on {day}",
+                                   day=day))
+            for (_, s, e, title, place, cat), (track, ntracks) in zip(day_evs, tracks):
+                base = self._cal_color(cat)
+                ew = (cw - 0.06) / ntracks
+                box_x, box_w = cx + 0.03 + track * ew, ew - 0.03
+                y0, y1 = ty(s) + 0.005, ty(e) - 0.005
+                box_h = y1 - y0
+                fs = 8 if (ntracks > 1 or box_h < 0.3) else size
+                if box_h >= 0.62:
+                    when = (f"{format_time(s)}–{format_time(e)}" if ntracks == 1
+                            else f"{format_time(s)}〜")
+                    lines = [when, title, place]
+                elif ntracks == 1:
+                    lines = [f"{format_time(s)} {title}"]
+                else:
+                    lines = [title]
+                text = "\n".join(self._cal_fit(line, box_w, fs, 0.05) for line in lines if line)
+                fill = lighten(base, 0.78)
+                if box_h >= 0.28:
+                    self.shape(box_x, y0, box_w, box_h, kind="ROUND_RECTANGLE", fill=fill,
+                               stroke=base, stroke_weight=1.0, text=text, size=fs,
+                               color=P.text, align="START", valign="TOP", text_margin=0.05)
+                else:
+                    # A box this short cannot hold a line inside its own vertical
+                    # inset: draw it empty and centre an unfilled label over it
+                    self.shape(box_x, y0, box_w, box_h, kind="ROUND_RECTANGLE", fill=fill,
+                               stroke=base, stroke_weight=1.0)
+                    self._cal_text(box_x, y0 + box_h / 2 - 0.12, box_w, 0.24, text, size=fs,
+                                   color=P.text, margin=0.05)
+        return y + h
+
+    # ---- F. sprint calendar ----
+
+    def sprint_calendar(self, x, y, w, h, start, sprints, *, length_days=14,
+                        extra_holidays=None, size=8.5) -> float:
+        """Consecutive sprints as week rows with a sprint panel on the left. Returns the bottom y.
+
+        sprints are [number, goal, release]. Each sprint panel shows its
+        dates, working days (and how many weekdays holidays took), and goal.
+        The first working day is marked 計画 (計画（振替） when the sprint's
+        Monday is a holiday); the last working day レビュー, or リリース in red
+        when release is true.
+        """
+        P = self.P
+        s0 = parse_date(start)
+        if s0.weekday() != 0:
+            raise ValueError(t("sprint_calendar: start must be a Monday: {day}", day=s0))
+        if length_days not in (7, 14):
+            raise ValueError(t("length_days must be 7 or 14: {value}", value=length_days))
+        if not sprints:
+            raise ValueError(t("sprint_calendar: needs at least one sprint"))
+        weeks_per = length_days // 7
+        nrows = len(sprints) * weeks_per
+        if nrows > MAX_SPRINT_ROWS:
+            raise ValueError(t("sprint_calendar: {n} week rows do not fit (max {max}). Split "
+                               "the sprints with scripts/calendar_pages.py", n=nrows,
+                               max=MAX_SPRINT_ROWS))
+        ranges = sprint_ranges(s0, len(sprints), length_days)
+        hol = holidays_for(range(s0.year, ranges[-1][1].year + 1), extra_holidays)
+        lw, hh = 1.9, 0.26
+        gx, cw = x + lw, (w - lw) / 7
+        rh = (h - hh) / nrows
+        hdr = lighten(P.primary, 0.86)
+        self.shape(x, y, lw - 0.06, hh, fill=hdr, stroke=P.white, text="スプリント",
+                   size=9, bold=True, color=P.text)
+        for c in range(7):
+            self.shape(gx + c * cw, y, cw, hh, fill=hdr, stroke=P.white, text=WEEKDAYS_JA[c],
+                       size=9, bold=True, color=self._cal_weekday_color(c))
+        tints = [lighten(P.primary, 0.93), lighten(P.success, 0.90)]
+        bands = [lighten(P.primary, 0.75), lighten(P.success, 0.70)]
+        for k, (sp, (s, e)) in enumerate(zip(sprints, ranges)):
+            row = list(sp) + [""] * (3 - len(sp))
+            number, goal, release = str(row[0]), str(row[1]), bool(row[2])
+            span = date_range(s, e)
+            work = [d for d in span if not is_offday(d, hol)]
+            if not work:
+                raise ValueError(t("sprint {n} has no working days", n=number))
+            lost = sum(1 for d in span if d.weekday() < 5) - len(work)
+            by = y + hh + k * weeks_per * rh
+            panel_h = weeks_per * rh - 0.06
+            head = f"Sprint {number}　{s.month}/{s.day}–{e.month}/{e.day}"
+            days_line = f"稼働 {len(work)} 日" + (f"（休日 -{lost}）" if lost else "")
+            fs = size if weeks_per > 1 else 8
+            if weeks_per > 1:
+                lines = [head, days_line, goal]
+            else:
+                # One-week rows hold two lines: keep the goal, fold the dates into line 2
+                lines = [f"#{number} {goal}",
+                         f"{s.month}/{s.day}–{e.month}/{e.day}　稼働 {len(work)} 日"
+                         + (f"（-{lost}）" if lost else "")]
+            self.shape(x, by + 0.03, lw - 0.06, panel_h, kind="ROUND_RECTANGLE",
+                       fill=bands[k % 2],
+                       text="\n".join(self._cal_fit(line, lw - 0.06, fs, 0.08) for line in lines),
+                       size=fs, color=P.text, align="START", text_margin=0.08)
+            marks = {work[0]: ("計画" if work[0] == s else "計画（振替）", P.primaryDark),
+                     work[-1]: (("リリース", darken(P.danger, 0.1)) if release
+                                else ("レビュー", P.primaryDark))}
+            for r in range(weeks_per):
+                ry = by + r * rh
+                for c in range(7):
+                    day = s + dt.timedelta(days=r * 7 + c)
+                    cxx = gx + c * cw
+                    self.shape(cxx, ry, cw, rh, fill=self._cal_off_fill(day, hol) or tints[k % 2],
+                               stroke=P.white, stroke_weight=1.0)
+                    first = day.day == 1 or (k == 0 and r == 0 and c == 0)
+                    self._cal_text(cxx + 0.02, ry, 0.44, 0.2,
+                                   f"{day.month}/{day.day}" if first else str(day.day),
+                                   size=size, bold=True, color=self._cal_num_color(day, hol),
+                                   margin=0.03)
+                    if day in marks:
+                        line, color, bold = marks[day][0], marks[day][1], True
+                    elif day in hol:
+                        line, color, bold = hol[day], darken(P.danger, 0.12), False
+                    else:
+                        continue
+                    self._cal_text(cxx + 0.02, ry + 0.19, cw - 0.04, min(rh - 0.2, 0.22),
+                                   self._cal_fit(line, cw - 0.04, 8, 0.03), size=8, bold=bold,
+                                   color=color, margin=0.03)
+        return y + h
+
+    # ---- E. year at a glance ----
+
+    def year_calendar(self, x, y, w, h, start_month, marks, *, extra_holidays=None,
+                      size=7) -> float:
+        """Twelve mini months from start_month (e.g. the fiscal year's April). Returns the bottom y.
+
+        marks are [start, end, label, kind]: kind "busy" (blue fill) and "off"
+        (red fill) colour every day of the range; "key" circles the start day.
+        The legend lists each kind with its labels. Numbers are 7pt — a handout
+        form; for projection use month_calendar pages.
+        """
+        P = self.P
+        months = months_from(start_month, 12)
+        first = dt.date(months[0][0], months[0][1], 1)
+        ly, lm = months[-1]
+        last = dt.date(ly, lm, _calendar.monthrange(ly, lm)[1])
+        hol = holidays_for({yy for yy, _ in months}, extra_holidays)
+        if h < MIN_YEAR_H:
+            raise ValueError(t("year_calendar: h={h} is too short (needs {min}in)", h=h,
+                               min=MIN_YEAR_H))
+        colors = {"busy": lighten(P.primary, 0.70), "off": lighten(P.danger, 0.75),
+                  "key": P.danger}
+        names = {"busy": "繁忙期", "off": "休業", "key": "重要日"}
+        fills, circles = {}, {}
+        labels: dict[str, list[str]] = {k: [] for k in colors}
+        for mark in marks:
+            row = list(mark) + [""] * (4 - len(mark))
+            kind = row[3] or "busy"
+            if kind not in colors:
+                raise ValueError(t("mark kind must be busy / off / key: {value}", value=kind))
+            s = parse_date(row[0])
+            e = parse_date(row[1]) if row[1] else s
+            if e < s:
+                raise ValueError(t("'{title}': the end ({end}) is before the start ({start})",
+                                   title=row[2], end=e, start=s))
+            if s < first or e > last:
+                raise ValueError(t("'{name}': {day} is outside the chart period {start}-{end}",
+                                   name=row[2], day=s if s < first else e, start=first, end=last))
+            if row[2] and row[2] not in labels[kind]:
+                labels[kind].append(str(row[2]))
+            if kind == "key":
+                circles[s] = colors["key"]
+            else:
+                for day in date_range(s, e):
+                    fills[day] = colors[kind]
+        gap, legend_h = 0.12, 0.3
+        bw = (w - 5 * gap) / 6
+        bh = (h - legend_h) / 2
+        for i, (yy, mm) in enumerate(months):
+            self._cal_mini_month(x + (i % 6) * (bw + gap), y + (i // 6) * bh, bw, bh - 0.06,
+                                 yy, mm, hol=hol, fills=fills, circles=circles, size=size)
+        items = []
+        for kind in ("busy", "off", "key"):
+            if labels[kind] or any(v == colors[kind] for v in
+                                   (circles if kind == "key" else fills).values()):
+                text = names[kind] + (f"（{'・'.join(labels[kind])}）" if labels[kind] else "")
+                items.append((colors[kind], text, "ELLIPSE" if kind == "key" else "RECTANGLE"))
+        if items:
+            self._cal_legend(x, y + h - 0.26, items, xmax=x + w)
+        return y + h
+
+    # ---- G. deadline countdown ----
+
+    def deadline_countdown(self, x, y, w, h, deadline, today, label, *, checkpoints=None,
+                           extra_holidays=None) -> float:
+        """Days left to a deadline, in calendar and working days. Returns the bottom y.
+
+        The left panel shows the big calendar-day count, the working days
+        (excluding weekends, holidays and closures) and up to three
+        checkpoints; the right shows today's month and the next with the
+        remaining days filled. The deadline must fall in one of those two
+        months — for longer spans use month_calendar or day_gantt.
+        """
+        P = self.P
+        dl, td = parse_date(deadline), parse_date(today)
+        if dl < td:
+            raise ValueError(t("the end ({end}) is before the start ({start})", end=dl, start=td))
+        m1 = (td.year, td.month)
+        m2 = (td.year + (td.month == 12), td.month % 12 + 1)
+        if (dl.year, dl.month) not in (m1, m2):
+            raise ValueError(t("deadline_countdown: {deadline} is not in {today}'s month or the "
+                               "next; use month_calendar or day_gantt", deadline=dl, today=td))
+        if h < MIN_COUNTDOWN_H:
+            raise ValueError(t("deadline_countdown: h={h} is too short (needs {min}in)", h=h,
+                               min=MIN_COUNTDOWN_H))
+        cps = [(parse_date(c[0]), str(c[1])) for c in (checkpoints or [])]
+        if len(cps) > 3:
+            raise ValueError(t("deadline_countdown: at most 3 checkpoints ({n} given)", n=len(cps)))
+        for day, name in cps:
+            if not td <= day <= dl:
+                raise ValueError(t("'{name}': {day} is outside the chart period {start}-{end}",
+                                   name=name, day=day, start=td, end=dl))
+        hol = holidays_for({td.year, m2[0]}, extra_holidays)
+        cal_days = (dl - td).days
+        biz = business_days(td, dl - dt.timedelta(days=1), hol) if dl > td else 0
+
+        lw = w * 0.4
+        self.shape(x, y, lw, h - 0.35, kind="ROUND_RECTANGLE", fill=P.surface)
+        self._cal_text(x + 0.25, y + 0.08, lw - 0.5, 0.3, self._cal_fit(label, lw - 0.5, 13),
+                       size=13, bold=True, color=P.primaryDark)
+        self._cal_text(x + 0.2, y + 0.4, lw * 0.53, 1.34, str(cal_days), size=66, bold=True,
+                       color=P.primary, align="END", valign="BOTTOM", margin=0.0)
+        self._cal_text(x + 0.2 + lw * 0.53 + 0.05, y + 1.24, 0.6, 0.46, "日", size=22,
+                       bold=True, color=P.primary, valign="BOTTOM", margin=0.0)
+        self._cal_text(x + 0.25, y + 1.76, lw - 0.5, 0.26,
+                       f"期限 {dl.year}年{dl.month}月{dl.day}日（{WEEKDAYS_JA[dl.weekday()]}）",
+                       size=10.5, bold=True)
+        self._cal_text(x + 0.25, y + 2.02, lw - 0.5, 0.26,
+                       self._cal_fit(f"営業日は残り {biz} 日（休日 {cal_days - biz} 日を除く）",
+                                     lw - 0.5, 10, 0.02), size=10)
+        for k, (day, name) in enumerate(cps):
+            yy = y + 2.38 + k * 0.3
+            self.shape(x + 0.25, yy + 0.02, 1.0, 0.24, kind="ROUND_RECTANGLE", fill=P.white,
+                       stroke=P.border, text=md(day), size=8.5, bold=True, color=P.text,
+                       text_margin=0.0)
+            self._cal_text(x + 1.33, yy, lw - 2.05, 0.28,
+                           self._cal_fit(name, lw - 2.05, 9, 0.02), size=9)
+            self._cal_text(x + lw - 0.85, yy, 0.65, 0.28, f"あと{(day - td).days}日", size=9,
+                           align="END", color=P.muted)
+        fills = {d: (lighten(P.danger, 0.82) if is_offday(d, hol) else lighten(P.primary, 0.78))
+                 for d in date_range(td, dl)}
+        circles = {td: P.primary, dl: P.danger}
+        cx = x + lw + 0.3
+        mw = (w - lw - 0.3 - 0.25) / 2
+        mh = h - 0.65
+        for k, (yy, mm) in enumerate((m1, m2)):
+            self._cal_mini_month(cx + k * (mw + 0.25), y, mw, mh, yy, mm, hol=hol, fills=fills,
+                                 circles=circles, size=10, head_size=9, title_size=11)
+        self._cal_legend(cx, y + mh + 0.06, [
+            (P.primary, "今日", "ELLIPSE"), (P.danger, "期限", "ELLIPSE"),
+            (lighten(P.primary, 0.78), "残りの営業日", "RECTANGLE"),
+            (lighten(P.danger, 0.82), "残りの休日", "RECTANGLE")], xmax=x + w)
+        return y + h

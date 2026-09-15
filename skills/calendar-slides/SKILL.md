@@ -41,6 +41,10 @@ generate → QA → deliver).
 | `month-calendar` | one week per row, events in day cells, multi-day bars | ~2 items per day, then "+N件" | one page per month |
 | `daily-gantt` | 1 column = 1 day (≤ 60 days) or 1 ISO week (≤ 26 weeks) | 12 rows | at group boundaries |
 | `daily-agenda` | 1 row = 1 task, dates going down | 11 rows (a run of days off counts as 1) | per Monday–Sunday week |
+| `weekly-timetable` | day columns × hour rows | 5 or 7 days, 9–18h, two overlapping events | per Monday–Sunday week |
+| `sprint-calendar` | sprints as week rows with a goal panel | 8 week rows | every 8 week rows |
+| `year-at-a-glance` | 12 mini months with busy / off / key marks | one year (handout density) | one page |
+| `deadline-countdown` | days left, working days, checkpoints | deadline within today's month or the next | one page |
 
 Choose with [form-selection.md](references/form-selection.md). The limits and
 their derivation are in [capacity.md](references/capacity.md). Primitive
@@ -78,6 +82,12 @@ Write `out/<deck>/calendar-data.json` in the `calendar_pages.py` input format
   `["milestone", name, owner, date, "", 0]`.
 - `daily-agenda` items: `[date, task, owner, due, status]`; status is
   `完了 / 進行中 / 予定 / 遅延 / 中止` (or `done / doing / todo / late / cancelled`).
+- `weekly-timetable` events: `[date, start HH:MM, end HH:MM, title, place, category]`.
+- `sprint-calendar` sprints: `[number, goal, release true/false]`, with `start`
+  on a Monday and `lengthDays` 7 or 14.
+- `year-at-a-glance` marks: `[start, end, label, busy|off|key]` from `startMonth`.
+- `deadline-countdown`: `label`, `deadline`, `today` (required), up to three
+  `checkpoints` `[date, name]`.
 - Keep plan and actuals apart; progress needs an as-of date in `source`.
 
 ### 3. Split and approve
@@ -147,8 +157,7 @@ Schema, validation, registration and compatibility follow
    `slide-qa`, and refresh `references/images/slide-templates/<id>.png` and the
    catalog doc.
 
-Planned but not yet built (see `references/calendar-template-plan.ja.md`):
-weekly timetable, sprint calendar, year at a glance, deadline countdown,
+Planned but not yet built (P3, see `references/calendar-template-plan.ja.md`):
 activity heatmap, shift roster.
 
 ## Safety

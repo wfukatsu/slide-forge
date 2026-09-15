@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "id": "year-at-a-glance",
+  "displayName": "年間カレンダー",
+  "pack": "calendar",
+  "category": "year",
+  "description": "年度の 12 か月を小さな月カレンダーで並べ、繁忙期・休業・重要日を色と丸で示す",
+  "answers": ["年度の中で繁忙期と重要日がどこにあるか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 36},
+    "startMonth": {"type": "string", "required": true, "minLength": 6, "maxLength": 7},
+    "marks": {
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 12},
+          {"type": "string", "minLength": 3, "maxLength": 4}
+        ]
+      }
+    },
+    "extraHolidays": {
+      "type": "array",
+      "default": [],
+      "maxItems": 30,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 10}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "タイトル（結論）は 1 行・全角 36 字まで。2 行になると月の見出しに重なる",
+    "印は [開始日, 終了日, ラベル, 種類]。種類は busy（繁忙期・青の面）/ off（休業・赤の面）/ key（重要日・赤丸、終了日は空）",
+    "startMonth に年度の最初の月（例: 2026-04）を入れると 12 か月が並ぶ。範囲外の日付はエラーになる",
+    "日付は 7pt で、配布資料専用の密度。投影するなら month-calendar を月ごとに使う",
+    "凡例には種類ごとのラベルが並ぶ。ラベルは短く（全角 6 字程度）、種類ごとに 3 件程度までにする",
+    "会社休業日の数字も赤くしたい場合は extraHolidays にも入れる。印の off は面を塗るだけ",
+    "予定であることと、いつ時点の予定かを source に書く"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "year_calendar", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+       "startMonth": {"$slot": "startMonth"}, "marks": {"$slot": "marks"},
+       "extraHolidays": {"$slot": "extraHolidays"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

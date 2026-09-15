@@ -1379,6 +1379,66 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "weekly-timetable",
+      "displayName": "週間タイムテーブル",
+      "pack": "calendar",
+      "category": "week",
+      "path": "calendar/weekly-timetable/template.json",
+      "tags": [
+        "calendar",
+        "week",
+        "timetable",
+        "event"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "sprint-calendar",
+      "displayName": "スプリントカレンダー",
+      "pack": "calendar",
+      "category": "sprint",
+      "path": "calendar/sprint-calendar/template.json",
+      "tags": [
+        "calendar",
+        "sprint",
+        "scrum",
+        "holiday"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "year-at-a-glance",
+      "displayName": "年間カレンダー",
+      "pack": "calendar",
+      "category": "year",
+      "path": "calendar/year-at-a-glance/template.json",
+      "tags": [
+        "calendar",
+        "year",
+        "fiscal-year",
+        "holiday"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "deadline-countdown",
+      "displayName": "期限カウントダウン",
+      "pack": "calendar",
+      "category": "deadline",
+      "path": "calendar/deadline-countdown/template.json",
+      "tags": [
+        "calendar",
+        "deadline",
+        "countdown",
+        "business-days"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

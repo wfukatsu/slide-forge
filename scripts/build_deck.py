@@ -1468,6 +1468,12 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
                                               "rows"]),
     "day_agenda":       ("day_agenda",       ["x", "y", "w", "h", "start", "end",
                                               "items"]),
+    "week_timetable":   ("week_timetable",   ["x", "y", "w", "h", "week", "events"]),
+    "sprint_calendar":  ("sprint_calendar",  ["x", "y", "w", "h", "start", "sprints"]),
+    "year_calendar":    ("year_calendar",    ["x", "y", "w", "h", "startMonth",
+                                              "marks"]),
+    "deadline_countdown": ("deadline_countdown", ["x", "y", "w", "h", "deadline",
+                                                  "today", "label"]),
     # Page components and analysis diagrams (pages.py; drawn purely from shapes, no network needed)
     "governing_message": ("governing_message", ["x", "y", "w", "text"]),
     "lead_in":           ("lead_in",           ["x", "y", "w", "text"]),

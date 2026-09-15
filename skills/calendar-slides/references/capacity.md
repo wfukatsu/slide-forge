@@ -48,6 +48,40 @@ move detail to a `daily-agenda` page rather than accept "+N件" everywhere.
 | Columns (ratio) | date 1.25 · task 4.35 · owner 1.1 · due 1.0 · status 1.3 |
 | Task text | ~24 characters at 9pt before "…" |
 
+## weekly-timetable
+
+| Item | Value |
+|---|---|
+| Header / time column | 0.30 in / 0.55 in |
+| Hour rows | (3.65 − 0.30) ÷ hours → 0.37 in at 9–18h; ≥ 0.30 in required (≤ 11 hours) |
+| Columns | 1.69 in (5 days), 1.21 in (7 days) |
+| Shortest event | one 8pt line (≈ 0.17 in) → 30 minutes at 9–18h |
+| Box text | ≥ 0.62 in: time range, title, place; shorter: "9:30 title"; side-by-side: title only (~4 characters at 7 days) |
+| Overlaps | two side by side; three raise |
+
+## sprint-calendar
+
+| Item | Value |
+|---|---|
+| Sprint panel | 1.9 in; three lines for 2-week sprints, two for 1-week |
+| Week rows | ≤ 8 → 0.42 in each; day number + one 8pt label |
+| Goal | ~14 full-width characters (2-week), ~13 after "#no " (1-week) |
+
+## year-at-a-glance
+
+| Item | Value |
+|---|---|
+| Mini month | 1.40 × 1.62 in; cells 0.20 × 0.20 in; numbers 7pt, weekday heads 6.5pt |
+| Legend | one row, labels cut to a third of the width each |
+
+## deadline-countdown
+
+| Item | Value |
+|---|---|
+| Height | ≥ 3.3 in |
+| Left panel | 40% of the width: label 13pt (≤ 12 characters), number 66pt, 3 checkpoints |
+| Right | two mini months (today's and the next) at 10pt |
+
 ## Holiday data
 
 `assets/holidays/jp.csv` covers 1955 through the latest year the Cabinet Office

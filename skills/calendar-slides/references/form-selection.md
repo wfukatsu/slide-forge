@@ -7,6 +7,10 @@ Pick the form from the reader's question first, then check the period.
 | What happens on which day this month, and where is it crowded? | `month-calendar` | one calendar month (split per month) |
 | How do the tasks overlap day by day, and when do they end once days off are counted? | `daily-gantt` | ≤ 60 days on day columns; 61 days – 26 weeks on week columns |
 | Who does what by when, day by day? | `daily-agenda` | about two weeks, 11 rows (split per week) |
+| What happens at which hour and where, this week? | `weekly-timetable` | one week (split per week) |
+| How long is each sprint once holidays count, and when are its events? | `sprint-calendar` | 8 week rows |
+| Where do the busy periods and key dates fall in the year? | `year-at-a-glance` | 12 months (handout only) |
+| How many (working) days are left until the deadline? | `deadline-countdown` | deadline within today's month or the next |
 
 ## By period length
 
@@ -37,9 +41,17 @@ drawing them by hand.
 
 | Form | Fallback for now |
 |---|---|
-| Weekly timetable (weekday × hour) | `event_timetable` or `table` |
-| Sprint calendar | `month-calendar` with sprint spans as bars |
-| Year at a glance | twelve `month-calendar` pages, or `planning/gantt-schedule` |
-| Deadline countdown | `metric` + `month-calendar` |
 | Activity heatmap | `table` with values, or a chart from `charts.md` |
 | Shift roster | `table` |
+
+## When the P2 forms do not fit
+
+- **A single-day agenda by hour with tracks or rooms** (conference day):
+  `event_timetable` (`events.md`), not `weekly-timetable`.
+- **Three or more events overlapping** in the timetable: split by room or
+  track into separate pages.
+- **Sprints of irregular length**: `daily-gantt` with one task row per sprint.
+- **A deadline more than a month away**: `month-calendar` pages, or
+  `daily-gantt` with the deadline as a milestone.
+- **A projected year overview**: `planning/gantt-schedule` (month columns);
+  `year-at-a-glance` is too small to read on a screen.

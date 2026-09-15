@@ -194,8 +194,67 @@ def agenda_pages(data: dict) -> list[dict]:
     return out
 
 
+def timetable_pages(data: dict) -> list[dict]:
+    events = []
+    for ev in _require(data, "events", "weekly-timetable"):
+        row = list(ev) + [""] * (6 - len(ev))
+        day = cal.parse_date(row[0])
+        for value in row[1:3]:
+            cal.parse_time(value)
+        events.append([day.isoformat(), *[str(v) for v in row[1:6]]])
+    weeks: dict[str, list] = {}
+    for ev in sorted(events, key=lambda e: (e[0], e[1])):
+        day = dt.date.fromisoformat(ev[0])
+        monday = (day - dt.timedelta(days=day.weekday())).isoformat()
+        weeks.setdefault(monday, []).append(ev)
+    base = {k: data[k] for k in ("days", "startHour", "endHour", "breaks") if k in data}
+    return [{**base, "week": monday, "events": evs, "extraHolidays": _extra(data)}
+            for monday, evs in sorted(weeks.items())]
+
+
+def sprint_pages(data: dict) -> list[dict]:
+    start = cal.parse_date(_require(data, "start", "sprint-calendar"))
+    length = int(data.get("lengthDays", 14))
+    per_page = cal.MAX_SPRINT_ROWS // (length // 7)
+    sprints = [[str(s[0]), str(s[1]), bool(s[2]) if len(s) > 2 else False]
+               for s in _require(data, "sprints", "sprint-calendar")]
+    pages = []
+    for i in range(0, len(sprints), per_page):
+        page_start = start + dt.timedelta(days=i * length)
+        pages.append({"start": page_start.isoformat(), "lengthDays": length,
+                      "sprints": sprints[i:i + per_page], "extraHolidays": _extra(data)})
+    return pages
+
+
+def single_page(name: str, keys: tuple[str, ...]):
+    """Forms that are one page by design: pass the slots through with dates normalized."""
+    def split(data: dict) -> list[dict]:
+        page = {}
+        for key in keys:
+            if key in data:
+                page[key] = data[key]
+        for key in ("deadline", "today"):
+            if page.get(key):
+                page[key] = _iso(page[key])
+        if "startMonth" in page:
+            year, month = cal.parse_month(page["startMonth"])
+            page["startMonth"] = f"{year}-{month:02d}"
+        if "marks" in page:
+            page["marks"] = [[_iso(m[0]), _iso(m[1]) if m[1] else "", str(m[2]), str(m[3])]
+                             for m in page["marks"]]
+        if "checkpoints" in page:
+            page["checkpoints"] = [[_iso(c[0]), str(c[1])] for c in page["checkpoints"]]
+        page["extraHolidays"] = _extra(data)
+        return [page]
+    return split
+
+
 SPLITTERS = {"month-calendar": month_pages, "daily-gantt": gantt_pages,
-             "daily-agenda": agenda_pages}
+             "daily-agenda": agenda_pages, "weekly-timetable": timetable_pages,
+             "sprint-calendar": sprint_pages,
+             "year-at-a-glance": single_page("year-at-a-glance", ("startMonth", "marks")),
+             "deadline-countdown": single_page("deadline-countdown",
+                                               ("label", "deadline", "today", "checkpoints"))}
 
 
 def build_slides(data: dict) -> list[dict]:

@@ -39,6 +39,10 @@ description: >-
 | `month-calendar` | 1 週 1 行。1 日の予定はマスに、複数日は帯で | 1 日約 2 件、超えたら「+N件」 | 1 か月 1 枚 |
 | `daily-gantt` | 1 列 1 日（60 日まで）か 1 列 1 ISO 週（26 週まで） | 12 行 | グループの切れ目 |
 | `daily-agenda` | 1 行 1 タスク、日付が下方向に並ぶ | 11 行（連続する休日は 1 行） | 月曜〜日曜の週 |
+| `weekly-timetable` | 曜日の列 × 時間の行 | 5 か 7 日、9〜18 時、重なりは 2 件まで | 月曜〜日曜の週 |
+| `sprint-calendar` | スプリントを週の行に並べ、左にゴール | 週 8 行 | 週 8 行ごと |
+| `year-at-a-glance` | 12 か月のミニカレンダーに繁忙期・休業・重要日 | 1 年分（配布資料の密度） | 1 枚 |
+| `deadline-countdown` | 残り日数、営業日、節目 | 期限が今日の月か翌月 | 1 枚 |
 
 選び方は [form-selection.md](references/form-selection.md)、容量と閾値の根拠は
 [capacity.md](references/capacity.md)、プリミティブの引数は `references/calendars.ja.md` にある。
@@ -70,6 +74,11 @@ description: >-
   `["task", 名前, 担当, 開始, 終了, 進捗 0〜1]`、`["milestone", 名前, 担当, 日付, "", 0]`。
 - `daily-agenda` の項目: `[日付, 内容, 担当, 期日, 状態]`。状態は
   `完了 / 進行中 / 予定 / 遅延 / 中止`（`done / doing / todo / late / cancelled` も可）。
+- `weekly-timetable` の予定: `[日付, 開始 HH:MM, 終了 HH:MM, 件名, 場所, 分類]`。
+- `sprint-calendar` のスプリント: `[番号, ゴール, リリースの有無 true/false]`。
+  `start` は月曜、`lengthDays` は 7 か 14。
+- `year-at-a-glance` の印: `[開始, 終了, ラベル, busy|off|key]`。`startMonth` から 12 か月。
+- `deadline-countdown`: `label`、`deadline`、`today`（必須）、`checkpoints` `[日付, 名前]` を 3 件まで。
 - 計画と実績を混ぜない。進捗を載せるなら `source` に集計時点を書く。
 
 ### 3. 分割と承認
@@ -139,8 +148,7 @@ description: >-
    （`build_slide_template_catalog.py --pack calendar`）を生成して `slide-qa` にかけ、
    `references/images/slide-templates/<id>.png` とカタログ文書を更新する。
 
-計画済みで未実装のもの（`references/calendar-template-plan.ja.md` 参照）:
-週間タイムテーブル、スプリントカレンダー、年間カレンダー、期限カウントダウン、
+計画済みで未実装のもの（P3、`references/calendar-template-plan.ja.md` 参照）:
 日次ヒートマップ、当番表。
 
 ## 安全性

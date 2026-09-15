@@ -87,11 +87,85 @@ class DateEngineTest(unittest.TestCase):
                                [["2026-10-01", "範囲外", "", "", "予定"]], hol)
 
 
+class PhaseTwoEngineTest(unittest.TestCase):
+    """Pure functions behind the timetable, sprint, year and countdown forms."""
+
+    def test_times_parse_and_format(self) -> None:
+        self.assertEqual(cal.parse_time("9:30"), 9.5)
+        self.assertEqual(cal.parse_time("24:00"), 24.0)
+        self.assertEqual(cal.format_time(13.5), "13:30")
+        for bad in ("930", "25:00", "9:60", ""):
+            with self.assertRaises(ValueError):
+                cal.parse_time(bad)
+
+    def test_overlapping_events_share_tracks(self) -> None:
+        tracks = cal.assign_tracks([(13, 17), (15, 16), (9, 12), (12, 13)])
+        self.assertEqual(tracks, [(0, 2), (1, 2), (0, 1), (0, 1)])
+        three = cal.assign_tracks([(9, 12), (10, 11), (10.5, 11.5)])
+        self.assertEqual(max(n for _, n in three), 3)
+
+    def test_sprints_lose_working_days_to_holidays(self) -> None:
+        hol = cal.holidays_for([2026])
+        ranges = cal.sprint_ranges("2026-09-28", 4)
+        self.assertEqual(ranges[1], (D(2026, 10, 12), D(2026, 10, 25)))
+        work = [cal.business_days(s, e, hol) for s, e in ranges]
+        self.assertEqual(work, [10, 9, 9, 10])   # スポーツの日, 文化の日
+
+    def test_fiscal_year_months_cross_the_new_year(self) -> None:
+        months = cal.months_from("2026-04")
+        self.assertEqual((months[0], months[8], months[11]), ((2026, 4), (2026, 12), (2027, 3)))
+
+    def test_countdown_counts_calendar_and_working_days(self) -> None:
+        hol = cal.holidays_for([2026])
+        today, deadline = D(2026, 9, 15), D(2026, 10, 14)
+        self.assertEqual((deadline - today).days, 29)
+        self.assertEqual(cal.business_days(today, deadline - dt.timedelta(days=1), hol), 17)
+
+
 class TemplateRenderTest(unittest.TestCase):
     """Each calendar template's example draws with zero audit findings."""
 
+    TEMPLATES = ("month-calendar", "daily-gantt", "daily-agenda", "weekly-timetable",
+                 "sprint-calendar", "year-at-a-glance", "deadline-countdown")
+
+    def _audit(self, template_id: str, **override) -> list[str]:
+        template, _ = load_template(template_id)
+        example, _ = load_example(template_id)
+        slide = render_template(template, {**example, **override})
+        return bd.audit_figures(BLANK, {"slides": [slide]})
+
+    def test_phase_two_boundaries_pass_the_audit(self) -> None:
+        cases = [
+            ("weekly-timetable", {"days": 7, "week": "2026-10-12", "events": [
+                ["2026-10-17", "10:00", "10:30", "短い打合せ", "", ""],
+                ["2026-10-12", "09:00", "11:00", "祝日出勤", "本社", "danger"]]}),
+            ("weekly-timetable", {"week": "2026-09-21", "events": [
+                ["2026-09-24", "09:00", "12:00", "連休明け定例", "会議室", ""]]}),
+            ("sprint-calendar", {"lengthDays": 7, "sprints": [
+                [str(n), f"ゴール {n}", n % 2 == 0] for n in range(1, 9)]}),
+            ("deadline-countdown", {"today": "2026-12-20", "deadline": "2027-01-08",
+                                    "label": "年明けの本番リリースまで", "checkpoints": []}),
+        ]
+        for template_id, override in cases:
+            with self.subTest(template_id, **{k: str(v)[:20] for k, v in override.items()}):
+                self.assertEqual(self._audit(template_id, **override), [])
+
+    def test_phase_two_rejects_unreadable_input(self) -> None:
+        cases = {
+            "weekly-timetable": {"events": [
+                ["2026-10-05", "10:00", "12:00", "A", "", ""],
+                ["2026-10-05", "10:30", "11:30", "B", "", ""],
+                ["2026-10-05", "11:00", "11:45", "C", "", ""]]},
+            "sprint-calendar": {"start": "2026-09-29"},
+            "year-at-a-glance": {"marks": [["2027-04-01", "", "範囲外", "key"]]},
+            "deadline-countdown": {"deadline": "2026-12-01"},
+        }
+        for template_id, override in cases.items():
+            with self.subTest(template_id):
+                self.assertTrue(self._audit(template_id, **override))
+
     def test_examples_pass_the_figure_audit(self) -> None:
-        for template_id in ("month-calendar", "daily-gantt", "daily-agenda"):
+        for template_id in self.TEMPLATES:
             with self.subTest(template_id):
                 template, _ = load_template(template_id)
                 example, _ = load_example(template_id)
@@ -99,7 +173,7 @@ class TemplateRenderTest(unittest.TestCase):
                 self.assertEqual(bd.audit_figures(BLANK, {"slides": [slide]}), [])
 
     def test_longest_title_stays_clear_of_the_calendar(self) -> None:
-        for template_id in ("month-calendar", "daily-gantt", "daily-agenda"):
+        for template_id in self.TEMPLATES:
             with self.subTest(template_id):
                 template, _ = load_template(template_id)
                 example, _ = load_example(template_id)
@@ -177,6 +251,24 @@ class CalendarPagesTest(unittest.TestCase):
                 "template": "daily-gantt", "title": "長すぎる", "source": "テスト",
                 "start": "2026-04-01", "end": "2027-03-31",
                 "rows": [["task", "全体", "", "2026-04-01", "2027-03-31", 0]]})
+
+    def test_timetable_makes_one_page_per_week(self) -> None:
+        slides = calendar_pages.build_slides({
+            "template": "weekly-timetable", "title": "研修 2 週間", "source": "テスト",
+            "events": [["2026/10/5", "9:00", "12:00", "講義", "A", ""],
+                       ["2026-10-14", "13:00", "15:00", "演習", "B", "success"]]})
+        weeks = [[f for f in s["figures"] if f["type"] == "week_timetable"][0]["week"]
+                 for s in slides]
+        self.assertEqual(weeks, ["2026-10-05", "2026-10-12"])
+
+    def test_sprints_split_every_eight_weeks(self) -> None:
+        slides = calendar_pages.build_slides({
+            "template": "sprint-calendar", "title": "下期スプリント", "source": "テスト",
+            "start": "2026-09-28",
+            "sprints": [[str(n), f"ゴール {n}", False] for n in range(12, 18)]})
+        starts = [[f for f in s["figures"] if f["type"] == "sprint_calendar"][0]["start"]
+                  for s in slides]
+        self.assertEqual(starts, ["2026-09-28", "2026-11-23"])
 
     def test_gantt_repeats_the_group_heading_across_pages(self) -> None:
         rows = [["group", "開発", "", "", "", 0]] + [

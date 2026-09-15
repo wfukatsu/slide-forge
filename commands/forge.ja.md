@@ -19,7 +19,7 @@ Claude Code をこのコマンドの主ホストとする。`$ARGUMENTS` を起�
 | 再利用可能な1枚テンプレート | `slide-template-creator` |
 | 素材からの現状分析・課題特定（SWOT、PEST、5 フォース、なぜなぜ、ロジックツリー、ギャップ分析など） | `current-state-analysis` |
 | 分析フレームワークのテンプレート自体の追加・変更 | `analysis-template-creator` |
-| 日付つきのタスク・予定からカレンダースライド（月間カレンダー、日単位ガント、日次タスクリスト） | `calendar-slides` |
+| 日付つきのタスク・予定からカレンダースライド（月間カレンダー、日単位ガント、日次タスクリスト、週間タイムテーブル、スプリントカレンダー、年間カレンダー、期限カウントダウン） | `calendar-slides` |
 | B2B 関与者／ディスカバリーマップ | `b2b-account-maps` |
 | 顧客から情報を集めるためのスライド（ヒアリング議題、記入シート、イベントアンケート） | `hearing-slides` |
 | nexus-architect のレポート・UI モックの説明 | `nexus-report-slides` |

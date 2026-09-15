@@ -31,7 +31,7 @@ Load exactly one generation skill completely, then read only the reference secti
 | Create/register a reusable single-slide content template | `slide-template-creator` |
 | Current-state analysis / problem identification from supplied material | `current-state-analysis` |
 | Create/change an analysis-framework slide template | `analysis-template-creator` |
-| Calendar slides from dated tasks/events (month calendar, day-by-day gantt, daily task list) | `calendar-slides` |
+| Calendar slides from dated tasks/events (month calendar, day-by-day gantt, daily task list, weekly timetable, sprint calendar, year at a glance, deadline countdown) | `calendar-slides` |
 | Create Scalar product/proposal slides | `scalar-product-slides`, `scalar-proposal-slides` |
 | Per-customer activity plan / visit materials (AE sales activity) | `scalar-account-plan`, `scalar-ae-materials` |
 | Organise minutes / email into per-stage records; work out what is still unconfirmed | `scalar-deal-intake` |

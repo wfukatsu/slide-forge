@@ -11,6 +11,10 @@ Drawing parts whose input is dates, not coordinates. They are mixed into
 | A month with events in the day cells | `month_calendar` | Monday or Sunday start; multi-day bars |
 | Tasks over days (or weeks) with days off shaded | `day_gantt` | day columns ≤ 60 days, week columns ≤ 26 weeks |
 | Tasks listed day by day | `day_agenda` | merged date cells, collapsed days off |
+| One week by hour | `week_timetable` | 5 or 7 day columns, overlaps side by side |
+| Consecutive sprints | `sprint_calendar` | working days per sprint, event days placed automatically |
+| A fiscal year at a glance | `year_calendar` | 12 mini months, busy / off / key marks (handout density) |
+| Days left to a deadline | `deadline_countdown` | calendar and working days, checkpoints |
 | A month-level plan | `gantt` (`patterns.md`) | column labels only, no dates |
 
 Shared conventions:
@@ -109,6 +113,100 @@ d.day_agenda(x, y, w, h, start, end, items,
   "items": [["2026-09-15", "セキュリティ審査の資料提出", "情シス", "12:00", "完了"]] }
 ```
 
+## week_timetable
+
+```python
+d.week_timetable(x, y, w, h, week, events,
+                 days=5,                 # 5 (Mon-Fri) or 7
+                 start_hour=9, end_hour=18,
+                 breaks=None,            # default [["12:00", "13:00", "昼休憩"]]
+                 extra_holidays=None,
+                 size=8.5)
+```
+
+- `week` is any date in the week; columns start on its Monday.
+- `events` are `[date, start, end, title, place, category]` with `HH:MM` times.
+  Overlapping events on a day are placed side by side (`assign_tracks`); three
+  at once raise.
+- Each hour needs 0.30 in; an event must be tall enough for one 8pt line
+  (30 minutes at 9–18h on the template's 3.65 in).
+- Boxes ≥ 0.62 in show time range, title and place; shorter ones "9:30 title";
+  narrow side-by-side boxes the title only.
+- Breaks are grey bands on days with nothing scheduled over them; a holiday
+  with no events is shaded with its name.
+
+```json
+{ "type": "week_timetable", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "week": "2026-10-05", "days": 5, "startHour": 9, "endHour": 18,
+  "events": [["2026-10-05", "09:30", "12:00", "オリエンテーション", "大会議室", "primary"]],
+  "breaks": [["12:00", "13:00", "昼休憩"]] }
+```
+
+## sprint_calendar
+
+```python
+d.sprint_calendar(x, y, w, h, start, sprints,
+                  length_days=14,        # 7 or 14
+                  extra_holidays=None,
+                  size=8.5)
+```
+
+- `start` must be a Monday. `sprints` are `[number, goal, release]`, laid out
+  consecutively; at most 8 week rows (four 2-week or eight 1-week sprints).
+- The left panel shows dates, working days and how many weekdays holidays took
+  ("休日 -1"), and the goal (one-week rows fold dates into the second line).
+- The first working day is marked 計画 (計画（振替） if the sprint's Monday is
+  off); the last working day レビュー, or リリース in red when `release` is true.
+
+```json
+{ "type": "sprint_calendar", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "start": "2026-09-28", "lengthDays": 14,
+  "sprints": [["12", "検索 API の公開", false], ["13", "権限管理の追加", true]] }
+```
+
+## year_calendar
+
+```python
+d.year_calendar(x, y, w, h, start_month, marks,
+                extra_holidays=None,
+                size=7)
+```
+
+- Twelve months from `start_month` ("2026-04" for a Japanese fiscal year), in
+  two rows of six. Numbers are 7pt: a handout form.
+- `marks` are `[start, end, label, kind]`; `busy` fills the range blue, `off`
+  red, `key` circles the start date (end empty). Dates outside the 12 months
+  raise.
+- The legend lists each kind with its labels; closures you also want as red
+  numbers go in `extra_holidays`.
+
+```json
+{ "type": "year_calendar", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "startMonth": "2026-04",
+  "marks": [["2026-04-01", "2026-04-24", "決算", "busy"],
+            ["2026-06-25", "", "株主総会", "key"]] }
+```
+
+## deadline_countdown
+
+```python
+d.deadline_countdown(x, y, w, h, deadline, today, label,
+                     checkpoints=None,   # up to 3 [date, name]
+                     extra_holidays=None)
+```
+
+- Calendar days left (`deadline - today`) in large type, working days from
+  today to the day before the deadline, and checkpoints with "あとN日".
+- The right side shows today's month and the next with the remaining days
+  filled; the deadline must fall in one of them (otherwise use
+  `month_calendar` / `day_gantt`). Needs h ≥ 3.3 in.
+
+```json
+{ "type": "deadline_countdown", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "deadline": "2026-10-14", "today": "2026-09-15", "label": "本番切替まで",
+  "checkpoints": [["2026-09-18", "判定会議"]] }
+```
+
 ## Date engine
 
 Pure functions in `calendars.py`, covered by `tests/test_calendars.py`:
@@ -124,9 +222,15 @@ Pure functions in `calendars.py`, covered by `tests/test_calendars.py`:
 | `choose_scale(start, end)` | `"day"` / `"week"` |
 | `pack_lanes(spans, nlanes)` | lane placement and overflow |
 | `agenda_entries(start, end, items, holidays)` | day / off / empty rows |
+| `parse_time(value)` / `format_time(hours)` | `9.5` / `"9:30"` |
+| `assign_tracks(intervals)` | (track, tracks in its overlap cluster) per interval |
+| `sprint_ranges(start, count, length_days)` | consecutive sprint date ranges |
+| `months_from(start_month, count)` | `[(year, month), ...]` |
 
 ## Splitting across slides
 
 `scripts/calendar_pages.py data.json --out pages.json` turns one dataset into
-template slides: one page per month, per Monday–Sunday week (agenda), or per
-row chunk at group boundaries (gantt). See its docstring for the input format.
+template slides: one page per month, per Monday–Sunday week (agenda,
+timetable), per row chunk at group boundaries (gantt), or per 8 week rows
+(sprints). The year and countdown forms are one page each. See its docstring
+for the input format.
