@@ -55,19 +55,22 @@ For templates with a different title size, the ceiling changes too. As a rule of
 
 ## Line Count in the Body Placeholder
 
-Google's `lineSpacing` is a **percentage of the font's intrinsic line height**, not an absolute value. Noto Sans JP has a line height of about 1.45em, so the actual height of one line is:
+Google's `lineSpacing` is a **percentage of a base line height**, not an absolute value. The base is **1.2em** — measured on the live API for Noto Sans JP and Arial alike, at 12pt and 20pt (8-line text boxes read back from thumbnails). It is not the font's own ascent + descent (about 1.45em for Noto Sans JP), which an earlier version of this document assumed. The actual height of one line is:
 
 ```
-行高(in) = フォントサイズ(pt) × 1.45 × lineSpacing(%) ÷ 100 ÷ 72
+行高(in) = フォントサイズ(pt) × 1.2 × lineSpacing(%) ÷ 100 ÷ 72
 ```
 
-| Setting | Height per line | Lines that fit in h=4.068in |
+| Setting | Height per line (measured) | Lines that fit in h=4.068in |
 |---|---|---|
-| 13pt / 160% | 0.419in | 9.7 lines |
-| 12pt / 120% | 0.290in | 14.0 lines |
-| 12pt / 115% | 0.278in | 14.6 lines |
+| 13pt / 160% | 0.347in | 11.7 lines |
+| 12pt / 150% | 0.302in | 13.5 lines |
+| 12pt / 120% | 0.240in | 16.9 lines |
+| 12pt / 115% | 0.230in | 17.7 lines |
 
-`deckkit`'s default is **12pt / 120% (14 lines max)**. Fitting 12 lines at 13pt / 160% breaks through the footer (this actually happened).
+A text block also starts about 0.05in below the frame's top edge (the top inset plus the first line's leading), so a frame needs `lines × line height + 0.05in`.
+
+`deckkit`'s default is **12pt / 120% (14 lines max)**; the cap leaves room for paragraph spacing and wrapped lines. Fitting 12 lines at 13pt / 160% breaks through the footer (this actually happened).
 
 The number of characters per line is `width(pt) ÷ font size(pt)`. At 9.0in / 12pt that's 54 full-width characters. To avoid awkward wraps, stay around 46 full-width characters.
 

@@ -63,8 +63,18 @@ def fit_em(text: str, budget: float, *, ellipsis: str = "…") -> str:
 
 # Slides' built-in left/right inner margin of a text frame (api-notes §14)
 TEXT_INSET_X = 0.10
-# Noto Sans JP line height, as a multiple of the font size
-LINE_EM = 1.45
+# Height of one line at lineSpacing 100, as a multiple of the font size. Measured
+# on the live API (8-line text boxes read back from LARGE thumbnails): 1.19 for
+# Noto Sans JP and Arial alike, at 12pt and 20pt, scaling linearly with
+# lineSpacing (115% → 1.38, 120% → 1.44, 150% → 1.81). The 1.45 used before is
+# the font's own ascent + descent, which Slides does not lay lines out by; it
+# overestimated every block by about a fifth.
+LINE_EM = 1.2
+# A text block ends this far below whole lines (the top inset plus the first
+# line's leading; measured 0.04–0.05in). It falls within the frame's bottom
+# inset, so shrinking only requires whole lines to fit; growing a box adds it,
+# so the grown frame holds the text with its inset.
+FIT_INSET_Y = 0.05
 
 FIT_MODES = ("shrink", "grow", "none")
 DEFAULT_FIT = "shrink"
