@@ -564,19 +564,28 @@ def _slot_line_em(font: str | None) -> float:
     return LINE_EM if font and font.startswith("Noto Sans JP") else SLOT_LINE_EM
 
 
-def _slot_indent(inset: float, drawn: bool) -> dict:
+def _slot_one_sided(drawn: bool, align: str | None) -> bool:
+    """Whether fitting tightens only one edge of a slot (see _slot_indent)."""
+    return not drawn or align != "CENTER"
+
+
+def _slot_indent(inset: float, drawn: bool, align: str | None = None) -> dict:
     """Paragraph indents that give a slot the fitted inner margin.
 
-    A drawn slot is a plain text box, so both sides move. A placeholder's own
-    left indent carries its bullets and hanging indents, so only the right
-    edge moves there.
+    Only the edge the text is not aligned to moves, so a fitted title starts
+    exactly where every other title on the deck does. A placeholder always
+    moves just its right edge: its own left indent carries bullets and hanging
+    indents. A drawn slot moves the right edge for START, the left for END,
+    and both for CENTER.
     """
     tighten = TEXT_INSET_X - inset
     if tighten <= 1e-9:
         return {}
-    if drawn:
+    if drawn and align == "CENTER":
         return _auth.indent_style(tighten)
-    return {"indentEnd": {"magnitude": -tighten * 72.0, "unit": "PT"}}
+    if drawn and align == "END":
+        return _auth.indent_sides(tighten, 0)
+    return _auth.indent_sides(0, tighten)
 
 
 def _slot_key(name: str) -> str:
@@ -682,8 +691,10 @@ def fit_slot(layout: dict, name: str, value, *, explicit_size=None,
     w, h = geo["w"], geo["h"]
     line_em = _slot_line_em(style.get("fontFamily") or (draw or {}).get("fontFamily"))
 
+    one_side = _slot_one_sided(drawn, geo.get("align"))
+
     def width(inset):
-        return w - (inset * 2 if drawn else TEXT_INSET_X + inset)
+        return w - (TEXT_INSET_X + inset if one_side else inset * 2)
 
     if body:
         roles = roles or DEFAULT_BODY_ROLES
@@ -1264,7 +1275,8 @@ class TemplateDeck:
             # titleFontSize to fit them on one line; a fitted size wins over it
             size = title_font_size if name == (title_slot or "TITLE") else None
             self._queue_slot_fit(ph_ids[name], fits.get(name), size,
-                                 drawn=name in drawn)
+                                 drawn=name in drawn,
+                                 align=(draw_specs.get(name) or {}).get("align"))
 
         # Each body line can have its own role and inline emphasis, so build it while tracking ranges
         body_spans: dict[str, list[dict]] = {}
@@ -1286,7 +1298,8 @@ class TemplateDeck:
             if value is None:
                 continue
             self._queue_slot_fit(ph_ids[name], fits.get(name), body_font_size,
-                                 drawn=name in drawn)
+                                 drawn=name in drawn,
+                                 align=(draw_specs.get(name) or {}).get("align"))
             # A placeholder's default may also carry space before/after
             # paragraphs, throwing off the line-count estimate significantly.
             # spaceAbove / spaceBelow can be set explicitly too
@@ -1328,7 +1341,8 @@ class TemplateDeck:
             "fitWarnings": fit_warnings,
         }
 
-    def _queue_slot_fit(self, oid: str, planned, size, *, drawn: bool) -> None:
+    def _queue_slot_fit(self, oid: str, planned, size, *, drawn: bool,
+                        align: str | None = None) -> None:
         """Queue a filled slot's font size, fitted margin and autofit NONE.
 
         `size` is the size the spec asked for (or None); a fitted size wins.
@@ -1344,7 +1358,7 @@ class TemplateDeck:
                 "textRange": {"type": "ALL"},
                 "fields": "fontSize",
             }})
-        indent = _slot_indent(fit.inset, drawn) if fit is not None else {}
+        indent = _slot_indent(fit.inset, drawn, align) if fit is not None else {}
         if indent:
             self.requests.append({"updateParagraphStyle": {
                 "objectId": oid, "style": indent,

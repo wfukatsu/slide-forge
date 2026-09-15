@@ -80,6 +80,24 @@ class CanvasFitTest(unittest.TestCase):
         self.assertEqual(len(self.canvas.fit_notes), 1)
         self.assertEqual(self.canvas.audit_text_fit(), [])
 
+    def test_start_aligned_text_keeps_its_left_edge(self):
+        oid = self.canvas.label(0, 0, 2.0, 0.3, "あ" * 12, size=11)
+        para = requests_for(self.canvas.deck.requests,
+                            "updateParagraphStyle", oid)[0]["style"]
+        self.assertEqual(set(para) - {"alignment"}, {"indentEnd"})
+        self.assertEqual(self.canvas.audit_text_fit(), [])
+
+    def test_slot_margin_moves_the_edge_the_text_is_not_aligned_to(self):
+        keys = lambda d: set(d)  # noqa: E731
+        self.assertEqual(keys(bd._slot_indent(0.04, True, "START")), {"indentEnd"})
+        self.assertEqual(keys(bd._slot_indent(0.04, True, "END")),
+                         {"indentStart", "indentFirstLine"})
+        self.assertEqual(keys(bd._slot_indent(0.04, True, "CENTER")),
+                         {"indentStart", "indentFirstLine", "indentEnd"})
+        # A placeholder's left indent carries its bullets: right edge only
+        self.assertEqual(keys(bd._slot_indent(0.04, False, "CENTER")), {"indentEnd"})
+        self.assertEqual(bd._slot_indent(0.10, True, "START"), {})
+
     def test_text_that_fits_draws_as_before(self):
         oid = self.canvas.shape(0, 0, 2.0, 0.3, text="あ" * 5, size=11)
         reqs = self.canvas.deck.requests

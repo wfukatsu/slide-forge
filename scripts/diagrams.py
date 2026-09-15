@@ -305,10 +305,12 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                   file=sys.stderr)
         inset = self._text_inset(text_margin)
         if text:
-            y, h, size, inset = self._fit_text(
+            y, h, size, inset_start, inset_end = self._fit_text(
                 text, y, w, h, size=size, inset=inset,
                 line_spacing=line_spacing, valign=valign, rotation=rotation,
-                mode=text_fit)
+                mode=text_fit, align=align)
+        else:
+            inset_start = inset_end = inset
         oid = self._oid("s")
         reqs = [{"createShape": {
             "objectId": oid, "shapeType": kind,
@@ -366,7 +368,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             if line_spacing:
                 pstyle["lineSpacing"] = line_spacing
                 pfields.append("lineSpacing")
-            indent = _auth.indent_style(self.TEXT_INSET_X - inset)
+            indent = _auth.indent_sides(self.TEXT_INSET_X - inset_start,
+                                        self.TEXT_INSET_X - inset_end)
             pstyle.update(indent)
             pfields += list(indent)
             # If no line spacing or tightening was asked for and alignment is
@@ -394,7 +397,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                                "size": size, "ls": line_spacing or 100,
                                "fill": fill is not None and alpha >= 0.9,
                                "align": align, "valign": valign,
-                               "inset": inset, "seq": self._seq}
+                               # the audit subtracts inset per side; the mean
+                               # of the two sides gives the same column width
+                               "inset": (inset_start + inset_end) / 2,
+                               "seq": self._seq}
         return oid
 
     def box(self, x, y, w, h, text=None, **kw) -> str:
@@ -831,8 +837,13 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return self.TEXT_INSET_X if m is None else max(0.0, float(m))
 
     def _fit_text(self, text, y, w, h, *, size, inset, line_spacing, valign,
-                  rotation, mode):
-        """Fit text to its box before the shape is created; returns (y, h, size, inset).
+                  rotation, mode, align="CENTER"):
+        """Fit text to its box before the shape is created.
+
+        Returns (y, h, size, inset_start, inset_end). The margin is tightened
+        only on the side the text is not aligned to — START text keeps its
+        left edge where the rest of the page has it, END text its right edge;
+        CENTER (and rotated) text is tightened on both sides.
 
         The API cannot enable Slides' own "shrink text on overflow" or
         "resize shape to fit text" (autofitType takes only NONE), and Slides
@@ -855,14 +866,20 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             raise ValueError(t("unknown text_fit '{mode}' (use one of: {modes})",
                                mode=mode, modes=", ".join(FIT_MODES)))
         if mode == "none":
-            return y, h, size, inset
+            return y, h, size, inset, inset
         sideways = rotation % 180 == 90
         fw, fh = (h, w) if sideways else (w, h)
         ls = line_spacing or 100
+        one_side = align in ("START", "END") and not rotation
+
+        def sides(i):
+            if not one_side:
+                return i, i
+            return (inset, i) if align == "START" else (i, inset)
 
         def need(s, i):
-            return text_height(text, fw, s, line_spacing=ls, inset=i,
-                               line_em=self.LINE_EM)
+            return text_height(text, fw, s, line_spacing=ls,
+                               inset=sum(sides(i)) / 2, line_em=self.LINE_EM)
 
         head = text.replace("\n", " ")[:22]
         if mode == "grow" and not rotation:
@@ -872,15 +889,15 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 self.fit_notes.append(t(
                     "Box grown to fit its text (height {h0:.2f}→{h1:.2f}in): "
                     "\"{text}\"", h0=h, h1=nh, text=head))
-                return ny, nh, size, inset
-            return y, h, size, inset
+                return ny, nh, size, inset, inset
+            return y, h, size, inset, inset
         fit = fit_box(need, fh, size, inset, min_size=self.min_font_size,
                       slack=self.TEXT_SLACK)
         detail = describe_fit(size, inset, fit)
         if detail:
             self.fit_notes.append(t("Text fitted to its box ({detail}): \"{text}\"",
                                     detail=detail, text=head))
-        return y, h, fit.size, fit.inset
+        return (y, h, fit.size, *sides(fit.inset))
 
     # A text entry never changes after it is registered, so its measurements are
     # computed once and kept on the entry. The overlap audit compares every pair
