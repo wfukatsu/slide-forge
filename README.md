@@ -599,6 +599,33 @@ from a deck spec with the `$template` field. Every template is catalogued with
 a rendered image in
 [`references/slide-template-catalog.md`](references/slide-template-catalog.md).
 
+## Text fitting
+
+The Slides API cannot switch on Slides' own "shrink text on overflow"
+(`autofitType` accepts only `NONE`), and text that overflows is drawn outside
+its box — over the element below it or off the page. slide-forge therefore
+fits text **before** sending the requests: it tightens the inner margin on the
+side the text is not aligned to, then shrinks the font in 0.5pt steps down to
+70% of its size (never below 8pt). Text that already fits is drawn exactly as
+written.
+
+| Without fitting (`"textFit": "none"`) | With fitting (the default) |
+|---|---|
+| ![Title and body overflowing their slots](references/images/text-fit/slot-none.png) | ![The same page fitted to its slots](references/images/text-fit/slot-shrink.png) |
+
+![Shape text in the three modes: none, shrink, grow](references/images/text-fit/shapes.png)
+
+- Title, subtitle and body slots and every figure shape are fitted. Table
+  cells are not; their rows grow on their own.
+- `textFit` (`shrink` / `grow` / `none`) and `minFontSize` go on a slide or in
+  `defaults`. A `"density": "print"` deck may shrink text down to 8pt, since
+  8–10pt reads fine on paper.
+- `--dry-run` and generation print every adjustment as `fit:`. Text that
+  still overflows at the floor is a finding, so `--strict` fails on it.
+
+Details: [`references/api-notes.md`](references/api-notes.md) §14b and
+[`references/validation.md`](references/validation.md).
+
 ## Slide pattern catalog
 
 Which page shapes can this build? See

@@ -372,6 +372,30 @@ text shape (`text_fit="shrink"` by default, `"grow"` to heighten the box
 around its anchored edge, `"none"` to leave it to the audit). Both also state
 `autofitType: NONE` explicitly, so the PPTX export matches.
 
+**Tighten only the edge the text is not aligned to.** START text moves its
+right edge, END text its left, CENTER text both; a placeholder always moves
+just its right edge, because its left indent carries bullets. Tightening both
+sides of a left-aligned title shifts it about 0.06in left of every other title
+on the deck (found in visual QA).
+
+**Count 95% of the column as usable when fitting.** Slides wraps a line that
+exactly fills its column: in a 2.6in box at 12pt the formula gives 15.0
+full-width characters, but 14 fit and the 15th wraps — the same in a
+`TEXT_BOX`, `RECTANGLE` and `ROUND_RECTANGLE`, in Noto Sans JP and Arial. The
+audits keep the plain formula; fitting plans against the narrower column
+(`_text.FIT_WIDTH`) so what it declares fitted really fits.
+
+**One line is 1.2 × the font size × lineSpacing, not 1.45.** Measured with
+8-line text boxes read back from thumbnails: 1.19 at lineSpacing 100, 1.38 at
+115, 1.44 at 120 and 1.81 at 150 — the same for Noto Sans JP and Arial, at 12pt
+and 20pt. The block starts about 0.05in below the frame's top edge. The 1.45
+used before is Noto Sans JP's ascent + descent; it overestimated every block by
+about a fifth, so fitting shrank text much further than it needed to.
+`_text.LINE_EM` is 1.2. Shrinking requires whole lines to fit the frame — the
+0.05in offset lands in the frame's bottom inset, and a one-line label in a
+tight box is left alone — while `grow` adds the offset (`_text.FIT_INSET_Y`)
+to the height it grows to.
+
 ## 15. `TRAPEZOID`'s slope cannot be changed
 
 The top-edge inset is fixed at **displayed height × 0.25** (on each side). Measured:

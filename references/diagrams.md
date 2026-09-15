@@ -147,6 +147,12 @@ d.label(0.5, 2.0, 3.0, 0.3, caption, text_fit="none")      # leave it; the audit
 
 In a spec, `textFit` / `minFontSize` go on a slide or in `defaults`.
 
+The margin is tightened only on the side the text is not aligned to, so a
+START label keeps its left edge in line with its neighbours (CENTER text is
+tightened on both sides). A code-first deck meant for print sets
+`d.min_font_size = 8`, the equivalent of a spec's `"density": "print"`.
+Before/after images: [`README.md`](../README.md#text-fitting).
+
 Code samples use `code_block` (`references/code-blocks.md`): monospace with
 highlighting, square corners. Estimate the height from the effective line
 height (`lines × size × ls × 1.45 / 72 + 0.14in`).

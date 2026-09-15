@@ -138,6 +138,11 @@ d.label(0.5, 2.0, 3.0, 0.3, caption, text_fit="none")      # 何もしない（�
 
 spec では `textFit` / `minFontSize` をスライド単位か `defaults` に書く。
 
+余白を詰めるのは文字の揃えと反対側だけなので、左揃えのラベルは隣と左端がそろった
+まま（CENTER は両側を詰める）。印刷用のコードファーストのデッキでは
+`d.min_font_size = 8` を指定する（spec の `"density": "print"` に相当）。
+調整前後の画像は [`README.ja.md`](../README.ja.md#テキストの適合) を参照。
+
 ```python
 d.code_block(0.5, 1.0, 6.1, 2.9, code, lang="java")  # java/graphql/json/bash
 ```
