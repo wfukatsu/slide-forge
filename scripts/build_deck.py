@@ -30,6 +30,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 import settings  # noqa: E402
 from _i18n import t, register  # noqa: E402
+from _text import (  # noqa: E402
+    DEFAULT_FIT, FIT_MODES, LINE_EM, TEXT_INSET_X, Fit, describe_fit, fit_box,
+    wrapped_lines)
 
 register({
     "Drive folder URL or ID to create the deck in":
@@ -222,12 +225,25 @@ register({
         "図の検査（コネクタ・重なり・文字溢れ）: 問題なし",
     "(dry-run: nothing was generated)": "(dry-run: 生成していません)",
     "Figure audit found {n} findings:": "図の検査で {n} 件:",
-    "slides[{i}] ({title}): body{col} needs about {used:.0f}pt but the "
-    "placeholder is {cap:.0f}pt. Reduce the text, lower bodyFontSize, or "
-    "split the slide":
-        "slides[{i}] ({title}): 本文{col}は約 {used:.0f}pt 必要ですが枠は "
-        "{cap:.0f}pt です。文を減らすか bodyFontSize を下げるか、"
-        "スライドを分けてください",
+    "{where}: {slot} does not fit its slot ({size:g}pt). Reduce the text, "
+    "lower the font size, or split the slide":
+        "{where}: {slot} が枠に収まりません（{size:g}pt）。文を減らすか"
+        "文字サイズを下げるか、スライドを分けてください",
+    "{slot}: text fitted to the slot ({detail})":
+        "{slot}: テキストを枠に合わせました（{detail}）",
+    "{where}: 'textFit' must be one of: {modes}":
+        "{where}: 'textFit' は {modes} のいずれかです",
+    "{where}: 'minFontSize' must be a positive number (pt)":
+        "{where}: 'minFontSize' は正の数（pt）である必要があります",
+    "Text fitted to its box ({n}):": "テキストを枠に合わせた箇所（{n} 件）:",
+    "{slot} still overflows its slot at {size:g}pt; reduce the text, lower "
+    "minFontSize, or split the slide":
+        "{slot} は {size:g}pt まで縮めても枠に収まりません。文を減らすか "
+        "minFontSize を下げるか、スライドを分けてください",
+    "  warn: could not read placeholder styles; text fitting uses "
+    "template.json only ({err})":
+        "  warn: プレースホルダの書式を読めませんでした。テキストの適合は "
+        "template.json の値だけで行います（{err}）",
     "  warn: body text contains characters outside the BMP (emoji etc.); "
     "emphasis ranges may shift":
         "  warn: 本文に BMP 外の文字（絵文字など）が含まれます。"
@@ -525,6 +541,188 @@ def _drawn_text_styles(oid: str, spec: dict) -> list[dict]:
     return requests
 
 
+# ---------- Fitting slot text ----------
+#
+# Slides' own "shrink text on overflow" cannot be turned on through the API
+# (autofitType accepts only NONE), and text that overflows a slot is drawn
+# outside it, so a long title or body shows up displaced. fit_slot()
+# reproduces the fitting before the requests go out; audit_body_fit() runs
+# the same plan offline.
+
+# Line height the slot estimate assumes for a template font. Deliberately on
+# the low side (a false alarm costs more than a near miss). Noto Sans JP, the
+# font the blank template draws its slots in, is measured taller and uses
+# _text.LINE_EM like the drawing engine does.
+SLOT_LINE_EM = 1.2
+# Allowance against the slot height, as a fraction of it
+SLOT_FIT_SLACK = 0.02
+
+
+def _slot_line_em(font: str | None) -> float:
+    return LINE_EM if font and font.startswith("Noto Sans JP") else SLOT_LINE_EM
+
+
+def _slot_indent(inset: float, drawn: bool) -> dict:
+    """Paragraph indents that give a slot the fitted inner margin.
+
+    A drawn slot is a plain text box, so both sides move. A placeholder's own
+    left indent carries its bullets and hanging indents, so only the right
+    edge moves there.
+    """
+    tighten = TEXT_INSET_X - inset
+    if tighten <= 1e-9:
+        return {}
+    if drawn:
+        return _auth.indent_style(tighten)
+    return {"indentEnd": {"magnitude": -tighten * 72.0, "unit": "PT"}}
+
+
+def _slot_key(name: str) -> str:
+    """Slot name -> its `elements` / `textStyles` key (CENTERED_TITLE -> title)."""
+    return "title" if name in ("TITLE", "CENTERED_TITLE") else name.lower()
+
+
+def _placeholder_own_style(shape: dict) -> dict:
+    """The size and paragraph spacing a placeholder sets itself (not inherited)."""
+    out: dict = {}
+    elements = (shape.get("text") or {}).get("textElements") or []
+    para = next((te["paragraphMarker"].get("style") or {} for te in elements
+                 if "paragraphMarker" in te), {})
+    run = next((te["textRun"].get("style") or {} for te in elements
+                if "textRun" in te), {})
+    size = (run.get("fontSize") or {}).get("magnitude")
+    if size:
+        out["fontSize"] = size
+    if para.get("lineSpacing"):
+        out["lineSpacing"] = para["lineSpacing"]
+    for key in ("spaceAbove", "spaceBelow"):
+        if key in para:          # {"unit": "PT"} with no magnitude is an explicit 0
+            out[key] = (para[key] or {}).get("magnitude", 0)
+    return out
+
+
+def inherited_slot_styles(pres: dict) -> dict[str, dict[str, dict]]:
+    """layoutId -> slot key -> the font size and paragraph spacing a slot really gets.
+
+    A layout placeholder usually sets only some of these and inherits the
+    rest from its master placeholder (a BODY with lineSpacing 115 and
+    spaceBelow 10pt, say), which template.json does not record. Estimating
+    without them undercounts the height badly, so the real deck is read and
+    each value resolved up the parentObjectId chain.
+    """
+    shapes = {}
+    for page in (pres.get("masters") or []) + (pres.get("layouts") or []):
+        for el in page.get("pageElements") or []:
+            if (el.get("shape") or {}).get("placeholder"):
+                shapes[el["objectId"]] = el["shape"]
+    out: dict[str, dict[str, dict]] = {}
+    for layout in pres.get("layouts") or []:
+        slots: dict[str, dict] = {}
+        for el in layout.get("pageElements") or []:
+            shape = el.get("shape") or {}
+            ph = shape.get("placeholder")
+            if not ph or ph.get("type") not in ("TITLE", "CENTERED_TITLE",
+                                                "SUBTITLE", "BODY"):
+                continue
+            idx = ph.get("index", 0)
+            name = ph["type"] if not idx else f"{ph['type']}#{idx}"
+            style: dict = {}
+            seen = set()
+            while shape and id(shape) not in seen:
+                seen.add(id(shape))
+                for k, v in _placeholder_own_style(shape).items():
+                    style.setdefault(k, v)
+                parent = (shape.get("placeholder") or {}).get("parentObjectId")
+                shape = shapes.get(parent) if parent else None
+            slots.setdefault(_slot_key(name), style)
+        out[layout["objectId"]] = slots
+    return out
+
+
+def fit_slot(layout: dict, name: str, value, *, explicit_size=None,
+             body: bool = False, drawn: bool | None = None,
+             mode: str | None = None, min_size: float | None = None,
+             line_spacing=None, space_above=None, space_below=None,
+             roles: dict | None = None,
+             inherited: dict[str, dict] | None = None) -> tuple[Fit, float] | None:
+    """Plan the font size and inner margin that fit a slot's text.
+
+    Returns (fit, base size), or None when the slot's geometry or font size
+    is unknown. `inherited` is this layout's entry from inherited_slot_styles
+    (read from the real deck at build time); it fills in the font size and
+    paragraph spacing template.json lacks, so without it (dry-run) the
+    estimate stays on the low side. Text that fits is planned unchanged.
+    "grow" is treated as "shrink" here: resizing a template's slot would
+    break the layout it belongs to. With "none" the plan is left at the base
+    size and only reports whether it fits.
+    """
+    mode = mode or DEFAULT_FIT
+    draw = TemplateDeck._draw_specs(layout).get(name)
+    if drawn is None:
+        drawn = draw is not None and name not in (layout.get("placeholders") or [])
+    key = _slot_key(name)
+    style = (layout.get("textStyles") or {}).get(key) or {}
+    inh = {} if drawn else ((inherited or {}).get(key) or {})
+    if drawn:
+        geo = draw
+        size = explicit_size or draw.get("size") or style.get("fontSize")
+        ls = line_spacing or draw.get("lineSpacing") or 100
+    else:
+        geo = (layout.get("elements") or {}).get(key)
+        size = explicit_size or style.get("fontSize") or inh.get("fontSize")
+        ls = line_spacing or inh.get("lineSpacing") or 100
+    if space_above is None:
+        space_above = inh.get("spaceAbove")
+    if space_below is None:
+        space_below = inh.get("spaceBelow")
+    if not geo or not size:
+        return None
+    w, h = geo["w"], geo["h"]
+    line_em = _slot_line_em(style.get("fontFamily") or (draw or {}).get("fontFamily"))
+
+    def width(inset):
+        return w - (inset * 2 if drawn else TEXT_INSET_X + inset)
+
+    if body:
+        roles = roles or DEFAULT_BODY_ROLES
+        gap = (space_above or 0) + (space_below or 0)
+        lines = [(parse_inline(text)[0], roles.get(role) or {})
+                 for text, role in normalize_body_lines(value)]
+
+        def need(s, inset):
+            total = 0.0
+            for plain, st in lines:
+                fs = st.get("fontSize", size) * s / size
+                total += (wrapped_lines(plain, width(inset), fs) * fs * line_em
+                          * ls / 100 + gap
+                          + st.get("spaceAbove", 0) + st.get("spaceBelow", 0))
+            return total / 72
+    else:
+        text = "\n".join(value) if isinstance(value, list) else str(value)
+
+        def need(s, inset):
+            return wrapped_lines(text, width(inset), s) * s * line_em * ls / 100 / 72
+
+    slack = h * SLOT_FIT_SLACK
+    if mode == "none":
+        return Fit(size, TEXT_INSET_X,
+                   need(size, TEXT_INSET_X) <= h + slack), size
+    return fit_box(need, h, size, TEXT_INSET_X, min_size=min_size,
+                   slack=slack), size
+
+
+def _scale_spans(spans: list[dict], scale: float) -> list[dict]:
+    """Shrink the role font sizes of body spans along with the fitted body."""
+    out = []
+    for span in spans:
+        fs = span["style"].get("fontSize")
+        if fs:
+            span = {**span, "style": {**span["style"],
+                                      "fontSize": round(fs * scale * 2) / 2}}
+        out.append(span)
+    return out
+
+
 def load_template(path: str) -> dict:
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -556,6 +754,10 @@ class TemplateDeck:
         self.image_fixups: list[tuple] = []
         # --into's title change is deferred until after a successful commit (see open())
         self.pending_title: str | None = None
+        # layoutId -> slot key -> font size / paragraph spacing resolved through
+        # the master. Read from the real deck by load_inherited_styles();
+        # stays empty for a deck made without one (create mode, tests)
+        self.inherited_styles: dict[str, dict[str, dict]] = {}
         # Partial page replacement must be atomic. It is never split across batchUpdate calls.
         self.require_single_batch = False
         self.partial_targets: dict[int, str] = {}
@@ -593,6 +795,7 @@ class TemplateDeck:
             what=t("template copy"))
 
         deck = cls(slides, drive, copied["id"], template)
+        deck.load_inherited_styles()
         if not keep_existing:
             deck._delete_existing_slides()
         else:
@@ -704,6 +907,7 @@ class TemplateDeck:
                   pid=pid, tpl=template.get("name", "?")))
         deck = cls(slides, drive, pid, template)
         deck._require_layouts(layouts)
+        deck.load_inherited_styles()
         deck._print_pre_edit_revision()
         removed = deck._queue_slide_deletes(deck._present_slide_ids())
         print(t("  replacing an existing deck: {n} slides will be removed",
@@ -737,6 +941,7 @@ class TemplateDeck:
                   pid=pid, tpl=template.get("name", "?")))
         deck = cls(slides, drive, pid, template)
         deck._require_layouts(layouts)
+        deck.load_inherited_styles()
         present = deck._present_slide_ids()
         if len(present) != expected_slide_count:
             raise ValueError(
@@ -752,6 +957,29 @@ class TemplateDeck:
         print("  warning: replaced pages receive new slide IDs; comments and "
               "links to their old IDs are not preserved")
         return deck
+
+    def load_inherited_styles(self) -> None:
+        """Read the deck's layouts and masters for slot fitting (inherited_slot_styles).
+
+        Only placeholder text is requested. Failing to read it is not fatal:
+        fitting then falls back to what template.json records.
+        """
+        fields = ("layouts(objectId,pageElements(objectId,shape(placeholder,"
+                  "text.textElements))),masters(objectId,pageElements(objectId,"
+                  "shape(placeholder,text.textElements)))")
+        from googleapiclient.errors import HttpError
+        try:
+            pres = _retry(
+                lambda: self.slides.presentations().get(
+                    presentationId=self.presentation_id, fields=fields
+                ).execute(),
+                what="presentations.get (placeholder styles)")
+        except (HttpError, OSError) as exc:
+            print(t("  warn: could not read placeholder styles; text fitting "
+                    "uses template.json only ({err})", err=exc), file=sys.stderr)
+            return
+        if isinstance(pres, dict):
+            self.inherited_styles = inherited_slot_styles(pres)
 
     def _present_slide_ids(self) -> list[str]:
         pres = _retry(
@@ -894,8 +1122,15 @@ class TemplateDeck:
         body_line_spacing: float | None = None,
         body_space_above: float | None = None,
         body_space_below: float | None = None,
+        text_fit: str | None = None,
+        min_font_size: float | None = None,
     ) -> dict:
         """Add a slide with the given layout and fill in its placeholders.
+
+        Text that would overflow its slot is fitted to it (`text_fit`,
+        "shrink" by default: tighten the inner margin, then the font, no
+        smaller than `min_font_size`). What was changed is returned as
+        "fitNotes". See fit_slot().
 
         `bodies` is for 2-column/3-column layouts. It's poured in order into
         BODY placeholder indices 0, 1, 2, …. `body` is equivalent to `bodies=[body]`.
@@ -981,6 +1216,38 @@ class TemplateDeck:
             ph_ids[name] = self._draw_slot(slide_id, draw_specs[name])
             drawn.add(name)
 
+        # Plan how each slot's text fits its slot before any styling is queued
+        fits: dict[str, tuple[Fit, float]] = {}
+        fit_notes: list[str] = []
+        fit_warnings: list[str] = []
+        for name, value, explicit, is_body in (
+                [(title_slot or "TITLE", title, title_font_size, False),
+                 ("SUBTITLE", subtitle, None, False)]
+                + [(n, v, body_font_size, True) for n, v in filled_bodies]):
+            if value is None or name not in ph_ids:
+                continue
+            planned = fit_slot(
+                layout, name, value, explicit_size=explicit, body=is_body,
+                drawn=name in drawn, mode=text_fit, min_size=min_font_size,
+                line_spacing=body_line_spacing if is_body else None,
+                space_above=body_space_above if is_body else None,
+                space_below=body_space_below if is_body else None,
+                roles=self.body_roles(),
+                inherited=self.inherited_styles.get(layout.get("layoutId")))
+            if planned is None:
+                continue
+            fits[name] = planned
+            if not planned[0].fits:
+                fit_warnings.append(t(
+                    "{slot} still overflows its slot at {size:g}pt; reduce the "
+                    "text, lower minFontSize, or split the slide",
+                    slot=name, size=planned[0].size))
+                continue
+            detail = describe_fit(planned[1], TEXT_INSET_X, planned[0])
+            if detail:
+                fit_notes.append(t("{slot}: text fitted to the slot ({detail})",
+                                   slot=name, detail=detail))
+
         for name, value in ((title_slot or "TITLE", title), ("SUBTITLE", subtitle)):
             if value is None:
                 continue
@@ -990,20 +1257,12 @@ class TemplateDeck:
             )
             if name in drawn:
                 self.requests += _drawn_text_styles(ph_ids[name], draw_specs[name])
-
-        # Depending on the template, the title's default size may only fit
-        # about 20 characters per line. Shrink long action titles with
-        # titleFontSize to fit them on one line
-        if title_font_size is not None and title is not None:
-            slot = title_slot or "TITLE"
-            if slot in ph_ids:
-                self.requests.append({"updateTextStyle": {
-                    "objectId": ph_ids[slot],
-                    "style": {"fontSize": {"magnitude": title_font_size,
-                                           "unit": "PT"}},
-                    "textRange": {"type": "ALL"},
-                    "fields": "fontSize",
-                }})
+            # Depending on the template, the title's default size may only fit
+            # about 20 characters per line. Shrink long action titles with
+            # titleFontSize to fit them on one line; a fitted size wins over it
+            size = title_font_size if name == (title_slot or "TITLE") else None
+            self._queue_slot_fit(ph_ids[name], fits.get(name), size,
+                                 drawn=name in drawn)
 
         # Each body line can have its own role and inline emphasis, so build it while tracking ranges
         body_spans: dict[str, list[dict]] = {}
@@ -1024,13 +1283,8 @@ class TemplateDeck:
         for name, value in filled_bodies:
             if value is None:
                 continue
-            if body_font_size is not None:
-                self.requests.append({"updateTextStyle": {
-                    "objectId": ph_ids[name],
-                    "style": {"fontSize": {"magnitude": body_font_size, "unit": "PT"}},
-                    "textRange": {"type": "ALL"},
-                    "fields": "fontSize",
-                }})
+            self._queue_slot_fit(ph_ids[name], fits.get(name), body_font_size,
+                                 drawn=name in drawn)
             # A placeholder's default may also carry space before/after
             # paragraphs, throwing off the line-count estimate significantly.
             # spaceAbove / spaceBelow can be set explicitly too
@@ -1055,6 +1309,9 @@ class TemplateDeck:
         # ALL-range styles** (queuing them first gets overwritten by the
         # blanket style and has no effect)
         for name, spans in body_spans.items():
+            fit, base = fits.get(name, (None, None))
+            if fit is not None and fit.size != base:
+                spans = _scale_spans(spans, fit.size / base)
             self._apply_body_spans(ph_ids[name], spans)
 
         if notes:
@@ -1065,7 +1322,37 @@ class TemplateDeck:
             "placeholders": ph_ids,
             "layout": layout,
             "layoutKey": resolved_key,
+            "fitNotes": fit_notes,
+            "fitWarnings": fit_warnings,
         }
+
+    def _queue_slot_fit(self, oid: str, planned, size, *, drawn: bool) -> None:
+        """Queue a filled slot's font size, fitted margin and autofit NONE.
+
+        `size` is the size the spec asked for (or None); a fitted size wins.
+        Queued after the slot's own base styles, so it overrides them.
+        """
+        fit, base = planned or (None, None)
+        if fit is not None and fit.size != base:
+            size = fit.size
+        if size is not None:
+            self.requests.append({"updateTextStyle": {
+                "objectId": oid,
+                "style": {"fontSize": {"magnitude": size, "unit": "PT"}},
+                "textRange": {"type": "ALL"},
+                "fields": "fontSize",
+            }})
+        indent = _slot_indent(fit.inset, drawn) if fit is not None else {}
+        if indent:
+            self.requests.append({"updateParagraphStyle": {
+                "objectId": oid, "style": indent,
+                "textRange": {"type": "ALL"}, "fields": ",".join(indent)}})
+        # NONE is the only fitting the API accepts, and the one the text was
+        # fitted for. Stating it keeps the PPTX export the same
+        self.requests.append({"updateShapeProperties": {
+            "objectId": oid,
+            "shapeProperties": {"autofit": {"autofitType": "NONE"}},
+            "fields": "autofit.autofitType"}})
 
     # ---------- Drawn slots (generationMode: create) ----------
 
@@ -1558,6 +1845,35 @@ def _text_margin(spec: dict, slide: dict) -> float | None:
     return (spec.get("defaults") or {}).get("textMargin")
 
 
+def _check_text_fit(block: dict, where: str) -> list[str]:
+    """Reject a textFit / minFontSize that fitting cannot use."""
+    out = []
+    mode = block.get("textFit")
+    if mode is not None and mode not in FIT_MODES:
+        out.append(t("{where}: 'textFit' must be one of: {modes}",
+                     where=where, modes=", ".join(FIT_MODES)))
+    v = block.get("minFontSize")
+    if v is not None and (isinstance(v, bool) or not isinstance(v, (int, float))
+                          or v <= 0):
+        out.append(t("{where}: 'minFontSize' must be a positive number (pt)",
+                     where=where))
+    return out
+
+
+def _text_fit(spec: dict, slide: dict) -> str | None:
+    """How text that overflows is fitted on this slide (slide wins over defaults)."""
+    if slide.get("textFit") is not None:
+        return slide["textFit"]
+    return (spec.get("defaults") or {}).get("textFit")
+
+
+def _min_font_size(spec: dict, slide: dict) -> float | None:
+    """The smallest size fitting may shrink text to on this slide, in pt."""
+    if slide.get("minFontSize") is not None:
+        return slide["minFontSize"]
+    return (spec.get("defaults") or {}).get("minFontSize")
+
+
 def draw_figures(canvas, figures: list, *, skip_network: bool = False) -> None:
     """Draw a figures block onto the Canvas."""
     for fig in figures:
@@ -1585,8 +1901,10 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
     roles = (template or {}).get("roles", {})
     problems += _check_text_margin(
         (spec.get("defaults") or {}).get("textMargin"), "defaults")
+    problems += _check_text_fit(spec.get("defaults") or {}, "defaults")
     for i, s in enumerate(spec.get("slides", [])):
         problems += _check_text_margin(s.get("textMargin"), f"slides[{i}]")
+        problems += _check_text_fit(s, f"slides[{i}]")
         figs = s.get("figures")
         if figs is None:
             continue
@@ -1785,7 +2103,8 @@ def run_build_cli(build, *, template, title, create_kwargs=None, epilogue=None,
     return 0
 
 
-def audit_figures(template: dict, spec: dict) -> list[str]:
+def audit_figures(template: dict, spec: dict,
+                  notes: list[str] | None = None) -> list[str]:
     """Expand figures into actual coordinates and check overlap/text overflow without the API.
 
     Catches at the spec stage defects that would otherwise go unnoticed until
@@ -1801,6 +2120,8 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
             continue
         canvas = Canvas(_StubDeck(), f"dry_{i}", template)
         canvas.text_margin = _text_margin(spec, s)
+        canvas.text_fit = _text_fit(spec, s)
+        canvas.min_font_size = _min_font_size(spec, s)
         try:
             draw_figures(canvas, figs, skip_network=True)
         except Exception as e:  # an argument mismatch may only surface here
@@ -1809,7 +2130,9 @@ def audit_figures(template: dict, spec: dict) -> list[str]:
             continue
         for msg in canvas.audit_all():
             out.append(f"slides[{i}]: {msg}")
-    out += audit_body_fit(template, spec)
+        if notes is not None:
+            notes += [f"slides[{i}]: {msg}" for msg in canvas.fit_notes]
+    out += audit_body_fit(template, spec, notes)
     out += audit_image_slots(template, spec)
     return out
 
@@ -1898,16 +2221,21 @@ def resolve_image_slots(template: dict, spec: dict) -> list[str]:
     return notes
 
 
-def audit_body_fit(template: dict, spec: dict) -> list[str]:
-    """Estimate whether the body fits the placeholder's height, without calling the API.
+def audit_body_fit(template: dict, spec: dict,
+                   notes: list[str] | None = None) -> list[str]:
+    """Estimate whether each slot's text fits its slot, without calling the API.
 
-    A role-tagged line (e.g. a heading) adds spaceAbove, so counting only the
-    raw line count would overflow. The API doesn't error on overflow, and it
-    wouldn't be noticed until the thumbnail is viewed, so this catches it here.
+    Covers the title, subtitle and body slots, and runs the same plan as
+    add_slide (fit_slot): text the fitting brings into its slot is recorded in
+    `notes` rather than reported; only text that still overflows at the
+    smallest allowed size (or with textFit "none") is a finding. The API
+    doesn't error on overflow — Slides draws it outside the slot — so it would
+    otherwise go unnoticed until the thumbnail is viewed.
 
-    When paragraph spacing is left at the template default, the actual margin
-    is unknown, so this **estimates on the low side** (biased toward missing
-    a real overflow rather than raising a false positive).
+    A role-tagged line (e.g. a heading) adds its spaceAbove. When paragraph
+    spacing is left at the template default, the actual margin is unknown, so
+    this **estimates on the low side** (biased toward missing a real overflow
+    rather than raising a false positive).
     """
     out = []
     defaults = spec.get("defaults", {})
@@ -1916,48 +2244,50 @@ def audit_body_fit(template: dict, spec: dict) -> list[str]:
     role_styles = {**DEFAULT_BODY_ROLES, **(template.get("bodyRoles") or {})}
 
     for i, s in enumerate(spec.get("slides", [])):
+        layout = layouts.get(roles.get(s.get("layout"), s.get("layout")))
+        if not layout:
+            continue
+        declared = declared_slots(layout)
+        title_slot = ("CENTERED_TITLE" if ("CENTERED_TITLE" in declared
+                                           and "TITLE" not in declared)
+                      else "TITLE")
         bodies = s.get("bodies")
         if bodies is None and s.get("body") is not None:
             bodies = [s["body"]]
-        if not bodies:
-            continue
-        layout = layouts.get(roles.get(s.get("layout"), s.get("layout")), {})
-        elements = layout.get("elements") or {}
-        base_size = ((layout.get("textStyles") or {}).get("body") or {}).get("fontSize")
-        size = s.get("bodyFontSize", defaults.get("bodyFontSize")) or base_size
-        if not size:
-            continue
-        ls = s.get("bodyLineSpacing", defaults.get("bodyLineSpacing")) or 100
-        sa = s.get("bodySpaceAbove", defaults.get("bodySpaceAbove")) or 0
-        sb = s.get("bodySpaceBelow", defaults.get("bodySpaceBelow")) or 0
-
-        for col, value in enumerate(bodies):
-            key = "body" if col == 0 else f"body#{col}"
-            geo = elements.get(key)
-            if not geo:
+        body_slots = [p for p in declared if p.split("#")[0] == "BODY"]
+        body_kw = {
+            "line_spacing": s.get("bodyLineSpacing", defaults.get("bodyLineSpacing")),
+            "space_above": s.get("bodySpaceAbove", defaults.get("bodySpaceAbove")),
+            "space_below": s.get("bodySpaceBelow", defaults.get("bodySpaceBelow")),
+        }
+        entries = [(title_slot, s.get("title"),
+                    s.get("titleFontSize", defaults.get("titleFontSize")), False),
+                   ("SUBTITLE", s.get("subtitle"), None, False)]
+        entries += [(name, value,
+                     s.get("bodyFontSize", defaults.get("bodyFontSize")), True)
+                    for name, value in zip(body_slots, bodies or [])]
+        where = f"slides[{i}] ({s.get('title') or s.get('layout')})"
+        for name, value, explicit, is_body in entries:
+            if value is None or name not in declared:
                 continue
-            per_line = (geo["w"] - 0.2) * 72 / size
-            if per_line <= 0:
+            planned = fit_slot(
+                layout, name, value, explicit_size=explicit, body=is_body,
+                mode=_text_fit(spec, s), min_size=_min_font_size(spec, s),
+                roles=role_styles, **(body_kw if is_body else {}))
+            if planned is None:
                 continue
-            used = 0.0
-            for text, role in normalize_body_lines(value):
-                plain, _ = parse_inline(text)
-                width = sum(1.0 if ord(ch) > 0x2E80 else 0.5 for ch in plain)
-                n = max(1, int(width / per_line + 0.999))
-                style = role_styles.get(role) or {}
-                fs = style.get("fontSize", size)
-                used += (n * fs * 1.2 * (ls / 100)
-                         + sa + sb
-                         + style.get("spaceAbove", 0) + style.get("spaceBelow", 0))
-            capacity = geo["h"] * 72
-            if used > capacity * 1.02:
+            fit, base = planned
+            if not fit.fits:
                 out.append(t(
-                    "slides[{i}] ({title}): body{col} needs about {used:.0f}pt "
-                    "but the placeholder is {cap:.0f}pt. Reduce the text, lower "
-                    "bodyFontSize, or split the slide",
-                    i=i, title=s.get("title") or s.get("layout"),
-                    col="" if col == 0 else f"#{col}",
-                    used=used, cap=capacity))
+                    "{where}: {slot} does not fit its slot ({size:g}pt). Reduce "
+                    "the text, lower the font size, or split the slide",
+                    where=where, slot=name, size=fit.size))
+                continue
+            detail = describe_fit(base, TEXT_INSET_X, fit)
+            if detail and notes is not None:
+                notes.append(f"{where}: " + t(
+                    "{slot}: text fitted to the slot ({detail})",
+                    slot=name, detail=detail))
     return out
 
 
@@ -2093,7 +2423,13 @@ def build_from_spec(
             body_space_above=s.get("bodySpaceAbove", defaults.get("bodySpaceAbove")),
             body_space_below=s.get("bodySpaceBelow", defaults.get("bodySpaceBelow")),
             index=i if selected_indices is not None else None,
+            text_fit=_text_fit(spec, s),
+            min_font_size=_min_font_size(spec, s),
         )
+        where = f"slides[{i}] ({s.get('title') or s['layout']})"
+        for msg in ref.get("fitNotes") or []:
+            print(f"  fit: {where}: {msg}")
+        warnings += [f"{where}: {msg}" for msg in ref.get("fitWarnings") or []]
         figs = s.get("figures")
         if not figs:
             if selected_indices is not None:
@@ -2104,7 +2440,11 @@ def build_from_spec(
         from diagrams import Canvas  # only loaded for a spec that uses figures
         canvas = Canvas(deck, ref["slideId"], deck.template)
         canvas.text_margin = _text_margin(spec, s)
+        canvas.text_fit = _text_fit(spec, s)
+        canvas.min_font_size = _min_font_size(spec, s)
         draw_figures(canvas, figs)
+        for msg in canvas.fit_notes:
+            print(f"  fit: {where}: {msg}")
         for msg in canvas.audit_all():
             warnings.append(f"slides[{i}] ({s.get('title') or s['layout']}): {msg}")
         if selected_indices is not None:
@@ -2243,7 +2583,12 @@ def main() -> int:
             extra = t("  + {n} figures", n=n_fig) if n_fig else ""
             print(f"  {i:2d}. {s['layout']:24s} -> "
                   f"{template['layouts'][resolved]['displayName']}{extra}")
-        findings = audit_figures(template, spec)
+        fit_notes: list[str] = []
+        findings = audit_figures(template, spec, fit_notes)
+        if fit_notes:
+            print(t("Text fitted to its box ({n}):", n=len(fit_notes)))
+            for msg in fit_notes:
+                print(f"  - {msg}")
         if findings:
             print("\n" + t("Figure audit found {n} findings (images excluded; "
                            "they need the real file):", n=len(findings)),

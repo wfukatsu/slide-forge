@@ -130,6 +130,23 @@ d.text_margin = 0.02                       # every shape and cell on this slide
 d.table(0.5, 1.2, 9.0, headers, rows, text_margin=0.02)   # this table only
 ```
 
+Text that would run past its box is **fitted automatically**. The API cannot
+turn on Slides' own "shrink on overflow" (`references/api-notes.md` §14b), and
+Slides draws overflow outside the box, so the canvas does it: the margin is
+tightened first, then the font shrinks in 0.5pt steps (to 70% of the size,
+never below 8pt). Text that fits is drawn exactly as asked. Each change is
+listed in `d.fit_notes` and printed by the build as `fit:`; only what still
+overflows at the floor reaches `audit_text_fit()`.
+
+```python
+d.text_fit = "shrink"         # default: margin, then font
+d.min_font_size = 9           # floor for shrinking on this canvas (pt)
+d.box(0.5, 1.2, 2.6, 0.6, text=long_text, text_fit="grow")  # heighten the box, keeping its valign edge
+d.label(0.5, 2.0, 3.0, 0.3, caption, text_fit="none")      # leave it; the audit reports it
+```
+
+In a spec, `textFit` / `minFontSize` go on a slide or in `defaults`.
+
 Code samples use `code_block` (`references/code-blocks.md`): monospace with
 highlighting, square corners. Estimate the height from the effective line
 height (`lines × size × ls × 1.45 / 72 + 0.14in`).

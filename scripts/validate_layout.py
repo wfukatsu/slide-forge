@@ -200,6 +200,8 @@ def check(template: dict, slides: list[dict]) -> list[str]:
         for msg in (c.audit_connectors() + c.audit_overlaps()
                     + c.audit_text_fit()):     # implemented in diagrams.Canvas
             problems.append(f"{i:2d} {msg}: {title}")
+        for msg in c.fit_notes:                # fitted, not a problem
+            print(f"{i:2d} fit: {msg}: {title}")
     return problems
 
 

@@ -136,6 +136,11 @@
 スライドごとの `titleFontSize` / `bodyFontSize` / `bodyLineSpacing` は
 `drawText` の値より優先される。
 
+どのサイズから始めても、枠からはみ出すテキストはその後で枠に合わせる（`textFit`、
+後述のデッキ仕様を参照）。使うのは枠の `elements` / `drawText` の寸法と既知の
+フォントサイズで、サイズがマスターからの継承だけ（`fontSize` が記録されていない）
+の枠はそのままにする。
+
 ### `imageSlots` はどこから拾っているか
 
 | `source` | 根拠 | 確からしさ |
@@ -181,7 +186,14 @@
       // 図の中で描くテキストの内側余白（インチ）。省略すると Slides 内蔵の
       // 余白のまま。情報量が多いページで詰めるための指定で、slide 単位・
       // spec の "defaults"・図ごと（下の figures 参照）に書ける
-      "textMargin": 0.02
+      "textMargin": 0.02,
+      // 枠からはみ出すテキストの扱い。"shrink"（既定: 余白を詰め、次に文字を
+      // 縮める）/ "grow"（図の枠を高くする。テンプレートの枠では shrink と同じ）/
+      // "none"（何もせず検査で報告）。API では Slides の自動調整を有効にできない
+      // ため自前で行う（api-notes §14b）。slide 単位か "defaults" に書く
+      "textFit": "shrink",
+      // 縮小の下限（pt）。省略時は元のサイズの 70%（8pt 未満にはしない）
+      "minFontSize": 9
     },
     {
       "layout": "THREE_COLUMN",

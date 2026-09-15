@@ -318,6 +318,29 @@ Slides の画面にある「セルの余白」は API から触れない。
 `Canvas.text_margin` として公開している。検査側も既定値ではなく詰めた後の値を
 引くので、広がったぶんを実際に使える。上下方向に相当する手段は無い。
 
+## 14b. 「テキストの適合」（autofit）は NONE しか設定できない
+
+`ShapeProperties.autofit.autofitType` にはエディタと同じ 3 種類 — 自動調整なし
+（`NONE`）・はみ出す場合はテキストを縮小（`TEXT_AUTOFIT`）・テキストに合わせて
+図形のサイズを変更（`SHAPE_AUTOFIT`）— があるが、**`updateShapeProperties` で
+書けるのは `NONE` だけ**。残り 2 つは `Autofit types other than NONE are not
+supported.` で拒否される（ライブ API で実測、discovery revision 20260909）。
+`fontScale` / `lineSpacingReduction` は読み取り専用。
+
+しかもテキストを挿入すると型は自動で `NONE` に戻る（「テキストの収まりに影響する
+リクエストで自動的に NONE になる」）。テンプレートのプレースホルダが「縮小」でも、
+API で流し込んだ時点で**縮小されない**。Slides ははみ出した文字を切り取らずに枠の
+外へ描くので、MIDDLE 揃えなら上下に、BOTTOM 揃えなら上にはみ出し、タイトルや
+隣の要素に重なって「位置がずれた」ように見える。
+
+したがって適合はリクエストを送る前に自前で行う。`_text.fit_box()` が検査と同じ
+行数モデルで、まず内側余白を詰め（§14 の負のインデント、0.03in まで）、それでも
+入らなければ 0.5pt 刻みで元のサイズの 70%（8pt 未満にはしない）まで縮める。
+`build_deck.py` はタイトル・サブタイトル・本文の枠に、`diagrams.Canvas.shape()` は
+文字を持つすべての図形に適用する（既定 `text_fit="shrink"`。`"grow"` は揃えの
+基準辺を保ったまま枠の高さを広げ、`"none"` は何もせず検査に任せる）。どちらも
+`autofitType: NONE` を明示するので PPTX 書き出しでも見た目が変わらない。
+
 ## 15. `TRAPEZOID` の傾きは変えられない
 
 上底の食い込みは **表示上の高さ × 0.25**（左右それぞれ）で固定されている。実測:
