@@ -30,6 +30,11 @@
    "short": "Showing time and people",
    "intro": "Pages that show time and people — when, who, and what scope."
   },
+  "カレンダーページ": {
+   "name": "Calendar pages",
+   "short": "Showing dates",
+   "intro": "Pages drawn from dates rather than coordinates: pass dates and events, and national holidays come from the bundled `assets/holidays/jp.csv`. For a month-level plan use `gantt`. Component details are in [calendars.md](calendars.md)."
+  },
   "定性・技術ページ": {
    "name": "Qualitative / technical pages",
    "short": "Making a case without numbers",
@@ -200,6 +205,51 @@
   "lean-canvas": {
    "head": "Lean canvas",
    "desc": "Fits the overall picture of a business onto one slide. Don't use it while you still can't fill in every field."
+  },
+  "month-calendar": {
+   "head": "Month calendar",
+   "desc": "Places a month's events in the day cells. Events spanning several days are drawn as bars, and a day that can't hold them all collapses to \"+N\".",
+   "sample": "Verification and the go/no-go meeting cluster in week 3"
+  },
+  "daily-gantt": {
+   "head": "Day-by-day gantt",
+   "desc": "Lays tasks out in one column per day with weekends and holidays shaded. Past 60 days it switches to one column per week.",
+   "sample": "Verification finishes before the go/no-go meeting, holidays included"
+  },
+  "daily-agenda": {
+   "head": "Daily task list",
+   "desc": "Lists each day's tasks from top to bottom. Tasks on the same day share a merged date cell, and a run of days off collapses to one row.",
+   "sample": "Clear the two tasks before the holidays, ahead of the go/no-go meeting"
+  },
+  "weekly-timetable": {
+   "head": "Weekly timetable",
+   "desc": "Divides a week into weekday columns and time rows. Up to two overlapping events sit side by side.",
+   "sample": "Thursday's on-site practice turns lectures into practice"
+  },
+  "sprint-calendar": {
+   "head": "Sprint calendar",
+   "desc": "Lays out consecutive sprints with their working days, and places planning, review and release days automatically.",
+   "sample": "Cut scope for the sprint with only 9 working days"
+  },
+  "year-at-a-glance": {
+   "head": "Year at a glance",
+   "desc": "Shows the fiscal year's 12 months as mini calendars, marking busy periods, days off and key dates. Meant for handouts.",
+   "sample": "The busy season falls in April and January–March"
+  },
+  "deadline-countdown": {
+   "head": "Deadline countdown",
+   "desc": "Shows the calendar days and working days left to a deadline, with the days to each checkpoint along the way.",
+   "sample": "17 working days left — bring verification forward"
+  },
+  "activity-heatmap": {
+   "head": "Daily heatmap",
+   "desc": "Shades daily volume on a week × weekday grid, with monthly totals and the weekday and month trends beside it.",
+   "sample": "Inquiries peak on Mondays and in March"
+  },
+  "shift-roster": {
+   "head": "Shift roster",
+   "desc": "Lists who covers which day with one-character codes, and marks days short of the required headcount in red.",
+   "sample": "Cover the 4 days with fewer than 3 people on duty"
   },
   "testimonial": {
    "head": "Testimonial",

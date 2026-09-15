@@ -444,7 +444,7 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 ### 6. スライドパターンカタログ画像
 
 [`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.ja.md)
-は全 43 ページパターンをレンダリング済み画像つきで見せる。テキストも画像
+は全 52 ページパターンをレンダリング済み画像つきで見せる。テキストも画像
 （約 2MB、`references/images/slide-patterns/` 配下）もコミット済みなので、
 素のクローンでも図入りで読める。パターンを追加したり描画が変わったりした
 ときは、カタログを再生成して画像ごとコミットする:
@@ -635,7 +635,7 @@ Slides API では Slides 自身の「はみ出す場合はテキストを縮小�
 
 どんな形のページが作れるか?
 [`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.ja.md)
-を参照 — 43 パターンを 8 分類で、それぞれレンダリング済み画像・使いどころ・
+を参照 — 52 パターンを 9 分類で、それぞれレンダリング済み画像・使いどころ・
 仕様に書く `figures` の type 名つきで並べてある。背後のレイアウトルールは
 [`references/slide-patterns.md`](references/slide-patterns.ja.md) にある。
 
@@ -647,6 +647,7 @@ Slides API では Slides 自身の「はみ出す場合はテキストを縮小�
 | 比較・評価ページ | 6 | 選択肢を並べて比べる |
 | 構造・論理ページ | 7 | 関係を見えるようにする |
 | 計画・体制ページ | 5 | 時間と体制 |
+| カレンダーページ | 9 | 日付で見せる — 月・日・週・スプリント・年・期限・日次の量・当番 |
 | 定性・技術ページ | 5 | 数字でないものすべて |
 | 締め・付録ページ | 3 | 決定とその後 |
 
@@ -685,7 +686,7 @@ business-plan、nexus、hearing、case-studies、proposal、marketing、partner�
 | `event-announcement.json` | 4 | セミナー / カンファレンス告知の部品 |
 | `read-alone-guide.json` | 30 | 配布・読み切り資料向けの密度パターン |
 | `design-catalog.json` | 49 | デザインパターンのフルカタログ †|
-| `slide-pattern-index.json` | 60 | 1 パターン 1 ページの索引 — 1 枚 = 1 パターン †|
+| `slide-pattern-index.json` | 71 | 1 パターン 1 ページの索引 — 1 枚 = 1 パターン †|
 | `cloud-architecture.json` | 6 | クラウドアーキテクチャ図 †|
 | `b2b-account-review.json` | 13 | `b2b-sales` の 8 テンプレートすべてで組んだアカウントレビューの実例 — 表紙、エグゼクティブサマリー、2 軸/MEDDPICC 形式と構造形式の両マップ、それらを支えるページ |
 | `estimate-sample.json` | 2 シート | `spreadsheets` スキル用の明細見積もり ‡|

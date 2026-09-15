@@ -440,7 +440,7 @@ else in the repository depends on them.
 ### 6. Slide pattern catalog images
 
 [`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.md)
-shows all 43 page patterns as rendered images. Both the text and the images
+shows all 52 page patterns as rendered images. Both the text and the images
 (~2MB, under `references/images/slide-patterns/`) are committed, so a bare
 clone reads with pictures. When a pattern is added or its rendering changes,
 regenerate the catalog and commit the images with it:
@@ -630,7 +630,7 @@ Details: [`references/api-notes.md`](references/api-notes.md) §14b and
 
 Which page shapes can this build? See
 [`references/slide-pattern-catalog.md`](references/slide-pattern-catalog.md) —
-43 patterns in 8 groups, each with a rendered image, when to use it, and the
+52 patterns in 9 groups, each with a rendered image, when to use it, and the
 `figures` type names to write in the spec. The layout rules behind them are in
 [`references/slide-patterns.md`](references/slide-patterns.md).
 
@@ -642,6 +642,7 @@ Which page shapes can this build? See
 | Comparison/evaluation pages | 6 | Putting options side by side |
 | Structure/logic pages | 7 | Making a relationship visible |
 | Planning/org pages | 5 | Time and people |
+| Calendar pages | 9 | Dates — a month, days, a week, sprints, a year, a deadline, daily volume, a roster |
 | Qualitative/technical pages | 5 | Everything that isn't a number |
 | Closing/appendix pages | 3 | The decision and what follows |
 
@@ -678,7 +679,7 @@ declares no `CLOSING` role, so the same spec reports dozens of findings.
 | `event-announcement.json` | 4 | Seminar / conference announcement parts |
 | `read-alone-guide.json` | 30 | Density patterns for print / read-alone decks |
 | `design-catalog.json` | 49 | The full design-pattern catalog †|
-| `slide-pattern-index.json` | 60 | One page per pattern — 1 slide = 1 pattern †|
+| `slide-pattern-index.json` | 71 | One page per pattern — 1 slide = 1 pattern †|
 | `cloud-architecture.json` | 6 | Cloud architecture figures †|
 | `b2b-account-review.json` | 13 | A worked account review built from all eight `b2b-sales` templates — cover, exec summary, both maps in their two-axis/MEDDPICC and structural forms, and their supporting pages |
 | `estimate-sample.json` | 2 sheets | Line-item estimate for the `spreadsheets` skill ‡|
