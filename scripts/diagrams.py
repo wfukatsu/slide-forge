@@ -54,7 +54,8 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 from _i18n import t, register  # noqa: E402
-from _text import em  # noqa: E402
+from _text import (  # noqa: E402
+    DEFAULT_FIT, FIT_MODES, describe_fit, em, fit_box, grow_box, text_height)
 # Color utilities were moved to colors.py. Re-exported from here so existing
 # imports like `from diagrams import lighten` keep working.
 from colors import (  # noqa: E402,F401
@@ -71,6 +72,12 @@ from events import EventMixin  # noqa: E402
 from calendars import CalendarMixin  # noqa: E402
 
 register({
+    "unknown text_fit '{mode}' (use one of: {modes})":
+        "未知の text_fit '{mode}' です（{modes} のいずれか）",
+    "Box grown to fit its text (height {h0:.2f}→{h1:.2f}in): \"{text}\"":
+        "テキストに合わせて枠を広げました（高さ {h0:.2f}→{h1:.2f}in）: 「{text}」",
+    "Text fitted to its box ({detail}): \"{text}\"":
+        "テキストを枠に合わせました（{detail}）: 「{text}」",
     "  warn: text inside a shape rotated {rotation} degrees will rotate with it "
     "(\"{head}\"). Draw the shape without text and overlay a label()":
         "  warn: 回転 {rotation}度 の図形に文字を入れています。"
@@ -177,6 +184,16 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         # inset Slides bakes in; a smaller value tightens it to fit more text
         # in the same box. See _text_inset() / shape().
         self.text_margin: float | None = None
+        # What to do with text that runs past its box: "shrink" (tighten the
+        # margin, then the font), "grow" (heighten the box), or "none". The
+        # API cannot turn on Slides' own fitting, so it is done here. None
+        # means DEFAULT_FIT. See _fit_text().
+        self.text_fit: str | None = None
+        # The smallest font size shrinking may reach, in pt. None derives it
+        # from each shape's own size (see _text.min_font_size).
+        self.min_font_size: float | None = None
+        # One line per shape whose text was fitted, for the build to report
+        self.fit_notes: list[str] = []
         self._seq = 0
 
     def _oid(self, prefix: str) -> str:
@@ -253,8 +270,14 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
               alpha: float = 1.0, rotation: float = 0.0,
               flip_x: bool = False, flip_y: bool = False,
               font: str | None = None,
-              text_margin: float | None = None) -> str:
+              text_margin: float | None = None,
+              text_fit: str | None = None) -> str:
         """Draw a shape and return its objectId. fill=None means no fill.
+
+        text_fit decides what happens to text that would run past the box
+        ("shrink" / "grow" / "none"; defaults to Canvas.text_fit). Slides
+        draws overflowing text outside the box rather than clipping it, so
+        an unfitted box shows its text displaced. See _fit_text().
 
         dash is the outline's line style (SOLID / DASH / DOT / DASH_DOT, …). Use a
         dashed rectangle for shapes indicating an "enclosure," like a cloud zone
@@ -280,6 +303,12 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                     "rotate with it (\"{head}\"). Draw the shape without text and "
                     "overlay a label()", rotation=rotation, head=str(text)[:12]),
                   file=sys.stderr)
+        inset = self._text_inset(text_margin)
+        if text:
+            y, h, size, inset = self._fit_text(
+                text, y, w, h, size=size, inset=inset,
+                line_spacing=line_spacing, valign=valign, rotation=rotation,
+                mode=text_fit)
         oid = self._oid("s")
         reqs = [{"createShape": {
             "objectId": oid, "shapeType": kind,
@@ -305,6 +334,11 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             fields.append("outline")
         props["contentAlignment"] = valign
         fields.append("contentAlignment")
+        if text:
+            # NONE is the only fitting the API accepts, and the one the text
+            # was fitted for above. Stating it keeps the PPTX export the same
+            props["autofit"] = {"autofitType": "NONE"}
+            fields.append("autofit.autofitType")
         # A plain TEXT_BOX defaults to "no fill, no outline, top-aligned," so a
         # request that just specifies the same thing can be skipped entirely (this
         # covers most calls to label())
@@ -314,7 +348,6 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 "objectId": oid, "shapeProperties": props,
                 "fields": ",".join(fields)}})
 
-        inset = self._text_inset(text_margin)
         if text:
             reqs.append({"insertText": {"objectId": oid, "text": text}})
             fg = color or (readable_on(fill) if fill else self.P.text)
@@ -380,12 +413,12 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     def label(self, x, y, w, h, text, *, size=10, color=None, bold=False,
               align="START", valign="TOP", line_spacing=None, rotation=0,
-              font=None) -> str:
+              font=None, text_fit=None) -> str:
         """Text with no outline or fill. rotation=270 can be used for things like a vertical axis label."""
         return self.shape(x, y, w, h, kind="TEXT_BOX", fill=None, stroke=None,
                           text=text, size=size, color=color or self.P.text, bold=bold,
                           align=align, valign=valign, line_spacing=line_spacing,
-                          rotation=rotation, font=font)
+                          rotation=rotation, font=font, text_fit=text_fit)
 
     def band(self, x, y, w, h, *, fill=None, kind="ROUND_RECTANGLE",
              stroke=None) -> str:
@@ -796,6 +829,58 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         """
         m = override if override is not None else self.text_margin
         return self.TEXT_INSET_X if m is None else max(0.0, float(m))
+
+    def _fit_text(self, text, y, w, h, *, size, inset, line_spacing, valign,
+                  rotation, mode):
+        """Fit text to its box before the shape is created; returns (y, h, size, inset).
+
+        The API cannot enable Slides' own "shrink text on overflow" or
+        "resize shape to fit text" (autofitType takes only NONE), and Slides
+        draws what overflows outside the box — above and below a MIDDLE box,
+        upward from a BOTTOM one. So the fitting is reproduced here with the
+        same line model the audit uses:
+
+        - "shrink" ... tighten the inner margin down to _text.MIN_FIT_INSET,
+          then shrink the font in 0.5pt steps down to min_font_size
+        - "grow" ... keep the font and heighten the box, holding the edge the
+          text is anchored to. A rotated shape is shrunk instead, since its
+          box would grow sideways
+        - "none" ... leave it; the audit reports the overflow
+
+        Text that already fits is returned untouched, so a page that fits
+        draws exactly as before. What changed is noted in fit_notes.
+        """
+        mode = mode or self.text_fit or DEFAULT_FIT
+        if mode not in FIT_MODES:
+            raise ValueError(t("unknown text_fit '{mode}' (use one of: {modes})",
+                               mode=mode, modes=", ".join(FIT_MODES)))
+        if mode == "none":
+            return y, h, size, inset
+        sideways = rotation % 180 == 90
+        fw, fh = (h, w) if sideways else (w, h)
+        ls = line_spacing or 100
+
+        def need(s, i):
+            return text_height(text, fw, s, line_spacing=ls, inset=i,
+                               line_em=self.LINE_EM)
+
+        head = text.replace("\n", " ")[:22]
+        if mode == "grow" and not rotation:
+            n = need(size, inset)
+            if n > h + self.TEXT_SLACK:
+                ny, nh = grow_box(y, h, n, valign)
+                self.fit_notes.append(t(
+                    "Box grown to fit its text (height {h0:.2f}→{h1:.2f}in): "
+                    "\"{text}\"", h0=h, h1=nh, text=head))
+                return ny, nh, size, inset
+            return y, h, size, inset
+        fit = fit_box(need, fh, size, inset, min_size=self.min_font_size,
+                      slack=self.TEXT_SLACK)
+        detail = describe_fit(size, inset, fit)
+        if detail:
+            self.fit_notes.append(t("Text fitted to its box ({detail}): \"{text}\"",
+                                    detail=detail, text=head))
+        return y, h, fit.size, fit.inset
 
     # A text entry never changes after it is registered, so its measurements are
     # computed once and kept on the entry. The overlap audit compares every pair

@@ -99,6 +99,11 @@ Purpose selects density for `$density` templates:
 - proposal, internal review, or handout: `print`;
 - projected talk: `presentation`.
 
+Write the chosen density into the deck spec as well (`"density": "print"`, or
+`assemble_spec.py --density print`). A print deck lets text fitting shrink
+overflowing text down to 8pt — 8, 9 and 10pt read fine on paper — while a
+presentation deck stops at 70% of each size.
+
 List registered templates when needed:
 
 ```bash

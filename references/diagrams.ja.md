@@ -122,6 +122,22 @@ d.text_margin = 0.02                       # このスライドの図形・セ�
 d.table(0.5, 1.2, 9.0, headers, rows, text_margin=0.02)   # この表だけ
 ```
 
+枠からはみ出すテキストは**自動で枠に合わせる**。API では Slides 自身の「はみ出す
+場合は縮小」を有効にできず（`references/api-notes.ja.md` §14b）、Slides ははみ出しを
+枠の外に描くため、キャンバス側で行う。まず余白を詰め、それでも入らなければ 0.5pt
+刻みでフォントを縮める（元の 70%、8pt 未満にはしない）。収まっているテキストは
+指定どおりに描く。調整した箇所は `d.fit_notes` に残り、ビルド時に `fit:` として
+表示される。下限まで縮めても入らないものだけが `audit_text_fit()` に出る。
+
+```python
+d.text_fit = "shrink"         # 既定: 余白 → フォントの順に詰める
+d.min_font_size = 9           # このキャンバスでの縮小の下限（pt）
+d.box(0.5, 1.2, 2.6, 0.6, text=long_text, text_fit="grow")  # 揃えの基準辺を保って枠を高くする
+d.label(0.5, 2.0, 3.0, 0.3, caption, text_fit="none")      # 何もしない（検査が報告する）
+```
+
+spec では `textFit` / `minFontSize` をスライド単位か `defaults` に書く。
+
 ```python
 d.code_block(0.5, 1.0, 6.1, 2.9, code, lang="java")  # java/graphql/json/bash
 ```

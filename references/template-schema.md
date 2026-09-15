@@ -138,6 +138,11 @@ as a placeholder, and only the slots that actually receive text are drawn.
 A per-slide `titleFontSize` / `bodyFontSize` / `bodyLineSpacing` still wins
 over the `drawText` values.
 
+Whichever size a slot starts from, text that would overflow the slot is then
+fitted to it (`textFit`, see the deck spec below), using the slot's `elements`
+/ `drawText` geometry and its known font size. A slot whose size is only
+inherited from the master (no `fontSize` recorded) is left as it is.
+
 ### Where `imageSlots` Comes From
 
 | `source` | Basis | Confidence |
@@ -160,6 +165,11 @@ pasted there).
 ```jsonc
 {
   "title": "生成するプレゼンテーションのタイトル",   // --title で上書き可
+  // Optional. What the deck is for: "print" (handout, proposal read on paper)
+  // or "presentation" (projected). With "print", text fitting may shrink text
+  // down to 8pt (8/9/10pt are fine on paper); otherwise it stops at 70% of the
+  // size. An explicit minFontSize still wins. assemble_spec.py --density sets it
+  "density": "print",
   "slides": [
     {
       "layout": "CONTENT",        // 必須。ロール名またはレイアウトキー
@@ -185,7 +195,15 @@ pasted there).
       // 図の中で描くテキストの内側余白（インチ）。省略すると Slides 内蔵の
       // 余白のまま。情報量が多いページで詰めるための指定で、slide 単位・
       // spec の "defaults"・図ごと（下の figures 参照）に書ける
-      "textMargin": 0.02
+      "textMargin": 0.02,
+      // Text that overflows its box: "shrink" (default: tighten the margin,
+      // then the font) / "grow" (heighten figure boxes; same as shrink for
+      // template slots) / "none" (leave it; the audit reports it). The API
+      // cannot enable Slides' autofit, so this is done up front
+      // (api-notes §14b). Per slide or in "defaults"
+      "textFit": "shrink",
+      // Floor for shrinking, in pt. Default: 70% of the size, never below 8pt
+      "minFontSize": 9
     },
     {
       "layout": "THREE_COLUMN",

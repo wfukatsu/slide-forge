@@ -347,6 +347,31 @@ cell text flush. `charts.py` exposes this as `table(text_margin=…)` and
 subtracts the tightened value rather than the default, so the extra width is
 actually usable. Vertical padding has no equivalent lever.
 
+## 14b. "Text fitting" (autofit) can only be set to NONE
+
+`ShapeProperties.autofit.autofitType` has three values in the editor — do not
+autofit (`NONE`), shrink text on overflow (`TEXT_AUTOFIT`), resize shape to fit
+text (`SHAPE_AUTOFIT`) — but **`updateShapeProperties` accepts only `NONE`**.
+The other two fail with `Autofit types other than NONE are not supported.`
+(measured on the live API, discovery revision 20260909). `fontScale` and
+`lineSpacingReduction` are read-only.
+
+Inserting text also resets the type to `NONE` on its own ("automatically set
+to NONE if a request is made that might affect text fitting"), so a template
+placeholder set to shrink on overflow **does not shrink** once the API fills
+it. Slides draws the overflow outside the box instead of clipping it: a
+MIDDLE-anchored box spills above and below, a BOTTOM-anchored one upward, and
+the text looks displaced over the title or the next element.
+
+The fitting therefore has to be done before the requests are sent.
+`_text.fit_box()` does it with the same line model the audits use: tighten the
+inner margin first (the §14 negative indent, down to 0.03in), then shrink the
+font in 0.5pt steps down to 70% of its size (never below 8pt). `build_deck.py`
+applies it to title / subtitle / body slots, `diagrams.Canvas.shape()` to every
+text shape (`text_fit="shrink"` by default, `"grow"` to heighten the box
+around its anchored edge, `"none"` to leave it to the audit). Both also state
+`autofitType: NONE` explicitly, so the PPTX export matches.
+
 ## 15. `TRAPEZOID`'s slope cannot be changed
 
 The top-edge inset is fixed at **displayed height × 0.25** (on each side). Measured:
