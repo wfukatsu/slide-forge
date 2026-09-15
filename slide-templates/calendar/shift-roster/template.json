@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "id": "shift-roster",
+  "displayName": "当番表",
+  "pack": "calendar",
+  "category": "roster",
+  "description": "担当者 × 日のマスに勤務区分を 1 文字と色で置き、日ごとの人数と手薄な日を示す",
+  "answers": ["各日に誰が当番で、手薄な日はどこか"],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": ["BLANK"],
+  "example": "example.json",
+  "slots": {
+    "title": {"type": "string", "required": true, "maxLength": 36},
+    "start": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "end": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "people": {
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 1, "maxLength": 6},
+          {"type": "string", "minLength": 1, "maxLength": 31}
+        ]
+      }
+    },
+    "codes": {
+      "type": "array",
+      "required": true,
+      "minItems": 1,
+      "maxItems": 6,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 1, "maxLength": 1},
+          {"type": "string", "minLength": 1, "maxLength": 8},
+          {"type": "string", "maxLength": 7},
+          {"type": "boolean"}
+        ]
+      }
+    },
+    "minStaff": {"type": "integer", "default": 0, "minimum": 0, "maximum": 12},
+    "extraHolidays": {
+      "type": "array",
+      "default": [],
+      "maxItems": 20,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {"type": "string", "minLength": 8, "maxLength": 10},
+          {"type": "string", "minLength": 1, "maxLength": 10}
+        ]
+      }
+    },
+    "source": {"type": "string", "required": true, "maxLength": 160}
+  },
+  "guardrails": [
+    "タイトル（結論）は 1 行・全角 36 字まで。2 行になると日付の見出しに重なる",
+    "担当者は [名前, 予定]。予定は期間の 1 日につき 1 文字のコードを並べた文字列（例: 日日夜休…）で、文字数は期間の日数と一致させる",
+    "コードは [文字, 意味, 色, 人数に数えるか]。色は primary / dark / success / danger / info / warning / muted。凡例は自動で付く",
+    "1 枚は 31 日 × 12 人まで。長い期間やチームは scripts/calendar_pages.py で月ごと・12 人ごとに分ける",
+    "minStaff を入れると、人数に数えるコードの合計がそれを下回る日が赤くなる。必要人数の根拠（SLA・体制表）を source に書く",
+    "実在の個人名を載せる資料は共有範囲に注意する。社外向けや作例では役割名・仮名にする",
+    "予定（計画）であることと、いつ時点の当番表かを source に書く。当日の交代は反映されない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
+      {"type": "shift_roster", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+       "start": {"$slot": "start"}, "end": {"$slot": "end"}, "people": {"$slot": "people"},
+       "codes": {"$slot": "codes"}, "minStaff": {"$slot": "minStaff"},
+       "extraHolidays": {"$slot": "extraHolidays"}},
+      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+    ]
+  }
+}

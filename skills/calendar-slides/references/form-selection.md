@@ -11,6 +11,8 @@ Pick the form from the reader's question first, then check the period.
 | How long is each sprint once holidays count, and when are its events? | `sprint-calendar` | 8 week rows |
 | Where do the busy periods and key dates fall in the year? | `year-at-a-glance` | 12 months (handout only) |
 | How many (working) days are left until the deadline? | `deadline-countdown` | deadline within today's month or the next |
+| On which weekdays and in which periods does the volume concentrate? | `activity-heatmap` | up to 53 weeks (split every 52) |
+| Who is on duty each day, and which days are short-staffed? | `shift-roster` | 31 days × 12 people (split per month / team) |
 
 ## By period length
 
@@ -34,17 +36,15 @@ Pick the form from the reader's question first, then check the period.
   (8.5–9pt). For a projected talk, keep the month grid or reduce the period,
   and put detail in the appendix.
 
-## Not built yet
+## When the later forms do not fit
 
-These forms from the plan are not available; offer the fallback instead of
-drawing them by hand.
-
-| Form | Fallback for now |
-|---|---|
-| Activity heatmap | `table` with values, or a chart from `charts.md` |
-| Shift roster | `table` |
-
-## When the P2 forms do not fit
+- **Exact daily numbers matter** more than the pattern: the heatmap only shows
+  buckets — use a `table` or `linechart` (`charts.md`).
+- **Comparing two periods' heatmaps**: colours are per-period quantiles and do
+  not line up; chart both series on one `linechart` instead.
+- **Intraday or hourly volume**: not a calendar form; use `vbars` / `linechart`.
+- **A roster with more than one code per person per day** (split shifts): use
+  a `table` — the roster holds one character per cell.
 
 - **A single-day agenda by hour with tracks or rooms** (conference day):
   `event_timetable` (`events.md`), not `weekly-timetable`.

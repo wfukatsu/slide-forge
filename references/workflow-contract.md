@@ -65,7 +65,7 @@ Do not preload every file named by a skill. Read the complete selected
 | Page skeleton | Matching section of `slide-patterns.md` |
 | Ready-made one-page template (`$template`) | `list_slide_templates.py --tag <term>` to find it, then that template's `template.json` for its slots. Open `slide-template-catalog.md` only to browse the rendered images |
 | Seminar / event announcement figure | Matching section of `events.md` |
-| Calendar figure (month grid, day gantt, day task list, week timetable, sprint calendar, year at a glance, deadline countdown) | Matching section of `calendars.md` |
+| Calendar figure (month grid, day gantt, day task list, week timetable, sprint calendar, year at a glance, deadline countdown, daily heatmap, shift roster) | Matching section of `calendars.md` |
 | Pictogram or icon by name | `illustrations.py --list` (or `--search <term>`) for the valid names; `diagrams.md` for placement |
 | Image or image slot | Matching sections of `images.md` |
 | Cloud icon | Matching section of `cloud-icons.md` |

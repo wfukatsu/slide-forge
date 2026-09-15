@@ -15,6 +15,8 @@ Drawing parts whose input is dates, not coordinates. They are mixed into
 | Consecutive sprints | `sprint_calendar` | working days per sprint, event days placed automatically |
 | A fiscal year at a glance | `year_calendar` | 12 mini months, busy / off / key marks (handout density) |
 | Days left to a deadline | `deadline_countdown` | calendar and working days, checkpoints |
+| Daily volume over up to a year | `calendar_heatmap` | quantile colours, monthly totals, aggregate cards |
+| Who is on duty each day | `shift_roster` | one-character codes, headcount per day |
 | A month-level plan | `gantt` (`patterns.md`) | column labels only, no dates |
 
 Shared conventions:
@@ -207,6 +209,58 @@ d.deadline_countdown(x, y, w, h, deadline, today, label,
   "checkpoints": [["2026-09-18", "判定会議"]] }
 ```
 
+## calendar_heatmap
+
+```python
+d.calendar_heatmap(x, y, w, h, start, end, values,
+                   unit="件",
+                   levels=5,           # 3-7 quantile buckets
+                   monthly=True,       # monthly totals strip under the grid
+                   summary=True,       # three aggregate cards
+                   extra_holidays=None)
+```
+
+- `values` are `[[date, number], ...]` (≥ 0, one per day) within `start`–`end`,
+  at most 53 weeks. Columns are Monday-first weeks, rows weekdays.
+- Colours are quantiles of the values present, so they are relative to the
+  period. A day without a value is white with an outline — not zero.
+- The legend shows the bucket bounds; the monthly strip centres one bar under
+  each month; the cards show the busiest and quietest weekday (holidays
+  excluded), month totals, and the holiday average. No interpretation is drawn.
+- Cells shrink to fit the height (max 0.26 in); below 0.1 in it raises — turn
+  off `monthly` or `summary`.
+
+```json
+{ "type": "calendar_heatmap", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "start": "2025-04-01", "end": "2026-03-31", "unit": "件",
+  "values": [["2025-04-01", 42], ["2025-04-02", 38]] }
+```
+
+## shift_roster
+
+```python
+d.shift_roster(x, y, w, h, start, end, people, codes,
+               min_staff=0,          # days below this headcount turn red
+               extra_holidays=None,
+               size=8.5)
+```
+
+- `people` are `[name, schedule]`; the schedule is one code character per day
+  (`"日日夜休…"`), exactly as long as the period (≤ 31 days, ≤ 12 people).
+- `codes` are `[code, label, colour, counts]`; colour is `primary / dark /
+  success / danger / info / warning / muted`, `counts` marks codes that count as
+  on duty for the headcount row and the per-person totals.
+- The legend is drawn from `codes` (plus the shortage colour when `min_staff`
+  is set).
+
+```json
+{ "type": "shift_roster", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "start": "2026-10-01", "end": "2026-10-03", "minStaff": 1,
+  "people": [["運用 A", "日夜休"], ["運用 B", "休日日"]],
+  "codes": [["日", "日勤", "primary", true], ["夜", "夜勤", "dark", true],
+            ["休", "休み", "muted", false]] }
+```
+
 ## Date engine
 
 Pure functions in `calendars.py`, covered by `tests/test_calendars.py`:
@@ -226,11 +280,15 @@ Pure functions in `calendars.py`, covered by `tests/test_calendars.py`:
 | `assign_tracks(intervals)` | (track, tracks in its overlap cluster) per interval |
 | `sprint_ranges(start, count, length_days)` | consecutive sprint date ranges |
 | `months_from(start_month, count)` | `[(year, month), ...]` |
+| `quantile_cuts(values, levels)` / `bucket_of(value, cuts)` | bucket bounds / bucket index |
+| `normalize_series(values)` | `{date: number}` |
+| `normalize_roster(start, end, people, codes)` / `roster_totals(rows, codes)` | validated roster / (per day, per person) |
 
 ## Splitting across slides
 
 `scripts/calendar_pages.py data.json --out pages.json` turns one dataset into
-template slides: one page per month, per Monday–Sunday week (agenda,
-timetable), per row chunk at group boundaries (gantt), or per 8 week rows
-(sprints). The year and countdown forms are one page each. See its docstring
-for the input format.
+template slides: one page per month (month calendar, roster — rosters also per
+12 people), per Monday–Sunday week (agenda, timetable), per row chunk at group
+boundaries (gantt), per 8 week rows (sprints), or per 52 weeks (heatmap). The
+year and countdown forms are one page each. See its docstring for the input
+format.

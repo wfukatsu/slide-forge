@@ -122,11 +122,70 @@ class PhaseTwoEngineTest(unittest.TestCase):
         self.assertEqual(cal.business_days(today, deadline - dt.timedelta(days=1), hol), 17)
 
 
+class PhaseThreeEngineTest(unittest.TestCase):
+    """Pure functions behind the heatmap and the shift roster."""
+
+    def test_quantile_buckets(self) -> None:
+        cuts = cal.quantile_cuts(list(range(100)), 5)
+        self.assertEqual(cuts, [20, 40, 60, 80])
+        self.assertEqual([cal.bucket_of(v, cuts) for v in (0, 20, 21, 99)], [0, 0, 1, 4])
+        self.assertEqual(cal.quantile_cuts([], 5), [])
+
+    def test_series_rejects_negative_and_duplicate_days(self) -> None:
+        self.assertEqual(cal.normalize_series([["2026/9/1", 3]]), {D(2026, 9, 1): 3.0})
+        for bad in ([["2026-09-01", -1]], [["2026-09-01", 1], ["2026-09-01", 2]],
+                    [["2026-09-01", True]], [["2026-09-01"]]):
+            with self.assertRaises(ValueError):
+                cal.normalize_series(bad)
+
+    def test_roster_counts_only_counting_codes(self) -> None:
+        codes = [["日", "日勤", "primary", True], ["夜", "夜勤", "dark", True],
+                 ["休", "休み", "muted", False]]
+        days, code_map, rows = cal.normalize_roster(
+            "2026-10-01", "2026-10-03", [["A", "日夜休"], ["B", "休日日"]], codes)
+        self.assertEqual(len(days), 3)
+        self.assertEqual(cal.roster_totals(rows, code_map), ([1, 2, 1], [2, 2]))
+        with self.assertRaises(ValueError):
+            cal.normalize_roster("2026-10-01", "2026-10-03", [["A", "日夜"]], codes)
+        with self.assertRaises(ValueError):
+            cal.normalize_roster("2026-10-01", "2026-10-03", [["A", "日夜X"]], codes)
+
+
 class TemplateRenderTest(unittest.TestCase):
     """Each calendar template's example draws with zero audit findings."""
 
     TEMPLATES = ("month-calendar", "daily-gantt", "daily-agenda", "weekly-timetable",
-                 "sprint-calendar", "year-at-a-glance", "deadline-countdown")
+                 "sprint-calendar", "year-at-a-glance", "deadline-countdown",
+                 "activity-heatmap", "shift-roster")
+
+    def test_phase_three_boundaries_pass_the_audit(self) -> None:
+        short_values = [[d.isoformat(), (d.day * 7) % 23]
+                        for d in cal.date_range(D(2026, 7, 1), D(2026, 9, 30))
+                        if d.day != 15]
+        twelve = [[f"担当{n:02d}", ("日夜休待" * 8)[n:n + 14]] for n in range(12)]
+        cases = [
+            ("activity-heatmap", {"start": "2026-07-01", "end": "2026-09-30",
+                                  "values": short_values, "levels": 3}),
+            ("activity-heatmap", {"monthly": False, "summary": False}),
+            ("shift-roster", {"start": "2026-10-01", "end": "2026-10-14", "people": twelve,
+                              "codes": [["日", "日勤", "primary", True],
+                                        ["夜", "夜勤", "dark", True],
+                                        ["休", "休み", "muted", False],
+                                        ["待", "待機", "warning", False]],
+                              "minStaff": 0}),
+        ]
+        for template_id, override in cases:
+            with self.subTest(template_id, **{k: str(v)[:20] for k, v in override.items()}):
+                self.assertEqual(self._audit(template_id, **override), [])
+
+    def test_phase_three_rejects_unreadable_input(self) -> None:
+        cases = {
+            "activity-heatmap": {"end": "2026-06-30"},
+            "shift-roster": {"end": "2026-11-01"},
+        }
+        for template_id, override in cases.items():
+            with self.subTest(template_id):
+                self.assertTrue(self._audit(template_id, **override))
 
     def _audit(self, template_id: str, **override) -> list[str]:
         template, _ = load_template(template_id)
@@ -269,6 +328,28 @@ class CalendarPagesTest(unittest.TestCase):
         starts = [[f for f in s["figures"] if f["type"] == "sprint_calendar"][0]["start"]
                   for s in slides]
         self.assertEqual(starts, ["2026-09-28", "2026-11-23"])
+
+    def test_roster_splits_by_month_and_team(self) -> None:
+        days = cal.date_range(D(2026, 10, 20), D(2026, 11, 10))
+        people = [[f"担当{n:02d}", "日" * len(days)] for n in range(14)]
+        slides = calendar_pages.build_slides({
+            "template": "shift-roster", "title": "当番表", "source": "テスト",
+            "start": "2026-10-20", "end": "2026-11-10", "people": people,
+            "codes": [["日", "日勤", "primary", True]]})
+        figs = [[f for f in s["figures"] if f["type"] == "shift_roster"][0] for s in slides]
+        self.assertEqual([(f["start"], len(f["people"])) for f in figs],
+                         [("2026-10-20", 12), ("2026-10-20", 2),
+                          ("2026-11-01", 12), ("2026-11-01", 2)])
+        self.assertEqual(len(figs[0]["people"][0][1]), 12)
+
+    def test_heatmap_splits_every_52_weeks(self) -> None:
+        values = [[d.isoformat(), 1] for d in cal.date_range(D(2025, 1, 1), D(2026, 6, 30))]
+        slides = calendar_pages.build_slides({
+            "template": "activity-heatmap", "title": "長期の件数", "source": "テスト",
+            "start": "2025-01-01", "end": "2026-06-30", "values": values})
+        figs = [[f for f in s["figures"] if f["type"] == "calendar_heatmap"][0] for s in slides]
+        self.assertEqual([(f["start"], f["end"]) for f in figs],
+                         [("2025-01-01", "2025-12-30"), ("2025-12-31", "2026-06-30")])
 
     def test_gantt_repeats_the_group_heading_across_pages(self) -> None:
         rows = [["group", "開発", "", "", "", 0]] + [

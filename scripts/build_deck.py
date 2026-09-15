@@ -1474,6 +1474,10 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
                                               "marks"]),
     "deadline_countdown": ("deadline_countdown", ["x", "y", "w", "h", "deadline",
                                                   "today", "label"]),
+    "calendar_heatmap": ("calendar_heatmap", ["x", "y", "w", "h", "start", "end",
+                                              "values"]),
+    "shift_roster":     ("shift_roster",     ["x", "y", "w", "h", "start", "end",
+                                              "people", "codes"]),
     # Page components and analysis diagrams (pages.py; drawn purely from shapes, no network needed)
     "governing_message": ("governing_message", ["x", "y", "w", "text"]),
     "lead_in":           ("lead_in",           ["x", "y", "w", "text"]),

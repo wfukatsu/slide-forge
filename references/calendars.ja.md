@@ -15,6 +15,8 @@ figure として登録されている。`slide-templates/calendar` パックと 
 | 連続するスプリント | `sprint_calendar` | スプリントごとの稼働日数、イベント日は自動で配置 |
 | 年度全体の俯瞰 | `year_calendar` | 12 か月のミニカレンダー、繁忙期・休業・重要日（配布資料の密度） |
 | 期限までの残り日数 | `deadline_countdown` | 暦日と営業日、節目 |
+| 最長 1 年分の日次の量 | `calendar_heatmap` | 分位による色分け、月別合計、集計カード |
+| 日ごとの当番 | `shift_roster` | 1 文字のコード、日ごとの人数 |
 | 月単位の計画 | `gantt`（`patterns.ja.md`） | 列ラベルだけで日付を持たない |
 
 共通の約束:
@@ -198,6 +200,55 @@ d.deadline_countdown(x, y, w, h, deadline, today, label,
   "checkpoints": [["2026-09-18", "判定会議"]] }
 ```
 
+## calendar_heatmap — 日次ヒートマップ
+
+```python
+d.calendar_heatmap(x, y, w, h, start, end, values,
+                   unit="件",
+                   levels=5,           # 3〜7 段階の分位
+                   monthly=True,       # マスの下に月別合計の帯
+                   summary=True,       # 集計カード 3 枚
+                   extra_holidays=None)
+```
+
+- `values` は `[[日付, 数値], ...]`（0 以上、1 日 1 件）で、`start`〜`end` の中、53 週まで。
+  列は月曜始まりの週、行は曜日。
+- 色は期間内にある値の分位で決まるので、その期間の中での相対的な区分になる。
+  値のない日は枠つきの白で、0 とは区別する。
+- 凡例に区切りの値を出す。月別合計の帯は各月の中央に棒を置く。カードには
+  最多・最少の曜日（祝日を除く）、月別の合計、祝日の平均を出す。解釈は描かない。
+- マスは高さに合わせて縮む（最大 0.26in）。0.1in を下回るとエラーになるので、
+  `monthly` か `summary` を外す。
+
+```json
+{ "type": "calendar_heatmap", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "start": "2025-04-01", "end": "2026-03-31", "unit": "件",
+  "values": [["2025-04-01", 42], ["2025-04-02", 38]] }
+```
+
+## shift_roster — 当番表
+
+```python
+d.shift_roster(x, y, w, h, start, end, people, codes,
+               min_staff=0,          # この人数を下回る日を赤くする
+               extra_holidays=None,
+               size=8.5)
+```
+
+- `people` は `[名前, 予定]`。予定は 1 日 1 文字のコードを並べた文字列（`"日日夜休…"`）で、
+  期間の日数と同じ長さにする（31 日・12 人まで）。
+- `codes` は `[コード, 意味, 色, 人数に数えるか]`。色は `primary / dark / success / danger /
+  info / warning / muted`。`counts` が true のコードを、日ごとの人数と担当者ごとの日数に数える。
+- 凡例は `codes` から描く（`min_staff` を指定したときは不足の色も加える）。
+
+```json
+{ "type": "shift_roster", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
+  "start": "2026-10-01", "end": "2026-10-03", "minStaff": 1,
+  "people": [["運用 A", "日夜休"], ["運用 B", "休日日"]],
+  "codes": [["日", "日勤", "primary", true], ["夜", "夜勤", "dark", true],
+            ["休", "休み", "muted", false]] }
+```
+
 ## 日付エンジン
 
 `calendars.py` の純粋関数。`tests/test_calendars.py` でテストしている。
@@ -217,10 +268,14 @@ d.deadline_countdown(x, y, w, h, deadline, today, label,
 | `assign_tracks(intervals)` | 区間ごとの（列, 重なりのまとまりの列数） |
 | `sprint_ranges(start, count, length_days)` | 連続するスプリントの期間 |
 | `months_from(start_month, count)` | `[(年, 月), ...]` |
+| `quantile_cuts(values, levels)` / `bucket_of(value, cuts)` | 区切りの値 / 何段目か |
+| `normalize_series(values)` | `{日付: 数値}` |
+| `normalize_roster(start, end, people, codes)` / `roster_totals(rows, codes)` | 検証済みの当番表 / (日ごと, 担当者ごと) |
 
 ## 複数スライドへの分割
 
 `scripts/calendar_pages.py data.json --out pages.json` は、1 つのデータセットを
-テンプレートのスライドに分ける。月ごと、月曜〜日曜の週ごと（日次リスト・タイムテーブル）、
-グループの切れ目での行のまとまりごと（ガント）、週 8 行ごと（スプリント）に分割する。
-年間カレンダーとカウントダウンは 1 枚ずつ。入力形式は docstring を参照。
+テンプレートのスライドに分ける。月ごと（月間カレンダー、当番表。当番表は 12 人ごとにも分ける）、
+月曜〜日曜の週ごと（日次リスト・タイムテーブル）、グループの切れ目での行のまとまりごと（ガント）、
+週 8 行ごと（スプリント）、52 週ごと（ヒートマップ）に分割する。年間カレンダーとカウントダウンは
+1 枚ずつ。入力形式は docstring を参照。

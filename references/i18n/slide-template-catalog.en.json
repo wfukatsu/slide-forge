@@ -22,7 +22,7 @@
     },
     "calendar": {
       "name": "Calendar Pack",
-      "intro": "Pages for date-based schedules and tasks. Seven formats — a month calendar (Monday- or Sunday-start), a day-by-day Gantt chart, a daily task list, a weekly timetable, a sprint calendar, a year at a glance, and a deadline countdown — with weekend/holiday shading, working-day counts, and automatic splitting of long periods (scripts/calendar_pages.py).",
+      "intro": "Pages for date-based schedules and tasks. Nine formats — a month calendar (Monday- or Sunday-start), a day-by-day Gantt chart, a daily task list, a weekly timetable, a sprint calendar, a year at a glance, a deadline countdown, a daily heatmap, and a shift roster — with weekend/holiday shading, working-day counts, and automatic splitting of long periods (scripts/calendar_pages.py).",
       "short": "Pages for date-based schedules and tasks"
     },
     "analysis": {
@@ -461,6 +461,36 @@
         "Checkpoints are [date, name], up to 3. Use dates between today and the deadline",
         "Make label a short phrase that says what the deadline is for, such as \"本番切替まで\" (until the production cutover)",
         "A document past its as-of date has stale numbers. Update today when distributing, and state the as-of date in source as well"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "activity-heatmap": {
+      "displayName": "Daily Heatmap",
+      "description": "Lays out daily values as shaded week × weekday cells, showing weekday and seasonal skew and monthly totals",
+      "answers": "On which weekdays and in which periods is the volume concentrated?",
+      "guardrails": [
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the month headers",
+        "Values are [date, number]. The period is up to 53 weeks. Split longer series into 52-week pages with scripts/calendar_pages.py",
+        "The page handles numbers, so source is required. State the period, the counting definition (what counts as one), the unit, and where the data came from",
+        "Shading is a relative bucket by quantile (levels steps) of this period's values, not an absolute threshold. Do not compare colours with a chart of another period",
+        "Days with no value are white; days with 0 get the lightest colour. Do not mix missing values and zeros (do not fill missing days with 0)",
+        "Low values on holidays and long weekends are a calendar effect, not an anomaly. Read them together with the holiday average card",
+        "The cards below show aggregates only. Put causes or evaluation in the title or body, and do not write correlation as causation"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "shift-roster": {
+      "displayName": "Shift Roster",
+      "description": "Places a one-character duty code and colour in each person × day cell, showing the daily headcount and understaffed days",
+      "answers": "Who is on duty each day, and which days are short-staffed?",
+      "guardrails": [
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the date headers",
+        "People are [name, schedule]. The schedule is a string of one code character per day of the period (e.g. 日日夜休…), and its length must equal the number of days",
+        "Codes are [character, meaning, colour, counts toward headcount]. Colours are primary / dark / success / danger / info / warning / muted. The legend is added automatically",
+        "One page holds up to 31 days × 12 people. Split longer periods or larger teams by month or by 12 people with scripts/calendar_pages.py",
+        "With minStaff set, days whose total of headcount codes falls below it turn red. State the basis for the required staffing (SLA, staffing plan) in source",
+        "Mind the sharing scope of material that shows real people's names. Use role names or pseudonyms for external audiences and examples",
+        "State in source that this is a plan and as of when the roster applies. Same-day swaps are not reflected"
       ],
       "inference": "Descriptive (organizing facts)"
     },

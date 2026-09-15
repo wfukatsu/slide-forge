@@ -45,6 +45,8 @@ generate → QA → deliver).
 | `sprint-calendar` | sprints as week rows with a goal panel | 8 week rows | every 8 week rows |
 | `year-at-a-glance` | 12 mini months with busy / off / key marks | one year (handout density) | one page |
 | `deadline-countdown` | days left, working days, checkpoints | deadline within today's month or the next | one page |
+| `activity-heatmap` | daily values as week × weekday colours, monthly totals, aggregate cards | 53 weeks | every 52 weeks |
+| `shift-roster` | people × days with one-character codes and headcount | 31 days × 12 people | per month, per 12 people |
 
 Choose with [form-selection.md](references/form-selection.md). The limits and
 their derivation are in [capacity.md](references/capacity.md). Primitive
@@ -88,6 +90,10 @@ Write `out/<deck>/calendar-data.json` in the `calendar_pages.py` input format
 - `year-at-a-glance` marks: `[start, end, label, busy|off|key]` from `startMonth`.
 - `deadline-countdown`: `label`, `deadline`, `today` (required), up to three
   `checkpoints` `[date, name]`.
+- `activity-heatmap` values: `[date, number ≥ 0]`, one per day; leave missing
+  days out instead of writing 0. `source` must state period, definition and unit.
+- `shift-roster` people: `[name, schedule]` with one code character per day;
+  codes: `[code, label, colour, counts]`; `minStaff` from the staffing standard.
 - Keep plan and actuals apart; progress needs an as-of date in `source`.
 
 ### 3. Split and approve
@@ -157,8 +163,7 @@ Schema, validation, registration and compatibility follow
    `slide-qa`, and refresh `references/images/slide-templates/<id>.png` and the
    catalog doc.
 
-Planned but not yet built (P3, see `references/calendar-template-plan.ja.md`):
-activity heatmap, shift roster.
+All nine forms of the plan (`references/calendar-template-plan.ja.md`) are built.
 
 ## Safety
 

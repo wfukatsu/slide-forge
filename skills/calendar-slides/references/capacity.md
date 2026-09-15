@@ -82,6 +82,25 @@ move detail to a `daily-agenda` page rather than accept "+N件" everywhere.
 | Left panel | 40% of the width: label 13pt (≤ 12 characters), number 66pt, 3 checkpoints |
 | Right | two mini months (today's and the next) at 10pt |
 
+## activity-heatmap
+
+| Item | Value |
+|---|---|
+| Period | ≤ 53 weeks (Monday-first columns) |
+| Cell | min((9.0 − 0.35) ÷ weeks, height share, 0.26 in) → 0.163 in for a year; ≥ 0.1 in |
+| Height budget | month labels 0.24 + grid 7 cells + legend 0.36 + monthly strip 0.92 + cards 0.86 |
+| Levels | 3–7 quantile buckets (default 5); first level light grey, last dark |
+| Shapes | ~370 cells for a year plus labels — generation stays in one batch |
+
+## shift-roster
+
+| Item | Value |
+|---|---|
+| Columns | name 0.8 in, per-person total 0.5 in, days (9.0 − 1.3) ÷ days → 0.248 in at 31 |
+| Rows | ≤ 0.30 in, ≥ 0.20 in → 12 people at 3.65 in |
+| Codes | one character per cell, ≤ 6 codes (legend in one row) |
+| Headcount row | 0.26 in; red below `minStaff` |
+
 ## Holiday data
 
 `assets/holidays/jp.csv` covers 1955 through the latest year the Cabinet Office

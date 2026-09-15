@@ -453,6 +453,107 @@ def months_from(start_month, count: int = 12) -> list[tuple[int, int]]:
     return [((base + i) // 12, (base + i) % 12 + 1) for i in range(count)]
 
 
+MAX_HEATMAP_WEEKS = 53
+MAX_ROSTER_DAYS = 31
+MAX_ROSTER_PEOPLE = 12
+MIN_ROSTER_ROW_H = 0.20
+
+register({
+    "value must be [date, number]: {value}": "値は [日付, 数値] の形式です: {value}",
+    "'{day}': the value must be a number of 0 or more: {value}":
+        "{day}: 値は 0 以上の数値にします: {value}",
+    "{day} appears twice": "{day} が 2 回出てきます",
+    "calendar_heatmap: {n} weeks is too long (max {max})":
+        "calendar_heatmap: {n} 週は長すぎます（最大 {max} 週）",
+    "levels must be between 3 and 7: {value}": "levels は 3〜7 です: {value}",
+    "calendar_heatmap: h={h} leaves cells smaller than 0.1in; turn off monthly or summary":
+        "calendar_heatmap: h={h} ではマスが 0.1in 未満になります。monthly か summary を外してください",
+    "shift_roster: {n} days is too long (max {max})":
+        "shift_roster: {n} 日は長すぎます（最大 {max} 日）",
+    "code must be one character: {value}": "コードは 1 文字にします: {value}",
+    "'{name}': the schedule has {got} days but the period has {n}":
+        "「{name}」: 予定が {got} 日分ですが、期間は {n} 日です",
+    "'{name}': code '{code}' is not in codes":
+        "「{name}」: コード '{code}' が codes にありません",
+    "shift_roster: {n} people do not fit (max {max}). Split the team with "
+    "scripts/calendar_pages.py":
+        "shift_roster: {n} 人は収まりません（最大 {max} 人）。"
+        "scripts/calendar_pages.py でチームを分けてください",
+    "shift_roster: needs at least one person": "shift_roster: 担当者が 1 人以上必要です",
+    "unknown roster colour '{cat}' (use primary / dark / success / danger / info / warning / muted)":
+        "当番表の色 '{cat}' は使えません（primary / dark / success / danger / info / warning / muted）",
+})
+
+
+def quantile_cuts(values, levels: int = 5) -> list[float]:
+    """Upper bounds of the lower levels-1 buckets, taken at even quantiles."""
+    data = sorted(values)
+    if not data:
+        return []
+    return [data[min(len(data) - 1, int(len(data) * k / levels))] for k in range(1, levels)]
+
+
+def bucket_of(value: float, cuts) -> int:
+    return sum(1 for c in cuts if value > c)
+
+
+def normalize_series(values) -> dict[dt.date, float]:
+    """[[date, number], ...] -> {date: number}; negative or duplicate dates raise."""
+    out: dict[dt.date, float] = {}
+    for entry in values:
+        if not isinstance(entry, (list, tuple)) or len(entry) != 2:
+            raise ValueError(t("value must be [date, number]: {value}", value=entry))
+        day, value = parse_date(entry[0]), entry[1]
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or value < 0:
+            raise ValueError(t("'{day}': the value must be a number of 0 or more: {value}",
+                               day=day, value=value))
+        if day in out:
+            raise ValueError(t("{day} appears twice", day=day))
+        out[day] = float(value)
+    return out
+
+
+def format_number(value: float) -> str:
+    return f"{int(round(value)):,}" if abs(value - round(value)) < 1e-9 else f"{value:,.1f}"
+
+
+def normalize_roster(start, end, people, codes):
+    """-> (days, {code: (label, colour, counts)}, [(name, schedule)])."""
+    s, e = parse_date(start), parse_date(end)
+    if e < s:
+        raise ValueError(t("the end ({end}) is before the start ({start})", end=e, start=s))
+    days = date_range(s, e)
+    if len(days) > MAX_ROSTER_DAYS:
+        raise ValueError(t("shift_roster: {n} days is too long (max {max})", n=len(days),
+                           max=MAX_ROSTER_DAYS))
+    code_map = {}
+    for entry in codes:
+        row = list(entry) + [""] * (4 - len(entry))
+        code = str(row[0])
+        if len(code) != 1:
+            raise ValueError(t("code must be one character: {value}", value=code))
+        code_map[code] = (str(row[1]), str(row[2] or ""), bool(row[3]))
+    rows = []
+    for person in people:
+        name, schedule = str(person[0]), str(person[1])
+        if len(schedule) != len(days):
+            raise ValueError(t("'{name}': the schedule has {got} days but the period has {n}",
+                               name=name, got=len(schedule), n=len(days)))
+        for ch in schedule:
+            if ch not in code_map:
+                raise ValueError(t("'{name}': code '{code}' is not in codes", name=name, code=ch))
+        rows.append((name, schedule))
+    return days, code_map, rows
+
+
+def roster_totals(rows, code_map) -> tuple[list[int], list[int]]:
+    """(people counted per day, counted days per person); counted = codes flagged counts."""
+    ndays = len(rows[0][1]) if rows else 0
+    per_day = [sum(1 for _, sched in rows if code_map[sched[i]][2]) for i in range(ndays)]
+    per_person = [sum(1 for ch in sched if code_map[ch][2]) for _, sched in rows]
+    return per_day, per_person
+
+
 # Status label -> palette role. Japanese and English labels are both accepted.
 _STATUS = {
     "完了": "success", "done": "success",
@@ -1333,3 +1434,238 @@ class CalendarMixin:
             (lighten(P.primary, 0.78), "残りの営業日", "RECTANGLE"),
             (lighten(P.danger, 0.82), "残りの休日", "RECTANGLE")], xmax=x + w)
         return y + h
+
+    # ---- H. calendar heatmap ----
+
+    def calendar_heatmap(self, x, y, w, h, start, end, values, *, unit="件", levels=5,
+                         monthly=True, summary=True, extra_holidays=None) -> float:
+        """Daily values as a week × weekday grid (GitHub-contribution style). Returns the bottom y.
+
+        values are [[date, number], ...] within start–end (≤ 53 weeks). Colours
+        are `levels` quantile buckets of the values present, so they are
+        relative to this period. A day with no value is drawn white — not the
+        same as zero. monthly adds a strip of monthly totals aligned under the
+        grid; summary adds three cards of computed aggregates (by weekday
+        excluding holidays, by month, on holidays). No interpretation is drawn.
+        """
+        P = self.P
+        s, e = parse_date(start), parse_date(end)
+        if e < s:
+            raise ValueError(t("the end ({end}) is before the start ({start})", end=e, start=s))
+        series = normalize_series(values)
+        for day in series:
+            if not s <= day <= e:
+                raise ValueError(t("'{name}': {day} is outside the chart period {start}-{end}",
+                                   name=format_number(series[day]), day=day, start=s, end=e))
+        if not 3 <= levels <= 7:
+            raise ValueError(t("levels must be between 3 and 7: {value}", value=levels))
+        first = s - dt.timedelta(days=s.weekday())
+        nweeks = (e - first).days // 7 + 1
+        if nweeks > MAX_HEATMAP_WEEKS:
+            raise ValueError(t("calendar_heatmap: {n} weeks is too long (max {max})", n=nweeks,
+                               max=MAX_HEATMAP_WEEKS))
+        hol = holidays_for(range(s.year, e.year + 1), extra_holidays)
+
+        lx, head_h, legend_h = 0.35, 0.24, 0.36
+        strip_h = 0.92 if monthly else 0.0
+        cards_h = 0.86 if summary else 0.0
+        cell = min((w - lx) / nweeks, (h - head_h - legend_h - strip_h - cards_h) / 7, 0.26)
+        if cell < 0.1:
+            raise ValueError(t("calendar_heatmap: h={h} leaves cells smaller than 0.1in; turn "
+                               "off monthly or summary", h=h))
+        top = y + head_h
+        gx = x + lx
+        ramp = (["#EEF0F3"]
+                + [lighten(P.primary, 0.75 - 0.55 * j / max(1, levels - 3))
+                   for j in range(levels - 2)]
+                + [darken(P.primary, 0.25)])
+        cuts = quantile_cuts(list(series.values()), levels)
+
+        for r, name in ((0, "月"), (2, "水"), (4, "金")):
+            self._cal_text(x, top + r * cell + cell / 2 - 0.1, lx - 0.04, 0.2, name, size=8,
+                           align="END", color=P.muted, margin=0.0)
+        last_label_x = -1.0
+        for day in date_range(s, e):
+            if day != s and day.day != 1:
+                continue
+            lx_ = gx + (day - first).days // 7 * cell
+            if lx_ < last_label_x + 0.42:
+                continue
+            self._cal_text(lx_, y, 0.5, 0.22, f"{day.month}月", size=8, color=P.muted,
+                           margin=0.0)
+            last_label_x = lx_
+        missing = False
+        for day in date_range(s, e):
+            cx = gx + (day - first).days // 7 * cell
+            cy = top + day.weekday() * cell
+            value = series.get(day)
+            if value is None:
+                missing = True
+                self.shape(cx + 0.012, cy + 0.012, cell - 0.024, cell - 0.024, fill=P.white,
+                           stroke=P.border, stroke_weight=0.5)
+            else:
+                self.shape(cx + 0.012, cy + 0.012, cell - 0.024, cell - 0.024,
+                           fill=ramp[bucket_of(value, cuts)])
+
+        ly = top + 7 * cell + 0.1
+        xx = gx
+        self._cal_text(xx, ly, 0.24, 0.22, "少", size=8.5, color=P.muted, margin=0.0)
+        xx += 0.24
+        for colour in ramp:
+            self.shape(xx, ly + 0.04, 0.16, 0.16, fill=colour)
+            xx += 0.2
+        self._cal_text(xx + 0.02, ly, 0.3, 0.22, "多", size=8.5, color=P.muted, margin=0.0)
+        xx += 0.4
+        cut_text = f"区切り: {' / '.join(format_number(c) for c in cuts)} {unit}（{levels} 分位）"
+        cut_w = min(em(cut_text) * 8.5 / 72 * 1.1 + 0.08, x + w - xx - (1.3 if missing else 0))
+        self._cal_text(xx, ly, cut_w, 0.22, self._cal_fit(cut_text, cut_w, 8.5, 0.0),
+                       size=8.5, color=P.muted, margin=0.0)
+        if missing:
+            # Keep "no data" next to the scale it qualifies, not at the far edge
+            mx = min(xx + cut_w + 0.2, x + w - 1.2)
+            self.shape(mx, ly + 0.04, 0.16, 0.16, fill=P.white, stroke=P.border,
+                       stroke_weight=0.5)
+            self._cal_text(mx + 0.2, ly, 1.0, 0.22, "データなし", size=8.5, color=P.muted,
+                           margin=0.0)
+
+        months: dict[tuple[int, int], float] = {}
+        positions: dict[tuple[int, int], list[float]] = {}
+        for day, value in series.items():
+            key = (day.year, day.month)
+            months[key] = months.get(key, 0.0) + value
+        for day in date_range(s, e):
+            positions.setdefault((day.year, day.month), []).append((day - first).days / 7)
+        if monthly and months:
+            bar_top, bar_h = ly + legend_h - 0.06, strip_h - 0.3
+            self._cal_text(x, bar_top + bar_h - 0.22, lx + 0.1, 0.22, "月計", size=8,
+                           color=P.muted, margin=0.0)
+            peak = max(months.values()) or 1.0
+            top_key = max(months, key=months.get)
+            bar_w = min(0.46, cell * 4)
+            for key, pos in positions.items():
+                total = months.get(key, 0.0)
+                mid = gx + (sum(pos) / len(pos) + 0.5) * cell
+                bx = min(max(mid - bar_w / 2, gx), x + w - bar_w)
+                bh = max(0.01, (bar_h - 0.2) * total / peak)
+                self.shape(bx, bar_top + bar_h - bh, bar_w, bh,
+                           fill=darken(P.primary, 0.25) if key == top_key
+                           else lighten(P.primary, 0.45))
+                self._cal_text(bx - 0.1, bar_top + bar_h - bh - 0.2, bar_w + 0.2, 0.2,
+                               format_number(total), size=8, align="CENTER",
+                               color=P.muted, margin=0.0)
+        if summary and series:
+            by_wd: dict[int, list[float]] = {}
+            for day, value in series.items():
+                if day not in hol:
+                    by_wd.setdefault(day.weekday(), []).append(value)
+            avg = {wd: sum(v) / len(v) for wd, v in by_wd.items()}
+            hi_wd = max(avg, key=avg.get) if avg else None
+            lo_wd = min(avg, key=avg.get) if avg else None
+            hi_m = max(months, key=months.get)
+            lo_m = min(months, key=months.get)
+            hol_vals = [v for d, v in series.items() if d in hol]
+            cards = [
+                ("曜日別の平均（祝日除く）",
+                 f"最多 {WEEKDAYS_JA[hi_wd]} {format_number(round(avg[hi_wd]))}{unit} ／ "
+                 f"最少 {WEEKDAYS_JA[lo_wd]} {format_number(round(avg[lo_wd]))}{unit}"
+                 if avg else "祝日以外のデータなし"),
+                ("月別の合計",
+                 f"最多 {hi_m[1]}月 {format_number(months[hi_m])}{unit} ／ "
+                 f"最少 {lo_m[1]}月 {format_number(months[lo_m])}{unit}"),
+                ("祝日の平均",
+                 f"{sum(hol_vals) / len(hol_vals):.1f}{unit}（祝日 {len(hol_vals)} 日）"
+                 if hol_vals else "期間中の祝日のデータなし"),
+            ]
+            card_w = (w - 0.3) / 3
+            cy = y + h - 0.74
+            for k, (head, body) in enumerate(cards):
+                self.shape(x + k * (card_w + 0.15), cy, card_w, 0.72, kind="ROUND_RECTANGLE",
+                           fill=P.surface,
+                           text=f"{head}\n{self._cal_fit(body, card_w, 9.5, 0.12)}",
+                           size=9.5, color=P.text, align="START", text_margin=0.12)
+        return y + h
+
+    # ---- I. shift roster ----
+
+    def shift_roster(self, x, y, w, h, start, end, people, codes, *, min_staff=0,
+                     extra_holidays=None, size=8.5) -> float:
+        """People × days with a one-character code per cell. Returns the bottom y.
+
+        people are [name, schedule] where schedule has one code character per
+        day of start–end (≤ 31 days). codes are [code, label, colour, counts]:
+        colour is primary / dark / success / danger / info / warning / muted,
+        counts marks codes that count as on duty. A totals row shows people on
+        duty per day (red below min_staff) and the right column days on duty
+        per person. The legend is always drawn.
+        """
+        P = self.P
+        days, code_map, rows = normalize_roster(start, end, people, codes)
+        if not rows:
+            raise ValueError(t("shift_roster: needs at least one person"))
+        if len(rows) > MAX_ROSTER_PEOPLE:
+            raise ValueError(t("shift_roster: {n} people do not fit (max {max}). Split the team "
+                               "with scripts/calendar_pages.py", n=len(rows),
+                               max=MAX_ROSTER_PEOPLE))
+        palette = {
+            "": (lighten(P.primary, 0.70), P.text), "primary": (lighten(P.primary, 0.70), P.text),
+            "dark": (P.primaryDark, P.white), "success": (lighten(P.success, 0.55), P.text),
+            "danger": (lighten(P.danger, 0.60), P.text), "info": (lighten(P.info, 0.65), P.text),
+            "warning": (lighten(P.warning, 0.45), P.text), "muted": ("#F1F2F4", P.muted),
+        }
+        for label, colour, _counts in code_map.values():
+            if colour not in palette:
+                raise ValueError(t("unknown roster colour '{cat}' (use primary / dark / success "
+                                   "/ danger / info / warning / muted)", cat=colour))
+        hol = holidays_for(range(days[0].year, days[-1].year + 1), extra_holidays)
+        per_day, per_person = roster_totals(rows, code_map)
+        nw, tw_ = 0.8, 0.5
+        cw = (w - nw - tw_) / len(days)
+        gx = x + nw
+        head_h, total_h, legend_h = 0.38, 0.26, 0.3
+        rh = min(0.3, (h - head_h - total_h - legend_h - 0.12) / len(rows))
+        if rh < MIN_ROSTER_ROW_H:
+            raise ValueError(t("{what}: {n} rows do not fit in h={h} (each row needs "
+                               "{min}in). Split the period with scripts/calendar_pages.py",
+                               what="shift_roster", n=len(rows), h=h, min=MIN_ROSTER_ROW_H))
+        for i, day in enumerate(days):
+            cx = gx + i * cw
+            fill = self._cal_off_fill(day, hol)
+            if fill:
+                self.shape(cx, y, cw, head_h, fill=fill)
+        for i, day in enumerate(days):
+            cx = gx + i * cw
+            color = self._cal_num_color(day, hol)
+            first = day.day == 1 or i == 0
+            label = f"{day.month}/{day.day}" if first and cw >= 0.4 else str(day.day)
+            self._cal_text(cx, y, cw, 0.2, label, size=8, bold=True, align="CENTER",
+                           color=color, margin=0.0)
+            self._cal_text(cx, y + 0.19, cw, 0.18, WEEKDAYS_JA[day.weekday()], size=8,
+                           align="CENTER", color=color, margin=0.0)
+        self._cal_text(gx + len(days) * cw, y + 0.1, tw_, 0.24, "計", size=8.5, bold=True,
+                       align="CENTER", color=P.muted, margin=0.0)
+        y0 = y + head_h + 0.02
+        for p, (name, schedule) in enumerate(rows):
+            ry = y0 + p * rh
+            self._cal_text(x, ry, nw, rh, self._cal_fit(name, nw, 9, 0.04), size=9, margin=0.04)
+            for i, ch in enumerate(schedule):
+                fill, tc = palette[code_map[ch][1]]
+                self.shape(gx + i * cw, ry, cw, rh, fill=fill, stroke=P.white,
+                           stroke_weight=1.0, text=ch, size=size,
+                           bold=code_map[ch][2], color=tc, text_margin=0.0)
+            self._cal_text(gx + len(days) * cw, ry, tw_, rh, f"{per_person[p]}日", size=9,
+                           align="CENTER", margin=0.0)
+        ty = y0 + len(rows) * rh + 0.06
+        self._cal_text(x, ty, nw, total_h, "人数", size=8.5, bold=True, color=P.muted,
+                       margin=0.04)
+        for i, n in enumerate(per_day):
+            short = bool(min_staff) and n < min_staff
+            self.shape(gx + i * cw, ty, cw, total_h,
+                       fill=lighten(P.danger, 0.75) if short else P.surfaceAlt,
+                       stroke=P.white, text=str(n), size=size, bold=short,
+                       color=darken(P.danger, 0.2) if short else P.text, text_margin=0.0)
+        items = [(palette[colour][0], f"{code} = {label}", "RECTANGLE")
+                 for code, (label, colour, _c) in code_map.items()]
+        if min_staff:
+            items.append((lighten(P.danger, 0.75), f"{min_staff} 人未満の日", "RECTANGLE"))
+        self._cal_legend(x, ty + total_h + 0.1, items, xmax=x + w)
+        return ty + total_h + 0.1 + 0.24

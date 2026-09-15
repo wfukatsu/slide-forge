@@ -249,7 +249,52 @@ def single_page(name: str, keys: tuple[str, ...]):
     return split
 
 
+def heatmap_pages(data: dict) -> list[dict]:
+    """One page per 52 weeks from the start; each page keeps only its own values."""
+    start = cal.parse_date(_require(data, "start", "activity-heatmap"))
+    end = cal.parse_date(_require(data, "end", "activity-heatmap"))
+    series = cal.normalize_series(_require(data, "values", "activity-heatmap"))
+    base = {k: data[k] for k in ("unit", "levels", "monthly", "summary") if k in data}
+    pages = []
+    page_start = start
+    while page_start <= end:
+        page_end = min(end, page_start + dt.timedelta(days=52 * 7 - 1))
+        values = [[d.isoformat(), v if v % 1 else int(v)] for d, v in sorted(series.items())
+                  if page_start <= d <= page_end]
+        pages.append({**base, "start": page_start.isoformat(), "end": page_end.isoformat(),
+                      "values": values, "extraHolidays": _extra(data)})
+        page_start = page_end + dt.timedelta(days=1)
+    return pages
+
+
+def roster_pages(data: dict) -> list[dict]:
+    """One page per calendar month, and per 12 people within a month."""
+    start = cal.parse_date(_require(data, "start", "shift-roster"))
+    end = cal.parse_date(_require(data, "end", "shift-roster"))
+    days = cal.date_range(start, end)
+    people = [[str(p[0]), str(p[1])] for p in _require(data, "people", "shift-roster")]
+    for name, schedule in people:
+        if len(schedule) != len(days):
+            raise ValueError(t("'{name}': the schedule has {got} days but the period has {n}",
+                               name=name, got=len(schedule), n=len(days)))
+    base = {"codes": _require(data, "codes", "shift-roster"),
+            "minStaff": data.get("minStaff", 0), "extraHolidays": _extra(data)}
+    pages = []
+    i = 0
+    while i < len(days):
+        j = i
+        while j + 1 < len(days) and days[j + 1].month == days[i].month:
+            j += 1
+        for k in range(0, len(people), cal.MAX_ROSTER_PEOPLE):
+            chunk = [[name, schedule[i:j + 1]] for name, schedule in people[k:k + cal.MAX_ROSTER_PEOPLE]]
+            pages.append({**base, "start": days[i].isoformat(), "end": days[j].isoformat(),
+                          "people": chunk})
+        i = j + 1
+    return pages
+
+
 SPLITTERS = {"month-calendar": month_pages, "daily-gantt": gantt_pages,
+             "activity-heatmap": heatmap_pages, "shift-roster": roster_pages,
              "daily-agenda": agenda_pages, "weekly-timetable": timetable_pages,
              "sprint-calendar": sprint_pages,
              "year-at-a-glance": single_page("year-at-a-glance", ("startMonth", "marks")),

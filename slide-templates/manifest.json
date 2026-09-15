@@ -1439,6 +1439,36 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "activity-heatmap",
+      "displayName": "日次ヒートマップ",
+      "pack": "calendar",
+      "category": "heatmap",
+      "path": "calendar/activity-heatmap/template.json",
+      "tags": [
+        "calendar",
+        "heatmap",
+        "daily",
+        "volume"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "shift-roster",
+      "displayName": "当番表",
+      "pack": "calendar",
+      "category": "roster",
+      "path": "calendar/shift-roster/template.json",
+      "tags": [
+        "calendar",
+        "shift",
+        "roster",
+        "on-call"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

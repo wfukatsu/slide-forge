@@ -43,6 +43,8 @@ description: >-
 | `sprint-calendar` | スプリントを週の行に並べ、左にゴール | 週 8 行 | 週 8 行ごと |
 | `year-at-a-glance` | 12 か月のミニカレンダーに繁忙期・休業・重要日 | 1 年分（配布資料の密度） | 1 枚 |
 | `deadline-countdown` | 残り日数、営業日、節目 | 期限が今日の月か翌月 | 1 枚 |
+| `activity-heatmap` | 日次の値を週 × 曜日の色で、月別合計と集計カード | 53 週 | 52 週ごと |
+| `shift-roster` | 担当者 × 日に 1 文字のコードと人数 | 31 日 × 12 人 | 月ごと、12 人ごと |
 
 選び方は [form-selection.md](references/form-selection.md)、容量と閾値の根拠は
 [capacity.md](references/capacity.md)、プリミティブの引数は `references/calendars.ja.md` にある。
@@ -79,6 +81,10 @@ description: >-
   `start` は月曜、`lengthDays` は 7 か 14。
 - `year-at-a-glance` の印: `[開始, 終了, ラベル, busy|off|key]`。`startMonth` から 12 か月。
 - `deadline-countdown`: `label`、`deadline`、`today`（必須）、`checkpoints` `[日付, 名前]` を 3 件まで。
+- `activity-heatmap` の値: `[日付, 0 以上の数値]` を 1 日 1 件。欠測の日は 0 と書かずに省く。
+  `source` には期間・定義・単位を書く。
+- `shift-roster` の担当者: `[名前, 予定]`（予定は 1 日 1 文字のコード）。コード: `[文字, 意味, 色, 人数に数えるか]`。
+  `minStaff` は体制の基準から決める。
 - 計画と実績を混ぜない。進捗を載せるなら `source` に集計時点を書く。
 
 ### 3. 分割と承認
@@ -148,8 +154,7 @@ description: >-
    （`build_slide_template_catalog.py --pack calendar`）を生成して `slide-qa` にかけ、
    `references/images/slide-templates/<id>.png` とカタログ文書を更新する。
 
-計画済みで未実装のもの（P3、`references/calendar-template-plan.ja.md` 参照）:
-日次ヒートマップ、当番表。
+計画（`references/calendar-template-plan.ja.md`）の 9 形式はすべて実装済み。
 
 ## 安全性
 

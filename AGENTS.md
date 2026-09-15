@@ -29,7 +29,7 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Create/register a reusable single-slide content template | `slide-template-creator` |
 | Current-state analysis / problem identification from supplied material | `current-state-analysis` |
 | Create/change an analysis-framework slide template | `analysis-template-creator` |
-| Calendar slides from dated tasks/events (month calendar, day-by-day gantt, daily task list, weekly timetable, sprint calendar, year at a glance, deadline countdown) | `calendar-slides` |
+| Calendar slides from dated tasks/events (month calendar, day-by-day gantt, daily task list, weekly timetable, sprint calendar, year at a glance, deadline countdown, daily heatmap, shift roster) | `calendar-slides` |
 | B2B stakeholder map / discovery mapping | `b2b-account-maps` |
 | Per-customer activity plan / deal ledger (AE's action plan) | `scalar-account-plan` |
 | Account Planning Session (annual/semi-annual stocktake and executive review) | `scalar-account-planning-session` |
