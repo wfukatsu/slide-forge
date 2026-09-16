@@ -78,7 +78,7 @@ makes it different.
 |---|---|
 | `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly, QA'd, and inserted into decks. The editable `.drawio` is archived beside the deck. |
 | `image-slots` | Fill an **existing** deck's empty picture frames with AI-generated images. Finds frames the same three ways template registration does, and works on any deck URL — including decks slide-forge did not generate. |
-| `slide-qa` | Thumbnail-based **visual QA** of a generated deck: fetch every page as PNG, inspect against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files. |
+| `slide-qa` | Thumbnail-based **visual QA** of a generated deck: inspect every page against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files. The first pass is delegated in 6–8-slide ranges that return findings as text, so the page images stay out of the main context. |
 | `pptx-export` | Export a generated deck to **PowerPoint** as a delivery format, with automatic fallback past Drive's 10MB export limit. From-scratch PPTX authoring stays with `document-skills:pptx`. |
 | `spreadsheets` | Line-item **estimates, BOMs and cost breakdowns** as Excel and/or Google Spreadsheet from one JSON spec: typed columns, real formulas, `--dry-run` validation, and in-place updates that keep the URL stable. |
 | `settings` | Read and change the two toolkit switches in `config/settings.json` through a multiple-choice dialogue: whether Gemini generates images at all, and whether the deliverable is Drive / Slides or a local `.pptx`. Never touches credentials. |
@@ -161,6 +161,10 @@ for the items it marks 非公開.
 .venv/bin/python scripts/export_pptx.py <URL> --folder <FOLDER>   # optional PPTX delivery (pptx-export skill)
 ```
 
+A clean `--dry-run` prints a three-line summary. Add `--verbose` when you need
+the per-slide layout list or every auto-fitted text; on failure, problems that
+differ only by their slide index are reported once with the slides named.
+
 Register a new master: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`,
 then review the guessed roles by hand (see the google-slides-template skill).
 
@@ -170,9 +174,13 @@ A deck is one Python module; a function is one slide. See
 `examples/pattern-gallery/deck.py` and `references/diagram-cookbook.md`.
 
 ```bash
-.venv/bin/python scripts/validate_layout.py mydeck.py   # offline checks, no API calls
-.venv/bin/python scripts/render_deck.py     mydeck.py   # validates, then generates
+.venv/bin/python scripts/validate_layout.py mydeck.py --quiet   # offline checks, no API calls
+.venv/bin/python scripts/render_deck.py     mydeck.py           # validates, then generates
 ```
+
+With `--quiet` a clean deck prints nothing at all; drop the flag to see which
+text was auto-fitted. Either way the exit code is 1 when problems are found,
+and the problems themselves always print.
 
 `validate_layout.py` catches footer intrusion, off-slide geometry, title
 wrapping, floating/buried connector endpoints, text hidden behind

@@ -77,7 +77,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 |---|---|
 | `drawio-diagrams` | 密度の高いクラウドアーキテクチャ / データフロー / ネットワーク図を draw.io で作成し、ヘッドレスで PNG 化して QA し、デッキに挿入する。編集可能な `.drawio` はデッキの隣にアーカイブされる。 |
 | `image-slots` | **既存**デッキの空の画像フレームを AI 生成画像で埋める。テンプレート登録と同じ 3 通りの方法でフレームを見つけ、任意のデッキ URL で動く — slide-forge が生成していないデッキも含む。 |
-| `slide-qa` | 生成済みデッキのサムネイルベース**視覚 QA**: 全ページを PNG で取得し、欠陥チェックリストに照らして点検し、修正と再生成のループを回し、最後にローカルの QA ファイルを削除する。 |
+| `slide-qa` | 生成済みデッキのサムネイルベース**視覚 QA**: 全ページを欠陥チェックリストに照らして点検し、修正と再生成のループを回し、最後にローカルの QA ファイルを削除する。初回パスは 6〜8 枚のレンジに分けて委譲し、所見をテキストで返させるため、ページ画像は主コンテキストに載らない。 |
 | `pptx-export` | 生成済みデッキを納品形式として **PowerPoint** にエクスポートする。Drive の 10MB エクスポート制限は自動でフォールバックする。ゼロからの PPTX 作成は `document-skills:pptx` の担当。 |
 | `spreadsheets` | **見積もり・BOM・コスト内訳**の明細を、1 つの JSON 仕様から Excel および/または Google Spreadsheet として生成する: 型付きカラム、実数式、`--dry-run` 検証、URL を保ったままのインプレース更新。 |
 | `settings` | `config/settings.json` の 2 つのスイッチを選択式の対話で確認・変更する: Gemini による画像生成を使うか、成果物を Drive / Slides に出すかローカルの `.pptx` に出すか。認証情報には触れない。 |
@@ -156,6 +156,10 @@ Scalar 製品の事実と価格 — 機能・エディション・バージョ�
 .venv/bin/python scripts/export_pptx.py <URL> --folder <FOLDER>   # optional PPTX delivery (pptx-export skill)
 ```
 
+`--dry-run` は問題がなければ 3 行の要約だけを出す。スライドごとのレイアウト一覧や
+自動フィットしたテキストの全件が要るときは `--verbose` を付ける。失敗時は、
+スライド番号だけが違う指摘はまとめて 1 件として該当ページ番号とともに報告される。
+
 新しいマスターの登録: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`
 を実行し、推測されたロールを手で確認する（google-slides-template スキル参照）。
 
@@ -166,9 +170,13 @@ Scalar 製品の事実と価格 — 機能・エディション・バージョ�
 を参照。
 
 ```bash
-.venv/bin/python scripts/validate_layout.py mydeck.py   # offline checks, no API calls
-.venv/bin/python scripts/render_deck.py     mydeck.py   # validates, then generates
+.venv/bin/python scripts/validate_layout.py mydeck.py --quiet   # offline checks, no API calls
+.venv/bin/python scripts/render_deck.py     mydeck.py           # validates, then generates
 ```
+
+`--quiet` を付けると、問題がなければ何も出力しない。自動フィットされた
+テキストを確認したいときは外す。どちらの場合も、問題があれば終了コードは 1 で、
+問題そのものは必ず出力される。
 
 `validate_layout.py` は、フッターへの侵入、スライド外のジオメトリ、
 タイトルの折り返し、浮いた/埋もれたコネクタ端点、後から描かれた図形の
