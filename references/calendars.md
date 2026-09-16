@@ -207,7 +207,8 @@ d.deadline_countdown(x, y, w, h, deadline, today, label,
 ```
 
 - Calendar days left (`deadline - today`) in large type, working days from
-  today to the day before the deadline, and checkpoints with "あとN日".
+  today to the day before the deadline, and each checkpoint with the number of
+  days until it, worded in the deck's language.
 - The right side shows today's month and the next with the remaining days
   filled; the deadline must fall in one of them (otherwise use
   `month_calendar` / `day_gantt`). Needs h ≥ 3.3 in.
@@ -222,7 +223,7 @@ d.deadline_countdown(x, y, w, h, deadline, today, label,
 
 ```python
 d.calendar_heatmap(x, y, w, h, start, end, values,
-                   unit="件",
+                   unit=None,          # default from the deck's label resource
                    levels=5,           # 3-7 quantile buckets
                    monthly=True,       # monthly totals strip under the grid
                    summary=True,       # three aggregate cards

@@ -366,9 +366,9 @@
       "guardrails": [
         "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the calendar header",
         "Each event is [start date, end date, subject, category, time]. Write dates as YYYY-MM-DD, and do not guess the year for dates written without one (such as 9/3)",
-        "With an empty end date the event is written in its day cell as a one-day event; with an end date it is drawn as a span. A span that crosses weeks is split per week and marked \"（続き）\" (continued)",
+        "With an empty end date the event is written in its day cell as a one-day event; with an end date it is drawn as a span. A span that crosses weeks is split per week, and each continuation is marked as one in the deck's language",
         "Switch the week start with weekStart (mon / sun). Monday-start shows ISO week numbers on the left; Sunday-start does not",
-        "About two events fit in one cell. The rest collapse into \"+N件\" (+N more), so give the details on a daily-agenda page",
+        "About two events fit in one cell. The rest collapse into a \"+N more\" note, so give the details on a daily-agenda page",
         "Subjects are truncated at about 8 full-width characters. The time is dropped when it does not fit; the subject takes priority",
         "Holidays are detected automatically only for the years covered by the bundled Cabinet Office CSV. Pass company-specific closures in extraHolidays",
         "State in source that these are planned events, and as of when"
@@ -428,8 +428,8 @@
         "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the header",
         "Each sprint is [number, goal, release or not]. start is the Monday of the first sprint; sprints follow one after another every lengthDays (7 or 14)",
         "Up to 8 weeks per slide (4 two-week sprints, or 8 one-week sprints). Split longer spans with scripts/calendar_pages.py",
-        "Working days are weekdays minus holidays and extraHolidays. \"休日 -1\" (holidays -1) is the number of holidays falling on weekdays, grounds for lowering the expected velocity",
-        "Planning is placed on the first working day (\"計画（振替）\" (planning, moved) when the first day is a holiday), and review or release on the last working day, automatically. Do not use this when the actual dates differ",
+        "Working days are weekdays minus holidays and extraHolidays. The panel also shows how many holidays fell on a weekday, which is grounds for lowering the expected velocity",
+        "Planning is placed on the first working day (marked as moved when the first day is a holiday), and review or release on the last working day, automatically. Do not use this when the actual dates differ",
         "Goals are one line, up to 14 full-width characters. Phrase them as an outcome that can be checked, not as a task name",
         "State in source that future sprints are a plan"
       ],
