@@ -190,7 +190,7 @@ cd /path/to/slide-forge
 | `templates/scalar-2026-boilerplate.json` | Scalar 2026 boilerplate template (official bundled slides) |
 | `assets/scalar/{logos,product-logos,pictograms}` | Brand assets (company/product logos, pictograms) |
 | `references/scalar/okf-bundle.md` | Where the OKF bundle is and how to cite product facts and prices from it |
-| `references/scalar/research-2026-08.md` | Researched facts (company, products, case studies) and 6 slide-making pitfalls |
+| `references/scalar/research-2026-08.md` | Researched facts (company, products, case studies) and 10 slide-making pitfalls |
 
 The scripts are "worked examples you can re-run as is"; when changing the
 structure, editing these two scripts is the shortest path. The architecture

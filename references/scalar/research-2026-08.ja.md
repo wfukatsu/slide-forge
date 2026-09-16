@@ -66,3 +66,57 @@
 4. **ScalarDL の「SQL 対応」の正式な姿は TableStore**(独立機能名ではない)
 5. 導入事例の専用ページは無い(ニュース/ブログのみ)。定量効果は ENS 1/5 のみ
 6. 認証認可も features 表(Standard 以上)と個別ページ(Premium タグ)で揺れ → features 表準拠 + 注記
+
+## 追補調査(2026-08-24 実施) — 上記の 08-01 版から変わった点
+
+- **ScalarDB 3.19 リリース(リリースノート 2026-08-02 / プレスリリース 2026-08-03〜04)**
+  出典: https://prtimes.jp/main/html/rd/p/000000078.000037795.html /
+  https://scalardb.scalar-labs.com/docs/latest/releases/release-notes/
+  1. **新コンポーネント「ScalarDB Saga」を提供開始**(プレビューではない)。複数サービスを
+     またぐ Saga / TCC のワークフローを実行・管理するエンジン兼オーケストレータ。
+     実行状況・状態遷移を一元管理し、失敗時の再実行・補償処理を制御する。
+     対応ユースケース: 外部 API/SaaS を含む業務処理・人の承認やバッチを含む長時間処理・
+     非同期処理やリソース事前確保。**旧メモの「3.19.0-alpha.1 で未GA」は正式版で解消**
+  2. 複数 ScalarDB Cluster をまたぐ 2PC を **1 フェーズで書ける新インターフェース**
+     (Transaction Coordinator ノード / Cluster クライアント SDK の Global Transaction API)
+  3. **ScalarDB Manager 刷新**(Cluster 稼働状況・設定・スキーマ・バックエンド DB を一画面で)
+  4. **ScalarDB Analytics: WHERE 句のプッシュダウン対応**で転送量削減・クエリ高速化
+  5. Enterprise 版に属性ベース認証・OpenTelemetry 対応を追加
+  - ロードマップ: Quarkus など MicroProfile 準拠フレームワーク連携 /
+    Analytics の **AI 活用データカタログ生成・管理機能**
+
+- **ScalarDL 3.14 リリース(2026-08-06)** 出典: https://prtimes.jp/main/html/rd/p/000000079.000037795.html
+  正しさの保証に不要と判断されたメタデータ(Ledger のトランザクションログ・Auditor の
+  リクエストログ)を**自動パージ**でき、長期運用のストレージ使用量・保存コストを低減。
+  既存環境のメタデータを消去するツールも提供
+
+- **エディション名称の正**: 公式は **Community / Enterprise Standard / Enterprise Premium**。
+  「ScalarDB Enterprise Edition」という単独の製品名は公式サイトに無く、商用エディションの
+  総称として使うこと。公式製品ページ(scalar-labs.com/ja/products)の製品は
+  **ScalarDB と ScalarDL の 2 つ**で、Saga / Analytics は ScalarDB のコンポーネント扱い
+
+- **会社所在地の表記揺れ**: 3.19 プレスリリースの会社紹介は「東京とサンフランシスコ」。
+  boilerplate 公式スライドは「東京、札幌、サンフランシスコ」。**公式スライド準拠でよい**
+
+- **公表事例の追加確認**
+  - トヨタ自動車 PCE: Box / SharePoint のファイル変更イベント検知 → ハッシュ計算 →
+    ScalarDL に順序付きで記録 → 1 日 1 回タイムスタンプ付与。WHEN / SEQUENCE / WHAT を
+    10 年超証明。PCE(Proof Chain of Evidence)として SaaS 外販。基盤は Microsoft Azure。
+    最初のユースケースは発明の先使用権の証明
+    出典: boilerplate 公式スライド / https://news.microsoft.com/ja-jp/2022/03/31/220331-proof-chain-of-evidence/
+  - 大手放送局: オンプレのシングル DB の課題(機動的スキーマ変更不可・ピークアクセス・
+    未 API 化)→ 公開領域をクラウドへ。IT 部門が番組情報を RDBMS で統括、制作局ごとの
+    コンテンツ/メタデータは NoSQL。ScalarDB が両者をまたぐ整合性を担保、アクセスは API 化。
+    **企業名は非公開。資料上は必ず「大手放送局様」と表記**
+    出典: boilerplate 公式スライド(スライド 10 の全文を 2026-08-24 に取得)
+  - 常石造船: プレスリリース本文は「**十数年**にわたり肥大化したモノリス」。
+    「15 年以上」は二次情報。一次情報に合わせるなら**十数年**を使う
+
+## 落とし穴の追加(7 以降)
+
+7. **ScalarDB Saga を「未GA / プレビュー」と書かない**。3.19 で提供開始済み(2026-08)
+8. **「ScalarDB Enterprise Edition」を単独の製品名として断定しない**。
+   正式には Enterprise Standard / Enterprise Premium
+9. **ベクトル検索は Enterprise Premium・プレビュー**。図に「ベクトルストア」を置くときは
+   プレビューである旨を添える
+10. **Analytics の AI データカタログは開発中**(3.19 の「今後の展望」)。提供済みと書かない
