@@ -1,11 +1,10 @@
 ---
 name: slide-qa
 description: >-
-  Visual QA of a generated deck from thumbnails: fetch every page as PNG, inspect
-  against a defect checklist (overflow, overlaps, wrong connectors, weak
-  contrast), drive the fix-and-regenerate loop, and clean up the local QA files.
-  The generation skills invoke it when the user opts in (the default); it also
-  runs standalone on any deck URL.
+  Visual QA of a generated deck from thumbnails: inspect every page against a
+  defect checklist (overflow, overlaps, wrong connectors, weak contrast) and
+  drive the fix-and-regenerate loop. The generation skills invoke it when the
+  user opts in (the default); it also runs standalone on any deck URL.
   Use for: スライドを検証して, デッキを QA して, サムネイルで確認して, visual QA.
   Not: pre-generation offline checks (--dry-run / validate_layout.py stay in the
   generation skills); content fact-checking; PPTX files (pptx-export).
@@ -46,7 +45,7 @@ complete visual inspection; repair passes are impact-scoped.
 | Fetch thumbnails | `.venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa --size LARGE` |
 | Restrict pages (split QA) | `--pages 3,8,12,20` / `--pages 9-16` |
 | Delete local QA files (always, at the end) | `.venv/bin/python scripts/cleanup_qa.py` (`--dry-run` to preview) |
-| Full checklist, fix loop, reporting rules | `references/validation.md` (Gate 2) |
+| The fix for a defect the checklist flagged, plus reporting rules | `references/validation.md` (Gate 2) — the checklist below is self-contained, so open this only when a specific defect needs its fix |
 | Splitting QA when images crowd context | `references/parallel-generation.md` §6 |
 | Delete a superseded deck from Drive | `drive.files().delete(fileId=…)` (or move to trash) |
 
@@ -59,17 +58,24 @@ complete visual inspection; repair passes are impact-scoped.
 ```
 
 - Judge with `--size LARGE`. SMALL is only for the squint test.
-- **When images would crowd the main context, split QA into 6–8-slide ranges.** When
-  the host and session permit sub-agents, delegate those ranges and have them
-  **return only findings as text**. Otherwise inspect the same ranges
-  sequentially using the Codex fallback in `references/parallel-generation.md`.
+- **Delegate the first pass by default.** Split it into 6–8-slide ranges and
+  give each range to a sub-agent that opens the PNGs itself and **returns only
+  its findings as text**. At `--size LARGE` one page costs ~1,850 image
+  tokens, so opening an 18-slide deck in the main context pulls in ~33k
+  tokens — and a master, theme, or footer fix mandates a full re-inspection
+  (Phase 3) at the same price. The findings text costs a few hundred bytes.
+- Inspect in the main context only when the host or session does not permit
+  sub-agents, or when the deck fits in a single range (roughly ≤8 pages). For
+  the sequential Codex fallback see `references/parallel-generation.md` §6.
 - When several decks are QA'd in one session, keep them apart with
   `--out out/<deck>/qa` — `cleanup_qa.py` sweeps both conventions.
 
 ## Phase 2: Inspect
 
-Open the PNGs with the Read tool. On the first QA pass, inspect every page;
-sampling is not a substitute. With many slides, prioritize the viewing order:
+Open the PNGs with the Read tool — inside the delegated range agent by
+default, in the main context only for the cases named in Phase 1. Every page
+is inspected on the first QA pass; sampling is not a substitute. Within a
+range, prioritize the viewing order:
 
 1. **The page with the most elements** (overlaps show up there first)
 2. **The page with the most complex figure** (swimlanes, branching flows, multi-panel)

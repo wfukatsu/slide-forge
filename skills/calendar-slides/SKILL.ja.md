@@ -1,10 +1,9 @@
 ---
 name: calendar-slides
 description: >-
-  Turn dated tasks and events into calendar slides — month grid (Monday or
-  Sunday start), day-by-day gantt, or a day-by-day task list — with Japanese
-  holidays, multi-day spans and automatic page splits; also maintains the
-  slide-templates/calendar pack.
+  Turn dated tasks and events into calendar slides — month grid, day-by-day
+  gantt, or a day-by-day task list — with Japanese holidays, multi-day spans
+  and automatic page splits.
   Use for: カレンダーでスケジュールを見せたい, 月間予定表, 日単位のガント, 日次タスク一覧,
   calendar slide, monthly calendar, daily gantt.
   Not: month-level plans (planning/gantt-schedule); milestone-only timelines
@@ -155,6 +154,7 @@ description: >-
    `references/images/slide-templates/<id>.png` とカタログ文書を更新する。
 
 計画（`references/calendar-template-plan.ja.md`）の 9 形式はすべて実装済み。
+形式ごとの状況は同ファイル §9〜§11。ここでの作業に読む必要はない。
 
 ## 安全性
 

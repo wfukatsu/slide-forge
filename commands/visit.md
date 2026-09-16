@@ -1,10 +1,7 @@
 ---
 description: >-
-  Build the materials for a single customer visit as one continuous flow:
-  read the ledger → determine phase and counterpart → route to the material
-  type → check for leaked internal information → offline validation →
-  generation and Drive placement → visual QA → write back to the ledger and
-  update the activity plan → report the action plan
+  Build the materials for a single customer visit as one continuous flow,
+  from the ledger through generation and visual QA and back to the ledger
 argument-hint: "<customer name> [visit purpose / counterpart / phase] [path to meeting notes or memo]"
 ---
 

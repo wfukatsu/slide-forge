@@ -38,7 +38,7 @@ capability table below.
 | Task | Where |
 |------|-------|
 | Build from a JSON spec | `scripts/build_deck.py` + `templates/blank-16x9.json` |
-| Write a deck as Python | `scripts/deckkit.py` (+ `examples/pattern-gallery/deck.py`, `examples/scalardb-scalardl/deck.py`) |
+| Write a deck as Python | `scripts/deckkit.py` (+ `examples/pattern-gallery/deck.py`, `examples/scalardb-scalardl/deck.py` — grep these, never read one in full) |
 | Validate layout offline (no API) | `scripts/validate_layout.py` + `references/layout-contract.md` |
 | Render a Python deck | `scripts/render_deck.py` |
 | Visual QA (optional, default: run) | `slide-qa` skill (`scripts/fetch_thumbnails.py` + checklist + cleanup) |
@@ -123,7 +123,16 @@ Write a deck module: 1 module = 1 deck, one function per slide, registered with 
 - `examples/pattern-gallery/deck.py` — one slide per available part
 - `examples/scalardb-scalardl/deck.py` — a real product/architecture deck
 
-Contract rules (footer safe area, title height, connector attachment) are in `references/layout-contract.md`; drawing recipes in `references/diagram-cookbook.md`.
+**Never read either example in full.** `pattern-gallery/deck.py` is 35KB and
+`scalardb-scalardl/deck.py` is 157KB (~39k tokens); reading both costs more
+than the rest of this skill's references combined. Locate the one slide
+function you need and read only it:
+
+```bash
+grep -n "^def \|slide(\|plain(" examples/scalardb-scalardl/deck.py
+```
+
+Contract rules (footer safe area, title height, connector attachment) are in `references/layout-contract.md`; drawing recipes in `references/diagram-cookbook.md` — one section per pattern (§2 layer, §3 process flow, §4 swimlane, §5 branching, §6 matrix, §7 architecture, §8 pipeline, §9 timeline, §10 tree), so open the matching recipe only.
 
 ### Design principles (both paths)
 
@@ -144,12 +153,18 @@ Spec path:
     --spec deck.json --dry-run --strict
 ```
 
+A clean run prints a three-line summary; add `--verbose` only when you need
+the per-slide layout list or the full list of fitted text.
+
 Code-first path:
 
 ```bash
 .venv/bin/python scripts/validate_layout.py path/to/deck.py \
-    --template templates/blank-16x9.json
+    --template templates/blank-16x9.json --quiet
 ```
+
+`--quiet` silences the per-slide `fit:` notes and the OK summary, so a clean
+run prints nothing. Drop it only when you need to see what was auto-fitted.
 
 `validate_layout.py` is offline and free — it checks footer intrusion, off-slide geometry, title wrapping, connector endpoints (detached or buried), partial overlap of text-bearing shapes, and text overflow. Exit code 1 means fix and re-run. Never skip validation (`--skip-validate` exists on `render_deck.py` but do not use it).
 

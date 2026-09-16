@@ -3,9 +3,7 @@ name: scalar-account-planning-session
 description: >-
   Build the Account Planning Session decks for a customer that already has a
   ledger: a full Plan Document for the account team and a nine-page executive
-  review deck, from one aps.json. Works out who to meet next per legal entity
-  from published officer lists, and ties the proposals to the customer's own
-  mid-term management plan.
+  review deck, from one aps.json.
   Use for: APS, 年次・半期のアカウントレビュー, 役員向けレビュー資料,
   企業グループの組織・役員・キーパーソンを整理.
   Not: the per-visit ledger and activity plan (scalar-account-plan); one visit's
@@ -35,12 +33,22 @@ APS は**年次・半期のアカウント棚卸し**。訪問のたびに更新
 判断の出典は [references/scalar/sales-playbook.md](../../references/scalar/sales-playbook.ja.md)。
 ページ定義と各ページの判断基準は
 [references/account-planning-session.md](../../references/account-planning-session.ja.md)。
-**どちらもこのスキルで再定義しない。**
+ページ一覧は **§9**（マスター表）、ステップごとの判断基準は **§3〜§7**、
+品質チェックリストは **§11**。40KB あるので、**必要な節だけを開き、全文は
+決して読まないこと。** **どちらもこのスキルで再定義しない。**
 
-> [references/account-planning-template-plan.md](../../references/account-planning-template-plan.ja.md)
-> は**まだ実装されていない計画書**。`slide-templates/account-planning` パックは
-> 存在せず、現物は `LAYOUT` + `aps.json` の形で動いている。マスター非依存の
-> 設計契約（§2）と列幅の下限だけが現行仕様で、テンプレート一覧は将来案。
+> **[references/account-planning-template-plan.md](../../references/account-planning-template-plan.ja.md)
+> は開かないこと**（33KB）。**まだ実装されていない計画書**であり、
+> `slide-templates/account-planning` パックは存在せず、現物は `LAYOUT` +
+> `aps.json` の形で動いている。現行仕様は以下がすべてなので、ファイル本体は
+> 読む必要がない:
+> - **ブランド RGB をハードコードしない。** ページは `BLANK` + 意味づけされた
+>   カラートークンで構成し、`--template` の差し替えだけで配色が追従する。
+>   マスター固有レイアウトは、その装飾に依存するページ（表紙・章扉）だけ。
+> - **表の列幅は 0.45in（32pt）以上。** Slides API の下限で、下回ると
+>   リクエストが拒否される。
+>
+> 残りの 34 項目のテンプレート一覧は将来案。
 
 ## Boundaries
 

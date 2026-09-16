@@ -1,8 +1,7 @@
 ---
 description: >-
-  Create, update, or query a per-customer activity plan: prepare the ledger →
-  ingest materials → validate → convert unconfirmed items into actions →
-  update the activity plan deck at the same URL → report what to confirm next
+  Create, update, or query a per-customer activity plan, updating its deck at
+  the same URL and reporting what to confirm next
 argument-hint: "<customer name> [new | update | show] [path to meeting notes or memo]"
 ---
 

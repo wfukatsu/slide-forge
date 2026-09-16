@@ -1,11 +1,9 @@
 ---
 name: template-forge
 description: >-
-  Create and register a brand-new Google Slides master from a design spec — brand
-  colors, fonts, logo, footer — without touching the Slides UI, registered as
-  templates/<id>.json and ready for google-slides-template to generate against.
-  Design input comes from interactive brand tokens, extraction from existing
-  material (site / logo / deck), or a bundled preset.
+  Create and register a brand-new Google Slides master from a design spec —
+  brand colors, fonts, logo, footer — without touching the Slides UI,
+  registered as templates/<id>.json.
   Use for: 新しいテンプレートを作って, ブランドに合わせたマスターを作成,
   会社カラーのテンプレート, create a new master.
   Not: hand-tuning an existing master's design (Slides UI); PPTX/.potx templates

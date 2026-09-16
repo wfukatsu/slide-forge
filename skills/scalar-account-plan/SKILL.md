@@ -18,7 +18,9 @@ description: >-
 
 Use `references/scalar/workflow-contract.md` for shared safety, Drive,
 approval, and QA rules. `references/scalar/sales-playbook.md` remains the only
-source for phases, gates, and checkpoint definitions.
+source for phases, gates, and checkpoint definitions — phases and gates are
+§2, the checkpoint questions and their ledger fields §7. **Open that section,
+not the 20KB file.**
 
 One ledger per customer. **The ledger is the single source of truth**; the
 deck is just a rendering of it. Append to the ledger after every visit, and

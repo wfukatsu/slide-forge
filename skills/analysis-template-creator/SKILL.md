@@ -1,12 +1,8 @@
 ---
 name: analysis-template-creator
 description: >-
-  Author and maintain the slide templates in the slide-templates/analysis pack —
-  PEST, Five Forces, logic tree, KPI tree, why-why, fishbone, Pareto, gap
-  analysis, process pain-points, priority matrix — including the drawing
-  primitive a new framework needs. Encodes each framework's own rules: the
-  question it answers, the fact/interpretation split, required sources, misuse
-  guardrails.
+  Author and maintain the slide templates in the slide-templates/analysis
+  pack, including the drawing primitive a new framework needs.
   Use for: 分析フレームのテンプレートを追加・修正, add an analysis-framework template.
   Not: generic page templates (slide-template-creator); running an analysis
   (current-state-analysis).

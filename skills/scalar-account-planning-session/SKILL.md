@@ -3,9 +3,7 @@ name: scalar-account-planning-session
 description: >-
   Build the Account Planning Session decks for a customer that already has a
   ledger: a full Plan Document for the account team and a nine-page executive
-  review deck, from one aps.json. Works out who to meet next per legal entity
-  from published officer lists, and ties the proposals to the customer's own
-  mid-term management plan.
+  review deck, from one aps.json.
   Use for: APS, 年次・半期のアカウントレビュー, 役員向けレビュー資料,
   企業グループの組織・役員・キーパーソンを整理.
   Not: the per-visit ledger and activity plan (scalar-account-plan); one visit's
@@ -40,14 +38,25 @@ The working directory is the slide-forge root. Commands run via
 `.venv/bin/python`.
 
 Page definitions and the judgment criteria for each page are in
-[references/account-planning-session.md](../../references/account-planning-session.md).
-Do not redefine either source in this skill.
+[references/account-planning-session.md](../../references/account-planning-session.md):
+the page list is **§9** (master table), the per-step judgment criteria
+**§3–§7**, the quality checklist **§11**. It is 40KB — **open the section you
+need, never the whole file.** Do not redefine either source in this skill.
 
-> [references/account-planning-template-plan.md](../../references/account-planning-template-plan.md)
-> is a **plan document that is not yet implemented**. There is no
+> **Do not open
+> [references/account-planning-template-plan.md](../../references/account-planning-template-plan.md)**
+> (32KB). It is a **plan document that is not yet implemented**: there is no
 > `slide-templates/account-planning` pack; the real thing runs on
-> `LAYOUT` + `aps.json`. Only the master-independent design contract (§2) and
-> the column-width floor are current spec — the template list is a future
+> `LAYOUT` + `aps.json`. Its entire current spec is reproduced here, so the
+> file itself is never needed:
+> - **No hardcoded brand RGB.** A page is `BLANK` plus semantic colour tokens,
+>   so swapping `--template` re-skins the deck. Use a master-specific layout
+>   only when the page depends on the master's decoration (cover, section
+>   divider).
+> - **Table column widths ≥ 0.45in (32pt)** — the Slides API minimum; below it
+>   the API rejects the request.
+>
+> The rest of that file — the 34-item template list — is a future
 > idea.
 
 ## Boundaries

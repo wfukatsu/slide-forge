@@ -1,11 +1,10 @@
 ---
 name: slide-qa
 description: >-
-  Visual QA of a generated deck from thumbnails: fetch every page as PNG, inspect
-  against a defect checklist (overflow, overlaps, wrong connectors, weak
-  contrast), drive the fix-and-regenerate loop, and clean up the local QA files.
-  The generation skills invoke it when the user opts in (the default); it also
-  runs standalone on any deck URL.
+  Visual QA of a generated deck from thumbnails: inspect every page against a
+  defect checklist (overflow, overlaps, wrong connectors, weak contrast) and
+  drive the fix-and-regenerate loop. The generation skills invoke it when the
+  user opts in (the default); it also runs standalone on any deck URL.
   Use for: スライドを検証して, デッキを QA して, サムネイルで確認して, visual QA.
   Not: pre-generation offline checks (--dry-run / validate_layout.py stay in the
   generation skills); content fact-checking; PPTX files (pptx-export).
@@ -47,7 +46,7 @@ description: >-
 | サムネイル取得 | `.venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa --size LARGE` |
 | ページの限定（分割 QA） | `--pages 3,8,12,20` / `--pages 9-16` |
 | ローカル QA ファイルの削除（最後に必ず） | `.venv/bin/python scripts/cleanup_qa.py`（`--dry-run` でプレビュー） |
-| チェックリスト全体・修正ループ・報告ルール | `references/validation.md`（Gate 2） |
+| チェックリストが検出した不具合の修正方法・報告ルール | `references/validation.md`（Gate 2）— 以下のチェックリストは単体で完結しているので、特定の不具合の直し方が要るときだけ開く |
 | 画像が文脈を圧迫するときの QA 分割 | `references/parallel-generation.md` §6 |
 | 旧版デッキの Drive からの削除 | `drive.files().delete(fileId=…)`（またはゴミ箱へ移動） |
 
@@ -60,18 +59,23 @@ description: >-
 ```
 
 - 判定は `--size LARGE` で行う。SMALL はスクイントテスト専用。
-- **画像が主コンテキストを圧迫する場合は、QA を 6〜8 枚のレンジに分割する。** ホストと
-  セッションがサブエージェントを許可している場合はレンジを委譲し、
-  **所見のみをテキストで返させる**。それ以外の場合は
-  `references/parallel-generation.md` の Codex フォールバックに従い、同じ
-  レンジを順番に検査する。
+- **初回パスは既定で委譲する。** QA を 6〜8 枚のレンジに分割し、各レンジを
+  サブエージェントに渡して PNG を開かせ、**所見のみをテキストで返させる**。
+  `--size LARGE` では 1 ページあたり約 1,850 画像トークンかかるため、18 枚の
+  デッキを主コンテキストで開くと約 33k トークンを取り込むことになる。しかも
+  マスター・テーマ・フッターの修正後は全ページの再検査が必須（Phase 3）で、
+  同じ代償がもう一度かかる。所見テキストなら数百バイトで済む。
+- 主コンテキストで検査してよいのは、ホストやセッションがサブエージェントを
+  許可していない場合か、デッキが 1 レンジに収まる場合（目安 8 枚以下）だけ。
+  順次実行の Codex フォールバックは `references/parallel-generation.md` §6。
 - 1 セッションで複数のデッキを QA する場合は `--out out/<deck>/qa` で分離する —
   `cleanup_qa.py` はどちらの慣例も掃除する。
 
 ## Phase 2: 検査
 
-PNG を Read ツールで開く。初回QAでは全ページを見る。サンプリングで代用しない。
-枚数が多い場合は次の順序を優先する:
+PNG を Read ツールで開く — 既定では委譲したレンジ担当エージェントの中で開き、
+主コンテキストで開くのは Phase 1 に挙げた場合だけ。初回QAでは全ページを見る。
+サンプリングで代用しない。レンジ内では次の順序を優先する:
 
 1. **要素数が最も多いページ**（重なりはここに最初に現れる）
 2. **図が最も複雑なページ**（スイムレーン、分岐フロー、マルチパネル）

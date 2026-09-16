@@ -2,8 +2,7 @@
 name: b2b-account-maps
 description: >-
   Build the two maps a B2B deal turns on: an influence map of the buying
-  committee (who decides, who blocks, who can be moved) and a discovery map of
-  what is confirmed versus still assumed. Renders from the b2b-sales templates.
+  committee and a discovery map of what is confirmed versus still assumed.
   Use for: ステークホルダーを整理, 関与者マップ, 意思決定者と承認経路, MEDDPICC,
   ディスカバリー, パイプラインレビュー, 提案前に何が未確認かを洗い出す.
   Not: the proposal deck itself (scalar-proposal-slides / google-slides-template);

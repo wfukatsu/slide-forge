@@ -2,9 +2,8 @@
 name: scalar-product-slides
 description: >-
   Build Scalar Inc. decks end to end — company introduction, product
-  introduction, feature catalog, use cases: confirm deck type, target product and
-  audience, research the facts from the official site and developer docs, then
-  generate and QA the deck.
+  introduction, feature catalog, use cases — researched from the official site
+  and developer docs.
   Use for: 製品紹介スライド, 機能紹介スライド, 会社紹介スライド, Scalar 紹介資料,
   ユースケーススライド.
   Not: customer-specific proposals driven by a customer's challenges
