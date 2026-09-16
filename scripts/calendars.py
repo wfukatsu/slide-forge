@@ -631,12 +631,15 @@ class CalendarMixin:
         """Month grid with one week per row. Returns the bottom y.
 
         events are [start, end, title, category, time]. An empty end is a
-        one-day event written in the day cell ("10:00 定例"); an end after the
-        start is drawn as a bar across the days, split at each week row and
-        marked "（続き）" where it continues. Bars take lanes first; one-day
-        events fill the remaining lanes, and whatever does not fit becomes
-        "+N件". A title too long for the cell drops its time first, then is
-        cut with "…".
+        one-day event written in the day cell (its time, then its title); an
+        end after the start is drawn as a bar across the days, split at each
+        week row and marked as a continuation where it carries on. Bars take
+        lanes first; one-day events fill the remaining lanes, and whatever
+        does not fit collapses into a "+N more" note. A title too long for the
+        cell drops its time first, then is cut with "…".
+
+        The continuation mark and the "+N more" wording come from the deck's
+        label resource (slide-templates/i18n/), so they follow its language.
 
         week_numbers defaults to True for Monday-start (ISO weeks) and False
         for Sunday-start, where ISO numbering would not line up with the rows.
@@ -908,7 +911,8 @@ class CalendarMixin:
                            text_margin=0.08)
                 continue
             name, owner = row[1], row[2]
-            label = f"{name}（{owner}）" if owner else name
+            label = (self._label("calendars.name_owner").format(name=name, owner=owner)
+                     if owner else name)
             self._cal_text(x + 0.14, ry, label_w - 0.18, rh,
                            self._cal_fit(label, label_w - 0.18, size, 0.04),
                            size=size, margin=0.04)
@@ -1222,7 +1226,8 @@ class CalendarMixin:
                 fs = 8 if (ntracks > 1 or box_h < 0.3) else size
                 if box_h >= 0.62:
                     when = (f"{format_time(s)}–{format_time(e)}" if ntracks == 1
-                            else f"{format_time(s)}〜")
+                            else self._label("calendars.time_open").format(
+                                t=format_time(s)))
                     lines = [when, title, place]
                 elif ntracks == 1:
                     lines = [f"{format_time(s)} {title}"]
@@ -1251,9 +1256,11 @@ class CalendarMixin:
 
         sprints are [number, goal, release]. Each sprint panel shows its
         dates, working days (and how many weekdays holidays took), and goal.
-        The first working day is marked 計画 (計画（振替） when the sprint's
-        Monday is a holiday); the last working day レビュー, or リリース in red
-        when release is true.
+        The first working day is marked as planning (a moved-planning variant
+        when the sprint's Monday is a holiday); the last working day as review,
+        or as release in red when release is true. Those words come from the
+        deck's label resource (slide-templates/i18n/), so they follow its
+        language.
         """
         P = self.P
         s0 = parse_date(start)
@@ -1294,7 +1301,8 @@ class CalendarMixin:
             lost = sum(1 for d in span if d.weekday() < 5) - len(work)
             by = y + hh + k * weeks_per * rh
             panel_h = weeks_per * rh - 0.06
-            head = f"Sprint {number}　{s.month}/{s.day}–{e.month}/{e.day}"
+            head = (f"Sprint {number}" + self._label("calendars.head_sep")
+                    + f"{s.month}/{s.day}–{e.month}/{e.day}")
             days_line = (self._label("calendars.work_days").format(n=len(work))
                          + (self._label("calendars.lost_days").format(n=lost) if lost else ""))
             fs = size if weeks_per > 1 else 8
@@ -1303,9 +1311,11 @@ class CalendarMixin:
             else:
                 # One-week rows hold two lines: keep the goal, fold the dates into line 2
                 lines = [f"#{number} {goal}",
-                         f"{s.month}/{s.day}–{e.month}/{e.day}　"
+                         f"{s.month}/{s.day}–{e.month}/{e.day}"
+                         + self._label("calendars.head_sep")
                          + self._label("calendars.work_days").format(n=len(work))
-                         + (f"（-{lost}）" if lost else "")]
+                         + (self._label("calendars.lost_short").format(n=lost)
+                            if lost else "")]
             self.shape(x, by + 0.03, lw - 0.06, panel_h, kind="ROUND_RECTANGLE",
                        fill=bands[k % 2],
                        text="\n".join(self._cal_fit(line, lw - 0.06, fs, 0.08) for line in lines),
@@ -1395,7 +1405,10 @@ class CalendarMixin:
         for kind in ("busy", "off", "key"):
             if labels[kind] or any(v == colors[kind] for v in
                                    (circles if kind == "key" else fills).values()):
-                text = names[kind] + (f"（{'・'.join(labels[kind])}）" if labels[kind] else "")
+                joined = self._label("calendars.list_sep").join(labels[kind])
+                text = names[kind] + (
+                    self._label("calendars.holiday_names").format(names=joined)
+                    if labels[kind] else "")
                 items.append((colors[kind], text, "ELLIPSE" if kind == "key" else "RECTANGLE"))
         if items:
             self._cal_legend(x, y + h - 0.26, items, xmax=x + w)

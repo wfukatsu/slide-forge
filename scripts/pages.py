@@ -638,8 +638,8 @@ class PageMixin:
                        bold=last, line_spacing=125)
         if points:
             py = y + 3 * (block_h + 0.16)
-            self.label(x, py, w, 0.28, "答えを支える論点", size=9, bold=True,
-                       color=self.P.muted)
+            self.label(x, py, w, 0.28, self._label("exec.supporting_points"),
+                       size=9, bold=True, color=self.P.muted)
             for i, p in enumerate(points):
                 ly = py + 0.3 + i * 0.3
                 self.shape(x + 0.04, ly + 0.09, 0.11, 0.11, kind="ELLIPSE",

@@ -9,6 +9,7 @@ data.json:
      "title": "governing message",          # or "titles": [one per page]
      "source": "2026年9月1日時点の予定",
      "weekStart": "mon", "today": "2026-09-15",
+     "lang": "ja",                           # labels the slides print themselves
      "extraHolidays": [["2026-12-29", "年末年始休業"]],
      "months": ["2026-09"],                  # month-calendar (optional)
      "start": "2026-09-14", "end": "2026-10-14",   # daily-gantt / daily-agenda
@@ -41,7 +42,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import calendars as cal  # noqa: E402
 from _i18n import t, register  # noqa: E402
-from slide_templates import load_template, render_template, validate_input  # noqa: E402
+from slide_templates import (DEFAULT_LANG, load_template, render_template,  # noqa: E402
+                             resolve_label, validate_input)
 
 GANTT_MAX_ROWS = 12
 AGENDA_MAX_ROWS = 11
@@ -139,7 +141,10 @@ def gantt_pages(data: dict) -> list[dict]:
             chunks.append(current)
             current = []
             if row[0] != "group" and group is not None:
-                current.append(["group", f"（続き）{group[1]}", "", "", "", 0])
+                cont = resolve_label("calendars.continued",
+                                     data.get("lang") or DEFAULT_LANG)
+                current.append(["group", cont.format(title=group[1]),
+                                "", "", "", 0])
         current.append(row)
     if current:
         chunks.append(current)
@@ -319,12 +324,16 @@ def build_slides(data: dict) -> list[dict]:
         else:
             title = _require(data, "title", name)
             if len(pages) > 1:
-                title = f"{title}（{i}/{len(pages)}）"
+                title += resolve_label("calendar_pages.page_suffix",
+                                       data.get("lang") or DEFAULT_LANG).format(
+                                           i=i, n=len(pages))
         values = {"title": title, "source": _require(data, "source", name), **page}
         problems = validate_input(template, values)
         if problems:
             raise ValueError(t("page {i}: {problems}", i=i, problems="; ".join(problems)))
-        slides.append(render_template(template, values))
+        # Pass the language on, or the page suffix would be translated while
+        # the labels inside the slide stayed in the default language.
+        slides.append(render_template(template, values, lang=data.get("lang")))
     return slides
 
 

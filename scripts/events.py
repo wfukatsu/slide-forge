@@ -262,13 +262,14 @@ class EventMixin:
             (online.get("note"), "muted"),
         ]
         if mode == "offline":
-            panel(x, w, "pin", "会場", venue_lines)
+            panel(x, w, "pin", self._label("events.venue"), venue_lines)
         elif mode == "online":
-            panel(x, w, "browser", "オンライン参加", online_lines)
+            panel(x, w, "browser", self._label("events.join_online"), online_lines)
         else:
             pw = (w - 0.3) / 2
-            panel(x, pw, "pin", "会場参加", venue_lines)
-            panel(x + pw + 0.3, pw, "browser", "オンライン参加", online_lines)
+            panel(x, pw, "pin", self._label("events.join_onsite"), venue_lines)
+            panel(x + pw + 0.3, pw, "browser",
+                  self._label("events.join_online"), online_lines)
         return y + h
 
 
