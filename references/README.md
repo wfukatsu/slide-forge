@@ -10,11 +10,11 @@ this directory end to end.
 
 | File | What it is for |
 |---|---|
-| [workflow-contract.md](workflow-contract.md) | The single shared contract for end-to-end deck generation. Read this before changing how any host runs the pipeline. *(English only)* |
+| [workflow-contract.md](workflow-contract.md) | The single shared contract for end-to-end deck generation. Read this before changing how any host runs the pipeline. The English text is normative |
 | [interactive-intake.md](interactive-intake.md) | How to settle template, purpose, structure and length with the user before writing a spec |
 | [validation.md](validation.md) | The two gates: offline coordinate checks, then thumbnail QA. What each one can and cannot catch |
 | [parallel-generation.md](parallel-generation.md) | Splitting a large deck into per-page fragments, in parallel or sequentially |
-| [codex-compatibility.md](codex-compatibility.md) | Where the Codex host differs, and its setup. *(English only)* |
+| [codex-compatibility.md](codex-compatibility.md) | Where the Codex host differs, and its setup. The English text is normative |
 
 ## Writing a deck
 

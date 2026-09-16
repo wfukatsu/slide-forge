@@ -173,4 +173,4 @@ QA が終わったら、取得したサムネイルは
 
 - [検証ゲート: オフライン座標チェックとサムネイル QA](validation.ja.md)
 - [対話でデッキの設計を確定する](interactive-intake.ja.md)
-- [Deck workflow contract](workflow-contract.md) *（英語のみ）*
+- [デッキ生成のワークフロー契約](workflow-contract.ja.md)

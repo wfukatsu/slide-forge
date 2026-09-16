@@ -1,3 +1,5 @@
+*[日本語](codex-compatibility.ja.md)*
+
 # Codex compatibility
 
 Claude Code is slide-forge's primary host and distribution path. Codex uses

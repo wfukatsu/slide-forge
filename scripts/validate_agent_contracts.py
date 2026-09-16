@@ -19,6 +19,19 @@ def read(relative: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def body_of(text: str) -> str:
+    """The skill text below its YAML frontmatter.
+
+    Budgets apply to the body: the frontmatter description is the routing
+    surface an agent reads *before* deciding to load the skill, so making it
+    more precise must not eat into the reading budget.
+    """
+    if not text.startswith("---"):
+        return text
+    end = text.find("\n---", 3)
+    return text if end == -1 else text[end + 4:]
+
+
 def evaluate_cases() -> list[str]:
     failures: list[str] = []
     payload = json.loads(CASES_PATH.read_text(encoding="utf-8"))
@@ -33,10 +46,25 @@ def evaluate_cases() -> list[str]:
 def evaluate_structure() -> list[str]:
     failures: list[str] = []
 
-    skill = ROOT / "skills" / "google-slides-template" / "SKILL.md"
-    if len(skill.read_text(encoding="utf-8").splitlines()) > 200:
-        failures.append("google-slides-template/SKILL.md exceeds 200 lines")
-    if skill.stat().st_size > 15_000:
+    # The main workflow keeps the tight budget it always had. Every other skill
+    # gets a ceiling so none grows unbounded the way the unchecked ones did —
+    # the largest body was 360 lines while only this one file was measured.
+    # The byte cap stays scoped: scalar-account-planning-session is already
+    # 17 KB, so applying 15 KB to everything would fail on existing content
+    # rather than guard new growth.
+    body_limits = {"google-slides-template": 200}
+    default_body_limit = 400
+    for skill_dir in sorted((ROOT / "skills").iterdir()):
+        path = skill_dir / "SKILL.md"
+        if not path.is_file():
+            continue
+        lines = len(body_of(path.read_text(encoding="utf-8")).splitlines())
+        limit = body_limits.get(skill_dir.name, default_body_limit)
+        if lines > limit:
+            failures.append(
+                f"{skill_dir.name}/SKILL.md body is {lines} lines, over {limit}")
+    main_skill = ROOT / "skills" / "google-slides-template" / "SKILL.md"
+    if main_skill.stat().st_size > 15_000:
         failures.append("google-slides-template/SKILL.md exceeds 15 KB")
 
     marketplace = json.loads(read(".claude-plugin/marketplace.json"))
