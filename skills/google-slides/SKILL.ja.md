@@ -37,7 +37,7 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 | タスク | 場所 |
 |------|-------|
 | JSON 仕様からビルド | `scripts/build_deck.py` + `templates/blank-16x9.json` |
-| デッキを Python で書く | `scripts/deckkit.py`（+ `examples/pattern-gallery/deck.py`、`examples/scalardb-scalardl/deck.py`） |
+| デッキを Python で書く | `scripts/deckkit.py`（+ `examples/pattern-gallery/deck.py`、`examples/scalardb-scalardl/deck.py` — grep して使う。全文は読まない） |
 | レイアウトをオフラインで検証（API 不要） | `scripts/validate_layout.py` + `references/layout-contract.md` |
 | Python デッキをレンダリング | `scripts/render_deck.py` |
 | ビジュアル QA（任意、既定: 実行） | `slide-qa` スキル（`scripts/fetch_thumbnails.py` + チェックリスト + クリーンアップ） |
@@ -122,6 +122,14 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 - `examples/pattern-gallery/deck.py` — 利用可能な部品ごとに 1 スライド
 - `examples/scalardb-scalardl/deck.py` — 実際の製品/アーキテクチャデッキ
 
+**どちらの実例も全文を読まないこと。** `pattern-gallery/deck.py` は 35KB、
+`scalardb-scalardl/deck.py` は 157KB（約 39k トークン）あり、両方読むとこの
+スキルの参照ファイル全体より高くつく。必要なスライド関数だけを特定して読む:
+
+```bash
+grep -n "^def \|slide(\|plain(" examples/scalardb-scalardl/deck.py
+```
+
 コントラクトの規則（フッターセーフエリア、タイトル高さ、コネクタの接続）は `references/layout-contract.md`、作図レシピは `references/diagram-cookbook.md` にある。
 
 ### 設計原則（両パス共通）
@@ -147,8 +155,11 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 
 ```bash
 .venv/bin/python scripts/validate_layout.py path/to/deck.py \
-    --template templates/blank-16x9.json
+    --template templates/blank-16x9.json --quiet
 ```
+
+`--quiet` はスライドごとの `fit:` 注記と OK 要約を抑止するので、問題がなければ
+何も出力されない。自動フィットの内容を確認したいときだけ外す。
 
 `validate_layout.py` はオフラインで無料である — フッターへの侵入、スライド外にはみ出た形状、タイトルの折り返し、コネクタ端点（外れ・埋没）、テキストを持つ図形どうしの部分的な重なり、テキストのあふれを検査する。終了コード 1 は「修正して再実行」の意味である。検証は決してスキップしない（`render_deck.py` には `--skip-validate` があるが使わないこと）。
 

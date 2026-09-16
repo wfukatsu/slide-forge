@@ -130,7 +130,8 @@ def resolve_layout(template: dict, key: str):
     return resolved, template.get("layouts", {}).get(resolved)
 
 
-def check(template: dict, slides: list[dict]) -> list[str]:
+def check(template: dict, slides: list[dict],
+          quiet: bool = False) -> list[str]:
     problems: list[str] = []
     bottom_max = deckkit.DY1
     left_min = deckkit.X0 - LEFT_SLACK
@@ -200,8 +201,9 @@ def check(template: dict, slides: list[dict]) -> list[str]:
         for msg in (c.audit_connectors() + c.audit_overlaps()
                     + c.audit_text_fit()):     # implemented in diagrams.Canvas
             problems.append(f"{i:2d} {msg}: {title}")
-        for msg in c.fit_notes:                # fitted, not a problem
-            print(f"{i:2d} fit: {msg}: {title}")
+        if not quiet:
+            for msg in c.fit_notes:            # fitted, not a problem
+                print(f"{i:2d} fit: {msg}: {title}")
     return problems
 
 
@@ -225,7 +227,7 @@ def main() -> int:
             raise SystemExit(t("specify --template or define TEMPLATE in "
                                "the deck"))
 
-    problems = check(template, slides)
+    problems = check(template, slides, quiet=args.quiet)
     drawn = sum(1 for s in slides if s.get("draw"))
     if problems:
         print(t("audit:"), t("{n} slides ({m} with figures)", n=len(slides),
