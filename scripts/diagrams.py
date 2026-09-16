@@ -154,6 +154,27 @@ def _default_align(kind: str) -> str:
     return _DEFAULT_ALIGN.get(kind, "CENTER")
 
 
+# Slides derives a rounded rectangle's corner radius from the shape itself --
+# one sixth of the shorter side -- rather than from a fixed length. The same
+# "rounded box" therefore reads as a crisp chip at 0.3in tall and as a blob at
+# 2in. Past MAX_ROUND_SIDE the corner is squared off, so a large panel keeps a
+# tight edge instead of growing rounder as it grows bigger.
+MAX_ROUND_SIDE = 0.60  # in; holds the drawn radius at or under 0.10in
+_SQUARED_OFF = {
+    "ROUND_RECTANGLE": "RECTANGLE",
+    "ROUND_1_RECTANGLE": "RECTANGLE",
+    "ROUND_2_SAME_RECTANGLE": "RECTANGLE",
+    "ROUND_2_DIAGONAL_RECTANGLE": "RECTANGLE",
+}
+
+
+def _corner_safe(kind: str, w: float, h: float) -> str:
+    """Square off a rounded rectangle too big to stay subtly rounded."""
+    if min(w, h) <= MAX_ROUND_SIDE:
+        return kind
+    return _SQUARED_OFF.get(kind, kind)
+
+
 class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
              ChartMixin, PatternMixin, PageMixin, EventMixin, CalendarMixin):
     """Thin wrapper for drawing shapes on a single slide."""
@@ -275,6 +296,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
               text_fit: str | None = None) -> str:
         """Draw a shape and return its objectId. fill=None means no fill.
 
+        A rounded rectangle whose shorter side runs past MAX_ROUND_SIDE is drawn
+        square-cornered instead: Slides scales the corner radius with the shape,
+        so a big rounded box turns blobby. See _corner_safe().
+
         text_fit decides what happens to text that would run past the box
         ("shrink" / "grow" / "none"; defaults to Canvas.text_fit). Slides
         draws overflowing text outside the box rather than clipping it, so
@@ -299,6 +324,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         text and overlay the text separately with label() (the only exception being
         an intentionally vertical use like label(rotation=270)).
         """
+        kind = _corner_safe(kind, w, h)
         if text and rotation % 360 not in (0, 90, 270):
             print(t("  warn: text inside a shape rotated {rotation} degrees will "
                     "rotate with it (\"{head}\"). Draw the shape without text and "
@@ -405,14 +431,17 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return oid
 
     def box(self, x, y, w, h, text=None, **kw) -> str:
-        """Rounded box. Defaults to a pale fill with a primary-colored outline."""
+        """Rounded box. Defaults to a pale fill with a primary-colored outline.
+
+        Rounded only while it stays small; a large one squares off (_corner_safe).
+        """
         kw.setdefault("kind", "ROUND_RECTANGLE")
         kw.setdefault("fill", self.P.surface)
         kw.setdefault("stroke", self.P.border)
         return self.shape(x, y, w, h, text=text, **kw)
 
     def solid(self, x, y, w, h, text=None, **kw) -> str:
-        """Filled box (for headings)."""
+        """Filled box (for headings). Squares off once it is large (_corner_safe)."""
         kw.setdefault("kind", "ROUND_RECTANGLE")
         kw.setdefault("fill", self.P.primary)
         kw.setdefault("bold", True)
@@ -433,7 +462,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
         `kind="RECTANGLE"` gives a square-cornered backdrop. Use it in cases where
         rounded corners wouldn't match the original template artwork, such as a
-        white card laid under a cover page or section divider.
+        white card laid under a cover page or section divider. A band deeper than
+        MAX_ROUND_SIDE squares off on its own (_corner_safe).
         """
         return self.shape(x, y, w, h, kind=kind,
                           fill=fill or self.P.surfaceAlt, stroke=stroke)
