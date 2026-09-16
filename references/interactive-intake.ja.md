@@ -254,4 +254,4 @@ JSON 仕様やスライドの生成はこの後。
 
 - [デッキの構成テンプレート](deck-outlines.ja.md)
 - [設定 — `config/settings.json`](settings.ja.md)
-- [Deck workflow contract](workflow-contract.md) *（英語のみ）*
+- [デッキ生成のワークフロー契約](workflow-contract.ja.md)

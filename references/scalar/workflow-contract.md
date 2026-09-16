@@ -1,7 +1,10 @@
 # Scalar sales-material workflow contract
 
-This contract is shared by the Scalar product, proposal, account-plan, APS,
-and AE-material skills.
+This contract binds every skill that produces Scalar sales material or writes
+to a customer's ledger — the product, proposal, account-plan, APS, AE-material
+and deal-intake skills today, and `hearing-slides` for the sharing rules it
+cites. It is stated by category rather than by a list of skill names so that
+adding a skill does not silently leave it uncovered.
 
 - Read supplied minutes, CRM exports, ledgers, and customer material before
   asking questions.

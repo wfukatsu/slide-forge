@@ -10,11 +10,12 @@
 
 | ファイル | 何のためのものか |
 |---|---|
-| [workflow-contract.md](workflow-contract.md) | デッキ生成をエンドツーエンドで動かすための共通契約。どのホストの動き方を変えるときも、まずこれを読む。*（英語のみ）* |
+| [commands.md](commands.ja.md) | 3 つのスラッシュコマンド — `/forge`・`/account`・`/visit`。slide-forge を**使いたい**ならここから（中身を変えるのではなく） |
+| [workflow-contract.md](workflow-contract.ja.md) | デッキ生成をエンドツーエンドで動かすための共通契約。どのホストの動き方を変えるときも、まずこれを読む。正本は英語版 |
 | [interactive-intake.md](interactive-intake.md) | 仕様を書く前に、テンプレート・目的・構成・分量をユーザーと確定させる手順 |
 | [validation.md](validation.md) | 2 つのゲート — オフラインの座標検査と、サムネイル QA。それぞれ何を拾えて何を拾えないか |
 | [parallel-generation.md](parallel-generation.md) | 大きなデッキをページ単位に分割して作る（並列／逐次） |
-| [codex-compatibility.md](codex-compatibility.md) | Codex ホストでの差異とセットアップ。*（英語のみ）* |
+| [codex-compatibility.md](codex-compatibility.ja.md) | Codex ホストでの差異とセットアップ。正本は英語版 |
 
 ## デッキを書く
 
@@ -63,7 +64,7 @@
 
 | ファイル | 何のためのものか |
 |---|---|
-| [hearing-kit.md](hearing-kit.ja.md) | `hearing-sheet` と `hearing-slides` が共有する記録。どちらのスキルも再定義しない |
+| [hearing-kit.md](hearing-kit.ja.md) | `hearing-sheet` と `hearing-slides` が共有する記録。顧客に見せてよい範囲を決める顧客フィルタもここにある。どちらのスキルも再定義しない |
 | [nexus-reports.md](nexus-reports.ja.md) | nexus-architect の各レポートが、どのスライドになるか |
 | [account-planning-session.md](account-planning-session.ja.md) | Account Planning Session デッキの作成手順 |
 
@@ -77,7 +78,8 @@
 [okf-bundle](scalar/okf-bundle.ja.md)（製品の事実と価格の出どころ）、
 [research-2026-08](scalar/research-2026-08.ja.md)、
 `scalar/research-policy.md`*（英語のみ）*。
-`scalar/workflow-contract.md` は Scalar 側の契約*（英語のみ）*。
+`scalar/workflow-contract.md` は Scalar 側の契約であり、営業資料における
+「顧客提示 / 社内」の切り分け規則が置かれている場所でもある*（英語のみ）*。
 
 ## 参照資料ではないもの
 
@@ -86,6 +88,7 @@
 
 - [calendar-template-plan.md](calendar-template-plan.ja.md) — カレンダーパックの実装計画
 - [account-planning-template-plan.md](account-planning-template-plan.ja.md) — APS ページテンプレートの実装計画
+- [`docs/plans/`](../docs/plans/) と [`docs/brainstorms/`](../docs/brainstorms/) — ブレインストームから始まった作業の、同じ種類の記録。`2026-08-15-feat-targeted-slide-update` は `--update-slides` の計画で、完了扱い
 - `agent-token-cost-review.ja.md` — 一度きりのトークンコスト監査*（日本語のみ）*
 
 ## 書くものではなく、生成されるもの

@@ -10,11 +10,12 @@ this directory end to end.
 
 | File | What it is for |
 |---|---|
-| [workflow-contract.md](workflow-contract.md) | The single shared contract for end-to-end deck generation. Read this before changing how any host runs the pipeline. *(English only)* |
+| [commands.md](commands.md) | The three slash commands — `/forge`, `/account`, `/visit`. Start here if you want to *use* slide-forge rather than change it |
+| [workflow-contract.md](workflow-contract.md) | The single shared contract for end-to-end deck generation. Read this before changing how any host runs the pipeline. The English text is normative |
 | [interactive-intake.md](interactive-intake.md) | How to settle template, purpose, structure and length with the user before writing a spec |
 | [validation.md](validation.md) | The two gates: offline coordinate checks, then thumbnail QA. What each one can and cannot catch |
 | [parallel-generation.md](parallel-generation.md) | Splitting a large deck into per-page fragments, in parallel or sequentially |
-| [codex-compatibility.md](codex-compatibility.md) | Where the Codex host differs, and its setup. *(English only)* |
+| [codex-compatibility.md](codex-compatibility.md) | Where the Codex host differs, and its setup. The English text is normative |
 
 ## Writing a deck
 
@@ -63,7 +64,7 @@ this directory end to end.
 
 | File | What it is for |
 |---|---|
-| [hearing-kit.md](hearing-kit.md) | The record `hearing-sheet` and `hearing-slides` share; neither skill redefines it |
+| [hearing-kit.md](hearing-kit.md) | The record `hearing-sheet` and `hearing-slides` share, including the customer filter that decides what a customer may see; neither skill redefines it |
 | [nexus-reports.md](nexus-reports.md) | What each nexus-architect report becomes as slides |
 | [account-planning-session.md](account-planning-session.md) | The procedure for an Account Planning Session deck |
 
@@ -77,7 +78,8 @@ material types), [proposal-map](scalar/proposal-map.md) (problem → product),
 [okf-bundle](scalar/okf-bundle.md) (where product facts and pricing come from),
 [research-2026-08](scalar/research-2026-08.md), and
 [research-policy](scalar/research-policy.md) *(English only)*.
-`scalar/workflow-contract.md` is the Scalar-side contract *(English only)*.
+`scalar/workflow-contract.md` is the Scalar-side contract and the home of the
+customer-facing / internal rule for sales material *(English only)*.
 
 ## Not reference material
 
@@ -86,6 +88,7 @@ point in time, and they are **not** statements about how the system works now:
 
 - [calendar-template-plan.md](calendar-template-plan.md) — the calendar pack's implementation plan
 - [account-planning-template-plan.md](account-planning-template-plan.md) — the APS page templates' implementation plan
+- [`docs/plans/`](../docs/plans/) and [`docs/brainstorms/`](../docs/brainstorms/) — the same kind of record for work that started as a brainstorm. `2026-08-15-feat-targeted-slide-update` is the plan behind `--update-slides`, and is marked completed
 - `agent-token-cost-review.ja.md` — a one-off token-cost audit *(Japanese only)*
 
 ## Generated, not written

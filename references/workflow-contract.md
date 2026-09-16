@@ -1,3 +1,5 @@
+*[日本語](workflow-contract.ja.md)*
+
 # Deck workflow contract
 
 This is the single shared contract for end-to-end deck generation. Claude Code

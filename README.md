@@ -28,6 +28,11 @@ New here? [Setup](#setup) first — or paste the
 [guided setup prompt](#guided-setup--copy-this-prompt) into an agent session
 and answer its four questions.
 
+Two pages sit outside this file:
+[`references/commands.md`](references/commands.md) for the `/forge`, `/account`
+and `/visit` commands, and [`references/README.md`](references/README.md), the
+index of all 65 reference documents.
+
 ## Skills
 
 Twenty-four skills. Each one's full contract — inputs, rules and guardrails —
@@ -663,7 +668,7 @@ scripts/      shared engine — one importable package
   scalar/         Scalar deck builders
 templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
   masters/        drop a master .pptx here and import it (gitignored; see its README)
-  sales/ nurture/ marketing/   Markdown forms: stage records and hearing sheet, nurture tracks and segments, content brief and event plan
+  sales/ nurture/ marketing/   Markdown forms: stage records and hearing sheet, nurture tracks and segments, content brief and event plan (each has its own README; these are forms, not slide templates)
 slide-templates/ reusable single-slide content templates + registry (101 in 14 packs; manifest.json)
 assets/       scalar/ (brand: pictograms, logos, product-logos), holidays/ (Japanese national holidays CSV), cloud-icons/ (gitignored)
 references/   engine, workflow, and host compatibility documentation
@@ -778,6 +783,7 @@ Code-first decks are Python modules rather than specs, and generate against
 | `examples/scalardb-architecture.py` | ScalarDB architecture — cloud icons, pictograms, brand logos and connectors on one slide † |
 | `examples/scalardl-architecture.py` | ScalarDL architecture, same mix † |
 | `examples/pattern-gallery/deck.py` | The `deckkit.py` code-first path |
+| [`examples/scalardb-scalardl/`](examples/scalardb-scalardl/README.md) | A 55-slide product walkthrough, one feature per page — the largest worked example |
 
 ## License
 
