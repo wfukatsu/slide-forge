@@ -279,3 +279,10 @@ d.shift_roster(x, y, w, h, start, end, people, codes,
 月曜〜日曜の週ごと（日次リスト・タイムテーブル）、グループの切れ目での行のまとまりごと（ガント）、
 週 8 行ごと（スプリント）、52 週ごと（ヒートマップ）に分割する。年間カレンダーとカウントダウンは
 1 枚ずつ。入力形式は docstring を参照。
+
+## 関連
+
+- [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)
+- [表とグラフ（charts.py）](charts.ja.md)
+- [ビジネスフレームワーク図（patterns.py）](patterns.ja.md)
+- [スライドテンプレート カタログ（全 101 種）](slide-template-catalog.ja.md)

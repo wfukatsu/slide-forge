@@ -104,3 +104,8 @@ Markdown report would produce a page that looks derived and is not, so the
 interpretive pages are authored into the same `pages/` directory and merged by
 `assemble_spec.py` in filename order. Digest numbering leaves 18 slots between
 phases for exactly that.
+
+## See also
+
+- [Slide Template Catalog (All 101 Types)](slide-template-catalog.md)
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)

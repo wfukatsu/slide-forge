@@ -301,3 +301,9 @@ JSON から呼べるプリミティブ（`build_deck.py::FIGURES` に登録）:
 - **当番表の予定は 1 日 1 文字の文字列**（例: `日日夜休…`）で渡す。スロットの JSON が短く、
   日数との不一致も検出しやすいため。人数に数えるかどうかはコードごとに指定する。
 - `calendar_pages.py` はヒートマップを 52 週ごと、当番表を月ごと・12 人ごとに分ける。
+
+## 関連
+
+- [カレンダーの図（`calendars.py`）](calendars.ja.md)
+- [スライドテンプレート カタログ（全 101 種）](slide-template-catalog.ja.md)
+- [Deck workflow contract](workflow-contract.md) *（英語のみ）*

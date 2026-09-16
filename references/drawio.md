@@ -166,3 +166,9 @@ Plain mxGraph styles are sufficient for anything other than vendor icons:
 - [ ] Exported at scale 2 or higher, and text is legible once placed on a slide
       (as a rule of thumb, the diagram's width should be 1600px+ against an 8in
       insertion width)
+
+## See also
+
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)
+- [Illustrative Figures and Images](images.md)
+- [Cloud Icons (AWS / Google Cloud / Azure)](cloud-icons.md)

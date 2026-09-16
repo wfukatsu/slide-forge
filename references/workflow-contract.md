@@ -96,3 +96,9 @@ return findings only, never image descriptions or generated JSON.
 - After a master, theme, footer, or page-number change: inspect every page.
 - Run offline audits before opening thumbnails; they reduce avoidable image
   review but never replace the first visual pass.
+
+## See also
+
+- [Nailing Down a Deck's Design Through Dialogue](interactive-intake.md)
+- [Validation Gates: Offline Coordinate Checks and Thumbnail QA](validation.md)
+- [Splitting Generation by Page (Parallel or Sequential)](parallel-generation.md)

@@ -165,3 +165,9 @@ d.fishbone(x, y, w, h, problem, categories,
 - どの図も「フレームワークの形」を提供するだけで、**中身の質は埋める側の責任**。
   リーンキャンバスや posmap に根拠のない内容を置くと、形が立派なぶん
   誤解を招きやすいことに注意。
+
+## 関連
+
+- [表とグラフ（charts.py）](charts.ja.md)
+- [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)
+- [スライドパターン（骨格 × 中身）](slide-patterns.ja.md)

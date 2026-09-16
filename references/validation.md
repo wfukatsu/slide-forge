@@ -230,3 +230,9 @@ run unconditionally.
   does not go on a slide.
 - Pass QA yourself before presenting results — do not let the user find
   defects that a visual pass would have caught.
+
+## See also
+
+- [Layout Contract (Coordinates and Measured Values)](layout-contract.md)
+- [Google Slides API constraints and pitfalls](api-notes.md)
+- [Splitting Generation by Page (Parallel or Sequential)](parallel-generation.md)

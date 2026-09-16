@@ -155,3 +155,9 @@ grep -ao 'img/lib/azure2/[A-Za-z0-9_/]*\.svg' /Applications/draw.io.app/Contents
 - [ ] 入れ子コンテナの子がはみ出していない
 - [ ] scale 2 以上で書き出し、スライドに置いたとき文字が読める
       （挿入幅 8in に対して図の横幅 1600px 以上が目安）
+
+## 関連
+
+- [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)
+- [イメージ図と画像](images.ja.md)
+- [クラウドアイコン（AWS / Google Cloud / Azure）](cloud-icons.ja.md)

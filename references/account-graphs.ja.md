@@ -131,3 +131,8 @@ draw.io 版と同じ 3 段カードをテンプレートのセマンティック
 | 関与者・項目が少ない | スライドに直接描く |
 | 多い | draw.io に全体、スライドには抽出版 |
 | 顧客に見せる | **どちらも見せない。** 実在の個人への判断を記録した内部資料 |
+
+## 関連
+
+- [draw.io (mxGraph XML) 作図リファレンス](drawio.ja.md)
+- [Account Planning Session スライド作成手順](account-planning-session.ja.md)

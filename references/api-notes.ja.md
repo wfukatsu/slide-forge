@@ -394,3 +394,9 @@ Arial のいずれも同じ）。検査は従来の式のまま、適合だけ�
 
 なお `TRAPEZOID` の既定の向きは**上底が狭く下底が広い**。180 度回すと逆になるが、
 中の文字も一緒に逆さまになる（セクション 12）。
+
+## 関連
+
+- [Google Slides API — 生リファレンス](google-slides-api.ja.md)
+- [検証ゲート: オフライン座標チェックとサムネイル QA](validation.ja.md)
+- [レイアウト契約（座標と実測値）](layout-contract.ja.md)

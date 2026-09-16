@@ -99,3 +99,8 @@ imagery. **Read the settings first and don't ask what they already answer**:
   delivery is expected).
 - `imageGeneration: off` → don't offer `aiImage` and don't ask about the API
   key; offer the shape-drawn treatments instead.
+
+## See also
+
+- [Illustrative Figures and Images](images.md)
+- [Nailing Down a Deck's Design Through Dialogue](interactive-intake.md)

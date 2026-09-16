@@ -257,3 +257,9 @@ leftovers behind).
 - **Asking, then not reflecting the answer.** Once you've asked, the answer must always be
   reflected in the spec. For an answer that can't be honored (e.g. a layout the template doesn't
   have), explain why on the spot and offer an alternative.
+
+## See also
+
+- [Deck Structure Templates](deck-outlines.md)
+- [Settings — `config/settings.json`](settings.md)
+- [Deck workflow contract](workflow-contract.md)

@@ -145,3 +145,9 @@ cairosvg.svg2png(url=f'{icons.SVG_DIR}/{s}.svg', write_to=f'{icons.PNG_DIR}/{s}.
 
 色が #C7C9C9 以外の素材は `recolorable: false` にしておくこと。染めると
 ブランド色が壊れる。
+
+## 関連
+
+- [クラウドアイコン（AWS / Google Cloud / Azure）](cloud-icons.ja.md)
+- [ピクトグラムとメタファー図](pictogram-catalog.ja.md)
+- [イメージ図と画像](images.ja.md)

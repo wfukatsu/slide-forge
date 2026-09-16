@@ -197,3 +197,9 @@ configure_layout(page_w=13.333, page_h=7.5, margin=0.6,
   そのまま受け取るだけで、図形との位置関係を検証しない。図形に紐づけたい場合は
   `updateLineProperties` の `startConnection` / `endConnection` を使う
   （`Canvas.connect()` が行う）。接続サイトは全シェイプ共通で 0=上 1=左 2=下 3=右。
+
+## 関連
+
+- [検証ゲート: オフライン座標チェックとサムネイル QA](validation.ja.md)
+- [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)
+- [Google Slides API の制約と落とし穴](api-notes.ja.md)

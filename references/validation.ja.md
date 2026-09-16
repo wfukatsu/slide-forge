@@ -225,3 +225,9 @@ fetch thumbnails → identify defects → fix the spec / deck module
 - 掲載した数値・グラフには出典を示す。出典の無い数値はスライドに載せない。
 - 結果を提示する前に自分で QA に合格しておく — 目視すれば分かる不具合を
   ユーザーに見つけさせない。
+
+## 関連
+
+- [レイアウト契約（座標と実測値）](layout-contract.ja.md)
+- [Google Slides API の制約と落とし穴](api-notes.ja.md)
+- [ページ単位の分担生成（並列・逐次両対応）](parallel-generation.ja.md)

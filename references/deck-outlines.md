@@ -154,3 +154,8 @@ The numeric tie-outs are stated in each template's guardrails. Always hold them:
 the total of `sales-buildup` equals revenue in `revenue-plan`, personnel cost in
 `cost-structure` equals the headcount in `execution-structure`, and the base case
 of `scenario-comparison` equals `revenue-plan`.
+
+## See also
+
+- [Nailing Down a Deck's Design Through Dialogue](interactive-intake.md)
+- [Slide Patterns (Skeleton × Content)](slide-patterns.md)

@@ -691,3 +691,8 @@ Session 資料を出す前に。
 | SOW（Share of Wallet） | 顧客 IT 支出内の自社シェア |
 | ARR booking | 年額換算の新規契約額 |
 | InfoMentis / Oracle Sales Methodology | `references/scalar/sales-playbook.md` |
+
+## 関連
+
+- [Account Planning ページテンプレート作成計画](account-planning-template-plan.ja.md)
+- [スライドテンプレート カタログ（全 101 種）](slide-template-catalog.ja.md)

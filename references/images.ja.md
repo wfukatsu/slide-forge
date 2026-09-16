@@ -344,3 +344,9 @@ for msg in (d.audit_bounds()        # スライドの外に出た図形
 `audit_bounds()` は図の部品が枠の外へ突き抜けたときに効く。部品は与えられた枠から
 自分で座標を計算するため、**枠が正しくても中身が外へ出る**ことがあり、これは
 図形単位で見ないと拾えない。
+
+## 関連
+
+- [アイコンライブラリ](icons.ja.md)
+- [クラウドアイコン（AWS / Google Cloud / Azure）](cloud-icons.ja.md)
+- [設定 — `config/settings.json`](settings.ja.md)

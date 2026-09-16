@@ -302,3 +302,10 @@ template slides: one page per month (month calendar, roster — rosters also per
 boundaries (gantt), per 8 week rows (sprints), or per 52 weeks (heatmap). The
 year and countdown forms are one page each. See its docstring for the input
 format.
+
+## See also
+
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)
+- [Tables and charts (charts.py)](charts.md)
+- [Business Framework Diagrams (patterns.py)](patterns.md)
+- [Slide Template Catalog (All 101 Types)](slide-template-catalog.md)

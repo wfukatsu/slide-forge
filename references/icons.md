@@ -156,3 +156,9 @@ cairosvg.svg2png(url=f'{icons.SVG_DIR}/{s}.svg', write_to=f'{icons.PNG_DIR}/{s}.
 
 For material whose color is anything other than #C7C9C9, set `recolorable: false`. Recoloring
 it would break the brand color.
+
+## See also
+
+- [Cloud Icons (AWS / Google Cloud / Azure)](cloud-icons.md)
+- [Pictograms and Metaphor Diagrams](pictogram-catalog.md)
+- [Illustrative Figures and Images](images.md)

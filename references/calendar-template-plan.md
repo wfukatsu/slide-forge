@@ -47,8 +47,7 @@ dependency roadmaps (`nexus/roadmap`), and date-less Now / Next / Later.
 - **Legibility**: calendars cannot meet 18pt projection sizes; treat them as
   handout density (min 9pt, 10–12pt preferred) and change the form for talks.
 - **Overflow order**: truncate → an overflow marker ("+N more") with a detail
-  page → coarser scale → split
-  into pages with "(1/3)".
+  page → coarser scale → split into pages with "(1/3)".
 
 ### 3.2 Forms and capacity on a 16:9 page (≈ 9.0 × 3.7 in drawing area)
 
@@ -317,3 +316,9 @@ Changes from the plan and the prototype:
   Whether a code counts towards headcount is specified per code.
 - `calendar_pages.py` splits the heatmap every 52 weeks, and the roster by
   month and by 12 people.
+
+## See also
+
+- [Calendar diagrams (`calendars.py`)](calendars.md)
+- [Slide Template Catalog (All 101 Types)](slide-template-catalog.md)
+- [Deck workflow contract](workflow-contract.md)

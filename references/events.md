@@ -123,3 +123,9 @@ for placing just a badge on the cover or closing slide.
   `event_access mode="hybrid"` (w 9.0, h 1.4) below.
 - **Program + speakers**: `event_timetable` (w 9.0, 5 rows) with `event_speakers`
   (w 9.0, 3 people) below it — see the 4th example.
+
+## See also
+
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)
+- [Slide Patterns (Skeleton × Content)](slide-patterns.md)
+- [Schema Definitions](template-schema.md)

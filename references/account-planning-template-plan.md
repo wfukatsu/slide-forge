@@ -604,3 +604,9 @@ the generated slides.
 - `references/slide-patterns.md` — the definitions of skeletons A–F
 - `scripts/colors.py` — `Palette` (master colorScheme → semantic tokens)
 - `scripts/scalar/build_account_planning.py` — the implemented page definitions (reference geometry)
+
+## See also
+
+- [Account Planning Session Deck Creation Procedure](account-planning-session.md)
+- [Slide Patterns (Skeleton × Content)](slide-patterns.md)
+- [Layout Contract (Coordinates and Measured Values)](layout-contract.md)

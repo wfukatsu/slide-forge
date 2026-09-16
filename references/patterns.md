@@ -181,3 +181,9 @@ d.fishbone(x, y, w, h, problem, categories,
 - Every figure here only supplies the "shape of the framework" — **the quality of the content
   is the author's responsibility.** Note that putting unsubstantiated content into a lean canvas
   or posmap is especially misleading precisely because the shape looks so authoritative.
+
+## See also
+
+- [Tables and charts (charts.py)](charts.md)
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)
+- [Slide Patterns (Skeleton × Content)](slide-patterns.md)

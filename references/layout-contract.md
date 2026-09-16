@@ -173,3 +173,9 @@ After configuring, confirm both that `validate_layout.py` passes and that the th
 - The `objectId` of speaker notes isn't known until after the slide is created, so it's fetched again and sent as a second request after the main `batchUpdate` (handled by `commit()`).
 - A full-size opaque rectangle will cover and hide the master's footer.
 - **The API does not error out if a connector's endpoints are misaligned.** `createLine` accepts coordinates as-is and does not validate them against shape positions. To bind a connector to a shape, use `startConnection` / `endConnection` in `updateLineProperties` (this is what `Canvas.connect()` does). Connection sites are the same across all shapes: 0=top, 1=left, 2=bottom, 3=right.
+
+## See also
+
+- [Validation Gates: Offline Coordinate Checks and Thumbnail QA](validation.md)
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)
+- [Google Slides API constraints and pitfalls](api-notes.md)

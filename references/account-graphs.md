@@ -134,3 +134,8 @@ paint the same 3-tier card as the draw.io version using the template's semantic 
 | Few participants/items | Draw directly on the slide |
 | Many | Full graph in draw.io, extracted version on the slide |
 | Showing the customer | **Show neither.** This is an internal document recording judgments about real individuals |
+
+## See also
+
+- [draw.io (mxGraph XML) Diagram Reference](drawio.md)
+- [Account Planning Session Deck Creation Procedure](account-planning-session.md)

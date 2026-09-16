@@ -442,3 +442,9 @@ for i, (nm, sub, col) in enumerate(levels):
 - **Use a full-slide-sized opaque rectangle.** It covers and erases the master's footer.
 - **Put prose in a narrow panel (under 1.5in).** It always overflows.
 - **Use 4+ colors on one slide.** The meaning of color stops being readable.
+
+## See also
+
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)
+- [Layout Contract (Coordinates and Measured Values)](layout-contract.md)
+- [Tables and charts (charts.py)](charts.md)
