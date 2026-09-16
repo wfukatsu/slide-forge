@@ -1,10 +1,9 @@
 ---
 name: scalar-proposal-slides
 description: >-
-  Build a customer-specific Scalar solution proposal: start from the customer's
-  challenges (hearing notes, meeting minutes), map them to ScalarDB / ScalarDL,
-  and follow the problem-solving structure — exec summary, challenge agreement,
-  solution, effects, PoC plan, costs, risks, next steps.
+  Build a customer-specific Scalar solution proposal: start from the
+  customer's challenges (hearing notes, meeting minutes) and map them to
+  ScalarDB / ScalarDL.
   Use for: 提案書を作って, 提案スライド, 顧客課題, ソリューション提案,
   〈顧客名〉向けの提案資料.
   Not: introduction decks with no specific customer (scalar-product-slides);

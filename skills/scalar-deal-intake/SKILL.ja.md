@@ -2,9 +2,9 @@
 name: scalar-deal-intake
 description: >-
   Turn raw deal material — meeting minutes, email threads, Slack, CRM exports,
-  customer documents — into per-stage records and a hearing sheet. Extracts facts
-  with a source and a confidence level, never invents an answer, and turns every
-  gap into a question with an owner and a due date.
+  customer documents — into per-stage records and a hearing sheet. Extracts
+  facts with a source and a confidence level, and turns every gap into a
+  question with an owner and a due date.
   Use for: 議事録を整理して, メールから商談情報をまとめて, ヒアリングシートを埋めて,
   ステージごとに整理して, ステージを上げてよいかの判断.
   Not: the ledger and activity plan (scalar-account-plan); one visit's materials
@@ -26,9 +26,14 @@ description: >-
 
 | 観点 | 出典 |
 |---|---|
-| フェーズ・ゲート ID・移行条件・BANT の判定基準・資料 5 種 | [`references/scalar/sales-playbook.ja.md`](../../references/scalar/sales-playbook.ja.md) |
-| ステージごとの相手・渡すコンテンツ・持ち帰るアウトプット | [`references/scalar/stage-io-map.ja.md`](../../references/scalar/stage-io-map.ja.md) |
-| 安全・Drive・承認・QA の共通規則 | [`references/scalar/workflow-contract.md`](../../references/scalar/workflow-contract.md) |
+| フェーズ・ゲート ID・移行条件・BANT の判定基準 | [`sales-playbook.ja.md`](../../references/scalar/sales-playbook.ja.md) §2 |
+| 資料 5 種 × フェーズ | 同ファイル §3 |
+| 10 問チェックポイントと台帳フィールド | 同ファイル §7 |
+| ステージごとの相手・渡すコンテンツ・持ち帰るアウトプット | [`stage-io-map.ja.md`](../../references/scalar/stage-io-map.ja.md) §2〜§7（1 ステージ 1 節）、連鎖は §11 |
+| 安全・Drive・承認・QA の共通規則 | [`scalar/workflow-contract.md`](../../references/scalar/workflow-contract.md)（1.8KB・全文可） |
+
+**ファイルではなく指定された節を開くこと。** `sales-playbook.ja.md` は 19KB、
+`stage-io-map.ja.md` は 28KB あるが、1 ステージ分は約 2KB。
 
 ## Boundaries
 

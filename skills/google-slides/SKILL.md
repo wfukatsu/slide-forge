@@ -132,7 +132,7 @@ function you need and read only it:
 grep -n "^def \|slide(\|plain(" examples/scalardb-scalardl/deck.py
 ```
 
-Contract rules (footer safe area, title height, connector attachment) are in `references/layout-contract.md`; drawing recipes in `references/diagram-cookbook.md`.
+Contract rules (footer safe area, title height, connector attachment) are in `references/layout-contract.md`; drawing recipes in `references/diagram-cookbook.md` — one section per pattern (§2 layer, §3 process flow, §4 swimlane, §5 branching, §6 matrix, §7 architecture, §8 pipeline, §9 timeline, §10 tree), so open the matching recipe only.
 
 ### Design principles (both paths)
 
@@ -152,6 +152,9 @@ Spec path:
 .venv/bin/python scripts/build_deck.py --template templates/blank-16x9.json \
     --spec deck.json --dry-run --strict
 ```
+
+A clean run prints a three-line summary; add `--verbose` only when you need
+the per-slide layout list or the full list of fitted text.
 
 Code-first path:
 

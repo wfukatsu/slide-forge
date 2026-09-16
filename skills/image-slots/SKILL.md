@@ -1,10 +1,9 @@
 ---
 name: image-slots
 description: >-
-  Fill the empty image slots of an existing Google Slides deck with AI-generated
-  pictures: find the frames the template reserves for a picture, generate one
-  composed for each frame's shape, and place it so it fills the frame. Runs on
-  any accessible deck URL, including decks slide-forge did not generate.
+  Fill the empty image slots of an existing Google Slides deck with
+  AI-generated pictures composed for each frame's shape. Runs on any
+  accessible deck URL, including decks slide-forge did not generate.
   Use for: 表紙に絵を入れて, 章扉の画像枠を埋めて, 空いている画像枠に画像を生成,
   fill the image placeholders.
   Not: decks still being generated (put aiImage in the spec instead);

@@ -1,16 +1,13 @@
 ---
 name: google-slides-template
 description: >-
-  Generate or update a Google Slides deck from a registered master template:
-  interactive intake, template analysis and registration (template.json), spec
-  authoring with strict offline validation, page-fragment authoring for large
-  decks, generation into a Drive folder, and optional visual QA. This is the
-  main deck-generation workflow — prefer it whenever a corporate master exists.
+  Generate or update a Google Slides deck from a registered master template.
+  The main deck-generation workflow — prefer it whenever a corporate master
+  exists.
   Use for: テンプレートからデッキを作って, 提案資料を作成して, 既存デッキのこのページを直して,
   make a deck from our template, update slides 3 and 7, register this master.
   Not: a deck with no corporate master (google-slides); designing a new master
-  from brand colours and fonts (template-forge); filling only the empty image
-  frames of an existing deck (image-slots).
+  (template-forge); filling only the empty image frames (image-slots).
 ---
 
 *[日本語](SKILL.ja.md)*
@@ -148,6 +145,9 @@ Validate before any API call:
   --template templates/<id>.json --spec out/<deck>/deck.json \
   --dry-run --strict
 ```
+
+A clean run prints a three-line summary; add `--verbose` only when you need
+the per-slide layout list or the full list of fitted text.
 
 Resolve every error. Review warnings and record any intentionally accepted
 warning. Ordinary decks up to 17 pages stay in one agent. Consider fan-out at

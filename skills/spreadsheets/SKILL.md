@@ -1,12 +1,9 @@
 ---
 name: spreadsheets
 description: >-
-  Generate line-item spreadsheets — estimates, BOMs, cost breakdowns, comparison
-  tables — as Excel (.xlsx) and/or Google Spreadsheet from one JSON spec: typed
-  columns, per-row formulas, a subtotal/tax/total block, offline validation
-  before any API call. The xlsx is the source and the Spreadsheet is a Drive
-  conversion of it, so both always match. Companion to a deck, and also
-  standalone.
+  Generate line-item spreadsheets — estimates, BOMs, cost breakdowns,
+  comparison tables — as Excel (.xlsx) and/or Google Spreadsheet from one JSON
+  spec. Companion to a deck, and also standalone.
   Use for: 見積もりを作って, 見積書, 明細表, 費用内訳を Excel に,
   BOM をスプレッドシートに, cost breakdown spreadsheet.
   Not: free-form or existing-file xlsx work (document-skills:xlsx); reading or

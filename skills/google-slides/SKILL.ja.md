@@ -130,7 +130,7 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 grep -n "^def \|slide(\|plain(" examples/scalardb-scalardl/deck.py
 ```
 
-コントラクトの規則（フッターセーフエリア、タイトル高さ、コネクタの接続）は `references/layout-contract.md`、作図レシピは `references/diagram-cookbook.md` にある。
+コントラクトの規則（フッターセーフエリア、タイトル高さ、コネクタの接続）は `references/layout-contract.md`、作図レシピは `references/diagram-cookbook.md` にある。後者はパターンごとに 1 節（§2 レイヤー、§3 プロセスフロー、§4 スイムレーン、§5 分岐、§6 マトリクス、§7 アーキテクチャ、§8 パイプライン、§9 タイムライン、§10 ツリー）なので、該当レシピだけを開くこと。
 
 ### 設計原則（両パス共通）
 
@@ -150,6 +150,9 @@ grep -n "^def \|slide(\|plain(" examples/scalardb-scalardl/deck.py
 .venv/bin/python scripts/build_deck.py --template templates/blank-16x9.json \
     --spec deck.json --dry-run --strict
 ```
+
+問題がなければ 3 行の要約だけが出る。スライドごとのレイアウト一覧や、縮めた
+テキストの全件が要るときだけ `--verbose` を付ける。
 
 コードファーストパス:
 

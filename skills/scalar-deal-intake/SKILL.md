@@ -2,9 +2,9 @@
 name: scalar-deal-intake
 description: >-
   Turn raw deal material — meeting minutes, email threads, Slack, CRM exports,
-  customer documents — into per-stage records and a hearing sheet. Extracts facts
-  with a source and a confidence level, never invents an answer, and turns every
-  gap into a question with an owner and a due date.
+  customer documents — into per-stage records and a hearing sheet. Extracts
+  facts with a source and a confidence level, and turns every gap into a
+  question with an owner and a due date.
   Use for: 議事録を整理して, メールから商談情報をまとめて, ヒアリングシートを埋めて,
   ステージごとに整理して, ステージを上げてよいかの判断.
   Not: the ledger and activity plan (scalar-account-plan); one visit's materials
@@ -26,9 +26,14 @@ Sources of truth — this skill redefines neither:
 
 | Concern | Source |
 |---|---|
-| Phases, gate IDs, transition conditions, BANT criteria, material types | [`references/scalar/sales-playbook.md`](../../references/scalar/sales-playbook.md) |
-| Who you meet per stage, what you hand them, what output you must come back with | [`references/scalar/stage-io-map.md`](../../references/scalar/stage-io-map.md) |
-| Safety, Drive, approval and QA rules | [`references/scalar/workflow-contract.md`](../../references/scalar/workflow-contract.md) |
+| Phases, gate IDs, transition conditions, BANT criteria | [`sales-playbook.md`](../../references/scalar/sales-playbook.md) §2 |
+| The 5 material types × phase | same file §3 |
+| Checkpoint questions and their ledger fields | same file §7 |
+| Who you meet per stage, what you hand them, what output you owe | [`stage-io-map.md`](../../references/scalar/stage-io-map.md) §2–§7, one stage per section; the chain is §11 |
+| Safety, Drive, approval and QA rules | [`scalar/workflow-contract.md`](../../references/scalar/workflow-contract.md) (1.8KB — read it whole) |
+
+**Open the named section, not the file.** `sales-playbook.md` is 20KB and
+`stage-io-map.md` 23KB; one stage's section is ~2KB.
 
 ## Boundaries
 

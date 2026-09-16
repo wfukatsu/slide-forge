@@ -31,7 +31,8 @@ description: >-
 作業ディレクトリは slide-forge ルート。コマンドは `.venv/bin/python` で実行する。
 
 判断の出典は [references/scalar/sales-playbook.md](../../references/scalar/sales-playbook.ja.md)。
-ステージ、ゲート ID、資料 5 種、BANT、10 問チェックポイントはすべてそこにある。
+ステージ・ゲート ID・資料 5 種・BANT は §2、10 問チェックポイントと台帳
+フィールドは §7 にある。**19KB のファイル全体ではなく、その節だけを開くこと。**
 **このスキルでそれらを再定義しない。**
 
 ## Boundaries

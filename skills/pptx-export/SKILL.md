@@ -1,10 +1,10 @@
 ---
 name: pptx-export
 description: >-
-  Export a generated Google Slides deck to PowerPoint (.pptx) via the Drive API,
-  preserving it exactly as generated, saved locally and optionally archived in
-  the deck's Drive folder. Invoked by the generation skills when the user chooses
-  PPTX at intake, and runs standalone on any accessible deck URL.
+  Export a generated Google Slides deck to PowerPoint (.pptx) via the Drive
+  API, preserving it exactly as generated. Invoked by the generation skills
+  when the user chooses PPTX at intake, and runs standalone on any accessible
+  deck URL.
   Use for: PPTX でも出力して, PowerPoint 形式でほしい, パワポで納品,
   export to PowerPoint.
   Not: authoring or editing PPTX files directly (document-skills:pptx); QA, which

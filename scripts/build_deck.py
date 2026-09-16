@@ -177,6 +177,11 @@ register({
     "slides[{i}]: failed to draw figures: {etype}: {e}":
         "slides[{i}]: 図の描画に失敗しました: {etype}: {e}",
     "spec has no slides array": "spec に slides 配列がありません",
+    "slides[{list}] ({n} slides){body}": "slides[{list}]（{n} 枚）{body}",
+    "Text fitted to its box ({n}); --verbose to list them":
+        "箱に合わせて縮めたテキスト {n} 件（一覧は --verbose）",
+    "list every slide and every fitted text instead of counting them":
+        "スライドと縮めたテキストを件数ではなく一覧で表示する",
     "{where}: missing 'layout'": "{where}: 'layout' がありません",
     "{where}: cannot resolve layout '{key}' (roles: {roles} / keys: {keys})":
         "{where}: レイアウト '{key}' を解決できません "
@@ -2478,6 +2483,40 @@ def expand_slide_templates(spec: dict) -> tuple[list[str], list[str]]:
     return notes, problems
 
 
+_WHERE_RE = re.compile(r"^(slides\[(\d+)\])(.*)$", re.S)
+
+
+def collapse_problems(problems: list[str]) -> list[str]:
+    """Merge problems that differ only by their ``slides[N]`` prefix.
+
+    One wrong layout key in a 46-slide deck printed the same sentence 45
+    times, each repeating the full roles/keys lists (~250 B a line, ~2.7k
+    tokens of agent context) to convey a single fact. Report the fact once
+    and list the slides it applies to.
+    """
+    order: list[str] = []
+    groups: dict[str, list[str]] = {}
+    for msg in problems:
+        m = _WHERE_RE.match(msg)
+        body = m.group(3) if m else msg
+        if body not in groups:
+            order.append(body)
+            groups[body] = []
+        if m:
+            groups[body].append(m.group(2))
+    out: list[str] = []
+    for body in order:
+        idx = groups[body]
+        if not idx:
+            out.append(body)
+        elif len(idx) == 1:
+            out.append(f"slides[{idx[0]}]{body}")
+        else:
+            out.append(t("slides[{list}] ({n} slides){body}",
+                         list=",".join(idx), n=len(idx), body=body))
+    return out
+
+
 def validate_spec(template: dict, spec: dict) -> list[str]:
     """Check the deck spec against the template and return a list of problems (empty means OK)."""
     problems = []
@@ -2672,6 +2711,9 @@ def main() -> int:
     p.add_argument("--strict", action="store_true",
                    help=t("fail if the figure audit (overlaps / text "
                           "overflow) reports anything"))
+    p.add_argument("--verbose", action="store_true",
+                   help=t("list every slide and every fitted text instead of "
+                          "counting them"))
     p.add_argument("--output", metavar="google|local",
                    help=t("where the deliverable goes: google (Drive / Slides) "
                           "or local (folder / PowerPoint); defaults to "
@@ -2727,14 +2769,15 @@ def main() -> int:
     # Resolve the layout's image slots to coordinates before validation
     # (everything downstream — validation, audit, generation — looks at the resolved coordinates)
     slot_notes = resolve_image_slots(template, spec)
-    for msg in slot_notes:
-        print(f"  {msg}")
+    if args.verbose:
+        for msg in slot_notes:
+            print(f"  {msg}")
 
     problems = validate_spec(template, spec)
     problems += validate_figures(spec, template.get("pageSize", {}), template)
     if problems:
         print(t("The spec has problems:"), file=sys.stderr)
-        for msg in problems:
+        for msg in collapse_problems(problems):
             print(f"  - {msg}", file=sys.stderr)
         return 1
 
@@ -2746,18 +2789,24 @@ def main() -> int:
     if args.dry_run:
         print(t("OK: the {n}-slide spec is consistent with the template",
                 n=len(spec["slides"])))
-        for i, s in enumerate(spec["slides"], 1):
-            resolved = template.get("roles", {}).get(s["layout"], s["layout"])
-            n_fig = len(s.get("figures") or [])
-            extra = t("  + {n} figures", n=n_fig) if n_fig else ""
-            print(f"  {i:2d}. {s['layout']:24s} -> "
-                  f"{template['layouts'][resolved]['displayName']}{extra}")
+        if args.verbose:
+            for i, s in enumerate(spec["slides"], 1):
+                resolved = template.get("roles", {}).get(s["layout"],
+                                                        s["layout"])
+                n_fig = len(s.get("figures") or [])
+                extra = t("  + {n} figures", n=n_fig) if n_fig else ""
+                print(f"  {i:2d}. {s['layout']:24s} -> "
+                      f"{template['layouts'][resolved]['displayName']}{extra}")
         fit_notes: list[str] = []
         findings = audit_figures(template, spec, fit_notes)
         if fit_notes:
-            print(t("Text fitted to its box ({n}):", n=len(fit_notes)))
-            for msg in fit_notes:
-                print(f"  - {msg}")
+            if args.verbose:
+                print(t("Text fitted to its box ({n}):", n=len(fit_notes)))
+                for msg in fit_notes:
+                    print(f"  - {msg}")
+            else:
+                print(t("Text fitted to its box ({n}); --verbose to list them",
+                        n=len(fit_notes)))
         if findings:
             print("\n" + t("Figure audit found {n} findings (images excluded; "
                            "they need the real file):", n=len(findings)),

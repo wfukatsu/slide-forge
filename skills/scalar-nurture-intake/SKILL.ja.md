@@ -24,9 +24,14 @@ description: >-
 
 | 観点 | 出典 |
 |---|---|
-| ナーチャリング 5 ステージ、製品・セグメントレイヤー、シートの未完成箇所 | [`references/scalar/nurture-map.ja.md`](../../references/scalar/nurture-map.ja.md) |
-| 引き渡し先の商談ステージと `g1.*` ゲート | [`stage-io-map.ja.md`](../../references/scalar/stage-io-map.ja.md) / [`sales-playbook.ja.md`](../../references/scalar/sales-playbook.ja.md) |
-| 課題→製品のマッピング | [`proposal-map.ja.md`](../../references/scalar/proposal-map.ja.md) |
+| ナーチャリング 5 ステージ | [`nurture-map.ja.md`](../../references/scalar/nurture-map.ja.md) §1 |
+| 製品レイヤー / セグメントレイヤー / シートの未完成箇所 | 同ファイル §3 / §4 / §7 |
+| 引き渡し先の商談ステージ | [`stage-io-map.ja.md`](../../references/scalar/stage-io-map.ja.md) §1 |
+| `g1.*` ゲート | [`sales-playbook.ja.md`](../../references/scalar/sales-playbook.ja.md) §2 |
+| 課題→製品のマッピング | [`proposal-map.ja.md`](../../references/scalar/proposal-map.ja.md) §4 |
+
+**ファイルではなく指定された節を開くこと** — いずれも 16〜34KB あり、4 つを
+全文読むとこのスキル本体より高くつく。
 
 ## Boundaries
 

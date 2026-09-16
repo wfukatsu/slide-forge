@@ -1,10 +1,9 @@
 ---
 name: hearing-sheet
 description: >-
-  Keep the hearing sheet as data and move it between Markdown, Excel and Google
-  Spreadsheet in both directions — hand one to a customer or partner to fill in,
-  read the answers back, and report what is still unconfirmed. Product-neutral;
-  product-fit judgements live in templates/sales/products/.
+  Keep the hearing sheet as data and move it between Markdown, Excel and
+  Google Spreadsheet in both directions — hand one to a customer or partner to
+  fill in, read the answers back, and report what is still unconfirmed.
   Use for: ヒアリングシートを作って, ヒアリング項目を Excel で,
   スプレッドシートで顧客に渡したい, 記入してもらったシートを取り込んで,
   何が聞けていないか.

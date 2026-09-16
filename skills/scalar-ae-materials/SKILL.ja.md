@@ -1,11 +1,9 @@
 ---
 name: scalar-ae-materials
 description: >-
-  Build what a Scalar Account Executive needs for one customer visit, chosen by
-  deal phase and audience: the customer-facing one-pager, the internal visit
-  plan, the WPS win plan that asks for proposal investment, and the Deal Desk
-  packet that asks for internal approval. Files land under "AE / customer" in
-  Drive and every run updates the account ledger.
+  Build what a Scalar Account Executive needs for one customer visit, chosen
+  by deal phase and audience: the customer-facing one-pager, the internal
+  visit plan, the WPS win plan, and the Deal Desk approval packet.
   Use for: 訪問・面談の準備, フェーズ 0〜6 の会話に使う資料, visit plan, WPS,
   Deal Desk, 社内の承認やリソースを取りたい.
   Not: the standing activity plan (scalar-account-plan); the formal proposal
@@ -119,7 +117,9 @@ description: >-
 が持ち、許諾が「未取得」の事例は顧客に出さない。
 
 その他の台帳に無いページは、`slide-templates` のテンプレートか
-`references/slide-pattern-catalog.md` の型で書く。組み上げと検証:
+`references/slide-pattern-catalog.md` の型で書く。20KB あるので、必要な
+ページ系統の節だけを開くこと（§2 構造、§3 定量、§4 比較、§5 論理、§6 計画、
+§8 定性、§9 クロージング）。組み上げと検証:
 
 ```bash
 .venv/bin/python scripts/assemble_spec.py out/<顧客名>/*.slide.json \

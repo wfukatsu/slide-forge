@@ -24,9 +24,14 @@ Sources of truth — this skill redefines none of them:
 
 | Concern | Source |
 |---|---|
-| The five nurture stages, the product and segment layers, what the sheet leaves unfinished | [`references/scalar/nurture-map.md`](../../references/scalar/nurture-map.md) |
-| The deal stages a lead is handed to, and the `g1.*` gates | [`references/scalar/stage-io-map.md`](../../references/scalar/stage-io-map.md), [`sales-playbook.md`](../../references/scalar/sales-playbook.md) |
-| Problem-to-product mapping | [`references/scalar/proposal-map.md`](../../references/scalar/proposal-map.md) |
+| The five nurture stages | [`nurture-map.md`](../../references/scalar/nurture-map.md) §1 |
+| Product layer / segment layer / what the sheet leaves unfinished | same file §3 / §4 / §7 |
+| The deal stages a lead is handed to | [`stage-io-map.md`](../../references/scalar/stage-io-map.md) §1 |
+| The `g1.*` gates | [`sales-playbook.md`](../../references/scalar/sales-playbook.md) §2 |
+| Problem-to-product mapping | [`proposal-map.md`](../../references/scalar/proposal-map.md) §4 |
+
+**Open the named section, not the file** — these are 16–27KB each, and a full
+read of all four costs more than this entire skill.
 
 ## Boundaries
 

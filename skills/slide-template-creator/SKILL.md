@@ -1,9 +1,8 @@
 ---
 name: slide-template-creator
 description: >-
-  Create, register, update and catalog reusable single-slide templates: define
-  the semantic input slots, validate, register. These are content-level page
-  templates, not Google Slides masters.
+  Create, register, update and catalog reusable single-slide templates. These
+  are content-level page templates, not Google Slides masters.
   Use for: ページテンプレートを追加, SWOT・比較・プロセスなどのスライド型を作って,
   既存スライドやスクリーンショットをテンプレート化, 登録済みテンプレートの一覧と保守.
   Not: brand/master creation (template-forge); deck generation (google-slides /

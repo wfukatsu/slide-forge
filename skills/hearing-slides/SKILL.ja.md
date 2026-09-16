@@ -1,11 +1,10 @@
 ---
 name: hearing-slides
 description: >-
-  Slides whose job is to collect information rather than deliver it: the agenda
-  of what you need to hear, our understanding put up to be corrected, a fill-in
-  sheet to write on during the meeting, an event poll, and the page that says
-  where to send the answers (with a QR). Driven by the gaps in a hearing sheet;
-  never invents an answer to fill a page.
+  Slides whose job is to collect information rather than deliver it: the
+  agenda of what you need to hear, a fill-in sheet for the meeting, an event
+  poll, and the page that says where to send the answers. Driven by the gaps
+  in a hearing sheet.
   Use for: 聞くためのスライド, ヒアリング用の資料, 足りない情報を集めるスライド,
   イベントで情報を集めたい, 記入してもらう資料.
   Not: internal "who do we ask next" pages (scalar-ae-materials /

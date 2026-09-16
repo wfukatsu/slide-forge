@@ -1,11 +1,10 @@
 ---
 name: slide-qa
 description: >-
-  Visual QA of a generated deck from thumbnails: fetch every page as PNG, inspect
-  against a defect checklist (overflow, overlaps, wrong connectors, weak
-  contrast), drive the fix-and-regenerate loop, and clean up the local QA files.
-  The generation skills invoke it when the user opts in (the default); it also
-  runs standalone on any deck URL.
+  Visual QA of a generated deck from thumbnails: inspect every page against a
+  defect checklist (overflow, overlaps, wrong connectors, weak contrast) and
+  drive the fix-and-regenerate loop. The generation skills invoke it when the
+  user opts in (the default); it also runs standalone on any deck URL.
   Use for: スライドを検証して, デッキを QA して, サムネイルで確認して, visual QA.
   Not: pre-generation offline checks (--dry-run / validate_layout.py stay in the
   generation skills); content fact-checking; PPTX files (pptx-export).
@@ -47,7 +46,7 @@ description: >-
 | サムネイル取得 | `.venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa --size LARGE` |
 | ページの限定（分割 QA） | `--pages 3,8,12,20` / `--pages 9-16` |
 | ローカル QA ファイルの削除（最後に必ず） | `.venv/bin/python scripts/cleanup_qa.py`（`--dry-run` でプレビュー） |
-| チェックリスト全体・修正ループ・報告ルール | `references/validation.md`（Gate 2） |
+| チェックリストが検出した不具合の修正方法・報告ルール | `references/validation.md`（Gate 2）— 以下のチェックリストは単体で完結しているので、特定の不具合の直し方が要るときだけ開く |
 | 画像が文脈を圧迫するときの QA 分割 | `references/parallel-generation.md` §6 |
 | 旧版デッキの Drive からの削除 | `drive.files().delete(fileId=…)`（またはゴミ箱へ移動） |
 
