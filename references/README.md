@@ -10,6 +10,7 @@ this directory end to end.
 
 | File | What it is for |
 |---|---|
+| [commands.md](commands.md) | The three slash commands — `/forge`, `/account`, `/visit`. Start here if you want to *use* slide-forge rather than change it |
 | [workflow-contract.md](workflow-contract.md) | The single shared contract for end-to-end deck generation. Read this before changing how any host runs the pipeline. The English text is normative |
 | [interactive-intake.md](interactive-intake.md) | How to settle template, purpose, structure and length with the user before writing a spec |
 | [validation.md](validation.md) | The two gates: offline coordinate checks, then thumbnail QA. What each one can and cannot catch |
@@ -63,7 +64,7 @@ this directory end to end.
 
 | File | What it is for |
 |---|---|
-| [hearing-kit.md](hearing-kit.md) | The record `hearing-sheet` and `hearing-slides` share; neither skill redefines it |
+| [hearing-kit.md](hearing-kit.md) | The record `hearing-sheet` and `hearing-slides` share, including the customer filter that decides what a customer may see; neither skill redefines it |
 | [nexus-reports.md](nexus-reports.md) | What each nexus-architect report becomes as slides |
 | [account-planning-session.md](account-planning-session.md) | The procedure for an Account Planning Session deck |
 
@@ -77,7 +78,8 @@ material types), [proposal-map](scalar/proposal-map.md) (problem → product),
 [okf-bundle](scalar/okf-bundle.md) (where product facts and pricing come from),
 [research-2026-08](scalar/research-2026-08.md), and
 [research-policy](scalar/research-policy.md) *(English only)*.
-`scalar/workflow-contract.md` is the Scalar-side contract *(English only)*.
+`scalar/workflow-contract.md` is the Scalar-side contract and the home of the
+customer-facing / internal rule for sales material *(English only)*.
 
 ## Not reference material
 

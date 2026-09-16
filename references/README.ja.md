@@ -10,6 +10,7 @@
 
 | ファイル | 何のためのものか |
 |---|---|
+| [commands.md](commands.ja.md) | 3 つのスラッシュコマンド — `/forge`・`/account`・`/visit`。slide-forge を**使いたい**ならここから（中身を変えるのではなく） |
 | [workflow-contract.md](workflow-contract.ja.md) | デッキ生成をエンドツーエンドで動かすための共通契約。どのホストの動き方を変えるときも、まずこれを読む。正本は英語版 |
 | [interactive-intake.md](interactive-intake.md) | 仕様を書く前に、テンプレート・目的・構成・分量をユーザーと確定させる手順 |
 | [validation.md](validation.md) | 2 つのゲート — オフラインの座標検査と、サムネイル QA。それぞれ何を拾えて何を拾えないか |
@@ -63,7 +64,7 @@
 
 | ファイル | 何のためのものか |
 |---|---|
-| [hearing-kit.md](hearing-kit.ja.md) | `hearing-sheet` と `hearing-slides` が共有する記録。どちらのスキルも再定義しない |
+| [hearing-kit.md](hearing-kit.ja.md) | `hearing-sheet` と `hearing-slides` が共有する記録。顧客に見せてよい範囲を決める顧客フィルタもここにある。どちらのスキルも再定義しない |
 | [nexus-reports.md](nexus-reports.ja.md) | nexus-architect の各レポートが、どのスライドになるか |
 | [account-planning-session.md](account-planning-session.ja.md) | Account Planning Session デッキの作成手順 |
 
@@ -77,7 +78,8 @@
 [okf-bundle](scalar/okf-bundle.ja.md)（製品の事実と価格の出どころ）、
 [research-2026-08](scalar/research-2026-08.ja.md)、
 `scalar/research-policy.md`*（英語のみ）*。
-`scalar/workflow-contract.md` は Scalar 側の契約*（英語のみ）*。
+`scalar/workflow-contract.md` は Scalar 側の契約であり、営業資料における
+「顧客提示 / 社内」の切り分け規則が置かれている場所でもある*（英語のみ）*。
 
 ## 参照資料ではないもの
 
