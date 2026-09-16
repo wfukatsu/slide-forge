@@ -102,6 +102,11 @@ calendar heatmap、Scrum.org（スプリントの長さ）。
 
 ### 4.1 日付エンジン＋プリミティブ（`scripts/calendars.py` の `CalendarMixin`）
 
+以下は計画時点の名前で、実装で変わったものがある（`month_matrix` →
+`month_weeks`、`iso_week` → `iso_week_label`、`load_holidays` → `holidays_for`、
+`paginate` は `calendar_pages.py` 側に移った）。実装後の名前は英語版 §4.1 と
+コードを参照のこと。
+
 描画を伴わない純粋関数（ユニットテストの対象）:
 
 | 関数 | 役割 |
