@@ -67,3 +67,62 @@ research date, re-research before using this file**
 4. **ScalarDL's "SQL support" officially takes the form of TableStore** (not a standalone feature name)
 5. There is no dedicated page for case studies (only news/blog posts). ENS's 1/5 is the only quantitative result
 6. Authentication/authorization is also inconsistent between the features table (Standard and above) and individual pages (Premium tag) → follow the features table and add a note
+
+## Supplementary research (conducted 2026-08-24) — what changed since the 08-01 version above
+
+- **ScalarDB 3.19 released** (release notes 2026-08-02 / press release 2026-08-03-04)
+  Sources: https://prtimes.jp/main/html/rd/p/000000078.000037795.html /
+  https://scalardb.scalar-labs.com/docs/latest/releases/release-notes/
+  1. **New component "ScalarDB Saga" is now available** (not a preview). An engine and
+     orchestrator that runs and manages Saga / TCC workflows spanning multiple services.
+     It centralizes execution state and state transitions, and controls retries and
+     compensation on failure. Use cases: business processes involving external APIs/SaaS,
+     long-running work with human approval or batches, async processing and resource
+     pre-reservation. **This supersedes the older note that 3.19.0-alpha.1 was not yet GA**
+  2. A **new one-phase interface for 2PC across multiple ScalarDB Clusters**
+     (Transaction Coordinator node / the Cluster client SDK's Global Transaction API)
+  3. **ScalarDB Manager reworked** (Cluster status, settings, schema, and backend DBs on one screen)
+  4. **ScalarDB Analytics: WHERE-clause pushdown**, cutting transfer volume and speeding up queries
+  5. Attribute-based authentication and OpenTelemetry support added to the Enterprise editions
+  - Roadmap: integration with MicroProfile-compliant frameworks such as Quarkus /
+    **AI-assisted data catalog generation and management** for Analytics
+
+- **ScalarDL 3.14 released (2026-08-06)** Source: https://prtimes.jp/main/html/rd/p/000000079.000037795.html
+  Metadata judged unnecessary for correctness guarantees (the Ledger's transaction log and the
+  Auditor's request log) can now be **purged automatically**, reducing storage use and retention
+  cost in long-running operations. A tool to erase such metadata in existing environments ships too
+
+- **Correct edition naming**: officially **Community / Enterprise Standard / Enterprise Premium**.
+  There is no standalone product called "ScalarDB Enterprise Edition" on the official site; use it
+  only as an informal collective term for the commercial editions, never as a product name. The
+  official products page (scalar-labs.com/ja/products) lists **two products, ScalarDB and ScalarDL**;
+  Saga and Analytics are treated as components of ScalarDB
+
+- **Inconsistent company location**: the 3.19 press release boilerplate says "Tokyo and San Francisco",
+  while the official boilerplate deck says "Tokyo, Sapporo, San Francisco". **Follow the official deck**
+
+- **Additional confirmation of published case studies**
+  - Toyota Motor Corporation PCE: detects file-change events in Box / SharePoint → computes hashes →
+    records them in ScalarDL in order → applies a timestamp once a day. Proves WHEN / SEQUENCE / WHAT
+    for over 10 years. Sold externally as SaaS under the name PCE (Proof Chain of Evidence). Runs on
+    Microsoft Azure. The first use case is proving prior-use rights for inventions.
+    Sources: official boilerplate deck /
+    https://news.microsoft.com/ja-jp/2022/03/31/220331-proof-chain-of-evidence/
+  - Major broadcaster: problems with an on-premises single DB (no agile schema changes, peak access,
+    no API) → moved the public-facing area to the cloud. IT governs program information in an RDBMS
+    while each production department keeps content/metadata in NoSQL. ScalarDB guarantees consistency
+    across the two, and access is exposed as APIs.
+    **The company name is not disclosed; always write "a major broadcaster" in any material.**
+    Source: official boilerplate deck (slide 10 captured in full on 2026-08-24)
+  - Tsuneishi Shipbuilding: the press release itself says the monolith had run for **"over a decade"**.
+    "15+ years" comes from secondary coverage. To stay with primary sources, write **over a decade**
+
+## Additional pitfalls (7 onwards)
+
+7. **Do not describe ScalarDB Saga as "not yet GA" or "preview"**. It has been available since 3.19 (2026-08)
+8. **Do not assert "ScalarDB Enterprise Edition" as a standalone product name.**
+   Officially it is Enterprise Standard / Enterprise Premium
+9. **Vector search is Enterprise Premium and in preview**. When a diagram shows a "vector store",
+   note that it is a preview feature
+10. **The Analytics AI data catalog is still in development** (listed under 3.19's "outlook").
+    Do not write it up as already available

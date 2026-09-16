@@ -198,7 +198,7 @@ cd /path/to/slide-forge
 | `templates/scalar-2026-boilerplate.json` | Scalar 2026 ボイラープレートテンプレート（公式同梱スライド） |
 | `assets/scalar/{logos,product-logos,pictograms}` | ブランド素材（会社・製品ロゴ、ピクトグラム） |
 | `references/scalar/okf-bundle.ja.md` | OKF バンドルの所在と、製品事実・価格の引用ルール |
-| `references/scalar/research-2026-08.md` | 調査済みの事実（会社・製品・事例）とスライド作成の落とし穴 6 件 |
+| `references/scalar/research-2026-08.md` | 調査済みの事実（会社・製品・事例）とスライド作成の落とし穴 10 件 |
 
 スクリプトは「そのまま再実行できる実例」であり、構成を変えるときはこの
 2 スクリプトを編集するのが最短経路である。google-slides-template 由来の
