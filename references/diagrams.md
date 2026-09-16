@@ -244,15 +244,26 @@ too much over missing something, and lets a human make the final call.
 `surfaceAlt` / `white`). `readable_on()` automatically picks a legible text
 color for a given background.
 
+**Words the canvas prints for itself come from the label resource, not from the
+code.** `source_note`'s `Source:`, a calendar's weekday heads, `so_what`'s
+label — `Canvas._label(key, override=None)` returns the caller's value when
+given one, and otherwise looks the key up in
+`slide-templates/i18n/<lang>.json`. The language is `canvas.lang`, taken from
+`deck.lang` (which the spec's `lang` sets) and defaulting to `ja`. A new
+primitive that needs a fixed word should add a key to both language files
+rather than hard-code one — §4 of
+[template-schema.md](template-schema.md) covers the resource and the
+`{"$t": …}` marker that reads it from a template.
+
 **Decide vertical position from the previous block's return value.** `cards` /
 `flow` / `hbars` / `metric` return the bottom y of the drawn area, so place the
 next block starting from that value. Hardcoding a value like `2.7` causes the
 next block to get swallowed as content grows.
 
 ```python
-b = d.cards(0.5, 0.9, 9.0, 1.0, items)     # b は下端 y
-b = d.hbars(0.5, b + 0.2, 9.0, rows)       # 前のブロックの下から置く
-d.label(0.5, b + 0.2, 9.0, 0.3, "まとめ")
+b = d.cards(0.5, 0.9, 9.0, 1.0, items)     # b is the bottom y
+b = d.hbars(0.5, b + 0.2, 9.0, rows)       # start from the previous block's bottom
+d.label(0.5, b + 0.2, 9.0, 0.3, "Summary")
 ```
 
 Finally, confirm the bottom edge fits within the body area (for `scalar-2026`'s

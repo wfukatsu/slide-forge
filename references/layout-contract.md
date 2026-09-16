@@ -131,6 +131,12 @@ Hidden-text detection uses Slides' draw order (later elements sit on top). This 
 - Whether an arrow connects to the "correct" shape (an accidental A→C connection meant to be A→B won't be flagged)
 - Contrast, and whether the figure actually communicates what it's meant to
 
+**Measurement follows the deck's language.** The words a primitive prints for
+itself (`Source:`, weekday heads) come from `slide-templates/i18n/<lang>.json`
+and wrap differently per language, so the checker measures with the slide's
+`lang`, then the spec's, then `ja`. The values above hold only when that `lang`
+matches the deck that will actually be generated.
+
 ## Don't Divide a Region by Fixed Ratios
 
 Allocating a box's height by a fixed split — "0.7in for the heading," "52% for the number" — crushes the content when the box is small and cuts off text. This has actually broken four components.

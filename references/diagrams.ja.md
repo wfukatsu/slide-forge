@@ -218,6 +218,14 @@ for msg in (d.audit_bounds() + d.audit_connectors()
 `surface` / `border` / `text`。ほかに `primaryDark` / `warning` / `surfaceAlt` / `white`
 も持つ）。`readable_on()` で背景に応じた文字色を自動で選ぶ。
 
+**キャンバスが自分で刷る語はコードではなくラベルリソースから引く。** `source_note` の
+`出典:`、カレンダーの曜日見出し、`so_what` のラベルなど。`Canvas._label(key, override=None)`
+は呼び出し側が値を渡していればそれを返し、無ければ `slide-templates/i18n/<lang>.json`
+からキーを引く。言語は `canvas.lang` で、`deck.lang`（spec の `lang` が設定する）に由来し、
+既定は `ja`。固定の語が要る部品を新しく書くときは、語を直接書かずに両方の言語ファイルへ
+キーを足すこと — リソースと、テンプレートからそれを引く `{"$t": …}` マーカーについては
+[template-schema.md](template-schema.ja.md) の §4 にある。
+
 **縦位置は前のブロックの戻り値で決めること。** `cards` / `flow` / `hbars` / `metric` は
 描画領域の下端 y を返すので、次のブロックはその値を起点に置く。手で `2.7` のような
 値を書くと、内容が増えたときに下のブロックへ潜り込む。

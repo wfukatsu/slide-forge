@@ -413,3 +413,86 @@ the family name keeps the spec readable.
 You can also skip roles and write `"layout": "DEFAULT_PRESENTATION"` directly
 as a layout key. The benefit of roles is that the same deck spec can be
 reused when the template is swapped out.
+
+---
+
+## 4. Slide Template `template.json` (a Different File)
+
+§1 describes a **brand template** — `templates/<id>.json`, the master a deck is
+built from. A **slide template** is a different file with a different schema:
+`slide-templates/<pack>/<id>/template.json`, one ready-made page that a deck
+spec names with `$template` (see the README and the header of
+[slide-template-catalog.md](slide-template-catalog.md)). It has two parts:
+
+| Key | What it holds |
+|---|---|
+| `slots` | The inputs the page takes — `type`, `required`, `default` and limits. The catalog prints these as each template's **Inputs** table |
+| `slide` | One deck-spec slide exactly as §2 describes it, with the caller-supplied values left as markers |
+
+Three markers stand in for values that are not known until the page is
+rendered. `$slot` appears only inside `slide`; `$density` and `$t` may appear
+in either part.
+
+### `{"$slot": "<name>"}` — the caller's input
+
+Replaced by that slot's value: what the caller passed under `data`, over the
+slot's own `default`. A name with neither is an error (`no value for slot:
+<name>`), as is passing a slot the template does not declare. A slot marked
+`required` must also be referenced somewhere in `slide` — a required input the
+page never prints is a template bug, and rendering refuses it.
+
+### `{"$density": {"print": …, "presentation": …}}` — one value per density
+
+Both keys are required, and no sibling key may sit beside `$density`. A
+template that uses the marker anywhere must declare a valid `defaultDensity`.
+Density is resolved **first**, before the input is checked, so a `maxLength`
+written as a `$density` object is already a plain number when it is compared
+against. The density comes from the slide, then the spec, then
+`defaultDensity`.
+
+### `{"$t": "<key>"}` — a word the slide prints for itself
+
+Looked up in `slide-templates/i18n/<lang>.json`: table headers, axis ends,
+`Source:` and the like. No sibling key may sit beside `$t`, and the key must be
+a string. A key missing from the requested language falls back to the default
+language (`ja`) rather than rendering blank, so an untranslated word surfaces
+as a visible Japanese word instead of a hole; a key in neither language is an
+error.
+
+The language comes from the slide, then the spec, then `ja`. What the caller
+writes under `data` is never translated — only the words the template itself
+owns. Figures drawn outside any template read the same resource through
+`Canvas._label()` ([diagrams.md](diagrams.md)), so one page cannot come out
+half in each language.
+
+A slot `default` may itself be `{"$t": …}`. It is resolved before the input is
+type-checked, so a `"type": "string"` slot still sees a string.
+
+`decision-record` uses all three:
+
+```jsonc
+{
+  "slots": {
+    // a limit that differs per density
+    "title": { "type": "string", "required": true,
+               "maxLength": { "$density": { "print": 38, "presentation": 30 } } }
+  },
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      { "type": "table", "x": 0.5, "y": 1.62, "w": 9.0,
+        // the template's own words, translated per language
+        "headers": [{ "$t": "adr.option" }, { "$t": "adr.verdict" },
+                    { "$t": "adr.rationale" }],
+        // the caller's data, never translated
+        "rows": { "$slot": "options" },
+        "size": { "$density": { "print": 9, "presentation": 10 } } }
+    ]
+  },
+  "defaultDensity": "print"
+}
+```
+
+Expansion runs before validation, generation and `--into` alike, so
+`--dry-run --strict` catches a missing or oversized input before anything is
+created.
