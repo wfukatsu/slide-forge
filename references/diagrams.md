@@ -276,6 +276,14 @@ bar's end don't align cleanly and look mismatched (`cards()` is square-cornered
 for exactly this reason). A standalone chip or band without a bar can stay
 rounded.
 
+**A large box shouldn't have rounded corners.** Slides derives the corner
+radius from the shape — one sixth of the shorter side, not a fixed length — so
+the bigger the box, the rounder it gets, and a panel ends up looking blobby.
+`Canvas.shape()` drops a `ROUND_RECTANGLE`-family shape whose shorter side runs
+past `MAX_ROUND_SIDE` (0.60in) to a plain `RECTANGLE`, which keeps every drawn
+radius at or under 0.10in. Chips and thin bands have a small shorter side, so
+they stay rounded. Call sites don't need to change their `kind`.
+
 ## Adding content that doesn't fit the layout
 
 When placeholders alone aren't enough, use `build_deck.py` as a library and add
