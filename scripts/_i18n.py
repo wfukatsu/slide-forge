@@ -19,8 +19,15 @@ Usage in a script::
 - ``register()`` merges a per-module catalog at import time; keep each
   module's translations next to its messages.
 - Only *runtime messages* (print / errors / argparse help) go through
-  ``t()``. Slide content, figure labels, and specs are deck data, not
-  messages — never localize those here.
+  ``t()``. Slide content and specs are deck data, not messages — never
+  localize those here.
+- Words a slide prints for itself — table headers, axis ends, "Source:",
+  weekday names — are not messages either, but they do have a home:
+  ``slide_templates.resolve_label()`` reading
+  ``slide-templates/i18n/<lang>.json``, reached from drawing code as
+  ``Canvas._label()`` and from a template as ``{"$t": "<key>"}``. The
+  deck's language comes from its spec, not from ``GSLIDES_LANG``: a
+  Japanese CLI can generate an English deck and the reverse.
 """
 from __future__ import annotations
 

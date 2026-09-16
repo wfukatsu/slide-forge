@@ -91,4 +91,14 @@ point in time, and they are **not** statements about how the system works now:
 ## Generated, not written
 
 - `images/` — rendered PNGs for the two catalogs, committed so the catalogs read with figures on a bare clone
-- `i18n/` — English sidecar strings for the two generated catalogs
+- `i18n/` — English sidecar strings for the two generated catalogs **in this directory**
+
+There are two `i18n/` directories and they are not the same thing:
+
+| Directory | Holds | Read by |
+|---|---|---|
+| `references/i18n/` | English text for the generated catalog **documents** | `build_pattern_catalog.py`, `build_template_catalog_doc.py` |
+| `slide-templates/i18n/` | The words a **slide** prints for itself — table headers, axis ends, "Source:", weekday names | `slide_templates.resolve_label()`, via `{"$t": …}` in a template and `Canvas._label()` in drawing code |
+
+Editing the first changes a document; editing the second changes what
+appears on a generated slide.
