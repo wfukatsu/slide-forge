@@ -144,8 +144,12 @@
         "y": 1.62,
         "w": 3.3,
         "headers": [
-          "項目",
-          "実測値"
+          {
+            "$t": "common.item"
+          },
+          {
+            "$t": "stack.measured"
+          }
         ],
         "rows": {
           "$slot": "facts"

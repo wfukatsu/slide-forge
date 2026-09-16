@@ -188,3 +188,9 @@ reasoning about coordinates.
   to be necessary, the main agent renumbers.
 - Fragments live under `out/` (already gitignored). **They are not
   deliverables — don't commit them.**
+
+## See also
+
+- [Validation Gates: Offline Coordinate Checks and Thumbnail QA](validation.md)
+- [Nailing Down a Deck's Design Through Dialogue](interactive-intake.md)
+- [Deck workflow contract](workflow-contract.md)

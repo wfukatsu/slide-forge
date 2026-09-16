@@ -638,10 +638,15 @@ def decision(d, x, y, w, question, branches, *, dia_w=3.70, dia_h=0.78,
 # ---- 6. 2x2 matrix ----
 
 def quadrant(d, x, y, w, h, quads, *, x_label="", y_label="",
-             x_axis=("低", "高"), y_axis=("低", "高")):
+             x_axis=None, y_axis=None):
     """2x2 matrix. quads is a list in [top-left, top-right, bottom-left, bottom-right] order,
     each (heading, [item, …], tone). Use this for prioritization or positioning strategy.
+
+    The axis ends default to the deck's language (see Canvas._label).
     """
+    ends = (d._label("axis.low"), d._label("axis.high"))
+    x_axis = x_axis or ends
+    y_axis = y_axis or ends
     pad = 0.42                       # margin for axis labels
     gx, gy = x + pad, y
     gw, gh = w - pad, h - pad
@@ -673,11 +678,15 @@ def quadrant(d, x, y, w, h, quads, *, x_label="", y_label="",
 # ---- 7. Positioning map (2-axis scatter) ----
 
 def matrix_map(d, x, y, w, h, items, *, x_label="", y_label="",
-               x_axis=("低", "高"), y_axis=("低", "高"), dot=0.13):
+               x_axis=None, y_axis=None, dot=0.13):
     """Place items on two axes. items = [(name, x0-1, y0-1, tone), …]
 
-    y=1.0 is the top. Use this for competitive comparisons or feature positioning.
+    y=1.0 is the top. Use this for competitive comparisons or feature
+    positioning. The axis ends default to the deck's language.
     """
+    ends = (d._label("axis.low"), d._label("axis.high"))
+    x_axis = x_axis or ends
+    y_axis = y_axis or ends
     pad_l, pad_b = 0.46, 0.40
     gx, gy = x + pad_l, y
     gw, gh = w - pad_l, h - pad_b

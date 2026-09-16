@@ -216,7 +216,7 @@ Drive の階層は初回だけルートを聞いて作る（以降は `config/sa
 ```bash
 # 企業グループ。people[].entity ごとの枠に格子で並べ、法人をまたぐ線は枠の外を通す
 .venv/bin/python scripts/build_account_graph.py <graph.json> --layout grouped \
-    --title "<顧客> インフルーエンスマップ（全体）" \
+    --title "<顧客> インフルエンスマップ（全体）" \
     --out out/account-plan/<顧客>/influence-map-full.drawio
 
 # 1 社なら既定のままでよい
@@ -238,7 +238,7 @@ drawio -x -f png -s 2 -b 8 \
 
 `slide-qa` スキルでサムネイルを確認する。特に見るところ:
 
-- インフルーエンスマップで**次に動かす人**が最初に目に入るか（squint test）
+- インフルエンスマップで**次に動かす人**が最初に目に入るか（squint test）
 - 表の行が下端のロゴ帯に重なっていないか
 - 人物のラベルが互いを隠していないか — 隠れていたら**台帳の座標を直す**
   （テンプレートを直すのではない）

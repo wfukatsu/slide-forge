@@ -41,7 +41,7 @@ d.image(0.6, 1.1, 4.2, 2.6, "assets/shot.png", fit="contain", caption="管理画
 d.ai_image(5.2, 1.1, 4.2, 2.6, "夜間に自動でビルドが回っている様子")
 ```
 
-ピクトグラムは 30 種（`person` `server` `database` `cloud` `lock` `shield` `bot` …）。
+ピクトグラムは 32 種（`person` `server` `database` `cloud` `lock` `shield` `bot` …）。
 比喩図は `pyramid` / `funnel` / `venn` / `iceberg` / `balance` / `steps` / `layers` /
 `hub` / `matrix` / `before_after` / `comparison` / `journey` / `timeline`。
 アカウントグラフ（`influence_graph` / `outcome_tree`）は
@@ -217,6 +217,14 @@ for msg in (d.audit_bounds() + d.audit_connectors()
 `d.P` はテンプレート由来のパレット（`primary` / `success` / `danger` / `info` / `muted` /
 `surface` / `border` / `text`。ほかに `primaryDark` / `warning` / `surfaceAlt` / `white`
 も持つ）。`readable_on()` で背景に応じた文字色を自動で選ぶ。
+
+**キャンバスが自分で刷る語はコードではなくラベルリソースから引く。** `source_note` の
+`出典:`、カレンダーの曜日見出し、`so_what` のラベルなど。`Canvas._label(key, override=None)`
+は呼び出し側が値を渡していればそれを返し、無ければ `slide-templates/i18n/<lang>.json`
+からキーを引く。言語は `canvas.lang` で、`deck.lang`（spec の `lang` が設定する）に由来し、
+既定は `ja`。固定の語が要る部品を新しく書くときは、語を直接書かずに両方の言語ファイルへ
+キーを足すこと — リソースと、テンプレートからそれを引く `{"$t": …}` マーカーについては
+[template-schema.md](template-schema.ja.md) の §4 にある。
 
 **縦位置は前のブロックの戻り値で決めること。** `cards` / `flow` / `hbars` / `metric` は
 描画領域の下端 y を返すので、次のブロックはその値を起点に置く。手で `2.7` のような

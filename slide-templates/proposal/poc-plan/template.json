@@ -71,8 +71,12 @@
         "y": 1.45,
         "w": 9.0,
         "headers": [
-          "項目",
-          "内容"
+          {
+            "$t": "common.item"
+          },
+          {
+            "$t": "common.detail"
+          }
         ],
         "rows": {
           "$slot": "rows"

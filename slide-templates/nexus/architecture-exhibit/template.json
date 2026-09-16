@@ -122,7 +122,9 @@
         "points": {
           "$slot": "readings"
         },
-        "label": "読み取りポイント",
+        "label": {
+          "$t": "arch.what_to_read"
+        },
         "size": {
           "$density": {
             "print": 9.5,

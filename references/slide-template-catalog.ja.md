@@ -9,7 +9,44 @@
 [slide-pattern-catalog.md](slide-pattern-catalog.ja.md) にある。
 
 各テンプレートの **figures** 行は、そのページが使っている描画部品の `type` 名。
-テンプレートは `render_slide_template.py` かデッキ仕様の `$template` で使う。
+**入力**表は、そのテンプレートに渡すデータのスロット名・型・必須・制約。
+
+テンプレートを明示的に指定するには、デッキ仕様のスライドに `$template` を書く。
+そのテンプレートが 1 枚に展開される。`data` のキーが各テンプレートの**入力**表の
+スロット名:
+
+```json
+{
+  "slides": [
+    {
+      "$template": "swot-analysis",
+      "data": {
+        "title": "自社の戦略ポジション",
+        "quadrants": ["強み: …", "弱み: …", "機会: …", "脅威: …"],
+        "insight": "…",
+        "source": "2026 年 3 月 経営会議資料"
+      },
+      "notes": "スピーカーノート（任意）"
+    }
+  ]
+}
+```
+
+`$template` / `data` / `density` / `lang` 以外のキーは展開後のスライドに上書きで
+合流するので、`notes` を足したり `layout` を差し替えたりできる。密度はスライドの
+`density` → spec の `density` → テンプレート既定の順。展開は検証・生成・`--into`
+より前に走るため、`--dry-run --strict` で入力の過不足を生成前に検査できる。
+
+各テンプレートが自分で刷る語（表の見出し、軸の両端など）は `lang` で切り替わり、
+`slide-templates/i18n/<lang>.json` から引く。`data` に書いた内容は翻訳されない。
+訳の無いキーは既定言語のまま出るので、未翻訳は空欄ではなく目に見える。
+
+1 枚だけ JSON に落とすなら `render_slide_template.py` を使う:
+
+```bash
+.venv/bin/python scripts/render_slide_template.py \
+    --template swot-analysis --data my-swot.json --out out/swot.json
+```
 
 ```bash
 # このカタログを作り直す（テンプレートを追加したときも同じ手順）
@@ -61,6 +98,15 @@ done
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `quadrants` | `string[]` | ✔ | 4 件、80 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 事実と解釈を区別する
@@ -78,6 +124,16 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `labels` | `string[]` | ✔ | 3 件、40 字以内 |
+| `center` | `string` | ✔ | 36 字以内 |
+| `details` | `string[][]` | ✔ | 3 件、60 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 ### TAM / SAM / SOM（`market-sizing`）
 
 ![TAM / SAM / SOM](images/slide-templates/market-sizing.png)
@@ -89,6 +145,15 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **figures**: `governing_message`, `nested_circles`, `so_what`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `rings` | `string[][]` | ✔ | 3〜4 件、40 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 ### ポジショニングマップ（`positioning-map`）
 
@@ -102,6 +167,18 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `points` | `array` (string≤24, number≤1, number≤1) | ✔ | 2〜8 件 |
+| `xAxis` | `string[]` | ✔ | 2 件、24 字以内 |
+| `yAxis` | `string[]` | ✔ | 2 件、24 字以内 |
+| `highlight` | `string` | ✔ | 20 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 ### RFMセグメント（`rfm-segments`）
 
 ![RFMセグメント](images/slide-templates/rfm-segments.png)
@@ -114,6 +191,15 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜7 件、44 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 ### コホート継続率（`cohort-retention`）
 
 ![コホート継続率](images/slide-templates/cohort-retention.png)
@@ -125,6 +211,16 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **figures**: `governing_message`, `table`, `so_what`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `headers` | `string[]` | ✔ | 4〜10 件、16 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜10 件、20 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -143,6 +239,15 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `stages` | `string[][]` | ✔ | 3〜6 件、32 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 ### A/Bテスト結果（`experiment-result`）
 
 ![A/Bテスト結果](images/slide-templates/experiment-result.png)
@@ -155,6 +260,17 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **推論レベル**: 因果（原因の主張）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `categories` | `string[]` | ✔ | 1〜4 件、20 字以内 |
+| `series` | `array` (string≤20, number[]) | ✔ | 2 件 |
+| `resultRows` | `string[][]` | ✔ | 3〜5 件、48 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 180 字以内 |
+
 使うときの決まり:
 
 - 有意差がない結果を効果ゼロと断定しない
@@ -166,9 +282,9 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 
 商談のステークホルダー構造とディスカバリー（課題探索）を可視化するページ群。誰が意思決定に効くのか・何がまだ聞けていないのかを 1 枚で共有する。
 
-### インフルーエンスマップ（`influence-map`）
+### インフルエンスマップ（`influence-map`）
 
-![インフルーエンスマップ](images/slide-templates/influence-map.png)
+![インフルエンスマップ](images/slide-templates/influence-map.png)
 
 購買関与者を影響力と賛否の2軸に配置し、誰を動かせば決まるかを示す
 
@@ -177,6 +293,18 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **figures**: `governing_message`, `posmap`, `so_what`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `stakeholders` | `array` (string≤6, number≤1, number≤1) | ✔ | 3〜9 件 |
+| `xAxis` | `string[]` | ✔ | 2 件、24 字以内 |
+| `yAxis` | `string[]` | ✔ | 2 件、24 字以内 |
+| `champion` | `string` | ✔ | 6 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -198,6 +326,15 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `members` | `string[][]` | ✔ | 3〜7 件、22 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 購買役割は肩書ではなく、この案件で果たす機能で書く（決裁・推進・評価・利用・門番・反対）
@@ -214,6 +351,15 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **figures**: `governing_message`, `orgchart`, `so_what`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `tree` | `tuple` (string≤30, array) | ✔ | — |
+| `insight` | `string` | ✔ | 110 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -233,6 +379,15 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `items` | `array` (integer≤99, string≤16, string≤34, string≤9) | ✔ | 4〜8 件 |
+| `insight` | `string` | ✔ | 110 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 状態は confirmed（顧客の発言・文書で確認）/ wip（一部のみ）/ missing（未確認）の 3 値
@@ -250,6 +405,16 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **figures**: `governing_message`, `lead_in`, `flow`, `table`, `source_note`  
 **推論レベル**: 因果（原因の主張）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `chain` | `string[]` | ✔ | 3〜5 件、18 字以内 |
+| `evidence` | `string[][]` | ✔ | 3〜5 件、40 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -269,15 +434,24 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `gaps` | `string[][]` | ✔ | 3〜6 件、40 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 「なぜ重要か」を書けない項目は聞かない。質問の量ではなく順序で決まる
 - 確認相手と期限のない行を残さない
 - discovery-map の missing / wip と対応させること
 
-### インフルーエンスマップ（組織構造）（`influence-map-org`）
+### インフルエンスマップ（組織構造）（`influence-map-org`）
 
-![インフルーエンスマップ（組織構造）](images/slide-templates/influence-map-org.png)
+![インフルエンスマップ（組織構造）](images/slide-templates/influence-map-org.png)
 
 購買関与者を組織のつながりで並べ、役割・影響度・立場・面談状況を示す
 
@@ -286,6 +460,17 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 **figures**: `governing_message`, `influence_graph`, `so_what`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `people` | `array` | ✔ | 2〜9 件 |
+| `links` | `array` | — | 最大 4 件、既定 `[]` |
+| `more` | `string` | — | 60 字以内、既定 `""` |
+| `insight` | `string` | ✔ | 58 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -305,6 +490,17 @@ Goal・Strategy・Tactics を支持関係でつなぎ、何が何を支えるか
 **figures**: `governing_message`, `outcome_tree`, `so_what`, `source_note`  
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `nodes` | `array` | ✔ | 2〜9 件 |
+| `edges` | `array` | — | 最大 20 件、既定 `[]` |
+| `more` | `string` | — | 60 字以内、既定 `""` |
+| `insight` | `string` | ✔ | 58 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -331,6 +527,15 @@ Scalar のアカウントエグゼクティブが商談レビュー・活動計�
 **推論レベル**: 記述（事実の整理）  
 **status**: stable
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `headline` | `array` (string≤10, string≤24) | ✔ | 4 件 |
+| `rows` | `string[][]` | ✔ | 3〜4 件、46 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - forecast は Pipeline / Best / Commit / Closed の 4 値。根拠を書けない Commit は Best に落とす
@@ -348,6 +553,15 @@ Scalar のアカウントエグゼクティブが商談レビュー・活動計�
 **figures**: `governing_message`, `lead_in`, `table`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: stable
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `stage` | `string` | ✔ | 60 字以内 |
+| `gates` | `string[][]` | ✔ | 3〜6 件、40 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -368,6 +582,15 @@ Budget / Authority / Needs / Timeframe のどれが商談を止めるかを見�
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: stable
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `items` | `array` (string≤16, string≤80) | ✔ | 4 件 |
+| `insight` | `string` | ✔ | 110 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 4 項目の順序は Budget → Authority → Needs → Timeframe で固定する
@@ -386,6 +609,15 @@ Budget / Authority / Needs / Timeframe のどれが商談を止めるかを見�
 **figures**: `governing_message`, `lead_in`, `table`, `source_note`  
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: stable
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `actions` | `string[][]` | ✔ | 3〜6 件、36 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -406,6 +638,15 @@ Budget / Authority / Needs / Timeframe のどれが商談を止めるかを見�
 **推論レベル**: 記述（事実の整理）  
 **status**: stable
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `milestones` | `array` (string≤10, string≤16) | ✔ | 3〜6 件 |
+| `rows` | `string[][]` | ✔ | 2〜4 件、44 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 表は直近 4 件まで。それ以前は台帳（account.json）に残し、スライドには出さない
@@ -424,6 +665,17 @@ Budget / Authority / Needs / Timeframe のどれが商談を止めるかを見�
 **figures**: `governing_message`, `lead_in`, `storyline`, `so_what`, `cards`, `source_note`  
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: stable
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `context` | `string` | ✔ | 120 字以内 |
+| `questions` | `string[]` | ✔ | 3〜4 件、44 字以内 |
+| `ask` | `string` | ✔ | 90 字以内 |
+| `objections` | `array` (string≤20, string≤52) | ✔ | 2〜3 件 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -444,6 +696,17 @@ WPS でステージ移行と提案投資を判断するための、勝ち筋と�
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: stable
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `situation` | `string` | ✔ | 84 字以内 |
+| `complication` | `string` | ✔ | 84 字以内 |
+| `resolution` | `string` | ✔ | 84 字以内 |
+| `risks` | `string[][]` | ✔ | 2〜3 件、46 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - resolution には「顧客がなぜ当社を選ぶ理由になるのか」を書く。製品名の列挙にしない
@@ -462,6 +725,16 @@ WPS でステージ移行と提案投資を判断するための、勝ち筋と�
 **figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: stable
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `steps` | `array` (string≤16, string≤68) | ✔ | 3 件 |
+| `question` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -483,6 +756,19 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `lines` | `string[][]` | ✔ | 2〜(print 7 · presentation 4) 件、(print 20 · presentation 14) 字以内 |
+| `offerPrice` | `string` | ✔ | 12 字以内 |
+| `offerLabel` | `string` | — | 18 字以内、既定 `"御提供金額（年額・税抜）"` |
+| `pricing` | `string[][]` | ✔ | 3〜4 件、12 字以内 |
+| `assumptions` | `string[]` | — | 最大 (print 2 · presentation 1) 件、60 字以内、既定 `[]` |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - 単価・金額は price-master の見積書から転記する。このスライド上で手計算しない
@@ -502,6 +788,17 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **推論レベル**: 診断（要因・構造の特定）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `patternHeaders` | `string[]` | ✔ | 3〜4 件、14 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜(print 5 · presentation 4) 件、(print 20 · presentation 14) 字以内 |
+| `recommendation` | `string` | ✔ | (print 55 · presentation 30) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -527,6 +824,15 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `columns` | `string[]` | ✔ | 3〜8 件、8 字以内 |
+| `tasks` | `array` (string≤16, number≤8, number≤8, string≤20) | ✔ | 2〜8 件 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 開始・終了は列単位の小数（0 が最初の列の左端、列数が右端）。列数を超える値は生成時にエラーになる
@@ -547,6 +853,15 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `events` | `string[][]` | ✔ | 4〜9 件、44 字以内 |
+| `insight` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 出来事の列には事実だけを書く。解釈・評価は「示唆」に分離する
@@ -565,6 +880,15 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **figures**: `governing_message`, `timeline`, `so_what`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `milestones` | `array` (string≤10, string≤16) | ✔ | 3〜6 件 |
+| `insight` | `string` | ✔ | 160 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -590,6 +914,17 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 36 字以内 |
+| `month` | `string` | ✔ | 7 字以内、6 字以上 |
+| `weekStart` | `string` | — | 3 字以内、3 字以上、既定 `"mon"` |
+| `events` | `array` (string≤10, string≤10, string≤20, string≤7, string≤5) | ✔ | 最大 40 件 |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | 最大 20 件、既定 `[]` |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - タイトル（結論）は 1 行・全角 36 字まで。2 行になるとカレンダーの見出しに重なる
@@ -613,6 +948,18 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 36 字以内 |
+| `start` | `string` | ✔ | 10 字以内、8 字以上 |
+| `end` | `string` | ✔ | 10 字以内、8 字以上 |
+| `rows` | `array` (string≤9, string≤14, string≤6, string≤10, string≤10, number≤1) | ✔ | 1〜12 件 |
+| `today` | `string` | — | 10 字以内、既定 `""` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | 最大 20 件、既定 `[]` |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - タイトル（結論）は 1 行・全角 36 字まで。2 行になるとカレンダーの見出しに重なる
@@ -634,6 +981,18 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **figures**: `governing_message`, `day_agenda`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 36 字以内 |
+| `start` | `string` | ✔ | 10 字以内、8 字以上 |
+| `end` | `string` | ✔ | 10 字以内、8 字以上 |
+| `items` | `array` (string≤10, string≤24, string≤6, string≤5, string≤9) | ✔ | 1〜11 件 |
+| `today` | `string` | — | 10 字以内、既定 `""` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | 最大 20 件、既定 `[]` |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -657,6 +1016,20 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 36 字以内 |
+| `week` | `string` | ✔ | 10 字以内、8 字以上 |
+| `days` | `integer` | — | 5〜7、既定 `5` |
+| `startHour` | `integer` | — | 0〜23、既定 `9` |
+| `endHour` | `integer` | — | 1〜24、既定 `18` |
+| `events` | `array` (string≤10, string≤5, string≤5, string≤14, string≤10, string≤7) | ✔ | 1〜25 件 |
+| `breaks` | `array` (string≤5, string≤5, string≤6) | — | 最大 3 件、既定 `[["12:00", "13:00", "昼休…` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | 最大 7 件、既定 `[]` |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - タイトル（結論）は 1 行・全角 36 字まで。2 行になると見出しに重なる
@@ -678,6 +1051,17 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **figures**: `governing_message`, `sprint_calendar`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 36 字以内 |
+| `start` | `string` | ✔ | 10 字以内、8 字以上 |
+| `lengthDays` | `integer` | — | 7〜14、既定 `14` |
+| `sprints` | `array` (string≤6, string≤14, boolean) | ✔ | 1〜8 件 |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | 最大 20 件、既定 `[]` |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -701,6 +1085,16 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 36 字以内 |
+| `startMonth` | `string` | ✔ | 7 字以内、6 字以上 |
+| `marks` | `array` (string≤10, string≤10, string≤12, string≤4) | ✔ | 1〜20 件 |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | 最大 30 件、既定 `[]` |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - タイトル（結論）は 1 行・全角 36 字まで。2 行になると月の見出しに重なる
@@ -723,6 +1117,18 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 36 字以内 |
+| `label` | `string` | ✔ | 12 字以内、1 字以上 |
+| `deadline` | `string` | ✔ | 10 字以内、8 字以上 |
+| `today` | `string` | ✔ | 10 字以内、8 字以上 |
+| `checkpoints` | `array` (string≤10, string≤12) | — | 最大 3 件、既定 `[]` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | 最大 20 件、既定 `[]` |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - タイトル（結論）は 1 行・全角 36 字まで。2 行になると見出しに重なる
@@ -743,6 +1149,21 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **figures**: `governing_message`, `calendar_heatmap`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 36 字以内 |
+| `start` | `string` | ✔ | 10 字以内、8 字以上 |
+| `end` | `string` | ✔ | 10 字以内、8 字以上 |
+| `values` | `array` (string≤10, number) | ✔ | 7〜371 件 |
+| `unit` | `string` | — | 4 字以内、既定 `"件"` |
+| `levels` | `integer` | — | 3〜7、既定 `5` |
+| `monthly` | `boolean` | — | 既定 `true` |
+| `summary` | `boolean` | — | 既定 `true` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | 最大 30 件、既定 `[]` |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -765,6 +1186,19 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **figures**: `governing_message`, `shift_roster`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 36 字以内 |
+| `start` | `string` | ✔ | 10 字以内、8 字以上 |
+| `end` | `string` | ✔ | 10 字以内、8 字以上 |
+| `people` | `array` (string≤6, string≤31) | ✔ | 1〜12 件 |
+| `codes` | `array` (string≤1, string≤8, string≤7, boolean) | ✔ | 1〜6 件 |
+| `minStaff` | `integer` | — | 0〜12、既定 `0` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | 最大 20 件、既定 `[]` |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -794,6 +1228,15 @@ Scalar ライセンス見積もりの明細・定価→値引→御提供金額�
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `tree` | `array` | ✔ | 2 件 |
+| `insight` | `string` | ✔ | 88 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - tree は [ラベル, [子…]] の入れ子。子は同じ形か文字列。深さ 4 超・列幅不足は描画時にエラーになる
@@ -813,6 +1256,15 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **figures**: `governing_message`, `mece_tree`, `so_what`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `tree` | `array` | ✔ | 2 件 |
+| `insight` | `string` | ✔ | 88 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -834,6 +1286,15 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 因果（原因の主張）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `chain` | `string[]` | ✔ | 3〜6 件、32 字以内 |
+| `insight` | `string` | ✔ | 88 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - chain[0] は観測された事象、末尾が真因。途中の段を飛ばさず「なぜ」1 回分ずつ掘る
@@ -853,6 +1314,16 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **figures**: `governing_message`, `fishbone`, `so_what`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `problem` | `string` | ✔ | 20 字以内 |
+| `categories` | `array` (string≤8, string[]≤22) | ✔ | 2〜6 件 |
+| `insight` | `string` | ✔ | 44 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -874,6 +1345,16 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `items` | `array` (string≤10, number) | ✔ | 3〜10 件 |
+| `unit` | `string` | — | 6 字以内、既定 `"件"` |
+| `insight` | `string` | ✔ | 44 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 値の大きい順に自動で並ぶ（「その他」だけは常に末尾）。渡す順序に意味は持たせない
@@ -893,6 +1374,16 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **figures**: `governing_message`, `before_after`, `cards`, `source_note`  
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `asis` | `string[]` | ✔ | 2〜4 件、26 字以内 |
+| `tobe` | `string[]` | ✔ | 2〜4 件、26 字以内 |
+| `gaps` | `array` (string≤14, string≤34) | ✔ | 1〜3 件 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -914,6 +1405,15 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `steps` | `string[]` | ✔ | 3〜6 件、12 字以内 |
+| `pains` | `string[][]` | ✔ | 1〜5 件、30 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - steps は現状（As-Is）の流れ。理想の流れや改善後の姿を混ぜない
@@ -933,6 +1433,18 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **figures**: `governing_message`, `comparison`, `so_what`, `source_note`  
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `political` | `string[]` | ✔ | 1〜4 件、24 字以内 |
+| `economic` | `string[]` | ✔ | 1〜4 件、24 字以内 |
+| `social` | `string[]` | ✔ | 1〜4 件、24 字以内 |
+| `technological` | `string[]` | ✔ | 1〜4 件、24 字以内 |
+| `insight` | `string` | ✔ | 44 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -954,6 +1466,18 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `rivalry` | `string` | ✔ | 36 字以内 |
+| `entrants` | `string` | ✔ | 40 字以内 |
+| `substitutes` | `string` | ✔ | 40 字以内 |
+| `buyers` | `string` | ✔ | 36 字以内 |
+| `suppliers` | `string` | ✔ | 36 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - 各力は「強 / 中 / 弱：根拠」の形で書く（評価だけ・根拠だけにしない）。title が結論（どの力が収益性を最も圧迫するか）を担う
@@ -973,6 +1497,18 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **figures**: `governing_message`, `posmap`, `so_what`, `source_note`  
 **推論レベル**: 戦略（評価と方向づけ）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `items` | `array` (string≤10, number≤1, number≤1) | ✔ | 2〜8 件 |
+| `highlight` | `string[]` | — | 最大 3 件、10 字以内、既定 `[]` |
+| `xAxis` | `string[]` | — | 2 件、12 字以内、既定 `["実行が難しい", "実行しやすい"]` |
+| `yAxis` | `string[]` | — | 2 件、12 字以内、既定 `["効果小", "効果大"]` |
+| `insight` | `string` | ✔ | 44 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -1002,6 +1538,18 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `headers` | `string[]` | ✔ | 2〜3 件、10 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜(print 7 · presentation 4) 件、(print 24 · presentation 16) 字以内 |
+| `insight` | `string` | ✔ | (print 90 · presentation 50) 字以内 |
+| `insightPoints` | `string[]` | — | 最大 (print 3 · presentation 2) 件、(print 24 · presentation 18) 字以内、既定 `[]` |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - タイトルは「何が言えるか」を 2 行以内で書く。表の説明文にしない
@@ -1020,6 +1568,20 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 診断（要因・構造の特定）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `exhibitNumber` | `integer` | — | 1〜99、既定 `1` |
+| `exhibitTitle` | `string` | ✔ | 40 字以内 |
+| `bars` | `array` (string≤(print 5 · presentation 6), number) | ✔ | 2〜(print 8 · presentation 5) 件 |
+| `unit` | `string` | — | 8 字以内、既定 `""` |
+| `insight` | `string` | ✔ | (print 90 · presentation 50) 字以内 |
+| `insightPoints` | `string[]` | — | 最大 (print 3 · presentation 2) 件、(print 24 · presentation 18) 字以内、既定 `[]` |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1040,6 +1602,17 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `situation` | `string` | ✔ | (print 80 · presentation 48) 字以内 |
+| `complication` | `string` | ✔ | (print 80 · presentation 48) 字以内 |
+| `resolution` | `string` | ✔ | (print 80 · presentation 48) 字以内 |
+| `points` | `string[]` | — | 最大 (print 4 · presentation 3) 件、(print 46 · presentation 28) 字以内、既定 `[]` |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - この 1 枚だけで意思決定できることが条件。本編は答えの裏付けに回す
@@ -1058,6 +1631,16 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 戦略（評価と方向づけ）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rationale` | `array` (string≤12, string≤(print 48 · presentation 30)) | ✔ | 3〜(print 4 · presentation 3) 件 |
+| `implication` | `string` | ✔ | (print 100 · presentation 60) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1078,6 +1661,17 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `criteria` | `string[]` | ✔ | 3〜(print 5 · presentation 4) 件、8 字以内 |
+| `options` | `array` (string≤16, integer[]≤4) | ✔ | 2〜(print 5 · presentation 4) 件 |
+| `recommendation` | `string` | ✔ | (print 100 · presentation 60) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - 評価基準は意思決定に効くものだけに絞る。埋め草の基準を足さない
@@ -1096,6 +1690,15 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 戦略（評価と方向づけ）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `messages` | `string[]` | ✔ | 4〜(print 8 · presentation 5) 件、(print 40 · presentation 26) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1116,6 +1719,16 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `headers` | `string[]` | — | 2 件、12 字以内、既定 `["想定される懸念", "回答（根拠つき）"]` |
+| `qa` | `string[][]` | ✔ | 3〜(print 5 · presentation 3) 件、(print 50 · presentation 30) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - 回答には必ず根拠（本編の図表番号・付録・試験結果など）を添える
@@ -1134,6 +1747,22 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 戦略（評価と方向づけ）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `exhibitNumber` | `integer` | — | 1〜99、既定 `1` |
+| `exhibitTitle` | `string` | ✔ | 30 字以内 |
+| `bars` | `array` (string≤(print 5 · presentation 6), number) | ✔ | 2〜(print 6 · presentation 4) 件 |
+| `unit` | `string` | — | 8 字以内、既定 `""` |
+| `headers` | `string[]` | ✔ | 2〜3 件、8 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜(print 5 · presentation 3) 件、(print 16 · presentation 12) 字以内 |
+| `implication` | `string` | ✔ | (print 55 · presentation 28) 字以内 |
+| `decisions` | `string[][]` | ✔ | 1〜2 件、(print 22 · presentation 16) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1160,6 +1789,16 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `headers` | `string[]` | ✔ | 5 件、8 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜(print 7 · presentation 5) 件、(print 9 · presentation 8) 字以内 |
+| `source` | `string` | ✔ | 80 字以内 |
+
 使うときの決まり:
 
 - タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる
@@ -1183,6 +1822,17 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `items` | `array` (string≤8, number, string≤5) | ✔ | 3〜(print 7 · presentation 5) 件 |
+| `unit` | `string` | — | 6 字以内、既定 `""` |
+| `implication` | `string` | ✔ | (print 100 · presentation 70) 字以内 |
+| `source` | `string` | ✔ | 80 字以内 |
+
 使うときの決まり:
 
 - タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる
@@ -1205,6 +1855,18 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 予測（将来値の見通し）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `categories` | `string[]` | ✔ | 2〜4 件、6 字以内 |
+| `series` | `array` (string≤5, number[]) | ✔ | 2〜4 件 |
+| `breakdown` | `string[][]` | ✔ | 2〜(print 6 · presentation 4) 件、(print 7 · presentation 5) 字以内 |
+| `unit` | `string` | — | 6 字以内、既定 `""` |
+| `source` | `string` | ✔ | 80 字以内 |
 
 使うときの決まり:
 
@@ -1230,6 +1892,21 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `labels` | `string[]` | ✔ | 3〜5 件、5 字以内 |
+| `series` | `array` (string≤8, number[]) | ✔ | 2〜3 件 |
+| `unit` | `string` | — | 6 字以内、既定 `""` |
+| `bepValue` | `string` | ✔ | 8 字以内 |
+| `bepLabel` | `string` | — | 14 字以内、既定 `"損益分岐点売上高"` |
+| `marginValue` | `string` | ✔ | 8 字以内 |
+| `marginLabel` | `string` | — | 14 字以内、既定 `"安全余裕率（計画比）"` |
+| `source` | `string` | ✔ | 80 字以内 |
+
 使うときの決まり:
 
 - タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる
@@ -1252,6 +1929,19 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 予測（将来値の見通し）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `labels` | `string[]` | ✔ | 3〜6 件、6 字以内 |
+| `series` | `array` (string≤8, number[]) | ✔ | 2〜3 件 |
+| `unit` | `string` | — | 6 字以内、既定 `""` |
+| `assumptions` | `string[][]` | ✔ | 2〜3 件、(print 12 · presentation 9) 字以内 |
+| `source` | `string` | ✔ | 80 字以内 |
+| `yMax` | `number` | — | 0 以上、既定 `null` |
 
 使うときの決まり:
 
@@ -1277,6 +1967,23 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `roiValue` | `string` | ✔ | 8 字以内 |
+| `roiLabel` | `string` | — | 14 字以内、既定 `"投資回収率（累計）"` |
+| `paybackValue` | `string` | ✔ | 8 字以内 |
+| `paybackLabel` | `string` | — | 14 字以内、既定 `"投資回収期間"` |
+| `npvValue` | `string` | ✔ | 8 字以内 |
+| `npvLabel` | `string` | — | 14 字以内、既定 `"NPV（正味現在価値）"` |
+| `labels` | `string[]` | ✔ | 3〜6 件、6 字以内 |
+| `series` | `array` (string≤8, number[]) | ✔ | 2〜3 件 |
+| `unit` | `string` | — | 6 字以内、既定 `""` |
+| `source` | `string` | ✔ | 80 字以内 |
+
 使うときの決まり:
 
 - タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる
@@ -1301,6 +2008,16 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `risks` | `string[][]` | ✔ | 2〜(print 5 · presentation 4) 件、(print 22 · presentation 16) 字以内 |
+| `decisionRule` | `string` | ✔ | (print 110 · presentation 70) 字以内 |
+| `source` | `string` | ✔ | 80 字以内 |
+
 使うときの決まり:
 
 - タイトルは全角 30 字前後・1 行に収める。2 行に折り返すと直下のリード文と重なる
@@ -1323,6 +2040,17 @@ KGI を構成指標に分解し、目標未達（または達成）がどの指�
 **推論レベル**: 記述（事実の整理）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `tree` | `tuple` (string≤18, array) | ✔ | — |
+| `roles` | `string[][]` | ✔ | 2〜(print 6 · presentation 4) 件、(print 15 · presentation 12) 字以内 |
+| `notes` | `string[]` | — | 最大 2 件、60 字以内、既定 `[]` |
+| `source` | `string` | ✔ | 80 字以内 |
 
 使うときの決まり:
 
@@ -1353,6 +2081,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `basis` | `string` | ✔ | (print 150 · presentation 110) 字以内 |
+| `counts` | `array` (string≤12, number, string≤8) | ✔ | 2〜5 件 |
+| `headers` | `string[]` | ✔ | 3 件、14 字以内 |
+| `groups` | `string[][]` | ✔ | 2〜(print 7 · presentation 5) 件、(print 22 · presentation 16) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - デッキの 2 枚目に必ず置く。未完了のまま説明する資料は、前提を先に開示してからでないと読み手が誤解する
@@ -1373,6 +2112,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `phase` | `string` | ✔ | 60 字以内 |
+| `finding` | `string` | ✔ | (print 200 · presentation 150) 字以内 |
+| `headers` | `string[]` | ✔ | 2 件、16 字以内 |
+| `outputs` | `array` (string≤42, string≤(print 46 · presentation 34)) | ✔ | 1〜3 件 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - summary はフェーズが自分で記録した要約（pipeline-progress.json の summary）を土台にする。読み手向けに言い換えるのはよいが、新しい主張を足さない
@@ -1392,6 +2142,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `layers` | `array` (string≤22, string≤(print 52 · presentation 40)) | ✔ | 3〜(print 6 · presentation 5) 件 |
+| `facts` | `string[][]` | ✔ | 2〜(print 7 · presentation 5) 件、(print 24 · presentation 18) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - 層は実際に動いているものだけ。設定ファイルに書いてあるが呼ばれていないものは note で『宣言のみ』と明示する
@@ -1410,6 +2170,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 診断（要因・構造の特定）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `counts` | `array` (string≤12, number, string≤8) | ✔ | 2〜4 件 |
+| `issues` | `string[][]` | ✔ | 2〜(print 7 · presentation 5) 件、(print 24 · presentation 18) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1431,6 +2201,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `score` | `string` | ✔ | 10 字以内 |
+| `scoreCaption` | `string` | ✔ | (print 48 · presentation 34) 字以内 |
+| `dimensions` | `array` (string≤18, number, string≤10) | ✔ | 2〜(print 5 · presentation 4) 件 |
+| `verdict` | `string` | ✔ | (print 150 · presentation 110) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - スコアは必ず帯域（何点なら何を意味するか）と一緒に出す。数字だけでは判断できない
@@ -1449,6 +2230,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 診断（要因・構造の特定）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `columns` | `string[]` | ✔ | 2〜(print 6 · presentation 5) 件、14 字以内 |
+| `rows` | `array` (string≤20, integer[]≤5) | ✔ | 2〜(print 5 · presentation 4) 件 |
+| `verdict` | `string` | ✔ | (print 100 · presentation 75) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1469,6 +2261,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `center` | `string` | ✔ | 22 字以内 |
+| `contexts` | `string[]` | ✔ | 3〜6 件、24 字以内 |
+| `relations` | `string[][]` | ✔ | 2〜(print 6 · presentation 4) 件、(print 22 · presentation 18) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - 関係種別（Shared Kernel / Conformist / Separate Ways など）はレポートの用語をそのまま使う
@@ -1486,6 +2289,18 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `exhibitNumber` | `string` | ✔ | 6 字以内 |
+| `exhibitTitle` | `string` | ✔ | 44 字以内 |
+| `image` | `string` | ✔ | 200 字以内 |
+| `lead` | `string` | ✔ | (print 90 · presentation 70) 字以内 |
+| `readings` | `string[]` | ✔ | 2〜3 件、(print 34 · presentation 26) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1508,6 +2323,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `question` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `options` | `string[][]` | ✔ | 2〜4 件、(print 34 · presentation 26) 字以内 |
+| `decision` | `string` | ✔ | (print 150 · presentation 110) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - 落とした選択肢を必ず 1 つ以上載せる。採用案だけの表は決定記録ではなく宣伝になる
@@ -1527,6 +2352,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 戦略（評価と方向づけ）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `columns` | `string[]` | ✔ | 3〜(print 8 · presentation 6) 件、10 字以内 |
+| `rows` | `array` (string≤(print 24 · presentation 18), number, number, string≤18) | ✔ | 2〜(print 7 · presentation 5) 件 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1548,6 +2383,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `persona` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `milestones` | `array` (string≤14, string≤(print 34 · presentation 24)) | ✔ | 3〜5 件 |
+| `pains` | `array` (string≤18, string≤(print 50 · presentation 38)) | ✔ | 2〜3 件 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - ペルソナの属性は調査で確認できたものだけ。年齢・年収などを埋めるために創作しない
@@ -1564,6 +2409,18 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `story` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `shot1` | `string` | ✔ | 200 字以内 |
+| `shot2` | `string` | ✔ | 200 字以内 |
+| `shot3` | `string` | ✔ | 200 字以内 |
+| `steps` | `array` (string≤16, string≤(print 44 · presentation 34)) | ✔ | 3 件 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1583,6 +2440,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **densities**: print / presentation（既定 print）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `screen` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `shot` | `string` | ✔ | 200 字以内 |
+| `notes` | `string[][]` | ✔ | 2〜(print 6 · presentation 4) 件、(print 18 · presentation 14) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
 使うときの決まり:
 
 - 注目点は画面上に見えていることだけ。裏の処理仕様はこのページに書かない
@@ -1601,6 +2468,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **densities**: print / presentation（既定 print）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `headers` | `string[]` | ✔ | 3 件、16 字以内 |
+| `questions` | `string[][]` | ✔ | 2〜(print 5 · presentation 4) 件、(print 36 · presentation 28) 字以内 |
+| `nextSteps` | `array` (string≤18, string≤(print 50 · presentation 38)) | ✔ | 2〜3 件 |
+| `source` | `string` | ✔ | 170 字以内 |
 
 使うときの決まり:
 
@@ -1627,6 +2505,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `items` | `string[][]` | ✔ | 3〜5 件、40 字以内 |
+| `ask` | `string` | ✔ | 60 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
@@ -1645,6 +2533,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `items` | `array` (string≤16, string≤68) | ✔ | 2〜3 件 |
+| `ask` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -1665,6 +2563,15 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `items` | `string[][]` | ✔ | 3〜6 件、44 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - **顧客提示用**。内部の判断（確度・出典・製品適合）を載せない
@@ -1683,6 +2590,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `items` | `array` (string≤8, string≤56) | ✔ | 3〜4 件 |
+| `ask` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -1703,6 +2620,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `steps` | `array` | ✔ | 2〜4 件 |
+| `where` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
+
 使うときの決まり:
 
 - **顧客提示用**。回答先の URL は、渡してよい相手の範囲を確認してから載せる
@@ -1720,6 +2647,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `image`, `so_what`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `qr` | `string` | ✔ | 400 字以内 |
+| `where` | `string` | ✔ | 120 字以内 |
+| `source` | `string` | ✔ | 160 字以内 |
 
 使うときの決まり:
 
@@ -1745,6 +2682,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `cases` | `array` (string≤16, string≤68) | ✔ | 2〜3 件 |
+| `sowhat` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **公表されている事例だけを載せる。** 未公表の顧客名・数値を出さない
@@ -1764,6 +2711,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `before_after`, `so_what`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `before` | `array` | ✔ | 2〜3 件 |
+| `after` | `array` | ✔ | 2〜3 件 |
+| `result` | `string` | ✔ | 90 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
 
 使うときの決まり:
 
@@ -1785,6 +2743,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜4 件、38 字以内 |
+| `caveat` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
 
 使うときの決まり:
 
@@ -1813,6 +2781,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 因果（原因の主張）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 2〜4 件、34 字以内 |
+| `scope_out` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
@@ -1833,6 +2811,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `inside` | `array` | ✔ | 2〜4 件 |
+| `outside` | `array` | ✔ | 2〜4 件 |
+| `why` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
@@ -1851,6 +2840,15 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `table`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 5〜7 件、50 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
 
 使うときの決まり:
 
@@ -1872,6 +2870,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 予測（将来値の見通し）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `before` | `array` | ✔ | 2〜4 件 |
+| `after` | `array` | ✔ | 2〜4 件 |
+| `quant` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
@@ -1892,6 +2901,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `steps` | `array` | ✔ | 2〜4 件 |
+| `decide` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 2〜3 件、30 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **顧客提示用**。個人の影響力・賛否・社内政治・競合の弱点を書かない
@@ -1910,6 +2930,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `iceberg`, `source_note`  
 **推論レベル**: 因果（原因の主張）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `above` | `array` | ✔ | 2 件 |
+| `below` | `array` | ✔ | 2〜3 件 |
+| `source` | `string` | ✔ | 200 字以内 |
 
 使うときの決まり:
 
@@ -1937,6 +2967,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜4 件、44 字以内 |
+| `mode` | `string` | ✔ | 10 字以内 |
+| `cta` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
@@ -1958,6 +2999,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜6 件、40 字以内 |
+| `note` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
@@ -1977,6 +3028,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `speakers` | `array` (string≤14, string≤26, string≤30) | ✔ | 1〜4 件 |
+| `why` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
@@ -1995,6 +3056,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
 **推論レベル**: 診断（要因・構造の特定）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `items` | `array` (string≤16, string≤60) | ✔ | 3 件 |
+| `ask` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
 
 使うときの決まり:
 
@@ -2016,6 +3087,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜5 件、50 字以内 |
+| `fit` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **不特定多数向け**。特定の企業・個人が推測できる書き方をしない
@@ -2035,6 +3116,17 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `flow`, `so_what`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `toc` | `array` | ✔ | 3〜5 件 |
+| `answers_q` | `string` | ✔ | 100 字以内 |
+| `who` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
 
 使うときの決まり:
 
@@ -2062,6 +3154,16 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
 
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `items` | `array` (string≤16, string≤60) | ✔ | 3 件 |
+| `ask` | `string` | ✔ | 100 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
+
 使うときの決まり:
 
 - **パートナー提示用**。顧客固有の機密情報は必要最小限にする（プレイブック §3）
@@ -2081,6 +3183,15 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 **figures**: `governing_message`, `lead_in`, `table`, `source_note`  
 **推論レベル**: 記述（事実の整理）  
 **status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 5〜7 件、50 字以内 |
+| `source` | `string` | ✔ | 200 字以内 |
 
 使うときの決まり:
 

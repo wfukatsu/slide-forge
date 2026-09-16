@@ -108,3 +108,8 @@ Run the host-independent checks from the repository root:
 These checks do not create a deck or spreadsheet. Live Google API verification
 is intentionally separate because it may open an OAuth browser flow and write
 files to Drive.
+
+## See also
+
+- [Deck workflow contract](workflow-contract.md)
+- [Splitting Generation by Page (Parallel or Sequential)](parallel-generation.md)

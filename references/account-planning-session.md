@@ -813,3 +813,8 @@ Before shipping the Session materials.
 | SOW (Share of Wallet) | Our share within the customer's IT spend |
 | ARR booking | Annualized new contract value |
 | InfoMentis / Oracle Sales Methodology | `references/scalar/sales-playbook.md` |
+
+## See also
+
+- [Account Planning Page Template Implementation Plan](account-planning-template-plan.md)
+- [Slide Template Catalog (All 101 Types)](slide-template-catalog.md)

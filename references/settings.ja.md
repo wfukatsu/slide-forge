@@ -96,3 +96,8 @@ Slides デッキに対して走る。**QA → 書き出し**の順は崩さな�
 - `output: google` → PPTX の質問は従来どおり（PPTX 配布が想定される場合のみ）。
 - `imageGeneration: off` → `aiImage` を提案せず、API キーの有無も聞かない。
   図形で描く表現を提案する。
+
+## 関連
+
+- [イメージ図と画像](images.ja.md)
+- [対話でデッキの設計を確定する](interactive-intake.ja.md)

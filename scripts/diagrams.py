@@ -168,6 +168,9 @@ _SQUARED_OFF = {
 }
 
 
+DEFAULT_LABEL_LANG = "ja"
+
+
 def _corner_safe(kind: str, w: float, h: float) -> str:
     """Square off a rounded rectangle too big to stay subtly rounded."""
     if min(w, h) <= MAX_ROUND_SIDE:
@@ -187,6 +190,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     def __init__(self, deck, slide_id: str, template: dict):
         self.deck = deck
         self.slide_id = slide_id
+        # The language of the furniture this canvas prints around the caller's
+        # content — table headers, axis ends, "Source:". Taken from the deck so
+        # one spec sets it once; see _label().
+        self.lang = getattr(deck, "lang", None) or DEFAULT_LABEL_LANG
         self._template_colors = template.get("colors", {})
         self.P = Palette(self._template_colors)
         page = template.get("pageSize", {})
@@ -217,6 +224,19 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         # One line per shape whose text was fitted, for the build to report
         self.fit_notes: list[str] = []
         self._seq = 0
+
+    def _label(self, key: str, override=None) -> str:
+        """A word this canvas prints itself: the caller's, else the resource.
+
+        These primitives used to hard-code Japanese defaults, so an English
+        deck came out with Japanese furniture around English content. The
+        resource lives in slide-templates/i18n/ alongside the template labels,
+        so both sides of a slide speak one language.
+        """
+        if override is not None:
+            return override
+        from slide_templates import resolve_label
+        return resolve_label(key, self.lang)
 
     def _oid(self, prefix: str) -> str:
         Canvas._seq += 1

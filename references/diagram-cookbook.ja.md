@@ -411,3 +411,9 @@ for i, (nm, sub, col) in enumerate(levels):
 - **全面サイズの不透明な矩形。** マスターのフッターを覆って消す。
 - **狭いパネル（1.5in 未満）に文章を置く。** 必ず溢れる。
 - **1 スライドに 4 色以上。** 色の意味が読めなくなる。
+
+## 関連
+
+- [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)
+- [レイアウト契約（座標と実測値）](layout-contract.ja.md)
+- [表とグラフ（charts.py）](charts.ja.md)

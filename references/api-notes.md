@@ -431,3 +431,9 @@ from top-left to bottom-right."
 Note that `TRAPEZOID`'s default orientation has **a narrow top edge and a wide bottom edge**.
 Rotating 180 degrees reverses this, but the text inside also flips upside down together with
 it (section 12).
+
+## See also
+
+- [Google Slides API — Raw Reference](google-slides-api.md)
+- [Validation Gates: Offline Coordinate Checks and Thumbnail QA](validation.md)
+- [Layout Contract (Coordinates and Measured Values)](layout-contract.md)

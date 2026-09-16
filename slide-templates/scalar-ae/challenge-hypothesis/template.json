@@ -94,7 +94,9 @@
         "text": {
           "$slot": "question"
         },
-        "label": "本日うかがいたいこと"
+        "label": {
+          "$t": "challenge.ask_today"
+        }
       },
       {
         "type": "source_note",

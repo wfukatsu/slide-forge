@@ -9,14 +9,14 @@ return value of a composite part is the bottom y of the drawn area.
 
 ```python
 from diagrams import Canvas, lighten
-ref = deck.add_slide("TITLE_ONLY", title="…")   # BODY を持たないレイアウトが図に向く
+ref = deck.add_slide("TITLE_ONLY", title="…")   # a layout with no BODY suits figures
 d = Canvas(deck, ref["slideId"], template)
 
-d.flow(0.6, 1.0, 8.8, 0.8, ["Inner Loop", "Middle Loop", "Outer Loop"])   # 工程フロー
-d.cards(0.5, 2.0, 9.0, 1.5, [("見出し", "本文"), ...])                      # 横並びカード
-d.hbars(0.5, 3.6, 7.4, [("従来", 1220, "1,220h"), ("AI駆動", 56, "56h")])   # 横棒グラフ
-d.metric(8.0, 3.6, 1.4, 1.0, "22x", "工数削減", color=d.P.success)          # 大きな数値
-d.box(...) / d.solid(...) / d.label(...) / d.band(...) / d.arrow(...)       # 基本部品
+d.flow(0.6, 1.0, 8.8, 0.8, ["Inner Loop", "Middle Loop", "Outer Loop"])   # process flow
+d.cards(0.5, 2.0, 9.0, 1.5, [("Heading", "Body"), ...])                   # cards in a row
+d.hbars(0.5, 3.6, 7.4, [("Before", 1220, "1,220h"), ("With AI", 56, "56h")])  # bar chart
+d.metric(8.0, 3.6, 1.4, 1.0, "22x", "less effort", color=d.P.success)     # one big number
+d.box(...) / d.solid(...) / d.label(...) / d.band(...) / d.arrow(...)     # basic parts
 ```
 
 There are 9 approaches (structural diagrams, tables/charts, illustration
@@ -33,17 +33,17 @@ see `examples/charts-demo.json` / `examples/patterns-demo.json` /
 ## Illustration diagrams, icons, images
 
 ```python
-d.icon_flow(0.5, 1.3, 9.0, [("person", "利用者"), ("server", "API"),
-                            ("database", "台帳")], size=0.92)
-d.asset_icon_flow(0.5, 2.6, 9.0, [("job-seeker", "求職者"), ("interview", "面接"),
-                                  ("job-offer", "内定")])
-d.pyramid(1.6, 2.4, 6.8, 2.4, ["経営指標", "業務指標", "システム指標"])
-d.iceberg(0.5, 1.0, 9.0, 3.6, above=["画面の使い勝手"], below=["データモデル"])
-d.image(0.6, 1.1, 4.2, 2.6, "assets/shot.png", fit="contain", caption="管理画面")
-d.ai_image(5.2, 1.1, 4.2, 2.6, "夜間に自動でビルドが回っている様子")
+d.icon_flow(0.5, 1.3, 9.0, [("person", "User"), ("server", "API"),
+                            ("database", "Ledger")], size=0.92)
+d.asset_icon_flow(0.5, 2.6, 9.0, [("job-seeker", "Candidate"), ("interview", "Interview"),
+                                  ("job-offer", "Offer")])
+d.pyramid(1.6, 2.4, 6.8, 2.4, ["Business KPIs", "Operational KPIs", "System KPIs"])
+d.iceberg(0.5, 1.0, 9.0, 3.6, above=["Screen usability"], below=["Data model"])
+d.image(0.6, 1.1, 4.2, 2.6, "assets/shot.png", fit="contain", caption="Admin screen")
+d.ai_image(5.2, 1.1, 4.2, 2.6, "builds running automatically overnight")
 ```
 
-There are 30 pictograms (`person` `server` `database` `cloud` `lock` `shield`
+There are 32 pictograms (`person` `server` `database` `cloud` `lock` `shield`
 `bot` …). The metaphor diagrams are `pyramid` / `funnel` / `venn` / `iceberg` /
 `balance` / `steps` / `layers` / `hub` / `matrix` / `before_after` /
 `comparison` / `journey` / `timeline`.
@@ -58,8 +58,8 @@ their Japanese name. The assets are single-color, so by default they're tinted
 to the template's primary color.
 
 ```bash
-.venv/bin/python scripts/icons.py --list          # 62 種を一覧
-.venv/bin/python scripts/icons.py --search 情報銀行 # 日本語名・英語名・タグで探す
+.venv/bin/python scripts/icons.py --list           # list all 62
+.venv/bin/python scripts/icons.py --search 情報銀行  # search by Japanese name, English name or tag
 ```
 
 Cloud service icons (1,757 official icons across AWS / Google Cloud / Azure) are
@@ -69,7 +69,7 @@ the `cloud_icon` family. **Never guess the name — always search and confirm it
 use**, so the API doesn't even expose those arguments.
 
 ```bash
-.venv/bin/python scripts/cloud_icons.py --search s3            # 別名でも引ける
+.venv/bin/python scripts/cloud_icons.py --search s3            # aliases work too
 .venv/bin/python scripts/cloud_icons.py --list --vendor aws --category groups
 ```
 
@@ -96,9 +96,9 @@ figures to coordinates and checks them without calling the API (combine with
 { "layout": "TITLE_ONLY_PROPOSAL", "title": "…",
   "figures": [
     { "type": "icon_flow", "x": 0.5, "y": 1.3, "w": 9.0,
-      "items": [["person", "利用者"], ["database", "台帳"]] },
+      "items": [["person", "User"], ["database", "Ledger"]] },
     { "type": "asset_icon_flow", "x": 0.5, "y": 3.1, "w": 9.0,
-      "items": [["personal-info", "個人情報"], ["data-bank", "情報銀行"]] }
+      "items": [["personal-info", "Personal data"], ["data-bank", "Data bank"]] }
   ] }
 ```
 
@@ -111,13 +111,13 @@ fixed series colors (a colorblind-verified order), and direct value labels as
 a matter of convention.
 
 ```python
-d.table(0.5, 1.2, 9.0, ["項目", "従来", "提案"], [["構築期間", "6ヶ月", "2ヶ月"]])
+d.table(0.5, 1.2, 9.0, ["Aspect", "Today", "Proposed"], [["Build time", "6 months", "2 months"]])
 d.vbars(0.5, 1.2, 6.0, 3.2, [("2023", 120), ("2024", 210), ("2025", 380)])
 d.vbars_grouped(0.5, 1.2, 9.0, 3.4, ["Q1", "Q2"],
-                [("従来", [40, 42]), ("提案", [18, 12])], unit="h")
-d.linechart(0.5, 1.2, 9.0, 3.2, ["1月", "2月", "3月"],
+                [("Today", [40, 42]), ("Proposed", [18, 12])], unit="h")
+d.linechart(0.5, 1.2, 9.0, 3.2, ["Jan", "Feb", "Mar"],
             [("p95", [320, 180, 90])], unit="ms")
-d.pie(0.7, 1.3, 2.8, [("移行済み", 62), ("移行中", 23), ("未着手", 15)])
+d.pie(0.7, 1.3, 2.8, [("Migrated", 62), ("In progress", 23), ("Not started", 15)])
 ```
 
 On a page carrying a lot of information, `text_margin` (inches) tightens the
@@ -170,14 +170,14 @@ the shape / digs into its border" is something you can only notice by
 generating the deck and looking at the thumbnail.
 
 ```python
-a = d.shape(1.0, 1.0, 1.6, 0.6, text="A")    # shape() 系は objectId を返す
+a = d.shape(1.0, 1.0, 1.6, 0.6, text="A")    # the shape() family returns an objectId
 b = d.shape(4.0, 2.0, 1.6, 0.6, text="B")
 
-d.connect(a, b)                  # API のコネクタとして接続。図形を動かすと線が追従する
-d.connect(a, b, category="BENT") # エルボー。1対多のファンアウトで経路が交差しにくい
-d.link(a, b)                     # 中心を結ぶ線と辺の交点を端点にする（斜めでもぴたり）
-d.edge_point(a, (tx, ty), gap=0.04)          # 辺の一点だけ欲しいとき
-d.line(..., free=True)           # 軸・目盛り・引き出し線など、接しないのが正しい線
+d.connect(a, b)                  # a real API connector; the line follows if a shape moves
+d.connect(a, b, category="BENT") # elbow; routes cross less in a one-to-many fan-out
+d.link(a, b)                     # ends where the centre-to-centre line crosses each edge
+d.edge_point(a, (tx, ty), gap=0.04)          # when you only need one point on an edge
+d.line(..., free=True)           # axes, ticks, leader lines — lines meant not to touch
 ```
 
 | Use case | What to use |
@@ -244,15 +244,26 @@ too much over missing something, and lets a human make the final call.
 `surfaceAlt` / `white`). `readable_on()` automatically picks a legible text
 color for a given background.
 
+**Words the canvas prints for itself come from the label resource, not from the
+code.** `source_note`'s `Source:`, a calendar's weekday heads, `so_what`'s
+label — `Canvas._label(key, override=None)` returns the caller's value when
+given one, and otherwise looks the key up in
+`slide-templates/i18n/<lang>.json`. The language is `canvas.lang`, taken from
+`deck.lang` (which the spec's `lang` sets) and defaulting to `ja`. A new
+primitive that needs a fixed word should add a key to both language files
+rather than hard-code one — §4 of
+[template-schema.md](template-schema.md) covers the resource and the
+`{"$t": …}` marker that reads it from a template.
+
 **Decide vertical position from the previous block's return value.** `cards` /
 `flow` / `hbars` / `metric` return the bottom y of the drawn area, so place the
 next block starting from that value. Hardcoding a value like `2.7` causes the
 next block to get swallowed as content grows.
 
 ```python
-b = d.cards(0.5, 0.9, 9.0, 1.0, items)     # b は下端 y
-b = d.hbars(0.5, b + 0.2, 9.0, rows)       # 前のブロックの下から置く
-d.label(0.5, b + 0.2, 9.0, 0.3, "まとめ")
+b = d.cards(0.5, 0.9, 9.0, 1.0, items)     # b is the bottom y
+b = d.hbars(0.5, b + 0.2, 9.0, rows)       # start from the previous block's bottom
+d.label(0.5, b + 0.2, 9.0, 0.3, "Summary")
 ```
 
 Finally, confirm the bottom edge fits within the body area (for `scalar-2026`'s

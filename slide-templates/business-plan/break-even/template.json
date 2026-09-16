@@ -64,7 +64,9 @@
     },
     "bepLabel": {
       "type": "string",
-      "default": "損益分岐点売上高",
+      "default": {
+        "$t": "finance.bep"
+      },
       "maxLength": 14
     },
     "marginValue": {
@@ -74,7 +76,9 @@
     },
     "marginLabel": {
       "type": "string",
-      "default": "安全余裕率（計画比）",
+      "default": {
+        "$t": "finance.margin_of_safety"
+      },
       "maxLength": 14
     },
     "source": {

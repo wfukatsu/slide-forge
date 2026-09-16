@@ -43,8 +43,19 @@ def evaluate_structure() -> list[str]:
     plugin = marketplace["plugins"][0]
     if marketplace["metadata"]["version"] != plugin["version"]:
         failures.append("marketplace metadata/plugin versions differ")
-    if len(plugin["skills"]) != 23:
-        failures.append(f"Claude plugin exposes {len(plugin['skills'])} skills, expected 23")
+    # Derived from disk rather than a literal: the previous hardcoded count went
+    # stale the moment a skill was added, and comparing the names catches a
+    # renamed or forgotten entry that a bare count would pass.
+    on_disk = sorted(p.name for p in (ROOT / "skills").iterdir()
+                     if (p / "SKILL.md").is_file())
+    listed = sorted(Path(entry).name for entry in plugin["skills"])
+    if listed != on_disk:
+        missing = [s for s in on_disk if s not in listed]
+        extra = [s for s in listed if s not in on_disk]
+        detail = "".join((f"; not listed: {missing}" if missing else "",
+                          f"; listed but not on disk: {extra}" if extra else ""))
+        failures.append(
+            f"Claude plugin lists {len(listed)} skills, skills/ has {len(on_disk)}{detail}")
     for key, description in (
         ("metadata.description", marketplace["metadata"]["description"]),
         ("plugins[0].description", plugin["description"]),

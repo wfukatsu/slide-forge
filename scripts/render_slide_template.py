@@ -5,8 +5,8 @@ import argparse
 import json
 from pathlib import Path
 
-from slide_templates import (DENSITIES, SlideTemplateError, declared_densities,
-                             load_template, render_template)
+from slide_templates import (DEFAULT_LANG, DENSITIES, SlideTemplateError,
+                             declared_densities, load_template, render_template)
 
 
 def main() -> int:
@@ -17,10 +17,14 @@ def main() -> int:
     ap.add_argument("--density", choices=DENSITIES,
                     help="density variant to resolve (default: the template's "
                          "defaultDensity; ignored by templates without $density)")
+    ap.add_argument("--lang", default=None,
+                    help="language for the labels the template prints on the "
+                         f"slide, from slide-templates/i18n/ (default: {DEFAULT_LANG}; "
+                         "a missing entry falls back to that language)")
     args = ap.parse_args()
     template, _ = load_template(args.template_id)
     data = json.loads(Path(args.data).read_text(encoding="utf-8"))
-    slide = render_template(template, data, density=args.density)
+    slide = render_template(template, data, density=args.density, lang=args.lang)
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(slide, ensure_ascii=False, indent=2) + "\n",

@@ -178,14 +178,10 @@ scope. Clean local QA files at the end.
 Run `pptx-export` or `spreadsheets` only against the final verified deck. Make
 spreadsheet totals agree with slide summaries.
 
-Report:
-
-1. presentation and Drive-folder URLs;
-2. spec/source locations and optional deliverables;
-3. offline validation result;
-4. QA scope, defects fixed, remaining limitations, and cleanup—or that QA was
-   explicitly skipped;
-5. final adjustment choices from the relevant intake section.
+Report the presentation and Drive-folder URLs; spec/source locations and
+optional deliverables; the offline validation result; QA scope, defects fixed,
+remaining limitations and cleanup—or that QA was explicitly skipped; and the
+final adjustment choices from the relevant intake section.
 
 ## Minimal command index
 

@@ -361,3 +361,9 @@ Adding `--strict` makes it exit with code 1 if even one issue is found.
 `audit_bounds()` catches figure parts that poke outside their frame. Since parts compute their
 own coordinates from the given frame, **content can go outside even when the frame itself is
 correct**, and this can only be caught by looking at each figure individually.
+
+## See also
+
+- [Icon Library](icons.md)
+- [Cloud Icons (AWS / Google Cloud / Azure)](cloud-icons.md)
+- [Settings — `config/settings.json`](settings.md)

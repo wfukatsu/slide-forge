@@ -17,34 +17,66 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
                                             ↑____________fix_____________________|
 ```
 
+## Contents
+
+- **Set up a machine** — [Requirements](#requirements) · [Setup](#setup) · [Install as a Claude Code plugin](#install-as-a-claude-code-plugin) · [Use with Codex](#use-with-codex)
+- **Make a deck** — [Quick start: template-driven](#quick-start-template-driven) · [code-first](#quick-start-code-first) · [slide templates](#quick-start-slide-templates) · [End-to-end workflow](#end-to-end-workflow)
+- **Choose what to build** — [Skills](#skills) · [Slide pattern catalog](#slide-pattern-catalog) · [Examples](#examples)
+- **How it behaves** — [Text fitting](#text-fitting) · [Repository layout](#repository-layout) · [License](#license)
+
+New here? [Setup](#setup) first — or paste the
+[guided setup prompt](#guided-setup--copy-this-prompt) into an agent session
+and answer its four questions.
+
 ## Skills
+
+Twenty-four skills. Each one's full contract — inputs, rules and guardrails —
+is in `skills/<name>/SKILL.md`; the rows below say what it is for and what
+makes it different.
+
+**Generating decks**
 
 | Skill | What it does |
 |---|---|
-| `google-slides-template` | Generate a deck from a registered Google Slides master template: interactive intake, template analysis/registration (`template.json`), spec authoring with `--dry-run` validation, page-fragment authoring for large decks (parallel when permitted, sequential otherwise), generation. The main workflow. |
-| `google-slides` | From-scratch decks without a corporate master. Spec path (`templates/blank-16x9.json` + the same engine) or code-first path (`deckkit.py` + offline layout validation for connector-heavy diagrams). |
-| `template-forge` | Create and register a **new template (master)** from a design spec — brand colors, fonts, logo, footer (`scripts/build_template.py`). The Slides API cannot create masters, so a base (Google default or a registered template) is copied and its layouts restyled via batchUpdate; roles are assigned deterministically and the result lands in `templates/<id>.json`, ready for `google-slides-template`. Ships 3 design presets (`templates/presets/`). |
-| `slide-template-creator` | Create and register reusable **single-slide content templates** with semantic input slots, examples, offline validation, and catalog previews. These live under `slide-templates/` and are independent of Google Slides masters. |
-| `current-state-analysis` | Run **current-state analysis / problem-identification frameworks** (current-state analysis and problem identification) on user-supplied material and render the results with the `analysis` pack: PEST, Five Forces, process pain-points, logic tree, KPI tree, why-why, fishbone, Pareto, As-Is/To-Be gap analysis and an impact-effort priority matrix (SWOT / 3C reuse the `marketing-analysis` pack). Facts go in the figures, interpretation in the insight, sources are mandatory, and each template's guardrails encode the method's misuse patterns. |
-| `analysis-template-creator` | Create and maintain the **analysis-framework slide templates** themselves (the `slide-templates/analysis/` pack) and their drawing primitives (`fishbone`, `pareto` are the precedents): encodes the framework-specific design rules — one question per template, fact/interpretation slot split, required sources, misuse guardrails — and follows `slide-template-creator`'s schema/validation/registration rules for everything else. |
-| `calendar-slides` | Turn dated tasks and events into **calendar slides**, and maintain the `slide-templates/calendar/` pack and its drawing primitives (`month_calendar`, `day_gantt`, `day_agenda`, `week_timetable`, `sprint_calendar`, `year_calendar`, `deadline_countdown`, `calendar_heatmap`, `shift_roster`): a month grid (Monday- or Sunday-start, one week per row, multi-day spans, "+N件" overflow), a day-by-day gantt (one column per day up to 60 days, then one column per ISO week up to 26 weeks; weekend/holiday shading, today line, working-day counts), a daily task list (one row per task going down, merged date cells, collapsed runs of days off, status chips), a weekly timetable (weekday columns × hour rows, up to two overlapping events side by side, break bands), a sprint calendar (consecutive 1- or 2-week sprints with working days net of holidays and planning/review/release days placed automatically), a year at a glance (12 mini months from the fiscal-year start with busy/off fills and key-date circles), and a deadline countdown (calendar and working days left, up to 3 checkpoints, mini calendars shaded to the deadline), a daily heatmap (daily values as a week × weekday grid up to 53 weeks, quantile shading, monthly totals and weekday/month/holiday aggregate cards), and a shift roster (people × days up to 31 × 12 with one-character codes and colours, per-day headcount with understaffed days in red, per-person counts, automatic legend). Japanese national holidays come from the bundled Cabinet Office CSV `assets/holidays/jp.csv` (refresh with `scripts/update_holidays.py`), company closures from `extraHolidays`; `scripts/calendar_pages.py` splits long periods into pages. Follows `slide-template-creator`'s schema/validation/registration rules. Not for month-level plans (`planning/gantt-schedule`) or milestone timelines (`planning/milestone-timeline`). |
-| `b2b-account-maps` | Build the two account maps a B2B software deal turns on: an **influence map** of the buying committee (influence × for/against, champion highlighted) and a **discovery map** colouring each MEDDPICC item confirmed / partly known / still assumed, plus the committee table, approval path, pain chain, and the gaps with who to ask by when. Eight page templates ship as the `b2b-sales` pack under `slide-templates/`. Internal working artifacts, not customer-facing pages. |
-| `scalar-account-plan` | Keep one **sales ledger per customer** (`accounts/<AE>/<customer>/account.json`) — facts labelled said / observed / assumed, the buying committee, MEDDPICC status, the pain chain, BANT risk, the current stage's exit criteria with the customer-side evidence for each, and the open actions — and render it as a nine-page **activity plan whose URL never changes** (`build_deck.py --into` replaces the pages of the existing deck). What the ledger cannot answer becomes the deliverable: `account_ledger.py gaps` checks the playbook's ten review questions and turns every unanswered one into an action with a person to ask, a deadline and a completion condition, carried over between runs and written as both a slide and Markdown for the CRM. Internal only. |
-| `scalar-account-planning-session` | Build the annual **Account Planning Session** decks for an account the ledger already covers — a full Plan Document for the account team and a nine-page executive review deck — from one `aps.json` that adds the customer's published material to the ledger. Ties each proposal to a sentence of the customer's own mid-term management plan, gives every deal its own chapter, and works out **who to meet next** per legal entity from published officer lists and org charts, each name carrying the person we would go through. The builder holds only the layout; every string lives in `aps.json` under the ignored `accounts/` tree. Internal only. |
-| `scalar-ae-materials` | Build **one visit's materials**, routed by deal phase (0–6) × audience × purpose, so the customer-facing one-pager, the internal visit plan, the WPS win plan and the Deal Desk / internal approval (ringi) packet are never the same file. Includes a pre-generation check that no judgement about a named individual, competitor weakness or unconfirmed figure reaches anything a customer will read, and files each artifact under `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` in Drive. Ten page templates ship as the `scalar-ae` pack, including `license-estimate` and `license-pattern-compare` for Scalar license quotes (the estimate template requires the contract period — monthly / annual / 3-year — in its breakdown). Rules come from `references/scalar/sales-playbook.md`. |
-| `scalar-deal-intake` | Turn raw deal material — meeting minutes, email threads, Slack, CRM exports, customer documents — into **per-stage records (0–6), a hearing sheet and a deal log** under `accounts/<AE>/<customer>/stages/` — the deal log holding the meeting history, close plan, risks and loss reason, and owning the amount, close date and forecast — using the stage input/output map derived from the Scalar sales sheet (`references/scalar/stage-io-map.md`) and the forms in `templates/sales/` — the hearing sheet is product-neutral, with product-fit judgments (challenge category, disqualifying constraints, sizing, edition) held in per-product addenda under `templates/sales/products/`. Every extracted fact carries a source and a confidence level (`確認済` / `推定` / `未確認`), internal agreement is never recorded as customer agreement, a gate passes only on customer-side evidence, and each remaining unknown becomes a question with a counterpart and a due date. Markdown only — it generates no slides; the records feed `scalar-account-plan` and `scalar-ae-materials`. Internal, gitignored, never shared with a customer or partner. |
-| `hearing-sheet` | Keeps the hearing sheet as data — one JSON of record rendered to **Markdown, Excel and Google Spreadsheet**, each readable back, joined by a stable question ID. Hand a customer or partner a sheet to fill in (`--audience customer` drops the internal columns and sections), read their answers back with conflict detection instead of a silent overwrite, and list what is still `未確認` or `推定`. The unconfirmed list and the confirm-back list are derived from the confidences rather than kept by hand. Product-neutral: product-fit judgements stay in `templates/sales/products/`. |
-| `hearing-slides` | Builds slides whose job is to **collect** information rather than deliver it, from the gaps in a hearing sheet: the agenda of what you need to hear and why, our understanding put up to be corrected, a fill-in sheet to write on in the room, a "does this apply to you" poll for a talk or seminar, and the page that says where to send answers (with a QR when `qrcode` is installed). A page with no material refuses to build rather than being filled with a guess. Customer-facing only; the internal "who do we ask next" page stays in `scalar-ae-materials`. |
-| `scalar-nurture-intake` | Turn raw **pre-deal signals** — webinar attendance, inbound enquiries, download logs, community questions, event notes, partner referrals, CRM/MA exports — into segment definitions, five-stage nurture tracks (Education → Need → Research → Evaluation → Selection) and a content ledger under `accounts/_nurture/`, driven by `references/scalar/nurture-map.md` and the forms in `templates/nurture/`. Works on segment **types**: no personal or company names ever enter these files — a signal that matters because of who sent it is a deal, not a segment. Will not number a segment from a single signal, will not set stage from activity volume, and hands a lead to sales only on the `g1.*` gates, never on a download. Markdown only; the hand-off continues in `scalar-deal-intake`. |
-| `scalar-product-slides` | Scalar Inc. company/product/feature deck workflow on the `scalar-2026` templates. |
-| `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge→product mapping (`references/scalar/proposal-map.md`), and a problem-solving proposal structure with a rewritable worked example (`scripts/scalar/build_scalar_proposal.py`). |
-| `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly (`drawio` CLI), visually QA'd, and inserted into decks. The editable `.drawio` is archived in the deck's Drive folder. |
-| `image-slots` | Fill the empty picture frames of an **existing** deck with AI-generated images (`scripts/fill_image_slots.py`): finds the frames the same three ways template registration does (PICTURE placeholders, empty image elements left in a layout, frames the deck reuses), draws each picture for that frame's shape, and places it filling the frame. Standalone on any deck URL — including decks slide-forge did not generate — and needs no registered template. For decks still driven by a spec, put `aiImage` in the spec instead and regenerate. |
-| `slide-qa` | Thumbnail-based visual QA of a generated deck: fetch every page as PNG, inspect against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files (`scripts/cleanup_qa.py`). Invoked by the generation skills when the user opts in at intake (the default), or standalone on any deck URL. |
-| `pptx-export` | Export a generated deck to PowerPoint (`.pptx`) as a delivery format (`scripts/export_pptx.py`): Drive API export with automatic fallback past the 10MB limit, saved locally and optionally archived in the deck's Drive folder. Chosen at intake (output format) when PPTX delivery is expected, or run standalone on any deck URL. From-scratch PPTX authoring stays with `document-skills:pptx`. |
-| `spreadsheets` | Line-item spreadsheets — estimates, BOMs, cost breakdowns — as Excel and/or Google Spreadsheet from one JSON spec (`scripts/build_sheet.py`): typed columns, real formulas for amounts and subtotal/tax/total, `--dry-run` validation, and in-place updates that keep the Spreadsheet URL stable. Companion to a proposal deck's cost slide (same Drive folder), or standalone. Worked example: `examples/estimate-sample.json`. |
-| `settings` | Read and change the two toolkit switches in `config/settings.json` through a multiple-choice dialogue (`scripts/settings.py`): whether Gemini generates images at all, and whether the deliverable is Google Drive / Google Slides or a local folder as PowerPoint (plus that folder's path). Shows the current values, asks, writes, and reads the result back; never touches credentials or API keys. The generation skills read the same settings at intake and skip the questions they answer. |
-| `nexus-report-slides` | Turn a **nexus-architect** project's output reports and UI mocks into an explanation deck, including while the pipeline is unfinished: `scripts/nexus/collect.py` establishes coverage from `work/pipeline-progress.json` first, `build_nexus_deck.py` writes the pages the records settle (coverage, per-phase digests, the gap list, the report appendix), and the interpretive pages are authored onto the `slide-templates/nexus` pack (14 templates). Structure diagrams render via `mermaid_export.py` (mermaid CLI), product UI mocks via `html_shot.py` (headless Chrome). Reads the project, never writes to it. |
+| `google-slides-template` | Generate a deck from a registered Google Slides master: intake, template analysis and registration (`template.json`), spec authoring with `--dry-run` validation, page-fragment authoring for large decks, generation. **The main workflow.** |
+| `google-slides` | Decks without a corporate master — the spec path (`templates/blank-16x9.json`, same engine) or the code-first path (`deckkit.py` plus offline layout validation for connector-heavy diagrams). |
+| `nexus-report-slides` | Turn a **nexus-architect** project's reports and UI mocks into an explanation deck, including while the pipeline is unfinished. Structure diagrams via mermaid, UI mocks via headless Chrome. Reads the project, never writes to it. |
+| `scalar-product-slides` | Scalar Inc. company / product / feature decks on the `scalar-2026` templates. |
+| `scalar-proposal-slides` | Customer-specific Scalar solution proposals driven by the customer's challenges: hearing checklist, challenge → product mapping, and a problem-solving structure with a rewritable worked example. |
+
+**Templates and frameworks**
+
+| Skill | What it does |
+|---|---|
+| `template-forge` | Create and register a **new template (master)** from a design spec — brand colours, fonts, logo, footer. The Slides API cannot create masters, so a base is copied and restyled; the result lands in `templates/<id>.json`. Ships 3 design presets. |
+| `slide-template-creator` | Create and register reusable **single-slide content templates** with semantic input slots, examples, offline validation and catalog previews. These live under `slide-templates/` and are independent of Slides masters. |
+| `current-state-analysis` | Run **current-state and problem-identification frameworks** on supplied material: PEST, Five Forces, process pain-points, logic and KPI trees, why-why, fishbone, Pareto, As-Is/To-Be gap analysis, impact-effort matrix. Facts go in the figure, interpretation in the insight, and sources are mandatory. |
+| `analysis-template-creator` | Build and maintain the **analysis-framework templates** themselves (`slide-templates/analysis/`) and their drawing primitives — one question per template, fact/interpretation slot split, required sources, misuse guardrails. |
+| `calendar-slides` | Turn dated tasks and events into **calendar slides**, and maintain the `slide-templates/calendar/` pack: month grid, day gantt, day agenda, week timetable, sprint calendar, year at a glance, deadline countdown, daily heatmap, shift roster. Japanese national holidays ship with the repo; long periods split across pages. Not for month-level plans (`planning/gantt-schedule`) or milestone timelines. |
+
+**Sales workflows (internal)**
+
+| Skill | What it does |
+|---|---|
+| `b2b-account-maps` | The two maps a B2B software deal turns on: an **influence map** of the buying committee (influence × for/against) and a **discovery map** colouring each MEDDPICC item confirmed / partly known / still assumed, plus the committee table, approval path, pain chain and gaps. Internal working artifacts, not customer-facing. |
+| `scalar-account-plan` | Keep one **sales ledger per customer** — facts labelled said / observed / assumed, the buying committee, MEDDPICC, the pain chain, stage exit criteria with customer-side evidence — and render it as a nine-page activity plan **whose URL never changes**. Unanswered review questions become dated actions. |
+| `scalar-account-planning-session` | The annual **Account Planning Session** decks for an account the ledger already covers: a full plan document and a nine-page executive review, from one `aps.json`. Ties each proposal to the customer's own mid-term plan and works out who to meet next. |
+| `scalar-ae-materials` | Build **one visit's materials**, routed by deal phase (0–6) × audience × purpose, so the customer-facing one-pager, the internal visit plan, the win plan and the approval packet are never the same file. Includes a pre-generation check that nothing unconfirmed reaches a customer-facing page. |
+| `scalar-deal-intake` | Turn raw deal material — minutes, email, Slack, CRM exports — into **per-stage records (0–6), a hearing sheet and a deal log**. Every fact carries a source and a confidence; a gate passes only on customer-side evidence. Markdown only: it generates no slides. |
+| `scalar-nurture-intake` | Turn **pre-deal signals** — webinars, inbound enquiries, downloads, event notes — into segment definitions, five-stage nurture tracks and a content ledger. Works on segment *types*: no personal or company names ever enter these files. Markdown only. |
+| `hearing-sheet` | The hearing sheet as data: one JSON of record rendered to **Markdown, Excel and Google Spreadsheet**, each readable back through a stable question ID. Reads answers back with conflict detection rather than a silent overwrite, and lists what is still unconfirmed. |
+| `hearing-slides` | Slides whose job is to **collect** information rather than deliver it, built from the gaps in a hearing sheet: the agenda, our understanding put up to be corrected, a fill-in sheet, a poll, and where to send answers. A page with no material refuses to build. Customer-facing only. |
+
+**Figures, QA and delivery**
+
+| Skill | What it does |
+|---|---|
+| `drawio-diagrams` | Dense cloud architecture / data-flow / network diagrams authored as draw.io files, exported to PNG headlessly, QA'd, and inserted into decks. The editable `.drawio` is archived beside the deck. |
+| `image-slots` | Fill an **existing** deck's empty picture frames with AI-generated images. Finds frames the same three ways template registration does, and works on any deck URL — including decks slide-forge did not generate. |
+| `slide-qa` | Thumbnail-based **visual QA** of a generated deck: fetch every page as PNG, inspect against a defect checklist, drive the fix-and-regenerate loop, then delete the local QA files. |
+| `pptx-export` | Export a generated deck to **PowerPoint** as a delivery format, with automatic fallback past Drive's 10MB export limit. From-scratch PPTX authoring stays with `document-skills:pptx`. |
+| `spreadsheets` | Line-item **estimates, BOMs and cost breakdowns** as Excel and/or Google Spreadsheet from one JSON spec: typed columns, real formulas, `--dry-run` validation, and in-place updates that keep the URL stable. |
+| `settings` | Read and change the two toolkit switches in `config/settings.json` through a multiple-choice dialogue: whether Gemini generates images at all, and whether the deliverable is Drive / Slides or a local `.pptx`. Never touches credentials. |
 
 ## End-to-end workflow
 
@@ -111,57 +143,100 @@ it and how to cite it; the bundle is public, so its list prices are citable as �
 (tax-excluded) reference-estimate material — never as a confirmed price, and never
 for the items it marks 非公開.
 
-## Repository layout
+## Quick start (template-driven)
 
+```bash
+.venv/bin/python scripts/list_templates.py                 # registered templates
+.venv/bin/python scripts/build_deck.py \
+    --template templates/scalar-2026.json --spec deck.json --dry-run --strict
+.venv/bin/python scripts/build_deck.py \
+    --template templates/scalar-2026.json --spec deck.json
+.venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa   # visual QA (slide-qa skill)
+.venv/bin/python scripts/cleanup_qa.py                            # delete QA files when done
+.venv/bin/python scripts/export_pptx.py <URL> --folder <FOLDER>   # optional PPTX delivery (pptx-export skill)
 ```
-.agents/      Codex skill discovery links and the Codex-native forge skill
-AGENTS.md     Codex project rules and host-tool compatibility mappings
-skills/       shared SKILL.md definitions used by Codex and Claude Code
-commands/     Claude Code slash commands (/forge, /account, /visit)
-accounts/     per-customer sales ledgers (git-ignored; never committed)
-scripts/      shared engine — one importable package
-  _auth.py        OAuth helper (Slides + Drive)
-  settings.py     image-generation and output switches (config/settings.json)
-  build_deck.py   template-driven generator (TemplateDeck); --dry-run validation
-  diagrams.py     Canvas drawing hub (aggregates the mixins below)
-  charts.py illustrations.py patterns.py pages.py events.py calendars.py   figure libraries
-  icons.py cloud_icons.py images.py                 pictograms, vendor icons, AI images
-  inspect_template.py assemble_spec.py layout_sample.py list_templates.py
-  build_template.py               design spec -> new master (template-forge)
-  slide_templates.py render_slide_template.py list_slide_templates.py validate_slide_templates.py
-                                  slide-templates/ pack engine, renderer, registry, offline validation
-  build_slide_template_catalog.py build_pattern_catalog.py build_template_catalog_doc.py
-                                  catalog specs and the generated catalog docs
-  fill_image_slots.py             fill an existing deck's empty picture frames (image-slots)
-  nexus/collect.py nexus/build_nexus_deck.py   nexus-architect coverage + deck spine
-  html_shot.py mermaid_export.py  HTML / mermaid -> PNG for slide insertion
-  validate_agent_contracts.py     shared prompt-contract eval for hosts/commands/skills
-  account_graph.py build_account_graph.py   influence / discovery graphs -> .drawio
-  scalar/account_ledger.py       per-customer sales ledger: validate, gaps, slot data
-  scalar/account_workspace.py    Drive tree <root>/<AE>/<customer>/… (idempotent)
-  scalar/build_account_plan.py   ledger -> activity-plan deck (same URL on update)
-  scalar/build_account_planning.py   aps.json -> Account Planning Session decks
-  scalar/export_ledger_md.py     ledger -> Markdown for the CRM
-  hearing/hearing_sheet.py hearing/model.py   hearing sheet of record <-> Markdown / xlsx / Google Spreadsheet
-  hearing/hearing_slots.py hearing/qr.py      gaps -> collection-slide slots, answer-destination QR
-  export_template_master.py import_template_master.py   bundled masters <-> Drive
-  fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
-  build_sheet.py  line-item spreadsheets (xlsx + Google Spreadsheet)
-  deckkit.py render_deck.py validate_layout.py      code-first path (offline checks)
-  drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
-  scalar/         Scalar deck builders
-templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
-  masters/        drop a master .pptx here and import it (gitignored; see its README)
-  sales/ nurture/ marketing/   Markdown forms: stage records and hearing sheet, nurture tracks and segments, content brief and event plan
-slide-templates/ reusable single-slide content templates + registry (101 in 14 packs; manifest.json)
-assets/       scalar/ (brand: pictograms, logos, product-logos), holidays/ (Japanese national holidays CSV), cloud-icons/ (gitignored)
-references/   engine, workflow, and host compatibility documentation
-  images/slide-patterns/  pattern catalog images (committed; regenerate via Setup 6)
-  i18n/           English sidecar strings for the two generated catalogs
-examples/     runnable spec catalogs and code-first example decks
-config/       credentials.json + token.json (gitignored, 0600) + settings.json (switches)
-cache/ out/   transient render cache and QA output (gitignored)
+
+Register a new master: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`,
+then review the guessed roles by hand (see the google-slides-template skill).
+
+## Quick start (code-first)
+
+A deck is one Python module; a function is one slide. See
+`examples/pattern-gallery/deck.py` and `references/diagram-cookbook.md`.
+
+```bash
+.venv/bin/python scripts/validate_layout.py mydeck.py   # offline checks, no API calls
+.venv/bin/python scripts/render_deck.py     mydeck.py   # validates, then generates
 ```
+
+`validate_layout.py` catches footer intrusion, off-slide geometry, title
+wrapping, floating/buried connector endpoints, text hidden behind
+later-drawn shapes, and text overflow — before any API call. What it cannot
+judge (arrow routing, contrast, whether the figure communicates) is what the
+thumbnail QA of the `slide-qa` skill is for: see `references/validation.md`.
+
+## Quick start (slide templates)
+
+`slide-templates/` holds 101 ready-made one-page templates in fourteen packs. A
+template takes semantic input slots (not coordinates) and renders one slide
+into a deck spec, so it works with any registered master.
+
+```bash
+.venv/bin/python scripts/list_slide_templates.py --pack analysis   # what's registered
+.venv/bin/python scripts/validate_slide_templates.py --pack analysis   # offline validation
+.venv/bin/python scripts/render_slide_template.py \
+    --template swot-analysis --data my-swot.json --out out/swot.json \
+    --density print                                # print handout / presentation slide
+```
+
+`--density` applies to templates that declare `$density` variants (the
+`read-alone` and `business-plan` packs); others ignore it. Every template is
+catalogued with a rendered image in
+[`references/slide-template-catalog.md`](references/slide-template-catalog.md).
+
+**Name a template from a deck spec.** Write `$template` on a slide and that
+template expands into one slide. The keys under `data` are the slot names from
+the template's **Inputs** table in the catalog, which also gives each slot's
+type, whether it is required, and its limits.
+
+```json
+{
+  "slides": [
+    {
+      "$template": "swot-analysis",
+      "data": {
+        "title": "Our strategic position",
+        "quadrants": ["Strength: …", "Weakness: …", "Opportunity: …", "Threat: …"],
+        "insight": "…",
+        "source": "Board meeting, March 2026"
+      },
+      "notes": "Speaker notes (optional)"
+    }
+  ]
+}
+```
+
+Keys other than `$template` / `data` / `density` / `lang` are merged over the
+rendered slide, so a spec can attach `notes` or retarget `layout`. Density comes
+from the slide, then the spec, then the template's own default. Expansion runs
+before validation, generation and `--into` alike, so `--dry-run --strict` checks
+the inputs and fails before anything is created.
+
+**`lang` picks the language of the words the slide prints for itself.** Table
+headers, axis ends and furniture like `Source:` come from
+`slide-templates/i18n/<lang>.json`. What you wrote under `data` is never
+translated — your copy is printed as given.
+
+```json
+{ "lang": "en", "slides": [{ "$template": "gap-analysis", "data": { … } }] }
+```
+
+`lang` can sit on a slide or on the spec (slide, then spec, then the `ja`
+default). The drawing primitives read the same resource — `source_note`'s
+`Source`, the calendar weekday heads — so a template and the figures around it
+cannot end up in different languages on one page. A key with no translation is
+printed in the default language, so a gap shows up as a Japanese word rather
+than a blank. For a single slide, `render_slide_template.py --lang en`.
 
 ## Install as a Claude Code plugin
 
@@ -547,57 +622,57 @@ master .pptx you drop there stays local. Review what a master contains before
 sharing one — `scalar-2026-boilerplate` carries company and customer-facing
 slides.
 
-## Quick start (template-driven)
+## Repository layout
 
-```bash
-.venv/bin/python scripts/list_templates.py                 # registered templates
-.venv/bin/python scripts/build_deck.py \
-    --template templates/scalar-2026.json --spec deck.json --dry-run --strict
-.venv/bin/python scripts/build_deck.py \
-    --template templates/scalar-2026.json --spec deck.json
-.venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa   # visual QA (slide-qa skill)
-.venv/bin/python scripts/cleanup_qa.py                            # delete QA files when done
-.venv/bin/python scripts/export_pptx.py <URL> --folder <FOLDER>   # optional PPTX delivery (pptx-export skill)
 ```
-
-Register a new master: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`,
-then review the guessed roles by hand (see the google-slides-template skill).
-
-## Quick start (code-first)
-
-A deck is one Python module; a function is one slide. See
-`examples/pattern-gallery/deck.py` and `references/diagram-cookbook.md`.
-
-```bash
-.venv/bin/python scripts/validate_layout.py mydeck.py   # offline checks, no API calls
-.venv/bin/python scripts/render_deck.py     mydeck.py   # validates, then generates
+.agents/      Codex skill discovery links and the Codex-native forge skill
+AGENTS.md     Codex project rules and host-tool compatibility mappings
+skills/       shared SKILL.md definitions used by Codex and Claude Code
+commands/     Claude Code slash commands (/forge, /account, /visit)
+accounts/     per-customer sales ledgers (git-ignored; never committed)
+scripts/      shared engine — one importable package
+  _auth.py        OAuth helper (Slides + Drive)
+  settings.py     image-generation and output switches (config/settings.json)
+  build_deck.py   template-driven generator (TemplateDeck); --dry-run validation
+  diagrams.py     Canvas drawing hub (aggregates the mixins below)
+  charts.py illustrations.py patterns.py pages.py events.py calendars.py   figure libraries
+  icons.py cloud_icons.py images.py                 pictograms, vendor icons, AI images
+  inspect_template.py assemble_spec.py layout_sample.py list_templates.py
+  build_template.py               design spec -> new master (template-forge)
+  slide_templates.py render_slide_template.py list_slide_templates.py validate_slide_templates.py
+                                  slide-templates/ pack engine, renderer, registry, offline validation
+  build_slide_template_catalog.py build_pattern_catalog.py build_template_catalog_doc.py
+                                  catalog specs and the generated catalog docs
+  fill_image_slots.py             fill an existing deck's empty picture frames (image-slots)
+  nexus/collect.py nexus/build_nexus_deck.py   nexus-architect coverage + deck spine
+  html_shot.py mermaid_export.py  HTML / mermaid -> PNG for slide insertion
+  validate_agent_contracts.py     shared prompt-contract eval for hosts/commands/skills
+  account_graph.py build_account_graph.py   influence / discovery graphs -> .drawio
+  scalar/account_ledger.py       per-customer sales ledger: validate, gaps, slot data
+  scalar/account_workspace.py    Drive tree <root>/<AE>/<customer>/… (idempotent)
+  scalar/build_account_plan.py   ledger -> activity-plan deck (same URL on update)
+  scalar/build_account_planning.py   aps.json -> Account Planning Session decks
+  scalar/export_ledger_md.py     ledger -> Markdown for the CRM
+  hearing/hearing_sheet.py hearing/model.py   hearing sheet of record <-> Markdown / xlsx / Google Spreadsheet
+  hearing/hearing_slots.py hearing/qr.py      gaps -> collection-slide slots, answer-destination QR
+  export_template_master.py import_template_master.py   bundled masters <-> Drive
+  fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
+  build_sheet.py  line-item spreadsheets (xlsx + Google Spreadsheet)
+  deckkit.py render_deck.py validate_layout.py      code-first path (offline checks)
+  drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
+  scalar/         Scalar deck builders
+templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
+  masters/        drop a master .pptx here and import it (gitignored; see its README)
+  sales/ nurture/ marketing/   Markdown forms: stage records and hearing sheet, nurture tracks and segments, content brief and event plan
+slide-templates/ reusable single-slide content templates + registry (101 in 14 packs; manifest.json)
+assets/       scalar/ (brand: pictograms, logos, product-logos), holidays/ (Japanese national holidays CSV), cloud-icons/ (gitignored)
+references/   engine, workflow, and host compatibility documentation
+  images/slide-patterns/  pattern catalog images (committed; regenerate via Setup 6)
+  i18n/           English sidecar strings for the two generated catalogs
+examples/     runnable spec catalogs and code-first example decks
+config/       credentials.json + token.json (gitignored, 0600) + settings.json (switches)
+cache/ out/   transient render cache and QA output (gitignored)
 ```
-
-`validate_layout.py` catches footer intrusion, off-slide geometry, title
-wrapping, floating/buried connector endpoints, text hidden behind
-later-drawn shapes, and text overflow — before any API call. What it cannot
-judge (arrow routing, contrast, whether the figure communicates) is what the
-thumbnail QA of the `slide-qa` skill is for: see `references/validation.md`.
-
-## Quick start (slide templates)
-
-`slide-templates/` holds 101 ready-made one-page templates in fourteen packs. A
-template takes semantic input slots (not coordinates) and renders one slide
-into a deck spec, so it works with any registered master.
-
-```bash
-.venv/bin/python scripts/list_slide_templates.py --pack analysis   # what's registered
-.venv/bin/python scripts/validate_slide_templates.py --pack analysis   # offline validation
-.venv/bin/python scripts/render_slide_template.py \
-    --template swot-analysis --data my-swot.json --out out/swot.json \
-    --density print                                # print handout / presentation slide
-```
-
-`--density` applies to templates that declare `$density` variants (the
-`read-alone` and `business-plan` packs); others ignore it. The rendered slide can also be pulled in
-from a deck spec with the `$template` field. Every template is catalogued with
-a rendered image in
-[`references/slide-template-catalog.md`](references/slide-template-catalog.md).
 
 ## Text fitting
 
@@ -679,7 +754,7 @@ declares no `CLOSING` role, so the same spec reports dozens of findings.
 | `event-announcement.json` | 4 | Seminar / conference announcement parts |
 | `read-alone-guide.json` | 30 | Density patterns for print / read-alone decks |
 | `design-catalog.json` | 49 | The full design-pattern catalog †|
-| `slide-pattern-index.json` | 71 | One page per pattern — 1 slide = 1 pattern †|
+| `slide-pattern-index.json` | 71 | One page per pattern — 52 are patterns, the rest are cover, section and divider pages †|
 | `cloud-architecture.json` | 6 | Cloud architecture figures †|
 | `b2b-account-review.json` | 13 | A worked account review built from all eight `b2b-sales` templates — cover, exec summary, both maps in their two-axis/MEDDPICC and structural forms, and their supporting pages |
 | `estimate-sample.json` | 2 sheets | Line-item estimate for the `spreadsheets` skill ‡|

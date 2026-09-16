@@ -91,3 +91,8 @@ d.code_block(CX, y + 0.24, 6.1, h, code, lang="java")
 # 右: 解説カード（surface 塗り + 上端 0.06in のアクセントバー。直角）
 # 下: ポイント帯（lighten(accent, 0.9) 塗り。1 行の結論）
 ```
+
+## See also
+
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)
+- [Schema Definitions](template-schema.md)

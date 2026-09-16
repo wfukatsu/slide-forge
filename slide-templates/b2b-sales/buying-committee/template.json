@@ -5,15 +5,37 @@
   "pack": "b2b-sales",
   "category": "stakeholder",
   "description": "購買に関わる人物の役割・影響力・スタンス・接触状況を一覧で押さえる",
-  "answers": ["購買に誰が関わり、こちらはどこまで会えているか"],
+  "answers": [
+    "購買に誰が関わり、こちらはどこまで会えているか"
+  ],
   "inferenceLevel": "descriptive",
-  "compatibleLayouts": ["BLANK"],
+  "compatibleLayouts": [
+    "BLANK"
+  ],
   "example": "example.json",
   "slots": {
-    "title": {"type": "string", "required": true, "maxLength": 70},
-    "members": {"type": "string[][]", "required": true, "minItems": 3, "maxItems": 7, "maxLength": 22},
-    "insight": {"type": "string", "required": true, "maxLength": 120},
-    "source": {"type": "string", "required": true, "maxLength": 160}
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "members": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 7,
+      "maxLength": 22
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
   },
   "guardrails": [
     "購買役割は肩書ではなく、この案件で果たす機能で書く（決裁・推進・評価・利用・門番・反対）",
@@ -22,13 +44,69 @@
   "slide": {
     "layout": "BLANK",
     "figures": [
-      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
-      {"type": "table", "x": 0.5, "y": 1.15, "w": 6.1,
-       "headers": ["関与者", "購買役割", "影響力", "スタンス", "接触"],
-       "rows": {"$slot": "members"}, "colWidths": [1.7, 1.2, 0.7, 0.9, 0.9],
-       "size": 8.8, "rowH": 0.46},
-      {"type": "so_what", "x": 6.8, "y": 1.3, "w": 2.65, "h": 2.95, "text": {"$slot": "insight"}},
-      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.15,
+        "w": 6.1,
+        "headers": [
+          {
+            "$t": "buying.member"
+          },
+          {
+            "$t": "buying.role"
+          },
+          {
+            "$t": "buying.influence"
+          },
+          {
+            "$t": "buying.stance"
+          },
+          {
+            "$t": "buying.contact"
+          }
+        ],
+        "rows": {
+          "$slot": "members"
+        },
+        "colWidths": [
+          1.7,
+          1.2,
+          0.7,
+          0.9,
+          0.9
+        ],
+        "size": 8.8,
+        "rowH": 0.46
+      },
+      {
+        "type": "so_what",
+        "x": 6.8,
+        "y": 1.3,
+        "w": 2.65,
+        "h": 2.95,
+        "text": {
+          "$slot": "insight"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
     ]
   }
 }

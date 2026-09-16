@@ -579,8 +579,8 @@ class IllustrationMixin:
                        color=darken(self.P.primary, 0.45))
         return y + h
 
-    def iceberg(self, x, y, w, h, above, below, *, above_title="見えている部分",
-                below_title="見えていない部分", size=10, art_ratio=0.44) -> float:
+    def iceberg(self, x, y, w, h, above, below, *, above_title=None,
+                below_title=None, size=10, art_ratio=0.44) -> float:
         """Iceberg (the visible sliver above vs. the bulk hidden below the
         waterline). above/below are lists of strings.
 
@@ -607,12 +607,15 @@ class IllustrationMixin:
 
         tx = x + art_w + 0.30
         tw = w - art_w - 0.30
-        self.label(tx, y, tw, 0.28, above_title, size=size + 1, bold=True,
+        self.label(tx, y, tw, 0.28, self._label("iceberg.above", above_title),
+                   size=size + 1, bold=True,
                    align="START", color=self.P.primary)
         self.label(tx, y + 0.32, tw, max(0.3, water - y - 0.34),
                    "\n".join(f"・{t}" for t in above), size=size, align="START",
                    color=self.P.text, line_spacing=125)
-        self.label(tx, water + 0.06, tw, 0.28, below_title, size=size + 1, bold=True,
+        self.label(tx, water + 0.06, tw, 0.28,
+                   self._label("iceberg.below", below_title),
+                   size=size + 1, bold=True,
                    align="START", color=self.P.primaryDark)
         self.label(tx, water + 0.38, tw, max(0.3, (y + h) - water - 0.40),
                    "\n".join(f"・{t}" for t in below), size=size, align="START",
@@ -729,12 +732,15 @@ class IllustrationMixin:
                    bold=True, color="#FFFFFF", line_spacing=110)
         return y + h
 
-    def matrix(self, x, y, w, h, quadrants, *, x_axis=("低", "高"),
-               y_axis=("低", "高"), x_label=None, y_label=None, size=11) -> float:
+    def matrix(self, x, y, w, h, quadrants, *, x_axis=None,
+               y_axis=None, x_label=None, y_label=None, size=11) -> float:
         """2×2 matrix. quadrants are in top-left, top-right, bottom-left, bottom-right order."""
         if len(quadrants) != 4:
             raise ValueError(t("quadrants takes exactly 4 items "
                                "(top-left, top-right, bottom-left, bottom-right)"))
+        ends = (self._label("axis.low"), self._label("axis.high"))
+        x_axis = x_axis or ends
+        y_axis = y_axis or ends
         pad = 0.44          # area reserved for axis labels
         gx, gy = x + pad, y
         gw, gh = w - pad, h - pad

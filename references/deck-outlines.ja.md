@@ -136,3 +136,8 @@ Presentation 系レイアウト（`CONTENT_PRESENTATION` / `TITLE_ONLY_PRESENTAT
 数字の整合はテンプレート側のガードレールに書いてある。`sales-buildup` の合計 =
 `revenue-plan` の売上高、`cost-structure` の人件費 = `execution-structure` の
 人数、`scenario-comparison` の標準 = `revenue-plan`、という対応を必ず取る。
+
+## 関連
+
+- [対話でデッキの設計を確定する](interactive-intake.ja.md)
+- [スライドパターン（骨格 × 中身）](slide-patterns.ja.md)

@@ -101,7 +101,9 @@
         "text": {
           "$slot": "ask"
         },
-        "label": "ご相談したいこと"
+        "label": {
+          "$t": "partner.ask"
+        }
       },
       {
         "type": "source_note",

@@ -5,16 +5,44 @@
   "pack": "calendar",
   "category": "week",
   "description": "曜日の列と時間の行に予定を置き、1 週間のどの時間帯にどこで何があるかを示す",
-  "answers": ["この週の、何時にどこで何があるか"],
+  "answers": [
+    "この週の、何時にどこで何があるか"
+  ],
   "inferenceLevel": "descriptive",
-  "compatibleLayouts": ["BLANK"],
+  "compatibleLayouts": [
+    "BLANK"
+  ],
   "example": "example.json",
   "slots": {
-    "title": {"type": "string", "required": true, "maxLength": 36},
-    "week": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
-    "days": {"type": "integer", "default": 5, "minimum": 5, "maximum": 7},
-    "startHour": {"type": "integer", "default": 9, "minimum": 0, "maximum": 23},
-    "endHour": {"type": "integer", "default": 18, "minimum": 1, "maximum": 24},
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 36
+    },
+    "week": {
+      "type": "string",
+      "required": true,
+      "minLength": 8,
+      "maxLength": 10
+    },
+    "days": {
+      "type": "integer",
+      "default": 5,
+      "minimum": 5,
+      "maximum": 7
+    },
+    "startHour": {
+      "type": "integer",
+      "default": 9,
+      "minimum": 0,
+      "maximum": 23
+    },
+    "endHour": {
+      "type": "integer",
+      "default": 18,
+      "minimum": 1,
+      "maximum": 24
+    },
     "events": {
       "type": "array",
       "required": true,
@@ -23,25 +51,66 @@
       "items": {
         "type": "tuple",
         "fields": [
-          {"type": "string", "minLength": 8, "maxLength": 10},
-          {"type": "string", "minLength": 4, "maxLength": 5},
-          {"type": "string", "minLength": 4, "maxLength": 5},
-          {"type": "string", "minLength": 1, "maxLength": 14},
-          {"type": "string", "maxLength": 10},
-          {"type": "string", "maxLength": 7}
+          {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 5
+          },
+          {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 5
+          },
+          {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 14
+          },
+          {
+            "type": "string",
+            "maxLength": 10
+          },
+          {
+            "type": "string",
+            "maxLength": 7
+          }
         ]
       }
     },
     "breaks": {
       "type": "array",
-      "default": [["12:00", "13:00", "昼休憩"]],
+      "default": [
+        [
+          "12:00",
+          "13:00",
+          {
+            "$t": "calendars.lunch_break"
+          }
+        ]
+      ],
       "maxItems": 3,
       "items": {
         "type": "tuple",
         "fields": [
-          {"type": "string", "minLength": 4, "maxLength": 5},
-          {"type": "string", "minLength": 4, "maxLength": 5},
-          {"type": "string", "maxLength": 6}
+          {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 5
+          },
+          {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 5
+          },
+          {
+            "type": "string",
+            "maxLength": 6
+          }
         ]
       }
     },
@@ -52,12 +121,24 @@
       "items": {
         "type": "tuple",
         "fields": [
-          {"type": "string", "minLength": 8, "maxLength": 10},
-          {"type": "string", "minLength": 1, "maxLength": 10}
+          {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10
+          }
         ]
       }
     },
-    "source": {"type": "string", "required": true, "maxLength": 160}
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
   },
   "guardrails": [
     "タイトル（結論）は 1 行・全角 36 字まで。2 行になると見出しに重なる",
@@ -71,12 +152,52 @@
   "slide": {
     "layout": "BLANK",
     "figures": [
-      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
-      {"type": "week_timetable", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
-       "week": {"$slot": "week"}, "events": {"$slot": "events"}, "days": {"$slot": "days"},
-       "startHour": {"$slot": "startHour"}, "endHour": {"$slot": "endHour"},
-       "breaks": {"$slot": "breaks"}, "extraHolidays": {"$slot": "extraHolidays"}},
-      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "week_timetable",
+        "x": 0.5,
+        "y": 1.05,
+        "w": 9.0,
+        "h": 3.65,
+        "week": {
+          "$slot": "week"
+        },
+        "events": {
+          "$slot": "events"
+        },
+        "days": {
+          "$slot": "days"
+        },
+        "startHour": {
+          "$slot": "startHour"
+        },
+        "endHour": {
+          "$slot": "endHour"
+        },
+        "breaks": {
+          "$slot": "breaks"
+        },
+        "extraHolidays": {
+          "$slot": "extraHolidays"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
     ]
   }
 }

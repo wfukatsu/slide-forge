@@ -95,8 +95,12 @@
         "after": {
           "$slot": "after"
         },
-        "before_title": "いまの業務",
-        "after_title": "導入後の業務"
+        "before_title": {
+          "$t": "oba.today"
+        },
+        "after_title": {
+          "$t": "oba.after"
+        }
       },
       {
         "type": "so_what",
@@ -107,7 +111,9 @@
         "text": {
           "$slot": "quant"
         },
-        "label": "定量化について"
+        "label": {
+          "$t": "oba.on_quantifying"
+        }
       },
       {
         "type": "source_note",

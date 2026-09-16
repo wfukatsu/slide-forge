@@ -94,8 +94,12 @@
         "after": {
           "$slot": "outside"
         },
-        "before_title": "本提案の対象",
-        "after_title": "対象外（別途ご相談）"
+        "before_title": {
+          "$t": "scope.in"
+        },
+        "after_title": {
+          "$t": "scope.out"
+        }
       },
       {
         "type": "so_what",
@@ -106,7 +110,9 @@
         "text": {
           "$slot": "why"
         },
-        "label": "この線を引いた理由"
+        "label": {
+          "$t": "scope.why_this_line"
+        }
       },
       {
         "type": "source_note",

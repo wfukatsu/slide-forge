@@ -46,10 +46,13 @@ d.month_calendar(x, y, w, h, month, events,
   days (greyed).
 - `events` are `[start, end, title, category, time]`. Empty `end` (or `end ==
   start`) is a one-day item written in the cell as "10:00 定例"; otherwise a bar
-  spans the days, split per week row, with "（続き）" on continuations.
+  spans the days, split per week row and marked as a continuation where it
+  carries on.
 - `category`: `primary / success / danger / info / warning / muted` or empty.
-- Bars take lanes first; one-day items fill the rest; the remainder becomes
-  "+N件". Cell titles drop the time before being cut with "…".
+- Bars take lanes first; one-day items fill the rest; the remainder collapses
+  into a "+N more" note. Cell titles drop the time before being cut with "…".
+- That continuation mark and that note are drawn from the deck's label
+  resource (`slide-templates/i18n/`), so they follow its language.
 - ISO week numbers ("W38") are shown only for Monday start by default.
 
 ```json
@@ -78,8 +81,9 @@ d.day_gantt(x, y, w, h, start, end, rows,
   Mondays with ISO week beyond), one column per ISO week up to 26 weeks. Longer
   periods raise — use `gantt` with month columns.
 - Days off are shaded behind the bars (week scale: weeks with ≥ 2 holidays).
-- Task captions: working days (`5営業日`; week scale `6週・26営業日`) and the
-  progress percentage. Milestones are diamonds captioned with the date.
+- Task captions: the working-day count (on the week scale, the week count as
+  well) and the progress percentage, worded from the deck's label resource.
+  Milestones are diamonds captioned with the date.
 - Each row needs 0.24 in; dates outside `start`–`end` raise.
 
 ```json
@@ -96,7 +100,7 @@ d.day_gantt(x, y, w, h, start, end, rows,
 d.day_agenda(x, y, w, h, start, end, items,
              today=None,
              extra_holidays=None,
-             show_empty_days=False,   # a "予定なし" row for empty working days
+             show_empty_days=False,   # a "no plans" row for empty working days
              size=9,
              col_widths=None)         # ratios, default [1.25, 4.35, 1.1, 1.0, 1.3]
 ```
@@ -104,7 +108,10 @@ d.day_agenda(x, y, w, h, start, end, items,
 - `items` are `[date, task, owner, due, status]`. Tasks on one day share a
   merged date cell; an empty due shows "—".
 - A run of days off with nothing scheduled collapses into one row naming the
-  holidays ("9/19（土） 〜 9/23（水）　土日・祝日（敬老の日・休日・秋分の日）").
+  holidays: the date range, whether it was a weekend or a public holiday, and
+  the holiday names. The dates and those two words follow the deck's language;
+  the holiday names come from the bundled CSV and stay as published, so an
+  English deck still shows them in Japanese.
 - `status`: `完了 / 進行中 / 予定 / 遅延 / 中止` or `done / doing / todo / late /
   cancelled`, drawn as a chip with its text.
 - Rows are 0.30 in, shrinking to 0.24 in; more rows raise.
@@ -121,7 +128,7 @@ d.day_agenda(x, y, w, h, start, end, items,
 d.week_timetable(x, y, w, h, week, events,
                  days=5,                 # 5 (Mon-Fri) or 7
                  start_hour=9, end_hour=18,
-                 breaks=None,            # default [["12:00", "13:00", "昼休憩"]]
+                 breaks=None,            # default: one 12:00-13:00 lunch break
                  extra_holidays=None,
                  size=8.5)
 ```
@@ -155,10 +162,12 @@ d.sprint_calendar(x, y, w, h, start, sprints,
 
 - `start` must be a Monday. `sprints` are `[number, goal, release]`, laid out
   consecutively; at most 8 week rows (four 2-week or eight 1-week sprints).
-- The left panel shows dates, working days and how many weekdays holidays took
-  ("休日 -1"), and the goal (one-week rows fold dates into the second line).
-- The first working day is marked 計画 (計画（振替） if the sprint's Monday is
-  off); the last working day レビュー, or リリース in red when `release` is true.
+- The left panel shows dates, working days and how many weekdays holidays took,
+  and the goal (one-week rows fold dates into the second line).
+- The first working day is marked as planning (a moved-planning variant if the
+  sprint's Monday is off); the last working day as review, or as release in red
+  when `release` is true. Those words come from the deck's label resource
+  (`slide-templates/i18n/`), so they follow its language.
 
 ```json
 { "type": "sprint_calendar", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
@@ -198,7 +207,8 @@ d.deadline_countdown(x, y, w, h, deadline, today, label,
 ```
 
 - Calendar days left (`deadline - today`) in large type, working days from
-  today to the day before the deadline, and checkpoints with "あとN日".
+  today to the day before the deadline, and each checkpoint with the number of
+  days until it, worded in the deck's language.
 - The right side shows today's month and the next with the remaining days
   filled; the deadline must fall in one of them (otherwise use
   `month_calendar` / `day_gantt`). Needs h ≥ 3.3 in.
@@ -213,7 +223,7 @@ d.deadline_countdown(x, y, w, h, deadline, today, label,
 
 ```python
 d.calendar_heatmap(x, y, w, h, start, end, values,
-                   unit="件",
+                   unit=None,          # default from the deck's label resource
                    levels=5,           # 3-7 quantile buckets
                    monthly=True,       # monthly totals strip under the grid
                    summary=True,       # three aggregate cards
@@ -292,3 +302,10 @@ template slides: one page per month (month calendar, roster — rosters also per
 boundaries (gantt), per 8 week rows (sprints), or per 52 weeks (heatmap). The
 year and countdown forms are one page each. See its docstring for the input
 format.
+
+## See also
+
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)
+- [Tables and charts (charts.py)](charts.md)
+- [Business Framework Diagrams (patterns.py)](patterns.md)
+- [Slide Template Catalog (All 101 Types)](slide-template-catalog.md)

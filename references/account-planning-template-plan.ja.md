@@ -525,3 +525,9 @@ done
 - `references/slide-patterns.md` — 骨格 A〜F の定義
 - `scripts/colors.py` — `Palette`（マスター colorScheme → 意味トークン）
 - `scripts/scalar/build_account_planning.py` — 実装済みのページ定義（参照ジオメトリ）
+
+## 関連
+
+- [Account Planning Session スライド作成手順](account-planning-session.ja.md)
+- [スライドパターン（骨格 × 中身）](slide-patterns.ja.md)
+- [レイアウト契約（座標と実測値）](layout-contract.ja.md)

@@ -21,6 +21,19 @@ from pathlib import Path
 from xml.sax.saxutils import escape
 
 import account_graph as ag
+from _i18n import register, t
+from slide_templates import DEFAULT_LANG, resolve_label
+
+register({
+    "grouped: lay people out in a grid per people[].entity (use it when there "
+    "are many roots and the tree layout stretches too wide)":
+        "grouped: people[].entity ごとの枠に格子で並べる"
+        "（根が多くて木レイアウトが横に伸びるとき）",
+    "--layout grouped is only for influence graphs":
+        "--layout grouped は influence グラフ専用です",
+    "language of the labels drawn in the diagram, from slide-templates/i18n/":
+        "図に描くラベルの言語（slide-templates/i18n/ から引く）",
+})
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -168,7 +181,7 @@ def _dag_layout(graph: dict) -> dict[str, tuple[int, int]]:
     return pos
 
 
-def build_grouped(graph: dict, title: str) -> str:
+def build_grouped(graph: dict, title: str, lang: str = DEFAULT_LANG) -> str:
     """Arrange people in a grid within a frame per `entity`; lines cross frame boundaries.
 
     Relationships between people (links) get only a number placed on the line;
@@ -189,7 +202,10 @@ def build_grouped(graph: dict, title: str) -> str:
         fw = G_PAD * 2 + G_COLS * G_CARD_W + (G_COLS - 1) * G_GAP_X
         fh = G_HEAD + G_PAD + rows * G_CARD_H + (rows - 1) * G_GAP_Y + G_PAD
         fid = f"ent{n}"
-        d.box(fid, "1", f"{ent}（{len(members)} 名）",
+        # The entity name is the caller's own data, so only the count around
+        # it comes from the label resource.
+        count = resolve_label("account_graph.members_count", lang).format(n=len(members))
+        d.box(fid, "1", f"{ent}{count}",
               "rounded=0;html=1;whiteSpace=wrap;fillColor=none;"
               f"strokeColor={LINE};strokeWidth=2;verticalAlign=top;align=left;"
               f"spacingLeft=12;spacingTop=6;fontSize=15;fontStyle=1;"
@@ -237,16 +253,14 @@ def build_grouped(graph: dict, title: str) -> str:
                label=MARK[len(items)])
         items.append(f"{MARK[len(items)]} {e.get('label', '')}")
     if items:
-        d.box("rels", "1", "<b>人のつながり</b><br>" + "<br>".join(items),
+        heading = resolve_label("account_graph.links_heading", lang)
+        d.box("rels", "1", f"<b>{heading}</b><br>" + "<br>".join(items),
               "rounded=0;html=1;whiteSpace=wrap;fillColor=#FFFFFF;"
               f"strokeColor={LINK};align=left;verticalAlign=top;spacingLeft=12;"
               "spacingTop=8;fontSize=12;",
               GUTTER, y, max_w, 34 + 22 * len(items))
         y += 34 + 22 * len(items) + 20
-    d.box("legend", "1",
-          "凡例　上帯＝役割（F 購買者 / T 技術者 / U 利用者 / C コーチ / S サポート）"
-          "　　本文の塗り＝立場（橙＝支持 / 青＝懸念 / 白＝中立）"
-          "　　下帯＝影響度　　破線の枠＝未面談　　赤の破線＝人のつながり",
+    d.box("legend", "1", resolve_label("account_graph.legend", lang),
           "rounded=0;html=1;whiteSpace=wrap;fillColor=#F9FAFB;strokeColor=#CCCCCC;"
           "align=left;spacingLeft=12;fontSize=12;",
           GUTTER, y, max_w, 46)
@@ -335,10 +349,15 @@ def main() -> int:
                     help="write the thinned graph instead of the whole one")
     ap.add_argument("--limit", type=int)
     ap.add_argument("--layout", choices=("tree", "grouped"), default="tree",
-                    help="grouped: people[].entity ごとの枠に格子で並べる"
-                         "（根が多くて木レイアウトが横に伸びるとき）")
-    ap.add_argument("--title", default="インフルーエンスマップ（全体）")
+                    help=t("grouped: lay people out in a grid per people[].entity "
+                           "(use it when there are many roots and the tree layout "
+                           "stretches too wide)"))
+    ap.add_argument("--lang", default=DEFAULT_LANG,
+                    help=t("language of the labels drawn in the diagram, "
+                           "from slide-templates/i18n/"))
+    ap.add_argument("--title", default=None)
     args = ap.parse_args()
+    title = args.title or resolve_label("account_graph.default_title", args.lang)
 
     graph = ag.load(args.graph)
     dropped: list[dict] = []
@@ -348,8 +367,8 @@ def main() -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     if args.layout == "grouped":
         if ag.kind(graph) != "influence":
-            raise ag.AccountGraphError("--layout grouped は influence グラフ専用です")
-        xml = build_grouped(graph, args.title)
+            raise ag.AccountGraphError(t("--layout grouped is only for influence graphs"))
+        xml = build_grouped(graph, title, args.lang)
     else:
         xml = build(graph)
     out.write_text(xml, encoding="utf-8")

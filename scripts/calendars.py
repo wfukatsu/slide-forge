@@ -185,9 +185,13 @@ def date_range(start: dt.date, end: dt.date) -> list[dt.date]:
     return [start + dt.timedelta(days=i) for i in range((end - start).days + 1)]
 
 
-def md(day: dt.date) -> str:
-    """'9/14（月）'."""
-    return f"{day.month}/{day.day}（{WEEKDAYS_JA[day.weekday()]}）"
+def md(day: dt.date, weekdays=WEEKDAYS_JA, fmt: str = "{m}/{d}（{wd}）") -> str:
+    """A short dated label: '9/14（月）', or '9/14 (Mon)' in another language.
+
+    The caller passes the weekday names and the pattern so one implementation
+    serves every language; Canvas._md() feeds it from the label resource.
+    """
+    return fmt.format(m=day.month, d=day.day, wd=weekdays[day.weekday()])
 
 
 @lru_cache(maxsize=1)
@@ -627,12 +631,15 @@ class CalendarMixin:
         """Month grid with one week per row. Returns the bottom y.
 
         events are [start, end, title, category, time]. An empty end is a
-        one-day event written in the day cell ("10:00 定例"); an end after the
-        start is drawn as a bar across the days, split at each week row and
-        marked "（続き）" where it continues. Bars take lanes first; one-day
-        events fill the remaining lanes, and whatever does not fit becomes
-        "+N件". A title too long for the cell drops its time first, then is
-        cut with "…".
+        one-day event written in the day cell (its time, then its title); an
+        end after the start is drawn as a bar across the days, split at each
+        week row and marked as a continuation where it carries on. Bars take
+        lanes first; one-day events fill the remaining lanes, and whatever
+        does not fit collapses into a "+N more" note. A title too long for the
+        cell drops its time first, then is cut with "…".
+
+        The continuation mark and the "+N more" wording come from the deck's
+        label resource (slide-templates/i18n/), so they follow its language.
 
         week_numbers defaults to True for Monday-start (ISO weeks) and False
         for Sunday-start, where ISO numbering would not line up with the rows.
@@ -660,11 +667,12 @@ class CalendarMixin:
         hdr = lighten(P.primary, 0.86)
 
         if week_numbers:
-            self.shape(x, y, wn_w, head_h, fill=hdr, stroke=P.white, text="週",
+            self.shape(x, y, wn_w, head_h, fill=hdr, stroke=P.white,
+                       text=self._label("calendars.week"),
                        size=8, color=P.muted, text_margin=0.0)
         for c, wd in enumerate(order):
             self.shape(gx + c * cw, y, cw, head_h, fill=hdr, stroke=P.white,
-                       text=WEEKDAYS_JA[wd], size=9, bold=True,
+                       text=self._weekdays()[wd], size=9, bold=True,
                        color=self._cal_weekday_color(wd))
 
         for r, week in enumerate(weeks):
@@ -699,7 +707,8 @@ class CalendarMixin:
             for lane, (c0, c1, (title, cat, head, tail)) in placed:
                 bx = gx + c0 * cw + (0.04 if head else 0.0)
                 bw = (c1 - c0 + 1) * cw - (0.04 if head else 0.0) - (0.04 if tail else 0.0)
-                label = title if head else f"（続き）{title}"
+                label = title if head else self._label(
+                    "calendars.continued").format(title=title)
                 fill = self._cal_color(cat, bar=True)
                 self.shape(bx, ry + date_h + lane * lane_h + 0.015, bw, lane_h - 0.03,
                            kind="ROUND_RECTANGLE" if (head and tail) else "RECTANGLE",
@@ -737,10 +746,11 @@ class CalendarMixin:
                 if extra:
                     if len(free) > len(shown):
                         ly = ry + date_h + free[len(shown)] * lane_h
-                        self._cal_text(cx + 0.06, ly, cw - 0.1, lane_h, f"+{extra}件",
+                        self._cal_text(cx + 0.06, ly, cw - 0.1, lane_h,
+                                       self._label("calendars.more_count").format(n=extra),
                                        size=size, bold=True, color=P.primaryDark)
                     else:
-                        corner = f"+{extra}件"
+                        corner = self._label("calendars.more_count").format(n=extra)
                 if corner:
                     self._cal_text(cx + 0.42, ry + 0.01, cw - 0.46, date_h,
                                    self._cal_fit(corner, cw - 0.46, 8, 0.02), size=8,
@@ -827,7 +837,8 @@ class CalendarMixin:
             mid = c if scale == "day" else c + dt.timedelta(days=3)
             return mid.year, mid.month
 
-        self._cal_text(x, y + 0.22, label_w, 0.4, "タスク（担当）", size=size,
+        self._cal_text(x, y + 0.22, label_w, 0.4,
+                       self._label("calendars.task_owner_head"), size=size,
                        bold=True, color=P.muted, margin=0.04)
         i = 0
         while i < n:
@@ -837,7 +848,8 @@ class CalendarMixin:
             yy, mm = month_key(cols[i])
             segw = (j - i + 1) * cu
             label = ""
-            for cand in (f"{yy}年{mm}月", f"{mm}月"):
+            for cand in (self._label("calendars.year_month").format(y=yy, m=mm),
+                         self._label("calendars.month_only").format(m=mm)):
                 if em(cand) * 8.5 / 72 * 1.1 + 0.06 <= segw:
                     label = cand
                     break
@@ -869,7 +881,8 @@ class CalendarMixin:
                                color=P.muted, margin=0.02)
                 continue
             if scale == "day":
-                top, sub, color = str(c.day), WEEKDAYS_JA[c.weekday()], self._cal_num_color(c, hol)
+                top, sub, color = (str(c.day), self._weekdays()[c.weekday()],
+                                   self._cal_num_color(c, hol))
             else:
                 top, sub, color = iso_week_label(c, with_year=False), str(c.day), P.text
             if today_idx == i:
@@ -898,7 +911,8 @@ class CalendarMixin:
                            text_margin=0.08)
                 continue
             name, owner = row[1], row[2]
-            label = f"{name}（{owner}）" if owner else name
+            label = (self._label("calendars.name_owner").format(name=name, owner=owner)
+                     if owner else name)
             self._cal_text(x + 0.14, ry, label_w - 0.18, rh,
                            self._cal_fit(label, label_w - 0.18, size, 0.04),
                            size=size, margin=0.04)
@@ -913,8 +927,9 @@ class CalendarMixin:
                     self.shape(bx, cy - bh / 2, bw * prog, bh, kind="ROUND_RECTANGLE",
                                fill=P.primary)
                 biz = business_days(ts, te, hol)
-                cap = (f"{biz}営業日" if scale == "day"
-                       else f"{i1 - i0 + 1}週・{biz}営業日")
+                cap = (self._label("calendars.biz_days").format(n=biz) if scale == "day"
+                       else self._label("calendars.weeks_biz_days").format(
+                           w=i1 - i0 + 1, n=biz))
                 if prog:
                     cap += f" · {int(round(prog * 100))}%"
                 self._cal_caption(bx, bx + bw, cy, cap, x, x + w, size=8,
@@ -928,7 +943,7 @@ class CalendarMixin:
                     mx = tx + (i0 + (day - cols[i0]).days / 7 + 1 / 14) * cu
                 ms = 0.19
                 self.shape(mx - ms / 2, cy - ms / 2, ms, ms, kind="DIAMOND", fill=P.danger)
-                self._cal_caption(mx - ms / 2, mx + ms / 2, cy, md(day), x, x + w,
+                self._cal_caption(mx - ms / 2, mx + ms / 2, cy, self._md(day), x, x + w,
                                   size=8.5, color=darken(P.danger, 0.15), bold=True)
 
         if today_idx is not None:
@@ -951,6 +966,14 @@ class CalendarMixin:
                            size=size, color=color, bold=bold, align="END")
 
     # ---- C. day agenda ----
+
+    def _weekdays(self):
+        """The seven weekday names in the deck's language."""
+        return self._label("calendars.weekdays")
+
+    def _md(self, day) -> str:
+        """`md()` in the deck's language."""
+        return md(day, self._weekdays(), self._label("calendars.md"))
 
     def day_agenda(self, x, y, w, h, start, end, items, *, today=None,
                    extra_holidays=None, show_empty_days=False, size=9,
@@ -987,7 +1010,11 @@ class CalendarMixin:
                                what="day_agenda", n=nrows, h=h, min=MIN_AGENDA_ROW_H))
         ratios = col_widths or [1.25, 4.35, 1.1, 1.0, 1.3]
         widths = [w * r / sum(ratios) for r in ratios]
-        heads = ["日付", "内容", "担当", "期日", "状態"]
+        heads = [self._label("calendars.agenda.date"),
+                 self._label("calendars.agenda.detail"),
+                 self._label("calendars.agenda.owner"),
+                 self._label("calendars.agenda.due"),
+                 self._label("calendars.agenda.status")]
         cx = x
         for wd, head in zip(widths, heads):
             self.shape(cx, y, wd, hh, fill=P.primary, stroke=P.white, text=head,
@@ -1003,13 +1030,19 @@ class CalendarMixin:
                 if entry[0] == "off":
                     days = date_range(a, b)
                     names = "・".join(dict.fromkeys(hol[d] for d in days if d in hol))
-                    kinds = "・".join(k for k in ("土日" if any(d.weekday() >= 5 for d in days) else "",
-                                                  "祝日" if names else "") if k)
-                    when = md(a) if a == b else f"{md(a)} 〜 {md(b)}"
-                    text = f"{when}　{kinds}" + (f"（{names}）" if names else "")
+                    sep = self._label("calendars.list_sep")
+                    kinds = sep.join(k for k in (
+                        self._label("calendars.weekend")
+                        if any(d.weekday() >= 5 for d in days) else "",
+                        self._label("calendars.holiday") if names else "") if k)
+                    when = self._md(a) if a == b else (
+                        self._md(a) + self._label("calendars.range_sep") + self._md(b))
+                    text = (when + self._label("calendars.kinds_sep") + kinds
+                            + (self._label("calendars.holiday_names").format(names=names)
+                               if names else ""))
                     fill, color = lighten(P.danger, 0.92), darken(P.danger, 0.15)
                 else:
-                    text = f"{md(a)}　予定なし"
+                    text = f"{self._md(a)}{self._label('calendars.no_plans')}"
                     fill, color = P.surfaceAlt, P.muted
                 self.shape(x, yy, w, rh, fill=fill, stroke=P.border, stroke_weight=0.5,
                            text=self._cal_fit(text, w, size, 0.1), size=size,
@@ -1022,7 +1055,8 @@ class CalendarMixin:
             self.shape(x, yy, widths[0], span,
                        fill=lighten(P.danger, 0.85) if is_today else P.white,
                        stroke=P.border, stroke_weight=0.5,
-                       text=md(day) + ("\n今日" if is_today and len(rows_) > 1 else ""),
+                       text=self._md(day) + ("\n" + self._label("calendars.today")
+                                             if is_today and len(rows_) > 1 else ""),
                        size=size, bold=True,
                        color=darken(P.danger, 0.15) if is_today else self._cal_num_color(day, hol))
             for k, (task, owner, due, status) in enumerate(rows_):
@@ -1054,12 +1088,13 @@ class CalendarMixin:
         fills, circles = fills or {}, circles or {}
         title_h = 0.22 if h < 2.2 else 0.3
         hd_h = 0.16 if h < 2.2 else 0.24
-        self._cal_text(x, y, w, title_h, title or f"{year}年{month}月", size=title_size,
-                       bold=True)
+        self._cal_text(x, y, w, title_h,
+                       title or self._label("calendars.year_month").format(y=year, m=month),
+                       size=title_size, bold=True)
         cw = w / 7
         rh = (h - title_h - hd_h) / 6
         for c in range(7):
-            self._cal_text(x + c * cw, y + title_h, cw, hd_h, WEEKDAYS_JA[c], size=head_size,
+            self._cal_text(x + c * cw, y + title_h, cw, hd_h, self._weekdays()[c], size=head_size,
                            align="CENTER", margin=0.0,
                            color=self._cal_weekday_color(c) if c >= 5 else P.muted)
         for r, week in enumerate(month_weeks(year, month, "mon")):
@@ -1140,7 +1175,7 @@ class CalendarMixin:
                                    min=int(-(-(MIN_EVENT_H + 0.01) / rh * 60 // 1))))
             self._cal_color(cat)
             norm.append((day, s, e, title, place, cat))
-        default_breaks = [["12:00", "13:00", "昼休憩"]]
+        default_breaks = [["12:00", "13:00", self._label("calendars.lunch_break")]]
         brk = []
         for b in (default_breaks if breaks is None else breaks):
             bs, be = parse_time(b[0]), parse_time(b[1])
@@ -1156,7 +1191,7 @@ class CalendarMixin:
                     lighten(P.info, 0.70) if sat else P.primary)
             color = (darken(P.danger, 0.2) if red else
                      darken(P.info, 0.3) if sat else P.white)
-            self.shape(x + tw_ + i * cw, y, cw, hh, fill=fill, stroke=P.white, text=md(day),
+            self.shape(x + tw_ + i * cw, y, cw, hh, fill=fill, stroke=P.white, text=self._md(day),
                        size=9, bold=True, color=color)
         for k in range(nh):
             yy = y + hh + k * rh
@@ -1191,7 +1226,8 @@ class CalendarMixin:
                 fs = 8 if (ntracks > 1 or box_h < 0.3) else size
                 if box_h >= 0.62:
                     when = (f"{format_time(s)}–{format_time(e)}" if ntracks == 1
-                            else f"{format_time(s)}〜")
+                            else self._label("calendars.time_open").format(
+                                t=format_time(s)))
                     lines = [when, title, place]
                 elif ntracks == 1:
                     lines = [f"{format_time(s)} {title}"]
@@ -1220,9 +1256,11 @@ class CalendarMixin:
 
         sprints are [number, goal, release]. Each sprint panel shows its
         dates, working days (and how many weekdays holidays took), and goal.
-        The first working day is marked 計画 (計画（振替） when the sprint's
-        Monday is a holiday); the last working day レビュー, or リリース in red
-        when release is true.
+        The first working day is marked as planning (a moved-planning variant
+        when the sprint's Monday is a holiday); the last working day as review,
+        or as release in red when release is true. Those words come from the
+        deck's label resource (slide-templates/i18n/), so they follow its
+        language.
         """
         P = self.P
         s0 = parse_date(start)
@@ -1244,10 +1282,12 @@ class CalendarMixin:
         gx, cw = x + lw, (w - lw) / 7
         rh = (h - hh) / nrows
         hdr = lighten(P.primary, 0.86)
-        self.shape(x, y, lw - 0.06, hh, fill=hdr, stroke=P.white, text="スプリント",
+        self.shape(x, y, lw - 0.06, hh, fill=hdr, stroke=P.white,
+                   text=self._label("calendars.sprint"),
                    size=9, bold=True, color=P.text)
         for c in range(7):
-            self.shape(gx + c * cw, y, cw, hh, fill=hdr, stroke=P.white, text=WEEKDAYS_JA[c],
+            self.shape(gx + c * cw, y, cw, hh, fill=hdr, stroke=P.white,
+                       text=self._weekdays()[c],
                        size=9, bold=True, color=self._cal_weekday_color(c))
         tints = [lighten(P.primary, 0.93), lighten(P.success, 0.90)]
         bands = [lighten(P.primary, 0.75), lighten(P.success, 0.70)]
@@ -1261,23 +1301,30 @@ class CalendarMixin:
             lost = sum(1 for d in span if d.weekday() < 5) - len(work)
             by = y + hh + k * weeks_per * rh
             panel_h = weeks_per * rh - 0.06
-            head = f"Sprint {number}　{s.month}/{s.day}–{e.month}/{e.day}"
-            days_line = f"稼働 {len(work)} 日" + (f"（休日 -{lost}）" if lost else "")
+            head = (f"Sprint {number}" + self._label("calendars.head_sep")
+                    + f"{s.month}/{s.day}–{e.month}/{e.day}")
+            days_line = (self._label("calendars.work_days").format(n=len(work))
+                         + (self._label("calendars.lost_days").format(n=lost) if lost else ""))
             fs = size if weeks_per > 1 else 8
             if weeks_per > 1:
                 lines = [head, days_line, goal]
             else:
                 # One-week rows hold two lines: keep the goal, fold the dates into line 2
                 lines = [f"#{number} {goal}",
-                         f"{s.month}/{s.day}–{e.month}/{e.day}　稼働 {len(work)} 日"
-                         + (f"（-{lost}）" if lost else "")]
+                         f"{s.month}/{s.day}–{e.month}/{e.day}"
+                         + self._label("calendars.head_sep")
+                         + self._label("calendars.work_days").format(n=len(work))
+                         + (self._label("calendars.lost_short").format(n=lost)
+                            if lost else "")]
             self.shape(x, by + 0.03, lw - 0.06, panel_h, kind="ROUND_RECTANGLE",
                        fill=bands[k % 2],
                        text="\n".join(self._cal_fit(line, lw - 0.06, fs, 0.08) for line in lines),
                        size=fs, color=P.text, align="START", text_margin=0.08)
-            marks = {work[0]: ("計画" if work[0] == s else "計画（振替）", P.primaryDark),
-                     work[-1]: (("リリース", darken(P.danger, 0.1)) if release
-                                else ("レビュー", P.primaryDark))}
+            marks = {work[0]: (self._label("calendars.plan") if work[0] == s
+                               else self._label("calendars.plan_moved"), P.primaryDark),
+                     work[-1]: ((self._label("calendars.release"), darken(P.danger, 0.1))
+                                if release
+                                else (self._label("calendars.review"), P.primaryDark))}
             for r in range(weeks_per):
                 ry = by + r * rh
                 for c in range(7):
@@ -1323,7 +1370,9 @@ class CalendarMixin:
                                min=MIN_YEAR_H))
         colors = {"busy": lighten(P.primary, 0.70), "off": lighten(P.danger, 0.75),
                   "key": P.danger}
-        names = {"busy": "繁忙期", "off": "休業", "key": "重要日"}
+        names = {"busy": self._label("calendars.busy"),
+                 "off": self._label("calendars.closed"),
+                 "key": self._label("calendars.key_day")}
         fills, circles = {}, {}
         labels: dict[str, list[str]] = {k: [] for k in colors}
         for mark in marks:
@@ -1356,7 +1405,10 @@ class CalendarMixin:
         for kind in ("busy", "off", "key"):
             if labels[kind] or any(v == colors[kind] for v in
                                    (circles if kind == "key" else fills).values()):
-                text = names[kind] + (f"（{'・'.join(labels[kind])}）" if labels[kind] else "")
+                joined = self._label("calendars.list_sep").join(labels[kind])
+                text = names[kind] + (
+                    self._label("calendars.holiday_names").format(names=joined)
+                    if labels[kind] else "")
                 items.append((colors[kind], text, "ELLIPSE" if kind == "key" else "RECTANGLE"))
         if items:
             self._cal_legend(x, y + h - 0.26, items, xmax=x + w)
@@ -1403,23 +1455,27 @@ class CalendarMixin:
                        size=13, bold=True, color=P.primaryDark)
         self._cal_text(x + 0.2, y + 0.4, lw * 0.53, 1.34, str(cal_days), size=66, bold=True,
                        color=P.primary, align="END", valign="BOTTOM", margin=0.0)
-        self._cal_text(x + 0.2 + lw * 0.53 + 0.05, y + 1.24, 0.6, 0.46, "日", size=22,
+        self._cal_text(x + 0.2 + lw * 0.53 + 0.05, y + 1.24, 0.6, 0.46,
+                       self._label("calendars.days_unit"), size=22,
                        bold=True, color=P.primary, valign="BOTTOM", margin=0.0)
         self._cal_text(x + 0.25, y + 1.76, lw - 0.5, 0.26,
-                       f"期限 {dl.year}年{dl.month}月{dl.day}日（{WEEKDAYS_JA[dl.weekday()]}）",
+                       self._label("calendars.deadline_line").format(
+                           y=dl.year, m=dl.month, d=dl.day,
+                           wd=self._weekdays()[dl.weekday()]),
                        size=10.5, bold=True)
         self._cal_text(x + 0.25, y + 2.02, lw - 0.5, 0.26,
-                       self._cal_fit(f"営業日は残り {biz} 日（休日 {cal_days - biz} 日を除く）",
-                                     lw - 0.5, 10, 0.02), size=10)
+                       self._cal_fit(self._label("calendars.biz_left").format(
+                           biz=biz, off=cal_days - biz), lw - 0.5, 10, 0.02), size=10)
         for k, (day, name) in enumerate(cps):
             yy = y + 2.38 + k * 0.3
             self.shape(x + 0.25, yy + 0.02, 1.0, 0.24, kind="ROUND_RECTANGLE", fill=P.white,
-                       stroke=P.border, text=md(day), size=8.5, bold=True, color=P.text,
+                       stroke=P.border, text=self._md(day), size=8.5, bold=True, color=P.text,
                        text_margin=0.0)
             self._cal_text(x + 1.33, yy, lw - 2.05, 0.28,
                            self._cal_fit(name, lw - 2.05, 9, 0.02), size=9)
-            self._cal_text(x + lw - 0.85, yy, 0.65, 0.28, f"あと{(day - td).days}日", size=9,
-                           align="END", color=P.muted)
+            self._cal_text(x + lw - 0.85, yy, 0.65, 0.28,
+                           self._label("calendars.in_n_days").format(n=(day - td).days),
+                           size=9, align="END", color=P.muted)
         fills = {d: (lighten(P.danger, 0.82) if is_offday(d, hol) else lighten(P.primary, 0.78))
                  for d in date_range(td, dl)}
         circles = {td: P.primary, dl: P.danger}
@@ -1430,14 +1486,16 @@ class CalendarMixin:
             self._cal_mini_month(cx + k * (mw + 0.25), y, mw, mh, yy, mm, hol=hol, fills=fills,
                                  circles=circles, size=10, head_size=9, title_size=11)
         self._cal_legend(cx, y + mh + 0.06, [
-            (P.primary, "今日", "ELLIPSE"), (P.danger, "期限", "ELLIPSE"),
-            (lighten(P.primary, 0.78), "残りの営業日", "RECTANGLE"),
-            (lighten(P.danger, 0.82), "残りの休日", "RECTANGLE")], xmax=x + w)
+            (P.primary, self._label("calendars.today"), "ELLIPSE"),
+            (P.danger, self._label("calendars.deadline"), "ELLIPSE"),
+            (lighten(P.primary, 0.78), self._label("calendars.biz_remaining"), "RECTANGLE"),
+            (lighten(P.danger, 0.82), self._label("calendars.off_remaining"), "RECTANGLE")],
+            xmax=x + w)
         return y + h
 
     # ---- H. calendar heatmap ----
 
-    def calendar_heatmap(self, x, y, w, h, start, end, values, *, unit="件", levels=5,
+    def calendar_heatmap(self, x, y, w, h, start, end, values, *, unit=None, levels=5,
                          monthly=True, summary=True, extra_holidays=None) -> float:
         """Daily values as a week × weekday grid (GitHub-contribution style). Returns the bottom y.
 
@@ -1449,6 +1507,9 @@ class CalendarMixin:
         excluding holidays, by month, on holidays). No interpretation is drawn.
         """
         P = self.P
+        # Resolved once here: the unit is printed in several places further
+        # down, and each of them wants the caller's word or the resource.
+        unit = self._label("calendars.count_unit", unit)
         s, e = parse_date(start), parse_date(end)
         if e < s:
             raise ValueError(t("the end ({end}) is before the start ({start})", end=e, start=s))
@@ -1481,8 +1542,9 @@ class CalendarMixin:
                 + [darken(P.primary, 0.25)])
         cuts = quantile_cuts(list(series.values()), levels)
 
-        for r, name in ((0, "月"), (2, "水"), (4, "金")):
-            self._cal_text(x, top + r * cell + cell / 2 - 0.1, lx - 0.04, 0.2, name, size=8,
+        wds = self._weekdays()
+        for r in (0, 2, 4):
+            self._cal_text(x, top + r * cell + cell / 2 - 0.1, lx - 0.04, 0.2, wds[r], size=8,
                            align="END", color=P.muted, margin=0.0)
         last_label_x = -1.0
         for day in date_range(s, e):
@@ -1491,8 +1553,9 @@ class CalendarMixin:
             lx_ = gx + (day - first).days // 7 * cell
             if lx_ < last_label_x + 0.42:
                 continue
-            self._cal_text(lx_, y, 0.5, 0.22, f"{day.month}月", size=8, color=P.muted,
-                           margin=0.0)
+            self._cal_text(lx_, y, 0.5, 0.22,
+                           self._label("calendars.months")[day.month - 1],
+                           size=8, color=P.muted, margin=0.0)
             last_label_x = lx_
         missing = False
         for day in date_range(s, e):
@@ -1509,14 +1572,17 @@ class CalendarMixin:
 
         ly = top + 7 * cell + 0.1
         xx = gx
-        self._cal_text(xx, ly, 0.24, 0.22, "少", size=8.5, color=P.muted, margin=0.0)
+        self._cal_text(xx, ly, 0.24, 0.22, self._label("calendars.less"),
+                       size=8.5, color=P.muted, margin=0.0)
         xx += 0.24
         for colour in ramp:
             self.shape(xx, ly + 0.04, 0.16, 0.16, fill=colour)
             xx += 0.2
-        self._cal_text(xx + 0.02, ly, 0.3, 0.22, "多", size=8.5, color=P.muted, margin=0.0)
+        self._cal_text(xx + 0.02, ly, 0.3, 0.22, self._label("calendars.more"),
+                       size=8.5, color=P.muted, margin=0.0)
         xx += 0.4
-        cut_text = f"区切り: {' / '.join(format_number(c) for c in cuts)} {unit}（{levels} 分位）"
+        cut_text = self._label("calendars.cuts").format(
+            cuts=" / ".join(format_number(c) for c in cuts), unit=unit, levels=levels)
         cut_w = min(em(cut_text) * 8.5 / 72 * 1.1 + 0.08, x + w - xx - (1.3 if missing else 0))
         self._cal_text(xx, ly, cut_w, 0.22, self._cal_fit(cut_text, cut_w, 8.5, 0.0),
                        size=8.5, color=P.muted, margin=0.0)
@@ -1525,8 +1591,8 @@ class CalendarMixin:
             mx = min(xx + cut_w + 0.2, x + w - 1.2)
             self.shape(mx, ly + 0.04, 0.16, 0.16, fill=P.white, stroke=P.border,
                        stroke_weight=0.5)
-            self._cal_text(mx + 0.2, ly, 1.0, 0.22, "データなし", size=8.5, color=P.muted,
-                           margin=0.0)
+            self._cal_text(mx + 0.2, ly, 1.0, 0.22, self._label("calendars.no_data"),
+                           size=8.5, color=P.muted, margin=0.0)
 
         months: dict[tuple[int, int], float] = {}
         positions: dict[tuple[int, int], list[float]] = {}
@@ -1537,7 +1603,8 @@ class CalendarMixin:
             positions.setdefault((day.year, day.month), []).append((day - first).days / 7)
         if monthly and months:
             bar_top, bar_h = ly + legend_h - 0.06, strip_h - 0.3
-            self._cal_text(x, bar_top + bar_h - 0.22, lx + 0.1, 0.22, "月計", size=8,
+            self._cal_text(x, bar_top + bar_h - 0.22, lx + 0.1, 0.22,
+                           self._label("calendars.month_total"), size=8,
                            color=P.muted, margin=0.0)
             peak = max(months.values()) or 1.0
             top_key = max(months, key=months.get)
@@ -1564,17 +1631,23 @@ class CalendarMixin:
             hi_m = max(months, key=months.get)
             lo_m = min(months, key=months.get)
             hol_vals = [v for d, v in series.items() if d in hol]
+            wds = self._weekdays()
+            hi_lo = self._label("calendars.card.hi_lo")
+            months_lbl = self._label("calendars.months")
             cards = [
-                ("曜日別の平均（祝日除く）",
-                 f"最多 {WEEKDAYS_JA[hi_wd]} {format_number(round(avg[hi_wd]))}{unit} ／ "
-                 f"最少 {WEEKDAYS_JA[lo_wd]} {format_number(round(avg[lo_wd]))}{unit}"
-                 if avg else "祝日以外のデータなし"),
-                ("月別の合計",
-                 f"最多 {hi_m[1]}月 {format_number(months[hi_m])}{unit} ／ "
-                 f"最少 {lo_m[1]}月 {format_number(months[lo_m])}{unit}"),
-                ("祝日の平均",
-                 f"{sum(hol_vals) / len(hol_vals):.1f}{unit}（祝日 {len(hol_vals)} 日）"
-                 if hol_vals else "期間中の祝日のデータなし"),
+                (self._label("calendars.card.by_weekday"),
+                 hi_lo.format(hi_l=wds[hi_wd], hi_v=format_number(round(avg[hi_wd])),
+                              lo_l=wds[lo_wd], lo_v=format_number(round(avg[lo_wd])),
+                              unit=unit)
+                 if avg else self._label("calendars.card.no_weekday")),
+                (self._label("calendars.card.by_month"),
+                 hi_lo.format(hi_l=months_lbl[hi_m[1] - 1], hi_v=format_number(months[hi_m]),
+                              lo_l=months_lbl[lo_m[1] - 1], lo_v=format_number(months[lo_m]),
+                              unit=unit)),
+                (self._label("calendars.card.holiday_avg"),
+                 self._label("calendars.card.holiday_val").format(
+                     v=f"{sum(hol_vals) / len(hol_vals):.1f}", unit=unit, n=len(hol_vals))
+                 if hol_vals else self._label("calendars.card.no_holiday")),
             ]
             card_w = (w - 0.3) / 3
             cy = y + h - 0.74
@@ -1639,9 +1712,10 @@ class CalendarMixin:
             label = f"{day.month}/{day.day}" if first and cw >= 0.4 else str(day.day)
             self._cal_text(cx, y, cw, 0.2, label, size=8, bold=True, align="CENTER",
                            color=color, margin=0.0)
-            self._cal_text(cx, y + 0.19, cw, 0.18, WEEKDAYS_JA[day.weekday()], size=8,
+            self._cal_text(cx, y + 0.19, cw, 0.18, self._weekdays()[day.weekday()], size=8,
                            align="CENTER", color=color, margin=0.0)
-        self._cal_text(gx + len(days) * cw, y + 0.1, tw_, 0.24, "計", size=8.5, bold=True,
+        self._cal_text(gx + len(days) * cw, y + 0.1, tw_, 0.24,
+                       self._label("calendars.roster.total"), size=8.5, bold=True,
                        align="CENTER", color=P.muted, margin=0.0)
         y0 = y + head_h + 0.02
         for p, (name, schedule) in enumerate(rows):
@@ -1652,11 +1726,12 @@ class CalendarMixin:
                 self.shape(gx + i * cw, ry, cw, rh, fill=fill, stroke=P.white,
                            stroke_weight=1.0, text=ch, size=size,
                            bold=code_map[ch][2], color=tc, text_margin=0.0)
-            self._cal_text(gx + len(days) * cw, ry, tw_, rh, f"{per_person[p]}日", size=9,
-                           align="CENTER", margin=0.0)
+            self._cal_text(gx + len(days) * cw, ry, tw_, rh,
+                           self._label("calendars.roster.person_days").format(n=per_person[p]),
+                           size=9, align="CENTER", margin=0.0)
         ty = y0 + len(rows) * rh + 0.06
-        self._cal_text(x, ty, nw, total_h, "人数", size=8.5, bold=True, color=P.muted,
-                       margin=0.04)
+        self._cal_text(x, ty, nw, total_h, self._label("calendars.roster.headcount"),
+                       size=8.5, bold=True, color=P.muted, margin=0.04)
         for i, n in enumerate(per_day):
             short = bool(min_staff) and n < min_staff
             self.shape(gx + i * cw, ty, cw, total_h,
@@ -1666,6 +1741,8 @@ class CalendarMixin:
         items = [(palette[colour][0], f"{code} = {label}", "RECTANGLE")
                  for code, (label, colour, _c) in code_map.items()]
         if min_staff:
-            items.append((lighten(P.danger, 0.75), f"{min_staff} 人未満の日", "RECTANGLE"))
+            items.append((lighten(P.danger, 0.75),
+                          self._label("calendars.min_staff_days").format(n=min_staff),
+                          "RECTANGLE"))
         self._cal_legend(x, ty + total_h + 0.1, items, xmax=x + w)
         return ty + total_h + 0.1 + 0.24

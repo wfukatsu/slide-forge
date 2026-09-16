@@ -103,7 +103,9 @@
         "text": {
           "$slot": "why"
         },
-        "label": "なぜこの話をするのか"
+        "label": {
+          "$t": "speaker.why_this_talk"
+        }
       },
       {
         "type": "source_note",

@@ -16,34 +16,66 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
                                             ↑____________fix_____________________|
 ```
 
+## 目次
+
+- **マシンを用意する** — [動作要件](#動作要件) · [セットアップ](#セットアップ) · [Claude Code プラグインとしてのインストール](#claude-code-プラグインとしてのインストール) · [Codex での利用](#codex-での利用)
+- **デッキを作る** — [クイックスタート: テンプレート駆動](#クイックスタートテンプレート駆動) · [コードファースト](#クイックスタートコードファースト) · [スライドテンプレート](#クイックスタートスライドテンプレート) · [エンドツーエンドワークフロー](#エンドツーエンドワークフロー)
+- **何を作るか選ぶ** — [スキル](#スキル) · [スライドパターンカタログ](#スライドパターンカタログ) · [サンプル](#サンプル)
+- **挙動を知る** — [テキストの適合](#テキストの適合) · [リポジトリ構成](#リポジトリ構成) · [ライセンス](#ライセンス)
+
+はじめての場合は [セットアップ](#セットアップ)から。
+[ガイド付きセットアップのプロンプト](#ガイド付きセットアップ--このプロンプトをコピーする)を
+エージェントに貼り付けて 4 つの質問に答える方法でもよい。
+
 ## スキル
+
+スキルは 24 種。それぞれの完全な契約 — 入力・ルール・ガードレール — は
+`skills/<name>/SKILL.md` にある。下の表は「何のためのものか」「他と何が違うか」
+だけを示す。
+
+**デッキを生成する**
 
 | スキル | 何をするか |
 |---|---|
-| `google-slides-template` | 登録済みの Google Slides マスターテンプレートからデッキを生成する: 対話的インテイク、テンプレート解析・登録（`template.json`）、`--dry-run` 検証つきの仕様作成、大規模デッキ向けのページ分割執筆（許可されていれば並列、そうでなければ逐次）、生成。メインのワークフロー。 |
-| `google-slides` | コーポレートマスターを使わないゼロからのデッキ生成。仕様パス（`templates/blank-16x9.json` + 同一エンジン）と、コードファーストパス（`deckkit.py` + コネクタの多い図向けのオフラインレイアウト検証）。 |
-| `template-forge` | デザイン仕様 — ブランドカラー、フォント、ロゴ、フッター — から**新しいテンプレート（マスター）**を作成・登録する（`scripts/build_template.py`）。Slides API はマスターを作れないため、ベース（Google デフォルトまたは登録済みテンプレート）をコピーしてそのレイアウトを batchUpdate で再スタイルする。ロールは決定的に割り当てられ、結果は `templates/<id>.json` に登録されて、そのまま `google-slides-template` で使える。3 つのデザインプリセット（`templates/presets/`）を同梱。 |
-| `slide-template-creator` | 意味づけされた入力スロット・作例・オフライン検証・カタログプレビューを備えた、再利用可能な**1 枚ものコンテンツテンプレート**を作成・登録する。`slide-templates/` 配下に置かれ、Google Slides のマスターからは独立している。 |
-| `current-state-analysis` | ユーザー提供の材料に対して**現状分析・課題の特定フレームワーク**を実行し、結果を `analysis` パックで描画する: PEST、Five Forces、業務プロセスのペインポイント、ロジックツリー、KPI ツリー、なぜなぜ分析、フィッシュボーン、パレート、As-Is/To-Be ギャップ分析、インパクト×工数の優先度マトリクス（SWOT / 3C は `marketing-analysis` パックを再利用）。事実は図に、解釈は示唆に置き、出典は必須。各テンプレートのガードレールには手法ごとの誤用パターンを織り込んである。 |
-| `analysis-template-creator` | **分析フレームワークのスライドテンプレート**そのもの（`slide-templates/analysis/` パック）とその描画プリミティブ（先例は `fishbone`、`pareto`）を作成・保守する: フレームワーク固有のデザインルール — 1 テンプレート 1 問い、事実/解釈のスロット分離、出典必須、誤用ガードレール — をここで定め、それ以外はすべて `slide-template-creator` のスキーマ・検証・登録ルールに従う。 |
-| `calendar-slides` | 日付つきのタスク・予定を**カレンダースライド**にし、`slide-templates/calendar/` パックとその描画プリミティブ（`month_calendar`、`day_gantt`、`day_agenda`、`week_timetable`、`sprint_calendar`、`year_calendar`、`deadline_countdown`、`calendar_heatmap`、`shift_roster`）を保守する: 月間カレンダー（月曜/日曜始まり、1 週 1 行、複数日の帯、「+N件」への畳み込み）、日単位ガント（60 日までは 1 列 1 日、26 週までは 1 列 1 ISO 週に切り替え。土日祝の網掛け、今日線、営業日数）、日次タスクリスト（1 行 1 タスクで下方向、日付セルの結合、連続する休日の畳み込み、状態チップ）、週間タイムテーブル（曜日の列 × 時間の行、重なる予定は 2 件まで横並び、休憩の帯）、スプリントカレンダー（連続する 1 週/2 週スプリント、祝日を除いた稼働日数、計画・レビュー・リリース日の自動配置）、年間カレンダー（年度初めから 12 か月の小さな月、繁忙期・休業の面と重要日の丸）、期限カウントダウン（暦日と営業日の残り日数、節目 3 件まで、期限までを塗ったミニカレンダー）、日次ヒートマップ（日ごとの量を 53 週までの週 × 曜日のマスの濃淡で並べ、月別合計と曜日・月・祝日の集計カード）、当番表（31 日 × 12 人までの担当者 × 日に 1 文字コードと色、日ごとの人数と必要人数を下回る日の赤表示、担当者ごとの日数、凡例の自動生成）。祝日は同梱の内閣府 CSV `assets/holidays/jp.csv`（`scripts/update_holidays.py` で更新）、会社独自の休業日は `extraHolidays` で渡し、長い期間は `scripts/calendar_pages.py` がページに分割する。スキーマ・検証・登録は `slide-template-creator` のルールに従う。月単位の計画（`planning/gantt-schedule`）やマイルストーン年表（`planning/milestone-timeline`）には使わない。 |
-| `b2b-account-maps` | B2B ソフトウェア商談の帰趨を左右する 2 つのアカウントマップを作る: 購買委員会の**インフルエンスマップ**（影響力 × 賛否、チャンピオンを強調表示）と、MEDDPICC の各項目を確認済み / 一部把握 / 推測のままで塗り分ける**ディスカバリーマップ**。加えて委員会テーブル、承認経路、ペインチェーン、そして「誰にいつまでに聞くか」つきのギャップ一覧。8 つのページテンプレートを `b2b-sales` パックとして `slide-templates/` に同梱。顧客提示用ではなく社内の作業成果物。 |
-| `scalar-account-plan` | 顧客ごとに 1 つの**営業台帳**（`accounts/<AE>/<customer>/account.json`）を維持する — 発言 / 観察 / 推測のラベルつき事実、購買委員会、MEDDPICC の状況、ペインチェーン、BANT リスク、現在のステージの Exit 条件とその顧客側エビデンス、未完了アクション — そしてそれを **URL の変わらない** 9 ページの活動計画としてレンダリングする（`build_deck.py --into` が既存デッキのページを差し替える）。台帳が答えられないことがそのまま成果物になる: `account_ledger.py gaps` がプレイブックの 10 のレビュー質問を照合し、未回答の質問をすべて「誰に聞くか・期限・完了条件」つきのアクションに変換して実行間で引き継ぎ、スライドと CRM 向け Markdown の両方に書き出す。社内専用。 |
-| `scalar-account-planning-session` | 台帳が既にカバーしているアカウントについて、年次の **Account Planning Session** デッキ — アカウントチーム向けのフル Plan Document と 9 ページのエグゼクティブレビューデッキ — を、顧客の公開資料を台帳に加えた 1 つの `aps.json` から作る。各提案を顧客自身の中期経営計画の一文に結びつけ、商談ごとに独立した章を与え、公開されている役員一覧と組織図から法人ごとに**次に誰と会うべきか**を導き、各人名には経由すべき人物を添える。ビルダーが持つのはレイアウトだけで、文字列はすべて gitignore された `accounts/` ツリー配下の `aps.json` にある。社内専用。 |
-| `scalar-ae-materials` | 商談フェーズ（0–6）× 相手 × 目的でルーティングして**1 回の訪問の資料**を作り、顧客提示のワンページャー、社内向け訪問計画、WPS ウィンプラン、Deal Desk / 稟議パケットが決して同じファイルにならないようにする。特定個人への評価・競合の弱点・未確認の数字が顧客の目に触れるものへ紛れ込まないことを生成前に確認するチェックを含み、各成果物を Drive の `<root>/<AE name>/<customer name>/{00_活動計画, 01_顧客提示, 02_顧客提案, 90_社内}` に格納する。10 のページテンプレートを `scalar-ae` パックとして同梱（Scalar ライセンス見積もり用の `license-estimate` と `license-pattern-compare` を含む。見積もりテンプレートは内訳に契約期間（月額 / 年額 / 3 年）の明示を必須とする）。ルールは `references/scalar/sales-playbook.ja.md` に従う。 |
-| `scalar-deal-intake` | 議事録・メール・Slack・CRM エクスポート・顧客資料といった生の材料を、`accounts/<AE>/<顧客名>/stages/` 配下の**ステージ別記録（0〜6）・ヒアリングシート・商談ログ**に整理する。商談ログは面談履歴・クローズプラン・リスク・失注理由を時系列で持ち、金額 / クローズ予定日 / フォーキャストの正本になる。スプレッドシート「ステージごとの商談の進め方」から起こした入出力対応表（`references/scalar/stage-io-map.ja.md`）と `templates/sales/` の様式を使う。ヒアリングシートは製品非依存で、製品適合の判定（課題カテゴリ・提案不可の制約・サイジング・エディション）は `templates/sales/products/` の製品別補遺が持つ。抽出した事実には必ず出典と確度（`確認済` / `推定` / `未確認`）を付け、社内合意を顧客合意として記録せず、ゲートは顧客側の証拠がある場合だけ通し、残った未確認は確認相手と期限つきの質問に変える。Markdown のみでスライドは作らない。記録は `scalar-account-plan` と `scalar-ae-materials` が読む。社内専用・gitignore 済みで、顧客にもパートナーにも渡さない。 |
-| `hearing-sheet` | ヒアリングシートをデータとして持つ。**JSON を正本**に Markdown / Excel / Google Spreadsheet を出し、どれも読み戻せる（設問の安定 ID で紐づける）。顧客・パートナーに渡して記入してもらい（`--audience customer` で内部の列と節を落とす）、返ってきた回答を**黙って上書きせず競合を検出して**取り込み、まだ `未確認` / `推定` のものを一覧にする。未確認リストと確認を返すことは確度から派生し、手で同期させない。製品非依存で、製品適合の判定は `templates/sales/products/` の補遺が持つ。 |
-| `hearing-slides` | 伝えるためではなく**集めるため**のスライドを、ヒアリングシートの空きから作る。うかがいたいことの議題（なぜ聞くかつき）、こちらの理解を出して訂正してもらうページ、その場で記入してもらう欄、登壇・セミナー用の「当てはまるものはありますか」、回答先を示すページ（`qrcode` があれば QR）。**材料が無いページは、推測で埋めずに作成を拒否する。** 顧客提示物のみで、社内向けの「誰にいつ聞くか」は `scalar-ae-materials` が持つ。 |
-| `scalar-nurture-intake` | ウェビナー参加ログ・問い合わせメール・資料ダウンロード履歴・コミュニティの質問・展示会メモ・パートナー経由の相談・CRM/MA エクスポートといった**商談化前のシグナル**を、`accounts/_nurture/` 配下のセグメント定義・5 段のナーチャリングトラック（Education → Need → Research → Evaluation → Selection）・コンテンツ台帳に整理する。出典は `references/scalar/nurture-map.ja.md`、様式は `templates/nurture/`。扱うのはセグメントという**型**であり、個人名・会社名をこれらのファイルに書かない（「誰から来たか」が重要なシグナルはセグメントではなく商談として `scalar-deal-intake` に回す）。シグナル 1 件でセグメントを採番せず、活動量で段を判定せず、営業への引き渡しは `g1.*` ゲートだけで判断する（資料ダウンロードは根拠にしない）。Markdown のみ。 |
-| `scalar-product-slides` | `scalar-2026` テンプレートによる Scalar Inc. の会社・製品・機能デッキのワークフロー。 |
-| `scalar-proposal-slides` | 顧客の課題を起点とする顧客別 Scalar ソリューション提案: ヒアリングチェックリスト、課題→製品マッピング（`references/scalar/proposal-map.ja.md`）、書き換え可能な実例つきの課題解決型提案構成（`scripts/scalar/build_scalar_proposal.py`）。 |
-| `drawio-diagrams` | 密度の高いクラウドアーキテクチャ / データフロー / ネットワーク図を draw.io ファイルとして作成し、ヘッドレスで PNG に書き出し（`drawio` CLI）、視覚的に QA してデッキに挿入する。編集可能な `.drawio` はデッキの Drive フォルダにアーカイブされる。 |
-| `image-slots` | **既存**デッキの空の画像フレームを AI 生成画像で埋める（`scripts/fill_image_slots.py`）: テンプレート登録と同じ 3 通りの方法でフレームを見つけ（PICTURE プレースホルダー、レイアウトに残された空の画像要素、デッキが使い回しているフレーム）、フレームの形状に合わせて各画像を描き、フレームいっぱいに配置する。任意のデッキ URL に対して単体で動作し — slide-forge が生成していないデッキも含む — 登録済みテンプレートも不要。仕様で管理しているデッキでは、代わりに仕様に `aiImage` を書いて再生成すること。 |
-| `slide-qa` | 生成済みデッキのサムネイルベース視覚 QA: 全ページを PNG で取得し、欠陥チェックリストに照らして点検し、修正と再生成のループを回し、最後にローカルの QA ファイルを削除する（`scripts/cleanup_qa.py`）。インテイクでユーザーが選択した場合（既定で有効）に生成スキルから呼ばれるほか、任意のデッキ URL に対して単体でも実行できる。 |
-| `pptx-export` | 生成済みデッキを納品形式として PowerPoint（`.pptx`）にエクスポートする（`scripts/export_pptx.py`）: 10MB 制限を自動フォールバックで回避する Drive API エクスポート。ローカルに保存し、任意でデッキの Drive フォルダにもアーカイブする。PPTX 納品が想定される場合はインテイク（出力形式）で選択するか、任意のデッキ URL に対して単体で実行する。ゼロからの PPTX 作成は引き続き `document-skills:pptx` の担当。 |
-| `spreadsheets` | 見積もり、BOM、コスト内訳といった明細スプレッドシートを、1 つの JSON 仕様から Excel および/または Google Spreadsheet として生成する（`scripts/build_sheet.py`）: 型付きカラム、金額と小計/税/合計の実数式、`--dry-run` 検証、Spreadsheet の URL を保ったままのインプレース更新。提案デッキのコストスライドの伴走成果物（同じ Drive フォルダ）としても、単体でも使える。実例: `examples/estimate-sample.json`。 |
-| `settings` | `config/settings.json` の 2 つのスイッチを選択式の対話で確認・変更する（`scripts/settings.py`）: Gemini による画像生成を使うか、成果物を Google Drive / Google Slides に出すかローカルフォルダの PowerPoint に出すか（およびそのフォルダのパス）。現在値の表示 → 質問 → 書き込み → 読み戻しまでを行い、認証情報や API キーには触れない。生成スキルはインテイクで同じ設定を読み、設定が答えている質問を省く。 |
-| `nexus-report-slides` | **nexus-architect** プロジェクトの出力レポートと UI モックから説明デッキを作る（パイプラインが途中でも可）。`scripts/nexus/collect.py` が `work/pipeline-progress.json` からカバレッジを先に確定し、`build_nexus_deck.py` が記録だけで決まるページ（カバレッジ、フェーズ章扉、未回答一覧、レポート付録）を書き、解釈が要るページは `slide-templates/nexus` パック（14 枚）で組む。構造図は `mermaid_export.py`（mermaid CLI）、UI モックは `html_shot.py`（ヘッドレス Chrome）で画像化。プロジェクトは読むだけで書き込まない。 |
+| `google-slides-template` | 登録済みの Google Slides マスターからデッキを生成する: 対話的インテイク、テンプレート解析・登録（`template.json`）、`--dry-run` 検証つきの仕様作成、大規模デッキのページ分割執筆、生成。**メインのワークフロー。** |
+| `google-slides` | コーポレートマスターを使わないデッキ生成。仕様パス（`templates/blank-16x9.json`、エンジンは同一）と、コードファーストパス（`deckkit.py` + コネクタの多い図向けのオフライン検証）。 |
+| `nexus-report-slides` | **nexus-architect** プロジェクトのレポートと UI モックから説明デッキを作る（パイプラインが途中でも可）。構造図は mermaid、UI モックはヘッドレス Chrome で画像化。プロジェクトは読むだけで書き込まない。 |
+| `scalar-product-slides` | `scalar-2026` テンプレートによる Scalar Inc. の会社・製品・機能デッキ。 |
+| `scalar-proposal-slides` | 顧客の課題を起点とする顧客別 Scalar ソリューション提案: ヒアリングチェックリスト、課題 → 製品マッピング、書き換え可能な実例つきの課題解決型構成。 |
+
+**テンプレートとフレームワーク**
+
+| スキル | 何をするか |
+|---|---|
+| `template-forge` | デザイン仕様 — ブランドカラー、フォント、ロゴ、フッター — から**新しいテンプレート（マスター）**を作成・登録する。Slides API はマスターを作れないため、ベースをコピーして再スタイルし、結果を `templates/<id>.json` に登録する。デザインプリセットを 3 つ同梱。 |
+| `slide-template-creator` | 意味づけされた入力スロット・作例・オフライン検証・カタログプレビューを備えた、再利用可能な**1 枚ものコンテンツテンプレート**を作成・登録する。`slide-templates/` 配下に置かれ、Slides のマスターからは独立している。 |
+| `current-state-analysis` | 提供された材料に**現状分析・課題特定のフレームワーク**を適用する: PEST、Five Forces、業務プロセスのペインポイント、ロジックツリー、KPI ツリー、なぜなぜ、フィッシュボーン、パレート、As-Is/To-Be ギャップ、インパクト×工数マトリクス。事実は図に、解釈は示唆に置き、出典は必須。 |
+| `analysis-template-creator` | **分析フレームワークのテンプレート**そのもの（`slide-templates/analysis/`）とその描画プリミティブを作成・保守する — 1 テンプレート 1 問い、事実と解釈のスロット分離、出典必須、誤用ガードレール。 |
+| `calendar-slides` | 日付つきのタスク・予定を**カレンダースライド**にし、`slide-templates/calendar/` パックを保守する: 月間カレンダー、日単位ガント、日次タスクリスト、週間タイムテーブル、スプリントカレンダー、年間カレンダー、期限カウントダウン、日次ヒートマップ、当番表。日本の祝日データを同梱し、長い期間はページに分割する。月単位の計画（`planning/gantt-schedule`）やマイルストーン年表には使わない。 |
+
+**営業ワークフロー（社内）**
+
+| スキル | 何をするか |
+|---|---|
+| `b2b-account-maps` | B2B ソフトウェア商談の帰趨を左右する 2 つのマップ: 購買委員会の**インフルエンスマップ**（影響力 × 賛否）と、MEDDPICC の各項目を確認済み / 一部把握 / 推測で塗り分ける**ディスカバリーマップ**。加えて委員会テーブル、承認経路、ペインチェーン、ギャップ一覧。顧客提示用ではなく社内の作業成果物。 |
+| `scalar-account-plan` | 顧客ごとに 1 つの**営業台帳**を維持し — 発言 / 観察 / 推測のラベルつき事実、購買委員会、MEDDPICC、ペインチェーン、Exit 条件と顧客側エビデンス — それを **URL の変わらない** 9 ページの活動計画として描く。未回答のレビュー質問は期限つきアクションになる。 |
+| `scalar-account-planning-session` | 台帳が既にカバーしているアカウントの、年次 **Account Planning Session** デッキ: フル Plan Document と 9 ページのエグゼクティブレビューを 1 つの `aps.json` から作る。各提案を顧客の中期経営計画に結びつけ、次に誰と会うべきかを導く。 |
+| `scalar-ae-materials` | 商談フェーズ（0–6）× 相手 × 目的でルーティングして**1 回の訪問の資料**を作り、顧客提示のワンページャー・社内向け訪問計画・ウィンプラン・稟議パケットが同じファイルにならないようにする。未確認の情報が顧客の目に触れないことを生成前に確認する。 |
+| `scalar-deal-intake` | 議事録・メール・Slack・CRM エクスポートといった生の材料を、**ステージ別記録（0〜6）・ヒアリングシート・商談ログ**に整理する。事実には必ず出典と確度を付け、ゲートは顧客側の証拠がある場合だけ通す。Markdown のみでスライドは作らない。 |
+| `scalar-nurture-intake` | ウェビナー・問い合わせ・資料ダウンロード・展示会メモといった**商談化前のシグナル**を、セグメント定義・5 段のナーチャリングトラック・コンテンツ台帳に整理する。扱うのはセグメントという**型**で、個人名・会社名は書かない。Markdown のみ。 |
+| `hearing-sheet` | ヒアリングシートをデータとして持つ。**JSON を正本**に Markdown / Excel / Google Spreadsheet を出し、設問の安定 ID でどれも読み戻せる。返ってきた回答は黙って上書きせず競合を検出して取り込み、未確認のものを一覧にする。 |
+| `hearing-slides` | 伝えるためではなく**集めるため**のスライドを、ヒアリングシートの空きから作る: 議題、こちらの理解、その場で記入する欄、当てはまるものを聞くページ、回答先。**材料が無いページは推測で埋めずに作成を拒否する。** 顧客提示物のみ。 |
+
+**図・QA・納品**
+
+| スキル | 何をするか |
+|---|---|
+| `drawio-diagrams` | 密度の高いクラウドアーキテクチャ / データフロー / ネットワーク図を draw.io で作成し、ヘッドレスで PNG 化して QA し、デッキに挿入する。編集可能な `.drawio` はデッキの隣にアーカイブされる。 |
+| `image-slots` | **既存**デッキの空の画像フレームを AI 生成画像で埋める。テンプレート登録と同じ 3 通りの方法でフレームを見つけ、任意のデッキ URL で動く — slide-forge が生成していないデッキも含む。 |
+| `slide-qa` | 生成済みデッキのサムネイルベース**視覚 QA**: 全ページを PNG で取得し、欠陥チェックリストに照らして点検し、修正と再生成のループを回し、最後にローカルの QA ファイルを削除する。 |
+| `pptx-export` | 生成済みデッキを納品形式として **PowerPoint** にエクスポートする。Drive の 10MB エクスポート制限は自動でフォールバックする。ゼロからの PPTX 作成は `document-skills:pptx` の担当。 |
+| `spreadsheets` | **見積もり・BOM・コスト内訳**の明細を、1 つの JSON 仕様から Excel および/または Google Spreadsheet として生成する: 型付きカラム、実数式、`--dry-run` 検証、URL を保ったままのインプレース更新。 |
+| `settings` | `config/settings.json` の 2 つのスイッチを選択式の対話で確認・変更する: Gemini による画像生成を使うか、成果物を Drive / Slides に出すかローカルの `.pptx` に出すか。認証情報には触れない。 |
 
 ## エンドツーエンドワークフロー
 
@@ -106,57 +138,98 @@ Scalar 製品の事実と価格 — 機能・エディション・バージョ�
 定価は引用してよい（定価・税抜と明示し、参考見積の材料として扱う）。「非公開」と
 書かれている項目は引用しない。
 
-## リポジトリ構成
+## クイックスタート（テンプレート駆動）
 
+```bash
+.venv/bin/python scripts/list_templates.py                 # registered templates
+.venv/bin/python scripts/build_deck.py \
+    --template templates/scalar-2026.json --spec deck.json --dry-run --strict
+.venv/bin/python scripts/build_deck.py \
+    --template templates/scalar-2026.json --spec deck.json
+.venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa   # visual QA (slide-qa skill)
+.venv/bin/python scripts/cleanup_qa.py                            # delete QA files when done
+.venv/bin/python scripts/export_pptx.py <URL> --folder <FOLDER>   # optional PPTX delivery (pptx-export skill)
 ```
-.agents/      Codex のスキル発見用リンクと Codex ネイティブの forge スキル
-AGENTS.md     Codex 向けプロジェクトルールとホストツール互換マッピング
-skills/       Codex と Claude Code が共用する SKILL.md 定義
-commands/     Claude Code スラッシュコマンド (/forge, /account, /visit)
-accounts/     顧客ごとの営業台帳 (git-ignored。コミット禁止)
-scripts/      共有エンジン — 1 つのインポート可能なパッケージ
-  _auth.py        OAuth ヘルパー (Slides + Drive)
-  settings.py     画像生成と出力先のスイッチ (config/settings.json)
-  build_deck.py   テンプレート駆動ジェネレーター (TemplateDeck)。--dry-run 検証
-  diagrams.py     Canvas 描画ハブ (下記の mixin を集約)
-  charts.py illustrations.py patterns.py pages.py events.py calendars.py   図表ライブラリ
-  icons.py cloud_icons.py images.py                 ピクトグラム、ベンダーアイコン、AI 画像
-  inspect_template.py assemble_spec.py layout_sample.py list_templates.py
-  build_template.py               デザイン仕様 -> 新規マスター (template-forge)
-  slide_templates.py render_slide_template.py list_slide_templates.py validate_slide_templates.py
-                                  slide-templates/ パックのエンジン、レンダラー、レジストリ、オフライン検証
-  build_slide_template_catalog.py build_pattern_catalog.py build_template_catalog_doc.py
-                                  カタログ用 spec と生成されるカタログドキュメント
-  fill_image_slots.py             既存デッキの空の画像枠を埋める (image-slots)
-  nexus/collect.py nexus/build_nexus_deck.py   nexus-architect のカバレッジとデッキ背骨
-  html_shot.py mermaid_export.py  HTML / mermaid を PNG 化してスライドへ
-  validate_agent_contracts.py     ホスト / コマンド / スキル共通のプロンプト契約 eval
-  account_graph.py build_account_graph.py   インフルエンス / ディスカバリーグラフ -> .drawio
-  scalar/account_ledger.py       顧客ごとの営業台帳: 検証、gaps、スロットデータ
-  scalar/account_workspace.py    Drive ツリー <root>/<AE>/<customer>/… (冪等)
-  scalar/build_account_plan.py   台帳 -> 活動計画デッキ (更新後も同じ URL)
-  scalar/build_account_planning.py   aps.json -> アカウントプランニングセッションのデッキ
-  scalar/export_ledger_md.py     台帳 -> CRM 貼り付け用 Markdown
-  hearing/hearing_sheet.py hearing/model.py   ヒアリングシートの正本 <-> Markdown / xlsx / Google スプレッドシート
-  hearing/hearing_slots.py hearing/qr.py      空き -> 収集スライドのスロット、回答先 QR
-  export_template_master.py import_template_master.py   同梱マスター <-> Drive
-  fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
-  build_sheet.py  明細スプレッドシート (xlsx + Google Spreadsheet)
-  deckkit.py render_deck.py validate_layout.py      コードファーストパス (オフライン検証)
-  drawio_export.py drive_folder.py snapshot_version.py   draw.io 書き出し、Drive フォルダ、バージョンスナップショット
-  scalar/         Scalar デッキビルダー
-templates/    登録済みマスター (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge のデザインプリセット)
-  masters/        マスター .pptx をここに置いてインポートする (gitignored。同ディレクトリの README 参照)
-  sales/ nurture/ marketing/   Markdown 様式: 段階記録とヒアリングシート、ナーチャリングトラックとセグメント、コンテンツブリーフとイベント計画
-slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (14 パック 101 種、manifest.json)
-assets/       scalar/ (ブランド: ピクトグラム、ロゴ、製品ロゴ), holidays/ (日本の祝日 CSV), cloud-icons/ (gitignored)
-references/   エンジン・ワークフロー・ホスト互換のドキュメント
-  images/slide-patterns/  パターンカタログ画像 (コミット済み。セットアップ 6 で再生成)
-  i18n/           生成される 2 つのカタログ用の英語サイドカー文字列
-examples/     実行可能な仕様カタログとコードファーストのサンプルデッキ
-config/       credentials.json + token.json (gitignored, 0600) + settings.json（スイッチ）
-cache/ out/   一時レンダーキャッシュと QA 出力 (gitignored)
+
+新しいマスターの登録: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`
+を実行し、推測されたロールを手で確認する（google-slides-template スキル参照）。
+
+## クイックスタート（コードファースト）
+
+デッキは 1 つの Python モジュール、関数は 1 枚のスライド。
+`examples/pattern-gallery/deck.py` と `references/diagram-cookbook.ja.md`
+を参照。
+
+```bash
+.venv/bin/python scripts/validate_layout.py mydeck.py   # offline checks, no API calls
+.venv/bin/python scripts/render_deck.py     mydeck.py   # validates, then generates
 ```
+
+`validate_layout.py` は、フッターへの侵入、スライド外のジオメトリ、
+タイトルの折り返し、浮いた/埋もれたコネクタ端点、後から描かれた図形の
+背後に隠れたテキスト、テキストのあふれを — API 呼び出しの前に — 検出する。
+これが判定できないこと（矢印の経路、コントラスト、図が伝わるかどうか）を
+担うのが `slide-qa` スキルのサムネイル QA:
+`references/validation.ja.md` を参照。
+
+## クイックスタート（スライドテンプレート）
+
+`slide-templates/` には 14 パック・101 種の 1 枚ものテンプレートがある。座標では
+なく意味のある入力スロットを受け取って 1 枚分の spec を生成するので、登録済みの
+どのマスターとも組み合わせられる。
+
+```bash
+.venv/bin/python scripts/list_slide_templates.py --pack analysis   # 登録済み一覧
+.venv/bin/python scripts/validate_slide_templates.py --pack analysis   # オフライン検証
+.venv/bin/python scripts/render_slide_template.py \
+    --template swot-analysis --data my-swot.json --out out/swot.json \
+    --density print                                # 配布資料 / 登壇スライド
+```
+
+`--density` は `$density` バリアントを宣言しているテンプレート（`read-alone`
+と `business-plan` パック）にだけ効き、それ以外は無視する。全テンプレートはレンダリング画像つきで
+[`references/slide-template-catalog.ja.md`](references/slide-template-catalog.ja.md)
+にカタログ化してある。
+
+**デッキ仕様からテンプレートを名指しする。** スライドに `$template` を書くと、その
+テンプレートが 1 枚に展開される。`data` のキーは各テンプレートの**入力**表にある
+スロット名で、型・必須・制約つきでカタログに載っている。
+
+```json
+{
+  "slides": [
+    {
+      "$template": "swot-analysis",
+      "data": {
+        "title": "自社の戦略ポジション",
+        "quadrants": ["強み: …", "弱み: …", "機会: …", "脅威: …"],
+        "insight": "…",
+        "source": "2026 年 3 月 経営会議資料"
+      },
+      "notes": "スピーカーノート（任意）"
+    }
+  ]
+}
+```
+
+`$template` / `data` / `density` / `lang` 以外のキーは展開後のスライドに上書きで合流するので、
+`notes` を足したり `layout` を差し替えたりできる。密度はスライドの `density` → spec の
+`density` → テンプレート既定の順に決まる。展開は検証・生成・`--into` のどれよりも前に
+走るため、`--dry-run --strict` でそのまま検査でき、入力が足りなければ生成前に落ちる。
+
+**スライドに出る語の言語は `lang` で決める。** テンプレートが自分で刷る語（表の見出し、
+軸の両端、`出典:` のような添え物）は `slide-templates/i18n/<lang>.json` から引く。
+`data` に書いた内容そのものは翻訳されない — 言語を切り替えても原稿はそのまま出る。
+
+```json
+{ "lang": "en", "slides": [{ "$template": "gap-analysis", "data": { … } }] }
+```
+
+`lang` はスライド単位でも spec 全体でも書ける（スライド → spec → 既定の `ja` の順）。
+図形を直接描く部品（`source_note` の `出典`、カレンダーの曜日見出しなど）も同じ resource
+を見るので、1 枚の中でテンプレートと図の言語が食い違うことはない。訳が無いキーは既定
+言語のまま出るので、未翻訳は空欄ではなく日本語として目に見える。1 枚だけ描くときは
+`render_slide_template.py --lang en`。
 
 ## Claude Code プラグインとしてのインストール
 
@@ -551,59 +624,57 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 マスター .pptx はローカルに留まる。マスターを共有する前には中身を確認する
 こと — `scalar-2026-boilerplate` は会社紹介や顧客提示用のスライドを含む。
 
-## クイックスタート（テンプレート駆動）
+## リポジトリ構成
 
-```bash
-.venv/bin/python scripts/list_templates.py                 # registered templates
-.venv/bin/python scripts/build_deck.py \
-    --template templates/scalar-2026.json --spec deck.json --dry-run --strict
-.venv/bin/python scripts/build_deck.py \
-    --template templates/scalar-2026.json --spec deck.json
-.venv/bin/python scripts/fetch_thumbnails.py <URL> --out out/qa   # visual QA (slide-qa skill)
-.venv/bin/python scripts/cleanup_qa.py                            # delete QA files when done
-.venv/bin/python scripts/export_pptx.py <URL> --folder <FOLDER>   # optional PPTX delivery (pptx-export skill)
 ```
-
-新しいマスターの登録: `scripts/inspect_template.py <URL> --emit templates/<id>.json --name <id>`
-を実行し、推測されたロールを手で確認する（google-slides-template スキル参照）。
-
-## クイックスタート（コードファースト）
-
-デッキは 1 つの Python モジュール、関数は 1 枚のスライド。
-`examples/pattern-gallery/deck.py` と `references/diagram-cookbook.ja.md`
-を参照。
-
-```bash
-.venv/bin/python scripts/validate_layout.py mydeck.py   # offline checks, no API calls
-.venv/bin/python scripts/render_deck.py     mydeck.py   # validates, then generates
+.agents/      Codex のスキル発見用リンクと Codex ネイティブの forge スキル
+AGENTS.md     Codex 向けプロジェクトルールとホストツール互換マッピング
+skills/       Codex と Claude Code が共用する SKILL.md 定義
+commands/     Claude Code スラッシュコマンド (/forge, /account, /visit)
+accounts/     顧客ごとの営業台帳 (git-ignored。コミット禁止)
+scripts/      共有エンジン — 1 つのインポート可能なパッケージ
+  _auth.py        OAuth ヘルパー (Slides + Drive)
+  settings.py     画像生成と出力先のスイッチ (config/settings.json)
+  build_deck.py   テンプレート駆動ジェネレーター (TemplateDeck)。--dry-run 検証
+  diagrams.py     Canvas 描画ハブ (下記の mixin を集約)
+  charts.py illustrations.py patterns.py pages.py events.py calendars.py   図表ライブラリ
+  icons.py cloud_icons.py images.py                 ピクトグラム、ベンダーアイコン、AI 画像
+  inspect_template.py assemble_spec.py layout_sample.py list_templates.py
+  build_template.py               デザイン仕様 -> 新規マスター (template-forge)
+  slide_templates.py render_slide_template.py list_slide_templates.py validate_slide_templates.py
+                                  slide-templates/ パックのエンジン、レンダラー、レジストリ、オフライン検証
+  build_slide_template_catalog.py build_pattern_catalog.py build_template_catalog_doc.py
+                                  カタログ用 spec と生成されるカタログドキュメント
+  fill_image_slots.py             既存デッキの空の画像枠を埋める (image-slots)
+  nexus/collect.py nexus/build_nexus_deck.py   nexus-architect のカバレッジとデッキ背骨
+  html_shot.py mermaid_export.py  HTML / mermaid を PNG 化してスライドへ
+  validate_agent_contracts.py     ホスト / コマンド / スキル共通のプロンプト契約 eval
+  account_graph.py build_account_graph.py   インフルエンス / ディスカバリーグラフ -> .drawio
+  scalar/account_ledger.py       顧客ごとの営業台帳: 検証、gaps、スロットデータ
+  scalar/account_workspace.py    Drive ツリー <root>/<AE>/<customer>/… (冪等)
+  scalar/build_account_plan.py   台帳 -> 活動計画デッキ (更新後も同じ URL)
+  scalar/build_account_planning.py   aps.json -> アカウントプランニングセッションのデッキ
+  scalar/export_ledger_md.py     台帳 -> CRM 貼り付け用 Markdown
+  hearing/hearing_sheet.py hearing/model.py   ヒアリングシートの正本 <-> Markdown / xlsx / Google スプレッドシート
+  hearing/hearing_slots.py hearing/qr.py      空き -> 収集スライドのスロット、回答先 QR
+  export_template_master.py import_template_master.py   同梱マスター <-> Drive
+  fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
+  build_sheet.py  明細スプレッドシート (xlsx + Google Spreadsheet)
+  deckkit.py render_deck.py validate_layout.py      コードファーストパス (オフライン検証)
+  drawio_export.py drive_folder.py snapshot_version.py   draw.io 書き出し、Drive フォルダ、バージョンスナップショット
+  scalar/         Scalar デッキビルダー
+templates/    登録済みマスター (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge のデザインプリセット)
+  masters/        マスター .pptx をここに置いてインポートする (gitignored。同ディレクトリの README 参照)
+  sales/ nurture/ marketing/   Markdown 様式: 段階記録とヒアリングシート、ナーチャリングトラックとセグメント、コンテンツブリーフとイベント計画
+slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (14 パック 101 種、manifest.json)
+assets/       scalar/ (ブランド: ピクトグラム、ロゴ、製品ロゴ), holidays/ (日本の祝日 CSV), cloud-icons/ (gitignored)
+references/   エンジン・ワークフロー・ホスト互換のドキュメント
+  images/slide-patterns/  パターンカタログ画像 (コミット済み。セットアップ 6 で再生成)
+  i18n/           生成される 2 つのカタログ用の英語サイドカー文字列
+examples/     実行可能な仕様カタログとコードファーストのサンプルデッキ
+config/       credentials.json + token.json (gitignored, 0600) + settings.json（スイッチ）
+cache/ out/   一時レンダーキャッシュと QA 出力 (gitignored)
 ```
-
-`validate_layout.py` は、フッターへの侵入、スライド外のジオメトリ、
-タイトルの折り返し、浮いた/埋もれたコネクタ端点、後から描かれた図形の
-背後に隠れたテキスト、テキストのあふれを — API 呼び出しの前に — 検出する。
-これが判定できないこと（矢印の経路、コントラスト、図が伝わるかどうか）を
-担うのが `slide-qa` スキルのサムネイル QA:
-`references/validation.ja.md` を参照。
-
-## クイックスタート（スライドテンプレート）
-
-`slide-templates/` には 14 パック・101 種の 1 枚ものテンプレートがある。座標では
-なく意味のある入力スロットを受け取って 1 枚分の spec を生成するので、登録済みの
-どのマスターとも組み合わせられる。
-
-```bash
-.venv/bin/python scripts/list_slide_templates.py --pack analysis   # 登録済み一覧
-.venv/bin/python scripts/validate_slide_templates.py --pack analysis   # オフライン検証
-.venv/bin/python scripts/render_slide_template.py \
-    --template swot-analysis --data my-swot.json --out out/swot.json \
-    --density print                                # 配布資料 / 登壇スライド
-```
-
-`--density` は `$density` バリアントを宣言しているテンプレート（`read-alone`
-と `business-plan` パック）にだけ効き、それ以外は無視する。デッキ spec の `$template` フィールドから
-呼び出すこともできる。全テンプレートはレンダリング画像つきで
-[`references/slide-template-catalog.ja.md`](references/slide-template-catalog.ja.md)
-にカタログ化してある。
 
 ## テキストの適合
 
@@ -686,7 +757,7 @@ business-plan、nexus、hearing、case-studies、proposal、marketing、partner�
 | `event-announcement.json` | 4 | セミナー / カンファレンス告知の部品 |
 | `read-alone-guide.json` | 30 | 配布・読み切り資料向けの密度パターン |
 | `design-catalog.json` | 49 | デザインパターンのフルカタログ †|
-| `slide-pattern-index.json` | 71 | 1 パターン 1 ページの索引 — 1 枚 = 1 パターン †|
+| `slide-pattern-index.json` | 71 | 1 パターン 1 ページの索引 — 52 枚がパターン、残りは表紙・章扉・区切り †|
 | `cloud-architecture.json` | 6 | クラウドアーキテクチャ図 †|
 | `b2b-account-review.json` | 13 | `b2b-sales` の 8 テンプレートすべてで組んだアカウントレビューの実例 — 表紙、エグゼクティブサマリー、2 軸/MEDDPICC 形式と構造形式の両マップ、それらを支えるページ |
 | `estimate-sample.json` | 2 シート | `spreadsheets` スキル用の明細見積もり ‡|

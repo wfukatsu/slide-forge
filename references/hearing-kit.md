@@ -99,3 +99,8 @@ Run everything from the slide-forge root with `.venv/bin/python`.
 
 `render --format gsheet` updates the file with the same name in the same folder
 **in place**, so the URL survives. Keep one link per deal.
+
+## See also
+
+- [Slide Template Catalog (All 101 Types)](slide-template-catalog.md)
+- [Nailing Down a Deck's Design Through Dialogue](interactive-intake.md)

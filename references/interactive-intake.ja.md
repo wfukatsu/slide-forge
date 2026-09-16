@@ -249,3 +249,9 @@ JSON 仕様やスライドの生成はこの後。
 - **確認したのに反映しない。** 聞いた以上、答えは仕様に必ず反映する。
   反映できない答え（テンプレートに無いレイアウトなど）は、その場で理由を伝えて
   代替を出す。
+
+## 関連
+
+- [デッキの構成テンプレート](deck-outlines.ja.md)
+- [設定 — `config/settings.json`](settings.ja.md)
+- [Deck workflow contract](workflow-contract.md) *（英語のみ）*

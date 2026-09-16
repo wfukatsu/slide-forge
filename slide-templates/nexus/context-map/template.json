@@ -126,8 +126,12 @@
         "y": 1.55,
         "w": 3.2,
         "headers": [
-          "関係",
-          "種別"
+          {
+            "$t": "ctx.relation"
+          },
+          {
+            "$t": "ctx.kind"
+          }
         ],
         "rows": {
           "$slot": "relations"

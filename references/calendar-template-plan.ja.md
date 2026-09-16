@@ -102,6 +102,11 @@ calendar heatmap、Scrum.org（スプリントの長さ）。
 
 ### 4.1 日付エンジン＋プリミティブ（`scripts/calendars.py` の `CalendarMixin`）
 
+以下は計画時点の名前で、実装で変わったものがある（`month_matrix` →
+`month_weeks`、`iso_week` → `iso_week_label`、`load_holidays` → `holidays_for`、
+`paginate` は `calendar_pages.py` 側に移った）。実装後の名前は英語版 §4.1 と
+コードを参照のこと。
+
 描画を伴わない純粋関数（ユニットテストの対象）:
 
 | 関数 | 役割 |
@@ -255,8 +260,10 @@ JSON から呼べるプリミティブ（`build_deck.py::FIGURES` に登録）:
   投影用の粗い版は表現を変える（期間を縮める・一覧化する）ほうが効くため。
 - **正規化は `calendar_pages.py` に含めた**（`calendar_normalize.py` は作らない）。日付の正規化と
   年のない日付の拒否は `calendars.parse_date` が担う。
-- **デッキ仕様の `$template` 展開は存在しない**ため、`calendar_pages.py` はテンプレートを
-  展開済みのスライド（`{"slides": [...]}`）を出力する。
+- `calendar_pages.py` はテンプレートを展開済みのスライド（`{"slides": [...]}`）を出力する。
+  P1 の時点でデッキ仕様の `$template` 展開が存在しなかったためで、この前提は後に解消された
+  （`build_deck.expand_slide_templates`）。カレンダーは日付の正規化とページ分割を先に行う
+  必要があるため、出力形式は展開済みのままでよい。
 - P1 はコミット `a26a338`（ブランチ `feat/calendar-templates`）。
 
 ## 10. P2 の実装状況（2026-09-15）
@@ -294,3 +301,9 @@ JSON から呼べるプリミティブ（`build_deck.py::FIGURES` に登録）:
 - **当番表の予定は 1 日 1 文字の文字列**（例: `日日夜休…`）で渡す。スロットの JSON が短く、
   日数との不一致も検出しやすいため。人数に数えるかどうかはコードごとに指定する。
 - `calendar_pages.py` はヒートマップを 52 週ごと、当番表を月ごと・12 人ごとに分ける。
+
+## 関連
+
+- [カレンダーの図（`calendars.py`）](calendars.ja.md)
+- [スライドテンプレート カタログ（全 101 種）](slide-template-catalog.ja.md)
+- [Deck workflow contract](workflow-contract.md) *（英語のみ）*

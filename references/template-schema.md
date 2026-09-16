@@ -16,10 +16,10 @@ file**.
 
 ```jsonc
 {
-  "name": "scalar-2026",                    // テンプレート ID（ファイル名と一致させる）
-  "displayName": "Scalar Slide Master 2026",// 人間向け表示名（既定はプレゼンのタイトル）
+  "name": "scalar-2026",                    // template ID (must match the file name)
+  "displayName": "Scalar Slide Master 2026",// human-facing name (defaults to the presentation title)
   "sourceUrl": "https://docs.google.com/presentation/d/…",
-  "presentationId": "1shiZp7…",             // 複製元。これが生成の起点
+  "presentationId": "1shiZp7…",             // the deck copied from; generation starts here
   "generationMode": "copy",
 
   "pageSize": {
@@ -28,23 +28,26 @@ file**.
     "aspectRatio": "1.778:1"
   },
 
-  // 複製直後に削除するテンプレート同梱スライド。テンプレートを編集したら再解析すること
+  // Slides shipped inside the template, deleted right after the copy.
+  // Re-analyze the template whenever you edit it.
   "existingSlideIds": ["g3b4087f65e2_0_0", "…"],
 
-  // マスターの colorScheme。dark1/light1/dark2/light2/accent1..6/hyperlink/
-  // followed_hyperlink/text1/text2/background1/background2 が入る
+  // The master's colorScheme: dark1/light1/dark2/light2/accent1..6/hyperlink/
+  // followed_hyperlink/text1/text2/background1/background2
   "colors": { "dark1": "#0F172A", "accent5": "#2673BB", "…": "…" },
 
-  // マスターの一覧。マスターが複数あるプレゼンテーションもある（他ファイルから
-  // スライドを貼り付けると増える）。既定は 1 つ目（トップレベルの colors /
-  // masterDecorations は masters[0] 由来）だが、レイアウトごとにどのマスターに
-  // 属するかを layouts.*.masterObjectId がここの objectId で参照する
+  // Every master in the presentation — there can be more than one (pasting
+  // slides in from another file adds them). The first is the default (the
+  // top-level colors / masterDecorations come from masters[0]); each layout
+  // says which master it belongs to via layouts.*.masterObjectId, which
+  // refers to an objectId here.
   "masters": [
     { "objectId": "g1b3a74d17bb_0_0", "displayName": "Scalar Master Slide",
       "colors": { "…": "…" }, "decorations": [{ "…": "…" }] }
   ],
 
-  // ページ番号の描画スタイル。Slides API は SLIDE_NUMBER を生成できないため自前描画する
+  // How the page number is drawn. The Slides API cannot create a SLIDE_NUMBER
+  // placeholder, so the builder draws it itself.
   "pageNumber": {
     "font": "Arial",
     "fontSize": 7,
@@ -53,12 +56,13 @@ file**.
     "startAt": 1
   },
 
-  // マスターが全ページに敷く要素の記録。複製方式では自動継承されるので描画指示ではない
+  // A record of what the master lays on every page. A copy inherits these
+  // automatically, so this is a record, not a drawing instruction.
   "masterDecorations": [
     { "type": "image", "objectId": "…", "x": 0.118, "y": 5.197, "w": 1.181, "h": 0.342 }
   ],
 
-  // セマンティックロール → レイアウトキー。推測値なので人間が確認して確定させる
+  // Semantic role -> layout key. Inferred, so a human confirms it.
   "roles": {
     "COVER": "TITLE_SLIDE",
     "SECTION": "SLIDE_SUB_SECTION",
@@ -67,39 +71,41 @@ file**.
     "BLANK": "WHITE",
     "CLOSING": "CLOSE_PAGE"
   },
-  // 推測時に見つかった候補一覧。ロール確定後の再確認用に残す
+  // Candidates found while inferring, kept so the choice can be re-checked.
   "roleCandidates": { "CONTENT": ["DEFAULT_PROPOSAL", "DEFAULT_PRESENTATION"] },
 
   "layouts": {
     "DEFAULT_PROPOSAL": {
-      "layoutId": "g1b3a74d17bb_0_19",      // createSlide に渡す ID
+      "layoutId": "g1b3a74d17bb_0_19",      // the ID passed to createSlide
       "displayName": "Default - Proposal",
       "placeholders": ["TITLE", "SLIDE_NUMBER", "BODY"],
-      // 2カラム/3カラムのレイアウトは BODY を複数持つ: ["TITLE","BODY","BODY#1","BODY#2"]
-      // index 0 が "BODY"、以降が "BODY#1"。座標も elements.body / body#1 / body#2 に入る
+      // A 2- or 3-column layout carries several BODYs: ["TITLE","BODY","BODY#1","BODY#2"].
+      // Index 0 is "BODY", the rest "BODY#1" and so on; their coordinates land
+      // in elements.body / body#1 / body#2.
       "hasPageNumber": true,
-      "elements": {                          // 座標はすべてインチ
+      "elements": {                          // all coordinates are in inches
         "title":       { "x": 0.5, "y": 0.126, "w": 9.0, "h": 0.351 },
         "body":        { "x": 0.5, "y": 0.96,  "w": 9.0, "h": 4.068 },
         "slideNumber": { "x": 9.611, "y": 5.378, "w": 0.222, "h": 0.219 }
       },
-      "textStyles": {                        // プレースホルダの既定スタイル（第1階層）
+      "textStyles": {                        // the placeholder's default style (first level)
         "title": { "fontFamily": "Noto Sans JP", "fontSize": 20, "color": "theme:DARK1" }
       },
-      "decorations": [                       // このレイアウト固有の非プレースホルダ要素
+      "decorations": [                       // non-placeholder elements specific to this layout
         { "type": "shape", "shapeType": "RECTANGLE", "fill": "theme:ACCENT6",
           "x": 0.367, "y": 0.059, "w": 0.054, "h": 0.398 }
       ],
 
-      // 「ここに画像を置く」とテンプレートが決めている枠。無ければキー自体が出ない。
-      // 面積の大きい順。デッキ仕様ではここに画像を置く（後述）
+      // Frames where the template itself says "put a picture here". The key is
+      // absent when there are none. Largest area first; a deck spec puts its
+      // images here (see below).
       "imageSlots": [
         { "x": 0.5, "y": 2.42, "w": 3.15, "h": 2.78,
           "source": "layout",        // placeholder | layout | sample
-          "placeholder": "PICTURE",  // source が placeholder のときだけ
+          "placeholder": "PICTURE",  // only when source is placeholder
           "declared": { "x": 0.5, "y": 3.442, "w": 3.15, "h": 1.772 },
-          "sizedBy": "sample",       // 空枠より実例の大きさを優先した印
-          "samples": 6,              // 同梱スライドで実際に使われていた回数
+          "sizedBy": "sample",       // marks that a real sample's size beat the empty frame
+          "samples": 6,              // how many bundled slides actually used it
           "aspect": 1.133 }
       ]
     }
@@ -164,7 +170,7 @@ pasted there).
 
 ```jsonc
 {
-  "title": "生成するプレゼンテーションのタイトル",   // --title で上書き可
+  "title": "Title of the presentation to generate",   // --title overrides it
   // Optional. What the deck is for: "print" (handout, proposal read on paper)
   // or "presentation" (projected). With "print", text fitting may shrink text
   // down to 8pt (8/9/10pt are fine on paper); otherwise it stops at 70% of the
@@ -172,29 +178,30 @@ pasted there).
   "density": "print",
   "slides": [
     {
-      "layout": "CONTENT",        // 必須。ロール名またはレイアウトキー
-      "title": "…",               // 任意。レイアウトが TITLE を持つ場合のみ
-      "subtitle": "…",            // 任意。レイアウトが SUBTITLE を持つ場合のみ
-      // 任意。文字列または配列（改行で連結）。行は文字列でも、
-      // {"text": …, "role": …} でもよい（役割つきの行＝見出しなどを強調する）。
-      // 行内の一部だけ強調したいときは **強調** と書く
+      "layout": "CONTENT",        // required; a role name or a layout key
+      "title": "…",               // optional; only if the layout has a TITLE
+      "subtitle": "…",            // optional; only if the layout has a SUBTITLE
+      // Optional. A string, or an array joined with newlines. A line is either
+      // a string or {"text": …, "role": …} (a roled line — a heading, say).
+      // To emphasize part of a line, write **bold**
       "body": [
-        "ふつうの行",
-        { "text": "見せていないから変えられるもの", "role": "heading" },
-        "    データベースの種類・テーブル構造",
-        "足すのは簡単で、消すのは難しい。この **非対称性** が基本的な制約です。"
+        "An ordinary line",
+        { "text": "What is still changeable, because nobody has seen it", "role": "heading" },
+        "    Database engine, table layout",
+        "Adding is easy and removing is hard. That **asymmetry** is the real constraint."
       ],
-      "notes": "スピーカーノート",  // 任意
-      // 本文の見た目。slide 単位、または spec の "defaults" で一括指定できる。
-      // spaceAbove / spaceBelow はプレースホルダ既定の段落間隔を上書きする。
-      // 既定のままだと収容行数が見積もりから大きくずれるテンプレートが多い
+      "notes": "Speaker notes",  // optional
+      // How the body looks. Per slide, or for all slides in the spec's
+      // "defaults". spaceAbove / spaceBelow override the placeholder's own
+      // paragraph spacing — left at the template default, many templates fit
+      // far fewer lines than the estimate predicts
       "bodyFontSize": 13,
       "bodyLineSpacing": 115,
       "bodySpaceAbove": 0,
       "bodySpaceBelow": 3,
-      // 図の中で描くテキストの内側余白（インチ）。省略すると Slides 内蔵の
-      // 余白のまま。情報量が多いページで詰めるための指定で、slide 単位・
-      // spec の "defaults"・図ごと（下の figures 参照）に書ける
+      // Inner padding for text drawn inside a figure, in inches. Omitted, the
+      // padding built into Slides stands. Use it to tighten a dense page; it
+      // can be set per slide, in the spec's "defaults", or per figure (below)
       "textMargin": 0.02,
       // Text that overflows its box: "shrink" (default: tighten the margin,
       // then the font) / "grow" (heighten figure boxes; same as shrink for
@@ -207,30 +214,31 @@ pasted there).
     },
     {
       "layout": "THREE_COLUMN",
-      "title": "3つの観点",
-      // 複数カラムのレイアウトは bodies で BODY index 0,1,2… に順に流し込む。
-      // body と bodies は排他。body は bodies=[body] と等価
-      "bodies": [["観点A", "説明"], ["観点B", "説明"], ["観点C", "説明"]]
+      "title": "Three angles",
+      // A multi-column layout fills BODY index 0,1,2… in order through bodies.
+      // body and bodies are mutually exclusive; body equals bodies=[body]
+      "bodies": [["Angle A", "detail"], ["Angle B", "detail"], ["Angle C", "detail"]]
     },
     {
       "layout": "TITLE_ONLY_PROPOSAL",
-      "title": "利用者から台帳まで",
-      // 任意。プレースホルダの上に図・画像を重ねる。座標はすべてインチ
+      "title": "From the user to the ledger",
+      // Optional. Figures and images laid over the placeholders. All coordinates in inches
       "figures": [
         { "type": "icon_flow", "x": 0.5, "y": 1.3, "w": 9.0, "size": 0.92,
-          "items": [["person", "利用者"], ["database", "台帳"]] },
+          "items": [["person", "User"], ["database", "Ledger"]] },
         { "type": "image", "x": 0.5, "y": 3.2, "w": 4.0, "h": 1.6,
-          "source": "assets/shot.png", "fit": "cover", "caption": "管理画面" },
-        // textMargin はこの図だけに効く（スライドや defaults の値より優先）
+          "source": "assets/shot.png", "fit": "cover", "caption": "Admin screen" },
+        // textMargin here applies to this figure alone (it beats the slide's
+        // value and the one in defaults)
         { "type": "table", "x": 0.5, "y": 1.2, "w": 9.0, "textMargin": 0.02,
-          "headers": ["観点", "現行", "移行後"], "rows": [["…", "…", "…"]] }
+          "headers": ["Aspect", "Today", "After"], "rows": [["…", "…", "…"]] }
       ]
     },
     {
       "layout": "SECTION",
-      "title": "第1章 …",
-      // レイアウトが imageSlots を持つなら、x/y/w/h は書かない。
-      // build_deck.py が枠の座標を埋め、fit も既定で "cover" にする
+      "title": "Chapter 1 …",
+      // When the layout has imageSlots, leave x/y/w/h out: build_deck.py fills
+      // in the frame's coordinates and defaults fit to "cover"
       "figures": [
         { "type": "aiImage", "prompt": "…", "style": "isometric" }
       ]
@@ -405,3 +413,86 @@ the family name keeps the spec readable.
 You can also skip roles and write `"layout": "DEFAULT_PRESENTATION"` directly
 as a layout key. The benefit of roles is that the same deck spec can be
 reused when the template is swapped out.
+
+---
+
+## 4. Slide Template `template.json` (a Different File)
+
+§1 describes a **brand template** — `templates/<id>.json`, the master a deck is
+built from. A **slide template** is a different file with a different schema:
+`slide-templates/<pack>/<id>/template.json`, one ready-made page that a deck
+spec names with `$template` (see the README and the header of
+[slide-template-catalog.md](slide-template-catalog.md)). It has two parts:
+
+| Key | What it holds |
+|---|---|
+| `slots` | The inputs the page takes — `type`, `required`, `default` and limits. The catalog prints these as each template's **Inputs** table |
+| `slide` | One deck-spec slide exactly as §2 describes it, with the caller-supplied values left as markers |
+
+Three markers stand in for values that are not known until the page is
+rendered. `$slot` appears only inside `slide`; `$density` and `$t` may appear
+in either part.
+
+### `{"$slot": "<name>"}` — the caller's input
+
+Replaced by that slot's value: what the caller passed under `data`, over the
+slot's own `default`. A name with neither is an error (`no value for slot:
+<name>`), as is passing a slot the template does not declare. A slot marked
+`required` must also be referenced somewhere in `slide` — a required input the
+page never prints is a template bug, and rendering refuses it.
+
+### `{"$density": {"print": …, "presentation": …}}` — one value per density
+
+Both keys are required, and no sibling key may sit beside `$density`. A
+template that uses the marker anywhere must declare a valid `defaultDensity`.
+Density is resolved **first**, before the input is checked, so a `maxLength`
+written as a `$density` object is already a plain number when it is compared
+against. The density comes from the slide, then the spec, then
+`defaultDensity`.
+
+### `{"$t": "<key>"}` — a word the slide prints for itself
+
+Looked up in `slide-templates/i18n/<lang>.json`: table headers, axis ends,
+`Source:` and the like. No sibling key may sit beside `$t`, and the key must be
+a string. A key missing from the requested language falls back to the default
+language (`ja`) rather than rendering blank, so an untranslated word surfaces
+as a visible Japanese word instead of a hole; a key in neither language is an
+error.
+
+The language comes from the slide, then the spec, then `ja`. What the caller
+writes under `data` is never translated — only the words the template itself
+owns. Figures drawn outside any template read the same resource through
+`Canvas._label()` ([diagrams.md](diagrams.md)), so one page cannot come out
+half in each language.
+
+A slot `default` may itself be `{"$t": …}`. It is resolved before the input is
+type-checked, so a `"type": "string"` slot still sees a string.
+
+`decision-record` uses all three:
+
+```jsonc
+{
+  "slots": {
+    // a limit that differs per density
+    "title": { "type": "string", "required": true,
+               "maxLength": { "$density": { "print": 38, "presentation": 30 } } }
+  },
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      { "type": "table", "x": 0.5, "y": 1.62, "w": 9.0,
+        // the template's own words, translated per language
+        "headers": [{ "$t": "adr.option" }, { "$t": "adr.verdict" },
+                    { "$t": "adr.rationale" }],
+        // the caller's data, never translated
+        "rows": { "$slot": "options" },
+        "size": { "$density": { "print": 9, "presentation": 10 } } }
+    ]
+  },
+  "defaultDensity": "print"
+}
+```
+
+Expansion runs before validation, generation and `--into` alike, so
+`--dry-run --strict` catches a missing or oversized input before anything is
+created.

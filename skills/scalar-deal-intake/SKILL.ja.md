@@ -38,7 +38,7 @@ description: >-
 | 何が未確認で、誰に聞けばよいかを出す | このスキル |
 | 台帳（`account.json`）への反映と活動計画デッキ | `scalar-account-plan` |
 | 訪問 1 回分の資料・WPS・Deal Desk・稟議 | `scalar-ae-materials` |
-| ディスカバリー / システム / インフルーエンスマップの作図 | `b2b-account-maps` |
+| ディスカバリー / システム / インフルエンスマップの作図 | `b2b-account-maps` |
 | 正式提案書・見積 | `scalar-proposal-slides` / `spreadsheets` |
 | 年次の Account Planning Session | `scalar-account-planning-session` |
 | 商談化する前のリード育成（ナーチャリング 0〜4） | `scalar-nurture-intake` |

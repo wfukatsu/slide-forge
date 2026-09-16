@@ -113,7 +113,7 @@
     },
     {
       "id": "influence-map",
-      "displayName": "インフルーエンスマップ",
+      "displayName": "インフルエンスマップ",
       "pack": "b2b-sales",
       "category": "stakeholder",
       "path": "b2b-sales/influence-map/template.json",
@@ -200,7 +200,7 @@
     },
     {
       "id": "influence-map-org",
-      "displayName": "インフルーエンスマップ（組織構造）",
+      "displayName": "インフルエンスマップ（組織構造）",
       "pack": "b2b-sales",
       "category": "stakeholder",
       "path": "b2b-sales/influence-map-org/template.json",

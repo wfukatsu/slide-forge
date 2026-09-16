@@ -636,7 +636,8 @@ class ChartMixin:
         else:
             png = self._pie_png(vals, cols, donut, bg)
             self.image(x, y, size, size, png, fit="contain",
-                       alt="円グラフ: " + ", ".join(str(n) for n, _ in items))
+                       alt=self._label("charts.pie_alt")
+                       + ", ".join(str(n) for n, _ in items))
 
         lx = x + size + 0.25
         lw = legend_w or 2.4
@@ -647,7 +648,8 @@ class ChartMixin:
             self.shape(lx, ry + 0.085, 0.16, 0.13, kind="RECTANGLE",
                        fill=cols[i], stroke=None)
             pct = v / total * 100
-            cap = (f"{name}  {_fmt(v)}{unit}（{pct:.0f}%）" if unit
+            cap = (f"{name}  {_fmt(v)}{unit}"
+                   + self._label("charts.pie_pct").format(pct=f"{pct:.0f}") if unit
                    else f"{name}  {pct:.0f}%")
             self.label(lx + 0.26, ry, lw - 0.26, row_h, cap, size=label_size,
                        align="START", valign="MIDDLE", color=self.P.text)

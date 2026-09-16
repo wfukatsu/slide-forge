@@ -115,11 +115,14 @@ register({
         "ghost: 未知の状態 '{status}'（{allowed}）",
 })
 
-# Data status categories for a ghost deck. Used to check that no "未取得" (missing) items remain before finalizing
+# Data status categories for a ghost deck. Used to check that no "missing"
+# items remain before finalizing. The keys are the vocabulary a caller passes;
+# the first element of each value is a label key resolved at draw time, so the
+# chip is printed in the deck's language.
 GHOST_STATUS = {
-    "confirmed": ("確定", "success"),
-    "wip": ("作成中", "warning"),
-    "missing": ("未取得", "danger"),
+    "confirmed": ("pages.ghost.confirmed", "success"),
+    "wip": ("pages.ghost.wip", "warning"),
+    "missing": ("pages.ghost.missing", "danger"),
 }
 
 
@@ -209,7 +212,7 @@ class PageMixin:
 
     # ---- 3. So-what box (kicker) ----
 
-    def so_what(self, x, y, w, h, text, *, label="示唆", size=10.5,
+    def so_what(self, x, y, w, h, text, *, label=None, size=10.5,
                 accent=None, points=None) -> float:
         """Put into words what can be read from the figure. Returns the bottom y.
 
@@ -230,7 +233,8 @@ class PageMixin:
         self.shape(x, y, 0.055, h, kind="RECTANGLE", fill=c, stroke=None)
         pad_l = 0.055 + 0.16
         head_h = 0.28
-        self.label(x + pad_l, y + 0.12, w - pad_l - 0.16, head_h, label,
+        self.label(x + pad_l, y + 0.12, w - pad_l - 0.16, head_h,
+                   self._label("pages.so_what", label),
                    size=9, bold=True, color=c)
         body_y = y + 0.12 + head_h
         body_h = h - (body_y - y) - 0.14
@@ -325,7 +329,7 @@ class PageMixin:
     # ---- 4. Source-note line ----
 
     def source_note(self, x, y, w, source, *, notes=None, size=7.5,
-                    rule=True, prefix="出典") -> float:
+                    rule=True, prefix=None) -> float:
         """The source-note line and footnotes at the bottom of the page. Returns the bottom y.
 
         **Always place this on a slide that shows numbers.** Never show a
@@ -341,7 +345,7 @@ class PageMixin:
                        fill=self.P.border, stroke=None)
             top = y + 0.01 + 0.04
         line_h = size * self._LINE * 1.2 / 72
-        rows = list(notes or []) + [f"{prefix}: {source}"]
+        rows = list(notes or []) + [f"{self._label('pages.source', prefix)}: {source}"]
         h = len(rows) * line_h + 0.06
         self.label(x, top, w, h, "\n".join(rows), size=size,
                    color=self.P.muted, line_spacing=120)
@@ -350,7 +354,7 @@ class PageMixin:
     # ---- 5. Exhibit frame ----
 
     def exhibit_frame(self, x, y, w, h, number, title, *, size=9.5,
-                      pad=0.14, label_prefix="図表"):
+                      pad=0.14, label_prefix=None):
         """Draw a numbered exhibit frame, and **return the inner area (x, y, w, h) for drawing its contents**.
 
         This is the one component whose return value differs from the
@@ -366,7 +370,7 @@ class PageMixin:
         head_h = 0.3
         self.shape(x, y, w, head_h, kind="RECTANGLE",
                    fill=self.P.surfaceAlt, stroke=None)
-        tag = f"{label_prefix} {number}"
+        tag = f"{self._label('pages.exhibit', label_prefix)} {number}"
         tag_w = 0.28 + len(tag) * size / 72 * 0.62
         self.shape(x + pad, y + 0.05, tag_w, head_h - 0.1, kind="RECTANGLE",
                    fill=self.P.primary, stroke=None, text=tag,
@@ -595,7 +599,7 @@ class PageMixin:
     # ---- 9. Executive summary (SCR) ----
 
     def exec_summary(self, x, y, w, h, situation, complication, resolution, *,
-                     points=None, size=10.5, labels=("状況", "課題", "答え")) -> float:
+                     points=None, size=10.5, labels=None) -> float:
         """Lead with the conclusion in 3 tiers: Situation -> Complication -> Resolution. Returns the bottom y.
 
         The entry point to the Pyramid Principle. The condition is that
@@ -604,6 +608,9 @@ class PageMixin:
         are the supporting points behind the answer (3-5; if you need more,
         reconsider the body's chapter breakdown).
         """
+        labels = labels or (self._label("exec.situation"),
+                            self._label("exec.complication"),
+                            self._label("exec.resolution"))
         blocks = [(labels[0], situation), (labels[1], complication), (labels[2], resolution)]
         if points and len(points) > 5:
             raise ValueError(t("exec_summary: {n} supporting points. "
@@ -631,8 +638,8 @@ class PageMixin:
                        bold=last, line_spacing=125)
         if points:
             py = y + 3 * (block_h + 0.16)
-            self.label(x, py, w, 0.28, "答えを支える論点", size=9, bold=True,
-                       color=self.P.muted)
+            self.label(x, py, w, 0.28, self._label("exec.supporting_points"),
+                       size=9, bold=True, color=self.P.muted)
             for i, p in enumerate(points):
                 ly = py + 0.3 + i * 0.3
                 self.shape(x + 0.04, ly + 0.09, 0.11, 0.11, kind="ELLIPSE",
@@ -700,7 +707,8 @@ class PageMixin:
             if status not in GHOST_STATUS:
                 raise ValueError(t("ghost: unknown status '{status}' ({allowed})",
                                    status=status, allowed=sorted(GHOST_STATUS)))
-            name, tone = GHOST_STATUS[status]
+            name_key, tone = GHOST_STATUS[status]
+            name = self._label(name_key)
             c = getattr(self.P, tone)
             gx = x + (i % cols) * (cw + gap)
             gy = y + (i // cols) * (ch + gap)

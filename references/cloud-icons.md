@@ -214,3 +214,9 @@ The fetch script lives in the shared engine, at `scripts/fetch_cloud_icons.py`.
   (specifying both width and height would stretch the icon, violating the
   "don't distort" rule). Placing one in a square frame leaves margin on either
   the top/bottom or the left/right.
+
+## See also
+
+- [Icon Library](icons.md)
+- [Illustrative Figures and Images](images.md)
+- [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)

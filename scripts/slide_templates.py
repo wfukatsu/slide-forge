@@ -40,10 +40,16 @@ _BY_ID: dict[str, dict] = {}
 
 
 def clear_cache() -> None:
-    """Drop the cached manifest. For tests, and for tools that rewrite it in place."""
+    """Drop the cached manifest and label resources.
+
+    For tests, and for tools that rewrite those files in place — the label
+    extractor rewrites `i18n/*.json`, so a stale table here would hand it back
+    the words it just replaced.
+    """
     global _MANIFEST_CACHE
     _MANIFEST_CACHE = None
     _BY_ID.clear()
+    _LABELS.clear()
 
 
 def load_manifest() -> dict:
@@ -431,23 +437,85 @@ def validate_input(template: dict, data: dict) -> list[str]:
     return problems
 
 
-def _render_node(node: Any, values: dict) -> Any:
+LABELS_DIR = TEMPLATE_ROOT / "i18n"
+DEFAULT_LANG = "ja"
+_LABELS: dict[str, dict] = {}
+
+
+def labels(lang: str) -> dict:
+    """The slide-facing label resource for one language.
+
+    These are the words a template prints on the slide itself — table headers,
+    axis ends, callout labels. They are deliberately **not** handled by
+    `_i18n.t()`, which localizes runtime CLI messages only; slide text is deck
+    content and needs a resource the deck author can translate per language.
+    """
+    if lang not in _LABELS:
+        path = LABELS_DIR / f"{lang}.json"
+        table = _read_json(path) if path.exists() else {}
+        if not isinstance(table, dict):
+            raise SlideTemplateError(f"{path}: label resource must be an object")
+        _LABELS[lang] = table
+    return _LABELS[lang]
+
+
+def resolve_label(key: str, lang: str) -> str:
+    """One label, falling back to the default language rather than blanking it.
+
+    A language whose resource is incomplete still renders a usable slide: the
+    missing entry comes out in the default language instead of vanishing, which
+    is what a reviewer needs to see in order to fix it.
+    """
+    table = labels(lang)
+    if key in table:
+        return table[key]
+    if lang != DEFAULT_LANG:
+        base = labels(DEFAULT_LANG)
+        if key in base:
+            return base[key]
+    raise SlideTemplateError(f"no label for key: {key!r} (lang {lang!r})")
+
+
+def _render_node(node: Any, values: dict, lang: str = DEFAULT_LANG) -> Any:
     if isinstance(node, dict):
         if "$slot" in node:
             name = node["$slot"]
             if name not in values:
                 raise SlideTemplateError(f"no value for slot: {name}")
             return values[name]
-        return {key: _render_node(value, values) for key, value in node.items()}
+        if "$t" in node:
+            if len(node) != 1:
+                siblings = ", ".join(sorted(set(node) - {"$t"}))
+                raise SlideTemplateError(
+                    f"$t object must have no sibling keys, found: {siblings}")
+            key = node["$t"]
+            if not isinstance(key, str):
+                raise SlideTemplateError(
+                    f"$t must name a label as a string, got {key!r}")
+            return resolve_label(key, lang)
+        return {key: _render_node(value, values, lang) for key, value in node.items()}
     if isinstance(node, list):
-        return [_render_node(value, values) for value in node]
+        return [_render_node(value, values, lang) for value in node]
     return node
 
 
-def render_template(template: dict, data: dict, *, density: str | None = None) -> dict:
+def render_template(template: dict, data: dict, *, density: str | None = None,
+                    lang: str | None = None) -> dict:
     # Resolve density before anything reads a constraint value: pre-resolution
     # a densitized maxItems is a dict and would crash the comparisons.
     template = _apply_density(template, density)
+    # A slot default can be a label too ("件", "Out of scope"), and it prints on
+    # the slide exactly like one. Resolve those before validate_input runs, so
+    # it type-checks the finished string rather than a {"$t": …} object.
+    slots = template.get("slots")
+    if isinstance(slots, dict):
+        template = dict(template)
+        template["slots"] = {
+            name: (dict(spec, default=_render_node(spec["default"], {},
+                                                   lang or DEFAULT_LANG))
+                   if isinstance(spec, dict) and "default" in spec else spec)
+            for name, spec in slots.items()
+        }
     problems = validate_input(template, data)
     if problems:
         raise SlideTemplateError("; ".join(problems))
@@ -458,7 +526,7 @@ def render_template(template: dict, data: dict, *, density: str | None = None) -
         raise SlideTemplateError(
             f"required slots are not mapped into slide: {', '.join(unused_required)}")
     values = resolve_values(template["slots"], data)
-    slide = _render_node(template.get("slide"), values)
+    slide = _render_node(template.get("slide"), values, lang or DEFAULT_LANG)
     if not isinstance(slide, dict) or "layout" not in slide:
         raise SlideTemplateError("rendered slide must be an object with layout")
     return slide

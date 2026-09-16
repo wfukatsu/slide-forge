@@ -71,8 +71,12 @@
         "y": 1.45,
         "w": 9.0,
         "headers": [
-          "項目",
-          "合意内容"
+          {
+            "$t": "common.item"
+          },
+          {
+            "$t": "partner.agreed"
+          }
         ],
         "rows": {
           "$slot": "rows"

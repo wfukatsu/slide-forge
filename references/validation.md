@@ -119,6 +119,17 @@ estimate stays on the low side (ignoring paragraph spacing can cut real
 capacity to roughly 60% of the estimate). Set `bodyFontSize` /
 `bodySpaceBelow` explicitly for such a template, or check the page in Gate 2.
 
+### The audit measures in the deck's language
+
+Text width depends on the language, and the furniture a `Canvas` prints for
+itself — `Source:`, weekday heads, callout labels — wraps differently in
+Japanese and English. So before measuring a slide, `audit_figures` sets the
+canvas language from the slide's `lang`, then the spec's, then `ja`: measuring
+Japanese words for a deck that will generate in English would report overflow
+that never happens. The corollary is that a deck with the wrong `lang` is
+measured in the wrong language, and what the audit reports — or fails to
+report — will not match the page that is actually generated.
+
 ---
 
 ## Gate 2: Thumbnail QA (the `slide-qa` skill)
@@ -219,3 +230,9 @@ run unconditionally.
   does not go on a slide.
 - Pass QA yourself before presenting results — do not let the user find
   defects that a visual pass would have caught.
+
+## See also
+
+- [Layout Contract (Coordinates and Measured Values)](layout-contract.md)
+- [Google Slides API constraints and pitfalls](api-notes.md)
+- [Splitting Generation by Page (Parallel or Sequential)](parallel-generation.md)

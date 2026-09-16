@@ -147,10 +147,18 @@
         "y": 3.3,
         "w": 9.0,
         "headers": [
-          "前提条件",
-          "悲観",
-          "標準",
-          "楽観"
+          {
+            "$t": "scenario.assumption"
+          },
+          {
+            "$t": "scenario.pessimistic"
+          },
+          {
+            "$t": "scenario.base"
+          },
+          {
+            "$t": "scenario.optimistic"
+          }
         ],
         "rows": {
           "$slot": "assumptions"

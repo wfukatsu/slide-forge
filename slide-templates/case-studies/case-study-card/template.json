@@ -101,7 +101,9 @@
         "text": {
           "$slot": "sowhat"
         },
-        "label": "共通していること"
+        "label": {
+          "$t": "case.in_common"
+        }
       },
       {
         "type": "source_note",

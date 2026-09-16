@@ -2151,6 +2151,10 @@ def audit_figures(template: dict, spec: dict,
         if not figs:
             continue
         canvas = Canvas(_StubDeck(), f"dry_{i}", template)
+        # The audit measures text width, and the furniture Canvas prints itself
+        # wraps differently per language. Measuring Japanese for a deck that
+        # will generate in English would report overflow that never happens.
+        canvas.lang = s.get("lang") or spec.get("lang") or canvas.lang
         canvas.text_margin = _text_margin(spec, s)
         canvas.text_fit = _text_fit(spec, s)
         canvas.min_font_size = _min_font_size(spec, s)
@@ -2355,6 +2359,62 @@ def _boxes_overlap(a: dict, b: dict) -> float:
     iy = max(0.0, min(a["y"] + a["h"], b["y"] + b["h"]) - max(a["y"], b["y"]))
     small = min(a["w"] * a["h"], b["w"] * b["h"])
     return (ix * iy) / small if small > 0 else 0.0
+
+
+def expand_slide_templates(spec: dict) -> tuple[list[str], list[str]]:
+    """Expand slides written as {"$template": <id>, "data": {...}} in place.
+
+    A slide that names a registered slide template (slide-templates/) is
+    replaced by the slide that template renders, so a spec can name a template
+    instead of spelling out its figures. Sibling keys other than $template /
+    data / density are merged over the rendered slide, which lets a spec attach
+    "notes" or retarget "layout" without editing the template.
+
+    Density and language each come from the slide, then the spec, then the
+    template's own default — so one deck can stay in one language without
+    repeating it on every slide. Returns (notes, problems). This runs before validate_spec, which
+    requires every slide to carry a layout — an unexpanded $template slide has
+    none, so expansion has to happen first for dry-run, --into and generation
+    alike.
+    """
+    slides = spec.get("slides")
+    if not isinstance(slides, list):
+        return [], []
+    # Imported lazily so specs that never name a template don't pay for the
+    # registry, and build_deck stays importable without slide-templates/.
+    from slide_templates import load_template as _load_slide_template
+    from slide_templates import render_template as _render_slide_template
+
+    notes: list[str] = []
+    problems: list[str] = []
+    for i, s in enumerate(slides):
+        if not isinstance(s, dict) or "$template" not in s:
+            continue
+        where = f"slides[{i}]"
+        template_id = s.get("$template")
+        if not isinstance(template_id, str) or not template_id:
+            problems.append(t("{where}: '$template' must be a template id",
+                              where=where))
+            continue
+        data = s.get("data", {})
+        if not isinstance(data, dict):
+            problems.append(t("{where}: 'data' must be an object", where=where))
+            continue
+        density = s.get("density", spec.get("density"))
+        lang = s.get("lang", spec.get("lang"))
+        try:
+            slide_template, _ = _load_slide_template(template_id)
+            rendered = _render_slide_template(slide_template, data,
+                                              density=density, lang=lang)
+        except (ValueError, KeyError, OSError) as exc:
+            problems.append(f"{where} ($template {template_id}): {exc}")
+            continue
+        rendered.update({k: v for k, v in s.items()
+                         if k not in ("$template", "data", "density", "lang")})
+        slides[i] = rendered
+        notes.append(t("{where}: expanded slide template '{id}'",
+                       where=where, id=template_id))
+    return notes, problems
 
 
 def validate_spec(template: dict, spec: dict) -> list[str]:
@@ -2562,6 +2622,17 @@ def main() -> int:
     with open(args.spec, encoding="utf-8") as f:
         spec = json.load(f)
 
+    # Slides that name a slide template become real slides before anything
+    # counts, validates or draws them.
+    tpl_notes, tpl_problems = expand_slide_templates(spec)
+    for msg in tpl_notes:
+        print(f"  {msg}")
+    if tpl_problems:
+        print(t("The spec has problems:"), file=sys.stderr)
+        for msg in tpl_problems:
+            print(f"  - {msg}", file=sys.stderr)
+        return 1
+
     selected_indices: list[int] | None = None
     if args.update_slides is not None:
         if not args.into:
@@ -2672,6 +2743,10 @@ def main() -> int:
             template, title=title, folder=args.folder,
             keep_existing=args.keep_existing,
         )
+    # The drawing layer prints furniture of its own around the caller's content
+    # ("Source:", weekday heads, the so-what label). Canvas reads the language
+    # off the deck, so one spec settles it once for templates and drawing alike.
+    deck.lang = spec.get("lang")
     try:
         warnings = build_from_spec(deck, spec, selected_indices=selected_indices)
         if not args.no_page_numbers:

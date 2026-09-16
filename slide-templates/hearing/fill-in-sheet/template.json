@@ -70,8 +70,12 @@
         "y": 1.55,
         "w": 9.0,
         "headers": [
-          "うかがいたいこと",
-          "ご記入欄"
+          {
+            "$t": "common.what_we_ask"
+          },
+          {
+            "$t": "fill.entry"
+          }
         ],
         "rows": {
           "$slot": "items"

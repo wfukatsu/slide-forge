@@ -115,3 +115,9 @@ d.event_mode_badge(x, y, mode, label=None, size=10)
   `event_access mode="hybrid"`（w 9.0, h 1.4）を下に。
 - **プログラム + 登壇者**: `event_timetable`（w 9.0, 5 行）の下に
   `event_speakers`（w 9.0, 3 人）— 4 枚目の実例を参照。
+
+## 関連
+
+- [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)
+- [スライドパターン（骨格 × 中身）](slide-patterns.ja.md)
+- [スキーマ定義](template-schema.ja.md)

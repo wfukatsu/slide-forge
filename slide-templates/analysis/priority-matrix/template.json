@@ -5,12 +5,20 @@
   "pack": "analysis",
   "category": "priority",
   "description": "課題を効果と実行容易性の 2 軸に置き、どこから着手すべきかを示す",
-  "answers": ["洗い出した課題のうち、どれから着手すべきか"],
+  "answers": [
+    "洗い出した課題のうち、どれから着手すべきか"
+  ],
   "inferenceLevel": "strategic",
-  "compatibleLayouts": ["BLANK"],
+  "compatibleLayouts": [
+    "BLANK"
+  ],
   "example": "example.json",
   "slots": {
-    "title": {"type": "string", "required": true, "maxLength": 70},
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
     "items": {
       "type": "array",
       "required": true,
@@ -19,17 +27,67 @@
       "items": {
         "type": "tuple",
         "fields": [
-          {"type": "string", "maxLength": 10},
-          {"type": "number", "minimum": 0, "maximum": 1},
-          {"type": "number", "minimum": 0, "maximum": 1}
+          {
+            "type": "string",
+            "maxLength": 10
+          },
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
         ]
       }
     },
-    "highlight": {"type": "string[]", "default": [], "maxItems": 3, "maxLength": 10},
-    "xAxis": {"type": "string[]", "default": ["実行が難しい", "実行しやすい"], "minItems": 2, "maxItems": 2, "maxLength": 12},
-    "yAxis": {"type": "string[]", "default": ["効果小", "効果大"], "minItems": 2, "maxItems": 2, "maxLength": 12},
-    "insight": {"type": "string", "required": true, "maxLength": 44},
-    "source": {"type": "string", "required": true, "maxLength": 160}
+    "highlight": {
+      "type": "string[]",
+      "default": [],
+      "maxItems": 3,
+      "maxLength": 10
+    },
+    "xAxis": {
+      "type": "string[]",
+      "default": [
+        {
+          "$t": "priority.axis.hard"
+        },
+        {
+          "$t": "priority.axis.easy"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "maxLength": 12
+    },
+    "yAxis": {
+      "type": "string[]",
+      "default": [
+        {
+          "$t": "priority.axis.low_impact"
+        },
+        {
+          "$t": "priority.axis.high_impact"
+        }
+      ],
+      "minItems": 2,
+      "maxItems": 2,
+      "maxLength": 12
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": 44
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
   },
   "guardrails": [
     "items は [課題名, x, y]。x / y は 0〜1 の相対値（0=左/下、1=右/上）。評価の根拠（効果試算・工数見積）と評価者・評価日を source に書く",
@@ -42,10 +100,54 @@
   "slide": {
     "layout": "BLANK",
     "figures": [
-      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
-      {"type": "posmap", "x": 1.3, "y": 0.95, "w": 7.4, "h": 2.95, "bubble": 0.8, "points": {"$slot": "items"}, "xAxis": {"$slot": "xAxis"}, "yAxis": {"$slot": "yAxis"}, "highlight": {"$slot": "highlight"}},
-      {"type": "so_what", "x": 0.5, "y": 4.0, "w": 9.0, "h": 0.82, "text": {"$slot": "insight"}},
-      {"type": "source_note", "x": 0.5, "y": 4.87, "w": 9.0, "source": {"$slot": "source"}}
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "posmap",
+        "x": 1.3,
+        "y": 0.95,
+        "w": 7.4,
+        "h": 2.95,
+        "bubble": 0.8,
+        "points": {
+          "$slot": "items"
+        },
+        "xAxis": {
+          "$slot": "xAxis"
+        },
+        "yAxis": {
+          "$slot": "yAxis"
+        },
+        "highlight": {
+          "$slot": "highlight"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 4.0,
+        "w": 9.0,
+        "h": 0.82,
+        "text": {
+          "$slot": "insight"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
     ]
   }
 }

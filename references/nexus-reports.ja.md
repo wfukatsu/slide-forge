@@ -98,3 +98,8 @@ infra と scalardb にはフェーズマニフェストが無いので、状態�
 実はしていない」ページができるので、解釈が要るページは同じ `pages/` に書き足し、
 `assemble_spec.py` がファイル名順に統合する。章扉の番号が 18 ずつ空いているのは
 そのため。
+
+## 関連
+
+- [スライドテンプレート カタログ（全 101 種）](slide-template-catalog.ja.md)
+- [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)

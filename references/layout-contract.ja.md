@@ -142,6 +142,11 @@ Google の `lineSpacing` は**基準の行高に対する百分率**で、絶対
 - 矢印が「正しい図形」に繋がっているか（A→B のつもりで A→C でもエラーにならない）
 - コントラスト、図が伝えたいことを実際に伝えているか
 
+**測定はデッキの言語に従う。** 部品が自分で刷る語（`出典:`、曜日見出し）は
+`slide-templates/i18n/<lang>.json` から引き、言語ごとに折り返し方が違う。そのため
+検査器はスライドの `lang` → spec の `lang` → `ja` の順で言語を決めて測る。上の値が
+成り立つのは、その `lang` が実際に生成されるデッキと一致しているときだけである。
+
 ## 固定比率で領域を割らない
 
 箱の高さに対して「見出しに 0.7in」「数値に 52%」のような固定配分をすると、
@@ -192,3 +197,9 @@ configure_layout(page_w=13.333, page_h=7.5, margin=0.6,
   そのまま受け取るだけで、図形との位置関係を検証しない。図形に紐づけたい場合は
   `updateLineProperties` の `startConnection` / `endConnection` を使う
   （`Canvas.connect()` が行う）。接続サイトは全シェイプ共通で 0=上 1=左 2=下 3=右。
+
+## 関連
+
+- [検証ゲート: オフライン座標チェックとサムネイル QA](validation.ja.md)
+- [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)
+- [Google Slides API の制約と落とし穴](api-notes.ja.md)

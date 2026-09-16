@@ -5,14 +5,32 @@
   "pack": "calendar",
   "category": "heatmap",
   "description": "日ごとの量を週 × 曜日のマスの濃淡で並べ、曜日・時期による偏りと月別の合計を示す",
-  "answers": ["どの曜日・時期に量が集中しているか"],
+  "answers": [
+    "どの曜日・時期に量が集中しているか"
+  ],
   "inferenceLevel": "descriptive",
-  "compatibleLayouts": ["BLANK"],
+  "compatibleLayouts": [
+    "BLANK"
+  ],
   "example": "example.json",
   "slots": {
-    "title": {"type": "string", "required": true, "maxLength": 36},
-    "start": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
-    "end": {"type": "string", "required": true, "minLength": 8, "maxLength": 10},
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 36
+    },
+    "start": {
+      "type": "string",
+      "required": true,
+      "minLength": 8,
+      "maxLength": 10
+    },
+    "end": {
+      "type": "string",
+      "required": true,
+      "minLength": 8,
+      "maxLength": 10
+    },
     "values": {
       "type": "array",
       "required": true,
@@ -21,15 +39,39 @@
       "items": {
         "type": "tuple",
         "fields": [
-          {"type": "string", "minLength": 8, "maxLength": 10},
-          {"type": "number", "minimum": 0}
+          {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          {
+            "type": "number",
+            "minimum": 0
+          }
         ]
       }
     },
-    "unit": {"type": "string", "default": "件", "maxLength": 4},
-    "levels": {"type": "integer", "default": 5, "minimum": 3, "maximum": 7},
-    "monthly": {"type": "boolean", "default": true},
-    "summary": {"type": "boolean", "default": true},
+    "unit": {
+      "type": "string",
+      "default": {
+        "$t": "calendars.count_unit"
+      },
+      "maxLength": 4
+    },
+    "levels": {
+      "type": "integer",
+      "default": 5,
+      "minimum": 3,
+      "maximum": 7
+    },
+    "monthly": {
+      "type": "boolean",
+      "default": true
+    },
+    "summary": {
+      "type": "boolean",
+      "default": true
+    },
     "extraHolidays": {
       "type": "array",
       "default": [],
@@ -37,12 +79,24 @@
       "items": {
         "type": "tuple",
         "fields": [
-          {"type": "string", "minLength": 8, "maxLength": 10},
-          {"type": "string", "minLength": 1, "maxLength": 10}
+          {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 10
+          },
+          {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10
+          }
         ]
       }
     },
-    "source": {"type": "string", "required": true, "maxLength": 160}
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 160
+    }
   },
   "guardrails": [
     "タイトル（結論）は 1 行・全角 36 字まで。2 行になると月の見出しに重なる",
@@ -56,13 +110,55 @@
   "slide": {
     "layout": "BLANK",
     "figures": [
-      {"type": "governing_message", "x": 0.5, "y": 0.42, "w": 9.0, "text": {"$slot": "title"}},
-      {"type": "calendar_heatmap", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.65,
-       "start": {"$slot": "start"}, "end": {"$slot": "end"}, "values": {"$slot": "values"},
-       "unit": {"$slot": "unit"}, "levels": {"$slot": "levels"},
-       "monthly": {"$slot": "monthly"}, "summary": {"$slot": "summary"},
-       "extraHolidays": {"$slot": "extraHolidays"}},
-      {"type": "source_note", "x": 0.5, "y": 4.85, "w": 9.0, "source": {"$slot": "source"}}
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "calendar_heatmap",
+        "x": 0.5,
+        "y": 1.05,
+        "w": 9.0,
+        "h": 3.65,
+        "start": {
+          "$slot": "start"
+        },
+        "end": {
+          "$slot": "end"
+        },
+        "values": {
+          "$slot": "values"
+        },
+        "unit": {
+          "$slot": "unit"
+        },
+        "levels": {
+          "$slot": "levels"
+        },
+        "monthly": {
+          "$slot": "monthly"
+        },
+        "summary": {
+          "$slot": "summary"
+        },
+        "extraHolidays": {
+          "$slot": "extraHolidays"
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
     ]
   }
 }
