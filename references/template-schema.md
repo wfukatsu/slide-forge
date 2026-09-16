@@ -299,7 +299,7 @@ converted from **camelCase to snake_case** and passed as a keyword argument
 | Tables/charts | `table` `vbars` `vbars_grouped` `vbars_stacked` `linechart` `pie` `pareto` |
 | Framework diagrams | `posmap` `gantt` `orgchart` `lean_canvas` `nested_circles` `testimonial` `fishbone` |
 | Event materials | `event_mode_badge` `event_overview` `event_timetable` `event_speakers` `event_access` |
-| Page components | `governing_message` `lead_in` `so_what` `source_note` `exhibit_frame` |
+| Page components | `governing_message` `lead_in` `so_what` `source_note` `exhibit_frame` `list` |
 | Analysis/design diagrams | `mece_tree` `waterfall` `rating_matrix` `exec_summary` `storyline` `ghost` |
 | Code | `code_block` |
 | Images | `image` `aiImage` |
@@ -312,6 +312,7 @@ Each page-component and analysis/design-diagram type (`scripts/pages.py`):
 | `lead_in` | A 1–2 line introduction directly below the title. Conveys "why look at this figure." For handout/submission decks — usually unnecessary for stage presentations |
 | `so_what` | A box stating the implication drawn from the figure. Don't overuse it (aim for ≤ 20% of pages). Never restate the title, and never introduce new information absent from the figure |
 | `source_note` | The source/annotation line at the bottom of the page. Required on any slide showing a number (don't put a number on a slide if you can't cite a source for it) |
+| `list` | A **native** bullet or numbered list (`createParagraphBullets`), not "・" typed into the text — the glyphs survive editing in Slides and the PowerPoint export. `style`: `bullet` (default) or `numbered`; `preset` passes an API preset name through. An item is a string, `{"text": …, "items": [...]}` (nested, 3 levels at most) or `{"text": …, "level": n}`. `size` / `lineSpacing` / `itemGapPt` / `indentIn` / `hangingIn` are optional; `indentIn` / `hangingIn` override the preset's indents at every level, so leave them out when nesting. Text fitting is off for this type (shrinking would fight the list's indents), so size the box for the text and let the overflow audit catch the rest |
 | `exhibit_frame` | A frame with a figure number. The drawing function returns the inner content area, but this can't be received from JSON, so the inner content must be drawn separately with hand-aligned coordinates (roughly `x`+0.2 / header bottom +0.45) |
 | `mece_tree` | A logic tree that branches left to right (decomposing an issue). Use `orgchart` for a vertical org chart. Depth is capped at 4 levels |
 | `waterfall` | A bridge showing increases and decreases. `good` chooses which direction (increase or decrease) is shown in green. Raises `ValueError` if the final total doesn't match the running sum |

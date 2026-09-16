@@ -1778,6 +1778,8 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "governing_message": ("governing_message", ["x", "y", "w", "text"]),
     "lead_in":           ("lead_in",           ["x", "y", "w", "text"]),
     "so_what":           ("so_what",           ["x", "y", "w", "h", "text"]),
+    # Native list paragraphs (createParagraphBullets), not "・" in the text
+    "list":              ("bullet_list",       ["x", "y", "w", "items"]),
     "source_note":       ("source_note",       ["x", "y", "w", "source"]),
     # exhibit_frame's return value (the inner area) can't be received from
     # JSON. Draw the frame, then draw the contents as a separate figure with

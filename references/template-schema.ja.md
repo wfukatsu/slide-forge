@@ -290,7 +290,7 @@ API はリンクを付けても色を変えないため、これが無いとク�
 | 表・グラフ | `table` `vbars` `vbars_grouped` `vbars_stacked` `linechart` `pie` `pareto` |
 | フレームワーク図 | `posmap` `gantt` `orgchart` `lean_canvas` `nested_circles` `testimonial` `fishbone` |
 | イベント案内 | `event_mode_badge` `event_overview` `event_timetable` `event_speakers` `event_access` |
-| ページ部品 | `governing_message` `lead_in` `so_what` `source_note` `exhibit_frame` |
+| ページ部品 | `governing_message` `lead_in` `so_what` `source_note` `exhibit_frame` `list` |
 | 分析図・設計図 | `mece_tree` `waterfall` `rating_matrix` `exec_summary` `storyline` `ghost` |
 | コード | `code_block` |
 | 画像 | `image` `aiImage` |
@@ -303,6 +303,7 @@ API はリンクを付けても色を変えないため、これが無いとク�
 | `lead_in` | タイトル直下の導入 1〜2 行。「この図を何のために見るか」を渡す。配布・提出資料向けで、登壇用では通常不要 |
 | `so_what` | 図から読み取れる示唆のボックス。使いすぎない（全体の 2 割以下が目安）。タイトルの焼き直しと図に無い新情報は書かない |
 | `source_note` | ページ下端の出典・注記行。数値を載せたスライドには必須（出典を書けない数字は載せない） |
+| `list` | Slides **ネイティブ**の箇条書き・番号付きリスト（`createParagraphBullets`）。文字として「・」を書くのではないので、Slides 上で編集しても PowerPoint に書き出しても記号が保たれる。`style` は `bullet`（既定）か `numbered`、`preset` で API のプリセット名を直接指定できる。項目は文字列、`{"text": …, "items": [...]}`（入れ子。3 階層まで）、`{"text": …, "level": n}` のいずれか。`size` / `lineSpacing` / `itemGapPt` / `indentIn` / `hangingIn` は任意。`indentIn` / `hangingIn` はプリセットのインデントを全階層で上書きするので、入れ子のときは指定しない。この型はテキストの自動適合を行わない（縮小のインデントがリストのインデントと衝突するため）。枠は文字量に合わせて取り、残りははみ出し検査で拾う |
 | `exhibit_frame` | 図表番号つきの枠。描画関数は中身用の内側領域を返すが JSON からは受け取れないため、中身は内側座標（`x`+0.2 / ヘッダー下 +0.45 目安）を手で合わせて別の図で描く |
 | `mece_tree` | 左から右へ広がるロジックツリー（論点の分解）。縦の体制図は `orgchart` を使う。深さは 4 層まで |
 | `waterfall` | 増減の橋渡し（ウォーターフォール）。`good` で増加・減少どちらを緑にするか選ぶ。最後の合計が積算と合わないと `ValueError` |
