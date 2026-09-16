@@ -78,6 +78,31 @@ class ExpansionTest(unittest.TestCase):
         _, problems = bd.expand_slide_templates(spec)
         self.assertEqual(problems, [])
 
+    def test_the_resolved_language_stays_on_the_expanded_slide(self):
+        # The figures this expands to are drawn later by Canvas._label(), which
+        # reads the slide's own lang. Dropping it here left an English slide
+        # printing "出典:" and Japanese weekday heads, because the canvas fell
+        # back to the deck-wide language.
+        spec = {"lang": "ja",
+                "slides": [{"$template": "swot-analysis", "data": swot_data(),
+                            "lang": "en"}]}
+        _, problems = bd.expand_slide_templates(spec)
+        self.assertEqual(problems, [])
+        self.assertEqual(spec["slides"][0]["lang"], "en")
+
+    def test_the_spec_language_is_recorded_on_a_slide_that_omits_it(self):
+        spec = {"lang": "en",
+                "slides": [{"$template": "swot-analysis", "data": swot_data()}]}
+        bd.expand_slide_templates(spec)
+        self.assertEqual(spec["slides"][0]["lang"], "en")
+
+    def test_no_language_anywhere_leaves_the_slide_without_one(self):
+        # Canvas falls back to the default language on its own; writing one in
+        # here would make the deck-wide default look like a per-slide choice.
+        spec = {"slides": [{"$template": "swot-analysis", "data": swot_data()}]}
+        bd.expand_slide_templates(spec)
+        self.assertNotIn("lang", spec["slides"][0])
+
     def test_no_slides_array_is_harmless(self):
         self.assertEqual(bd.expand_slide_templates({}), ([], []))
 

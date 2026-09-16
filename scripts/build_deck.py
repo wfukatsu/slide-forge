@@ -2411,6 +2411,13 @@ def expand_slide_templates(spec: dict) -> tuple[list[str], list[str]]:
             continue
         rendered.update({k: v for k, v in s.items()
                          if k not in ("$template", "data", "density", "lang")})
+        if lang:
+            # Density is fully resolved into the rendered slide here, but the
+            # language is not: the figures this expanded to are drawn later by
+            # Canvas._label(), which reads the slide's own lang. Dropping it
+            # left an English slide printing "出典:" and Japanese weekday heads,
+            # because the canvas fell back to the deck-wide language.
+            rendered["lang"] = lang
         slides[i] = rendered
         notes.append(t("{where}: expanded slide template '{id}'",
                        where=where, id=template_id))
@@ -2531,6 +2538,11 @@ def build_from_spec(
             continue
         from diagrams import Canvas  # only loaded for a spec that uses figures
         canvas = Canvas(deck, ref["slideId"], deck.template)
+        # Per slide, like the audit does: the canvas inherits deck.lang, which
+        # only carries the spec-level language, so without this a slide asking
+        # for another language still draws its own furniture — weekday heads,
+        # "Source:" — in the deck's language.
+        canvas.lang = s.get("lang") or spec.get("lang") or canvas.lang
         canvas.text_margin = _text_margin(spec, s)
         canvas.text_fit = _text_fit(spec, s)
         canvas.min_font_size = _min_font_size(spec, s)

@@ -741,7 +741,16 @@ class IllustrationMixin:
         ends = (self._label("axis.low"), self._label("axis.high"))
         x_axis = x_axis or ends
         y_axis = y_axis or ends
-        pad = 0.44          # area reserved for axis labels
+        # Area reserved for the y-axis labels. Sized from the longer label
+        # rather than fixed: 0.44in holds about 3.5 half-width characters, so a
+        # fixed width wraps an English label mid-word ("Intern/al") while
+        # Japanese 内 / 外 fit in one em. 0.44 stays the floor, so decks whose
+        # labels already fit are unchanged. Same approach as posmap().
+        # +0.26 covers the label's own inset (0.10 a side by default) plus slack;
+        # without it the box is the width of the glyphs alone and the text still
+        # has to shrink to fit.
+        need = max(self._em(str(t)) for t in y_axis) * (size - 2) / 72.0 * 1.1 + 0.26
+        pad = min(max(0.44, need), w * 0.25)
         gx, gy = x + pad, y
         gw, gh = w - pad, h - pad
         cw, ch = gw / 2, gh / 2
