@@ -51,8 +51,9 @@ description: >-
   「非公開」の項目（3年契約・先払いクレジット・値引き率）は営業担当につなぐ。
 - **調査の鮮度**: 事実は `references/scalar/research-2026-08.md` と
   `references/scalar/proposal-map.md`（§3/§5 は 2026-08-05 付）から取る。どちらも
-  **3 か月ルール**に従う — 古ければ並列エージェントで再調査する
-  （エージェントの構成は scalar-product-slides の SKILL.md の Phase 2 に記載）。
+  **3 か月ルール**に従う — 影響を受ける記述だけを
+  `references/scalar/research-policy.md` に従って更新する。並列での再調査は
+  自動では行わない。
 - **姉妹スキルと共通のルール**（google-slides-template の SKILL.md 参照）:
   デッキごとの Drive フォルダ（`scripts/drive_folder.py`）、インプレース編集前の
   バージョンスナップショット（`scripts/snapshot_version.py`）、`slide-qa` スキルに

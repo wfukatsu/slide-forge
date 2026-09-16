@@ -140,6 +140,7 @@ What the raw material is actually good for:
 
 | Material | What it feeds |
 |---|---|
+| Answers collected at an event (`hearing-slides`' `event-poll` / `collect-qr`) | §1–§5 story, and content coverage (§10) |
 | Questions asked at a webinar or in a community | §7 power script — the objections and the branches |
 | Enquiry email wording | §1–§5 story, in the buyer's own words |
 | What they downloaded, and in what order | Content coverage (§10) and the stage judgement |

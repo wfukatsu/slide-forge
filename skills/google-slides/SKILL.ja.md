@@ -54,8 +54,8 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 | クラウドベンダーアイコン（AWS/GCP/Azure） | `scripts/cloud_icons.py` + `assets/cloud-icons` + `references/cloud-icons.md` |
 | クラウドアイコンの復元（初回） | `scripts/fetch_cloud_icons.py` |
 | AI 生成画像（表紙、セクションアート） | `scripts/images.py`（`GEMINI_API_KEY` が必要）+ `references/images.md` |
-| API の落とし穴 | `references/google-slides-api.md`、`references/api-notes.md` |
-| デッキ構成のレシピ | `references/composers/{basic,content,product,usecase,enterprise,db-middleware}.md` |
+| API の落とし穴 | まず `references/api-notes.md` で該当トピックを検索し、解決しない場合にだけ `google-slides-api.md` の該当節を開く |
+| デッキ構成のレシピ | `references/composers/` の中から、合致する 1 ファイル / 1 節だけ |
 
 ---
 
@@ -138,7 +138,7 @@ grep -n "^def \|slide(\|plain(" examples/scalardb-scalardl/deck.py
 - **コネクタは図形に接続する**。自由座標の線として描かない — API は線の端点を検証しないため、外れた矢印は QA まで見えない
 - 本文 12pt 以上、タイトル 20pt 以上。WCAG AA コントラスト（4.5:1）。箇条書きは最大 6 個程度、1 スライド 1 メッセージ、60-30-10 の配色規則
 - クラウドアイコン名を推測しない — `scripts/cloud_icons.py --search <term>` で検索する。ベンダーアイコンの再着色・回転・反転はライセンス条項で禁止されている
-- 原則の全体とスライド種別ごとの指針: `references/google-slides-api.md`、`references/composers/`、`references/slide-patterns.md`
+- スライド種別ごとの指針: 合致する Composer とスライドパターンの節だけを読み込む
 
 ---
 

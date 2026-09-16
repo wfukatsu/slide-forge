@@ -30,7 +30,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 このファイルの外に 2 つの入口がある:
 [`references/commands.md`](references/commands.ja.md) は `/forge`・`/account`・
 `/visit` の 3 コマンド、[`references/README.md`](references/README.ja.md) は
-参照ドキュメント 65 本の索引である。
+参照ドキュメント 48 本の索引である。
 
 ## スキル
 

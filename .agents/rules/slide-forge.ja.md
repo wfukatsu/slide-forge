@@ -31,9 +31,12 @@
 | 再利用可能な 1 枚ものコンテンツテンプレートの作成・登録 | `slide-template-creator` |
 | 提供素材からの現状分析・課題特定 | `current-state-analysis` |
 | 分析フレームワークのスライドテンプレートの作成・変更 | `analysis-template-creator` |
+| 日付つきのタスク・予定からカレンダースライド（月間カレンダー、日単位ガント、日次タスクリスト、週間タイムテーブル、スプリントカレンダー、年間カレンダー、期限カウントダウン、日次ヒートマップ、当番表） | `calendar-slides` |
 | Scalar 社製品・提案スライドの作成 | `scalar-product-slides`, `scalar-proposal-slides` |
 | 顧客ごとの活動計画・訪問資料（AE の営業活動） | `scalar-account-plan`, `scalar-ae-materials` |
 | 議事録・メールをステージ別の記録に整理する／未確認事項を洗い出す | `scalar-deal-intake` |
+| ヒアリングシートを Markdown / Excel / Google Spreadsheet で双方向に扱う | `hearing-sheet` |
+| 足りない情報を集めるためのスライド（顧客・イベント） | `hearing-slides` |
 | 商談化前のリード育成の設計（セグメント・ナーチャリングトラック・コンテンツ充足） | `scalar-nurture-intake` |
 | Account Planning Session（年次の組織図・商談棚卸しデッキ） | `scalar-account-planning-session` |
 | B2B 商談の関与者マップ・ディスカバリーマップ作成 | `b2b-account-maps` |
