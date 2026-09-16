@@ -758,6 +758,11 @@ class TemplateDeck:
         # ratio, images meant to fill a frame exactly are fixed up by
         # overwriting their transform after commit
         self.image_fixups: list[tuple] = []
+        # Lists of objectIds to group once everything is drawn. Grouping runs
+        # in the post pass, after the image fixups: an ABSOLUTE transform on
+        # a grouped child is read in the group's coordinate space, so
+        # grouping first would displace the image
+        self.pending_groups: list[list[str]] = []
         # --into's title change is deferred until after a successful commit (see open())
         self.pending_title: str | None = None
         # layoutId -> slot key -> font size / paragraph spacing resolved through
@@ -1584,7 +1589,7 @@ class TemplateDeck:
                     idempotent=False, url=self.url)
                 print(f"  batch {n}: {len(chunk)} requests")
             self.requests = []
-            if self._notes or self.image_fixups:
+            if self._notes or self.image_fixups or self.pending_groups:
                 self._post_pass()
             # --into's rename happens only after the content replacement has succeeded (see open())
             if self.pending_title:
@@ -1669,6 +1674,14 @@ class TemplateDeck:
             }})
             n_img += 1
 
+        # Grouping goes last: the image transforms above are ABSOLUTE, and on
+        # a grouped child they would be read in the group's coordinate space
+        n_grp = 0
+        for oids in self.pending_groups:
+            # objectId is left out on purpose, so the API mints a unique one
+            reqs.append({"groupObjects": {"childrenObjectIds": oids}})
+            n_grp += 1
+
         if reqs:
             # batchUpdate is non-idempotent; resending after a lost response risks a half-built deck, so stop instead
             _retry(
@@ -1681,8 +1694,11 @@ class TemplateDeck:
                 print(f"  speaker notes: {n_notes} slides")
             if n_img:
                 print(f"  image fit: {n_img} images")
+            if n_grp:
+                print(f"  grouped figures: {n_grp}")
         self._notes = []
         self.image_fixups = []
+        self.pending_groups = []
 
 
 # ---------- Figure / image block ----------
@@ -1827,8 +1843,10 @@ def _figure_args(fig: dict) -> tuple[list, dict]:
     """Sort a figure block into (positional args, keyword args)."""
     _, order = FIGURES[fig["type"]]
     args = [fig[k] for k in order if k in fig]
+    # "group" steers draw_figures, not the figure function. Unknown keys are
+    # passed through as keyword arguments, so leaving it in raises TypeError
     kwargs = {_snake(k): v for k, v in fig.items()
-              if k != "type" and k not in order}
+              if k not in ("type", "group") and k not in order}
     return args, kwargs
 
 
@@ -1905,15 +1923,49 @@ def _check_density(spec: dict) -> list[str]:
               densities=", ".join(DENSITIES))]
 
 
-def draw_figures(canvas, figures: list, *, skip_network: bool = False) -> None:
-    """Draw a figures block onto the Canvas."""
+# Kinds the Slides API refuses to group, plus images: an image's
+# frame-filling transform is applied after creation with ABSOLUTE values,
+# which a group's coordinate space would reinterpret (see Deck._post_pass)
+UNGROUPABLE = ("TABLE", "IMAGE")
+
+
+def _group_mode(spec: dict, slide: dict) -> bool:
+    """Whether this slide's figures are grouped (slide wins over defaults)."""
+    for src in (slide, spec.get("defaults") or {}):
+        if "group" in src:
+            return bool(src["group"])
+    return False
+
+
+def draw_figures(canvas, figures: list, *, skip_network: bool = False,
+                 group: bool = False) -> None:
+    """Draw a figures block onto the Canvas.
+
+    With `group`, the page elements each figure creates are queued to be
+    grouped, so a composite figure — a flow's boxes and arrows, a card's
+    frame and text — moves as one object in the editor. It changes nothing
+    about how the slide looks. Tables and images are left out (`UNGROUPABLE`),
+    and a figure that made fewer than 2 groupable elements is skipped, since
+    the API requires at least two.
+    """
     for fig in figures:
         kind = fig["type"]
         if skip_network and kind in NETWORK_FIGURES:
             continue
         method, _ = FIGURES[kind]
         args, kwargs = _figure_args(fig)
+        start = len(canvas.elements)
         getattr(canvas, method)(*args, **kwargs)
+        if not group or not fig.get("group", True):
+            continue
+        # A deck assembled by some other script may not carry the queue
+        queue = getattr(canvas.deck, "pending_groups", None)
+        if queue is None:
+            continue
+        oids = [oid for oid, k in canvas.elements[start:]
+                if k not in UNGROUPABLE]
+        if len(oids) >= 2:
+            queue.append(oids)
 
 
 def validate_figures(spec: dict, page: dict, template: dict | None = None) -> list[str]:
@@ -2042,6 +2094,7 @@ class _StubDeck:
         self.requests: list[dict] = []
         self.assets = None
         self.image_fixups: list[tuple] = []
+        self.pending_groups: list[list[str]] = []
 
 
 class DryRunDeck(_StubDeck):
@@ -2159,7 +2212,8 @@ def audit_figures(template: dict, spec: dict,
         canvas.text_fit = _text_fit(spec, s)
         canvas.min_font_size = _min_font_size(spec, s)
         try:
-            draw_figures(canvas, figs, skip_network=True)
+            draw_figures(canvas, figs, skip_network=True,
+                         group=_group_mode(spec, s))
         except Exception as e:  # an argument mismatch may only surface here
             out.append(t("slides[{i}]: failed to draw figures: {etype}: {e}",
                          i=i, etype=type(e).__name__, e=e))
@@ -2546,7 +2600,7 @@ def build_from_spec(
         canvas.text_margin = _text_margin(spec, s)
         canvas.text_fit = _text_fit(spec, s)
         canvas.min_font_size = _min_font_size(spec, s)
-        draw_figures(canvas, figs)
+        draw_figures(canvas, figs, group=_group_mode(spec, s))
         for msg in canvas.fit_notes:
             print(f"  fit: {where}: {msg}")
         for msg in canvas.audit_all():

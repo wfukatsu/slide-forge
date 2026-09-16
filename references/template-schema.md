@@ -209,6 +209,14 @@ pasted there).
       // cannot enable Slides' autofit, so this is done up front
       // (api-notes §14b). Per slide or in "defaults"
       "textFit": "shrink",
+      // Whether to group the shapes a figure creates (default: false). With
+      // true, the elements one "figures" entry drew — a flow's boxes and
+      // arrows, a card's frame, heading and body — become a single object
+      // that moves as one in the editor. Nothing about the look changes.
+      // Tables and placeholders are left out (the API refuses them), and so
+      // are images (their frame-fill transform is applied after creation).
+      // Per slide, in "defaults", or per figure ("group": false opts one out)
+      "group": true,
       // Floor for shrinking, in pt. Default: 70% of the size, never below 8pt
       "minFontSize": 9
     },

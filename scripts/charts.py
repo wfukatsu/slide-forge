@@ -276,6 +276,7 @@ class ChartMixin:
         self.deck.requests += reqs
         self._seq += 1
         self.rects[oid] = (x, y, w, h_total, "TABLE")
+        self.elements.append((oid, "TABLE"))
         self.solids.append({"rect": (x, y, w, h_total), "seq": self._seq,
                             "name": t("table {head}", head=str(headers[0])[:12])})
         # Register each cell's text as a target for audit_text_fit / audit_overlaps.

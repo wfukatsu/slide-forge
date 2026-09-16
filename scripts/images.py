@@ -924,6 +924,7 @@ class ImageMixin:
 
         self._seq += 1
         self.rects[oid] = (*rect, "IMAGE")
+        self.elements.append((oid, "IMAGE"))
         # Images are opaque and cover any text placed earlier, so record
         # them as solids
         self.solids.append({"rect": rect, "seq": self._seq,

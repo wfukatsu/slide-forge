@@ -223,6 +223,13 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         self.min_font_size: float | None = None
         # One line per shape whose text was fitted, for the build to report
         self.fit_notes: list[str] = []
+        # Every page element this canvas creates, in creation order, as
+        # (objectId, kind). draw_figures() takes the slice one figure created
+        # and groups it, so a composite figure moves as one object in the
+        # editor. Tables and images are recorded too, but never grouped:
+        # the API refuses tables, and an image's frame-fill transform is
+        # applied after creation (see Deck._post_pass)
+        self.elements: list[tuple[str, str]] = []
         self._seq = 0
 
     def _label(self, key: str, override=None) -> str:
@@ -430,6 +437,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         self._seq += 1
         box = self._aabb(x, y, w, h, rotation)
         self.rects[oid] = (*box, kind)
+        self.elements.append((oid, kind))
         # A semi-transparent fill lets text underneath show through, so it isn't
         # treated as "hiding" it
         if fill is not None and alpha >= 0.9:
@@ -635,6 +643,9 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
             "free": free or _anchored, "anchored": _anchored,
             "seq": self._seq,
         })
+        # Lines live only in `connectors`, so they are registered here too;
+        # otherwise a flow's arrows would be left out of its group
+        self.elements.append((oid, "LINE"))
         return oid
 
     def arrow(self, x1, y1, x2, y2, **kw) -> str:
