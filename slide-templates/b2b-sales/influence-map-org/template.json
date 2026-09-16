@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "influence-map-org",
-  "displayName": "インフルーエンスマップ（組織構造）",
+  "displayName": "インフルエンスマップ（組織構造）",
   "pack": "b2b-sales",
   "category": "stakeholder",
   "description": "購買関与者を組織のつながりで並べ、役割・影響度・立場・面談状況を示す",

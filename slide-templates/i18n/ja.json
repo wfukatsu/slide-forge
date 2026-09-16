@@ -1,5 +1,5 @@
 {
-  "account_graph.default_title": "インフルーエンスマップ（全体）",
+  "account_graph.default_title": "インフルエンスマップ（全体）",
   "account_graph.legend": "凡例　上帯＝役割（F 購買者 / T 技術者 / U 利用者 / C コーチ / S サポート）　　本文の塗り＝立場（橙＝支持 / 青＝懸念 / 白＝中立）　　下帯＝影響度　　破線の枠＝未面談　　赤の破線＝人のつながり",
   "account_graph.links_heading": "人のつながり",
   "account_graph.members_count": "（{n} 名）",

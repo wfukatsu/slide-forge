@@ -239,7 +239,7 @@ an unreadable band (49 people at 18,000 × 709px).
 ```bash
 # 企業グループ。people[].entity ごとの枠に格子で並べ、法人をまたぐ線は枠の外を通す
 .venv/bin/python scripts/build_account_graph.py <graph.json> --layout grouped \
-    --title "<顧客> インフルーエンスマップ（全体）" \
+    --title "<顧客> インフルエンスマップ（全体）" \
     --out out/account-plan/<顧客>/influence-map-full.drawio
 
 # 1 社なら既定のままでよい

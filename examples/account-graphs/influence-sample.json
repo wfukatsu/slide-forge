@@ -1,6 +1,6 @@
 {
   "type": "influence",
-  "title": "サンプル物流様 インフルーエンスマップ",
+  "title": "サンプル物流様 インフルエンスマップ",
   "people": [
     {"id": "fukatsu", "roles": ["S", "T"], "org": "CEO/COO", "name": "深津",
      "influence": "champion", "stance": "neutral", "met": true, "reportsTo": null},

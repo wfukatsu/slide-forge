@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "influence-map",
-  "displayName": "インフルーエンスマップ",
+  "displayName": "インフルエンスマップ",
   "pack": "b2b-sales",
   "category": "stakeholder",
   "description": "購買関与者を影響力と賛否の2軸に配置し、誰を動かせば決まるかを示す",

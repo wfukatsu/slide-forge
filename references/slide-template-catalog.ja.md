@@ -282,9 +282,9 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 
 商談のステークホルダー構造とディスカバリー（課題探索）を可視化するページ群。誰が意思決定に効くのか・何がまだ聞けていないのかを 1 枚で共有する。
 
-### インフルーエンスマップ（`influence-map`）
+### インフルエンスマップ（`influence-map`）
 
-![インフルーエンスマップ](images/slide-templates/influence-map.png)
+![インフルエンスマップ](images/slide-templates/influence-map.png)
 
 購買関与者を影響力と賛否の2軸に配置し、誰を動かせば決まるかを示す
 
@@ -449,9 +449,9 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 - 確認相手と期限のない行を残さない
 - discovery-map の missing / wip と対応させること
 
-### インフルーエンスマップ（組織構造）（`influence-map-org`）
+### インフルエンスマップ（組織構造）（`influence-map-org`）
 
-![インフルーエンスマップ（組織構造）](images/slide-templates/influence-map-org.png)
+![インフルエンスマップ（組織構造）](images/slide-templates/influence-map-org.png)
 
 購買関与者を組織のつながりで並べ、役割・影響度・立場・面談状況を示す
 
