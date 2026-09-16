@@ -55,6 +55,13 @@ from _i18n import t, register  # noqa: E402
 from colors import lighten, readable_on  # noqa: E402
 
 register({
+    'bullet_list: an item must be a string or {"text": …}':
+        'bullet_list: 項目は文字列か {"text": …} である必要があります',
+    "bullet_list: items is empty": "bullet_list: items が空です",
+    "bullet_list: the presets only draw 3 levels of nesting":
+        "bullet_list: プリセットが描ける入れ子は 3 階層までです",
+    "bullet_list: unknown style '{style}' (bullet / numbered)":
+        "bullet_list: 未知の style '{style}' です（bullet / numbered）",
     "  warn: the action title will wrap to {lines} lines. "
     "Trim it to 2 lines or fewer (\"{head}…\")":
         "  warn: アクションタイトルが {lines} 行になります。"
@@ -233,6 +240,87 @@ class PageMixin:
         self.label(x + pad_l, body_y, w - pad_l - 0.16, body_h, text,
                    size=size, color=self.P.text, line_spacing=130)
         return y + h
+
+    # ---- 3b. Native bullet / numbered list ----
+
+    BULLET_PRESETS = {"bullet": "BULLET_DISC_CIRCLE_SQUARE",
+                      "numbered": "NUMBERED_DIGIT_ALPHA_ROMAN"}
+
+    def bullet_list(self, x, y, w, items, *, style="bullet", size=11, h=None,
+                    color=None, font=None, line_spacing=115, item_gap_pt=3,
+                    indent_in=None, hanging_in=None, preset=None) -> float:
+        """A **native** Slides bullet / numbered list. Returns the bottom y.
+
+        Real list paragraphs (`createParagraphBullets`), not "・" typed into
+        the text: the glyphs survive editing in Slides and the PowerPoint
+        export. `style` is "bullet" or "numbered"; `preset` passes an API
+        preset name through directly.
+
+        An item is a string, `{"text": …, "items": [...]}` (nested) or
+        `{"text": …, "level": n}`. Nesting is sent as leading tabs, which is
+        how the API decides the level (it strips them); three levels deep is
+        the most the presets draw.
+
+        `indent_in` / `hanging_in` override the preset's own indents and
+        apply to **every** level, so leave them unset when nesting.
+
+        Text fitting is off here — shrinking pulls the margin back with a
+        negative indent, which would fight the list's indents. Size the box
+        for the text, and the overflow audit reports what does not fit.
+        """
+        flat: list[tuple[int, str]] = []
+
+        def walk(seq, level):
+            for it in seq:
+                if isinstance(it, str):
+                    flat.append((level, it))
+                    continue
+                if not isinstance(it, dict) or not str(it.get("text", "")).strip():
+                    raise ValueError(t('bullet_list: an item must be a string '
+                                       'or {"text": …}'))
+                flat.append((int(it.get("level", level)), it["text"]))
+                if it.get("items"):
+                    walk(it["items"], int(it.get("level", level)) + 1)
+
+        walk(items or [], 0)
+        if not flat:
+            raise ValueError(t("bullet_list: items is empty"))
+        if max(level for level, _ in flat) > 2:
+            raise ValueError(t("bullet_list: the presets only draw 3 levels "
+                               "of nesting"))
+        if preset is None and style not in self.BULLET_PRESETS:
+            raise ValueError(t("bullet_list: unknown style '{style}' "
+                               "(bullet / numbered)", style=style))
+
+        text = "\n".join("\t" * level + str(s) for level, s in flat)
+        # The glyph and its indent eat into the column, so the audit is given a
+        # margin that covers them. It is wider than the frame's own inset, so
+        # no negative indent is emitted to fight the list's indents
+        margin = self.TEXT_INSET_X + (indent_in if indent_in else 0.25)
+        per_line = max(1.0, (w - margin * 2) * 72 / size)
+        lines = sum(max(1, int(self._em(s) / per_line) + (1 if self._em(s) % per_line else 0))
+                    for _, s in flat)
+        height = h if h else (lines * size * self.LINE_EM * (line_spacing / 100) / 72
+                              + (len(flat) - 1) * item_gap_pt / 72 + 0.06)
+        oid = self.shape(x, y, w, height, kind="TEXT_BOX", fill=None, stroke=None,
+                         text=text, size=size, color=color or self.P.text,
+                         align="START", valign="TOP", font=font,
+                         line_spacing=line_spacing, text_margin=margin,
+                         text_fit="none")
+        self.deck.requests.append({"createParagraphBullets": {
+            "objectId": oid, "textRange": {"type": "ALL"},
+            "bulletPreset": preset or self.BULLET_PRESETS[style]}})
+        para: dict = {"spaceBelow": {"magnitude": item_gap_pt, "unit": "PT"}}
+        if indent_in is not None:
+            para["indentStart"] = {"magnitude": indent_in * 72.0, "unit": "PT"}
+            para["indentFirstLine"] = {
+                "magnitude": max(indent_in - (hanging_in or 0), 0) * 72.0,
+                "unit": "PT"}
+        # Queued after the bullets so it wins over the preset's own indents
+        self.deck.requests.append({"updateParagraphStyle": {
+            "objectId": oid, "style": para, "textRange": {"type": "ALL"},
+            "fields": ",".join(para)}})
+        return y + height
 
     # ---- 4. Source-note line ----
 
