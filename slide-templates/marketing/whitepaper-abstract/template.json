@@ -97,7 +97,9 @@
         "text": {
           "$slot": "answers_q"
         },
-        "label": "読むと分かること"
+        "label": {
+          "$t": "wp.what_you_learn"
+        }
       },
       {
         "type": "so_what",
@@ -108,7 +110,9 @@
         "text": {
           "$slot": "who"
         },
-        "label": "想定読者"
+        "label": {
+          "$t": "wp.audience"
+        }
       },
       {
         "type": "source_note",

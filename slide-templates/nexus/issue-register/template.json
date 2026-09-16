@@ -131,9 +131,15 @@
         "y": 1.62,
         "w": 5.6,
         "headers": [
-          "重大度",
-          "課題",
-          "根拠"
+          {
+            "$t": "issue.severity"
+          },
+          {
+            "$t": "issue.issue"
+          },
+          {
+            "$t": "issue.evidence"
+          }
         ],
         "rows": {
           "$slot": "issues"

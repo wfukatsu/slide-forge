@@ -64,10 +64,18 @@
         "y": 1.55,
         "w": 9.0,
         "headers": [
-          "移行条件",
-          "状態",
-          "顧客側の証拠",
-          "担当"
+          {
+            "$t": "gate.criteria"
+          },
+          {
+            "$t": "gate.state"
+          },
+          {
+            "$t": "gate.customer_evidence"
+          },
+          {
+            "$t": "common.owner"
+          }
         ],
         "rows": {
           "$slot": "gates"

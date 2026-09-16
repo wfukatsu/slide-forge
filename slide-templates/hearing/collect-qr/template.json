@@ -86,7 +86,9 @@
         "text": {
           "$slot": "where"
         },
-        "label": "回答はこちらへ"
+        "label": {
+          "$t": "common.answer_here"
+        }
       },
       {
         "type": "source_note",

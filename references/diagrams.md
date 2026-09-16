@@ -43,7 +43,7 @@ d.image(0.6, 1.1, 4.2, 2.6, "assets/shot.png", fit="contain", caption="管理画
 d.ai_image(5.2, 1.1, 4.2, 2.6, "夜間に自動でビルドが回っている様子")
 ```
 
-There are 30 pictograms (`person` `server` `database` `cloud` `lock` `shield`
+There are 32 pictograms (`person` `server` `database` `cloud` `lock` `shield`
 `bot` …). The metaphor diagrams are `pyramid` / `funnel` / `venn` / `iceberg` /
 `balance` / `steps` / `layers` / `hub` / `matrix` / `before_after` /
 `comparison` / `journey` / `timeline`.

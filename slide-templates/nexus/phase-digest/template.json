@@ -116,7 +116,9 @@
         "text": {
           "$slot": "finding"
         },
-        "label": "このフェーズの結論"
+        "label": {
+          "$t": "phase.conclusion"
+        }
       },
       {
         "type": "table",

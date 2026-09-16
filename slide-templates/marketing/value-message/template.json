@@ -101,7 +101,9 @@
         "text": {
           "$slot": "ask"
         },
-        "label": "考えてみてください"
+        "label": {
+          "$t": "value.consider"
+        }
       },
       {
         "type": "source_note",

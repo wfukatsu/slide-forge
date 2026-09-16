@@ -138,6 +138,8 @@ Changes from the plan:
   form works better for projection than a larger font.
 - **Normalization lives in `calendar_pages.py`** (no separate normalize script);
   `calendars.parse_date` rejects dates without a year.
-- **Deck specs have no `$template` expansion**, so `calendar_pages.py` emits
-  rendered slides (`{"slides": [...]}`).
+- `calendar_pages.py` emits rendered slides (`{"slides": [...]}`). Deck specs had
+  no `$template` expansion when P1 was written; that is no longer true
+  (`build_deck.expand_slide_templates`), but calendars still normalize dates and
+  split pages first, so emitting rendered slides remains the right output.
 - P2 templates are not started; `form-selection.md` in the skill lists fallbacks.

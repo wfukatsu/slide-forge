@@ -76,8 +76,12 @@
         "y": 1.5,
         "w": 9.0,
         "headers": [
-          "観点",
-          "内容"
+          {
+            "$t": "common.aspect"
+          },
+          {
+            "$t": "common.detail"
+          }
         ],
         "rows": {
           "$slot": "rows"
@@ -98,7 +102,9 @@
         "text": {
           "$slot": "fit"
         },
-        "label": "当てはまる方"
+        "label": {
+          "$t": "usecase.who_fits"
+        }
       },
       {
         "type": "source_note",

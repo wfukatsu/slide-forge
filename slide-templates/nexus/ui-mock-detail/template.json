@@ -110,8 +110,12 @@
         "y": 1.55,
         "w": 3.2,
         "headers": [
-          "注目点",
-          "内容"
+          {
+            "$t": "ui.focus"
+          },
+          {
+            "$t": "common.detail"
+          }
         ],
         "rows": {
           "$slot": "notes"

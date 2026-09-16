@@ -74,16 +74,18 @@ register({
 })
 
 # Block definitions for lean_canvas. Holds (key, heading) pairs in the standard Lean Canvas order
+# The keys are the block vocabulary a caller passes; the values are label keys
+# resolved at draw time, so the canvas prints them in the deck's language.
 LEAN_CANVAS_KEYS = {
-    "problem": "課題",
-    "solution": "解決策",
-    "key_metrics": "主要指標",
-    "uvp": "独自の価値提案",
-    "advantage": "圧倒的な優位性",
-    "channels": "チャネル",
-    "segments": "顧客セグメント",
-    "cost": "コスト構造",
-    "revenue": "収益の流れ",
+    "problem": "lean.problem",
+    "solution": "lean.solution",
+    "key_metrics": "lean.key_metrics",
+    "uvp": "lean.uvp",
+    "advantage": "lean.advantage",
+    "channels": "lean.channels",
+    "segments": "lean.segments",
+    "cost": "lean.cost",
+    "revenue": "lean.revenue",
 }
 
 
@@ -117,8 +119,8 @@ class PatternMixin:
 
     # ---- Positioning map ----
 
-    def posmap(self, x, y, w, h, points, *, x_axis=("低", "高"),
-               y_axis=("低", "高"), highlight=None, highlight_color=None,
+    def posmap(self, x, y, w, h, points, *, x_axis=None,
+               y_axis=None, highlight=None, highlight_color=None,
                size=10, bubble=0.72) -> float:
         """Positioning map (position relative to two axes). Returns the y-coordinate
         of the bottom edge.
@@ -132,6 +134,9 @@ class PatternMixin:
         "positional relationship" against competitors. If you just want to name
         the quadrants, use matrix() instead.
         """
+        ends = (self._label("axis.low"), self._label("axis.high"))
+        x_axis = x_axis or ends
+        y_axis = y_axis or ends
         cap_h = 0.30                       # Height of the top/bottom axis-end labels
         # Left/right axis-end labels are placed in boxes. The width reserved is
         # whatever fits the longer label on one line (a fixed width tends to wrap
@@ -379,7 +384,8 @@ class PatternMixin:
             "cost":        (x, bot_y, (w - g) / 2, bot_h),
             "revenue":     (x + (w + g) / 2, bot_y, (w - g) / 2, bot_h),
         }
-        for key, title in LEAN_CANVAS_KEYS.items():
+        for key, title_key in LEAN_CANVAS_KEYS.items():
+            title = self._label(title_key)
             bx, by, bw, bh = cells[key]
             self.shape(bx, by, bw, bh, kind="RECTANGLE", fill=self.P.white,
                        stroke=self.P.border)

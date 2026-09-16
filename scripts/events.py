@@ -57,10 +57,12 @@ register({
 })
 
 MODES = ("online", "offline", "hybrid")
+# Label keys, not words: the badge is drawn in the deck's language. See
+# Canvas._label() and slide-templates/i18n/.
 MODE_LABELS = {
-    "online": "オンライン開催",
-    "offline": "会場開催",
-    "hybrid": "ハイブリッド開催",
+    "online": "events.mode.online",
+    "offline": "events.mode.offline",
+    "hybrid": "events.mode.hybrid",
 }
 
 
@@ -76,7 +78,7 @@ class EventMixin:
         if mode not in MODES:
             raise ValueError(t("mode must be one of {allowed} (got: {mode})",
                                allowed="/".join(MODES), mode=mode))
-        text = label or MODE_LABELS[mode]
+        text = label or self._label(MODE_LABELS[mode])
         h = 0.34
         w = max(1.3, 0.32 + 0.145 * _text_width(text, size))
         self.shape(x, y, w, h, kind="ROUND_RECTANGLE", fill=self.P.primary,

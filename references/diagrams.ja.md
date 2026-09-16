@@ -41,7 +41,7 @@ d.image(0.6, 1.1, 4.2, 2.6, "assets/shot.png", fit="contain", caption="管理画
 d.ai_image(5.2, 1.1, 4.2, 2.6, "夜間に自動でビルドが回っている様子")
 ```
 
-ピクトグラムは 30 種（`person` `server` `database` `cloud` `lock` `shield` `bot` …）。
+ピクトグラムは 32 種（`person` `server` `database` `cloud` `lock` `shield` `bot` …）。
 比喩図は `pyramid` / `funnel` / `venn` / `iceberg` / `balance` / `steps` / `layers` /
 `hub` / `matrix` / `before_after` / `comparison` / `journey` / `timeline`。
 アカウントグラフ（`influence_graph` / `outcome_tree`）は

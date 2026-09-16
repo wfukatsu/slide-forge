@@ -64,11 +64,21 @@
         "y": 1.6,
         "w": 9.0,
         "headers": [
-          "やること",
-          "なぜ必要か",
-          "相手",
-          "期限",
-          "完了条件"
+          {
+            "$t": "action.what"
+          },
+          {
+            "$t": "action.why"
+          },
+          {
+            "$t": "action.counterpart"
+          },
+          {
+            "$t": "common.due"
+          },
+          {
+            "$t": "action.done_when"
+          }
         ],
         "rows": {
           "$slot": "actions"

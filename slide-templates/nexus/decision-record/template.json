@@ -100,9 +100,15 @@
         "y": 1.62,
         "w": 9.0,
         "headers": [
-          "選択肢",
-          "採否",
-          "理由"
+          {
+            "$t": "adr.option"
+          },
+          {
+            "$t": "adr.verdict"
+          },
+          {
+            "$t": "adr.rationale"
+          }
         ],
         "rows": {
           "$slot": "options"
@@ -140,7 +146,9 @@
         "text": {
           "$slot": "decision"
         },
-        "label": "決定"
+        "label": {
+          "$t": "adr.decision"
+        }
       },
       {
         "type": "source_note",

@@ -17,7 +17,7 @@ cache/icons/      染めて書き出した PNG（<slug>-<色>-<px>.png）
 | | `illustrations.icon()` | `icons.asset_icon()` |
 |---|---|---|
 | 何で描くか | Slides の図形を組み合わせる | ブランド素材の SVG を PNG にして貼る |
-| 語彙 | 30 種の汎用（person / server / database …） | 62 種の業務語彙（情報銀行・証拠チェーン・内定 …） |
+| 語彙 | 32 種の汎用（person / server / database …） | 62 種の業務語彙（情報銀行・証拠チェーン・内定 …） |
 | 通信 | 不要 | **要る**（Drive 経由で挿入するため） |
 | 見た目 | 素朴。線の太さは自前 | ブランド準拠 |
 

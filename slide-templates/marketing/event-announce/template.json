@@ -103,7 +103,9 @@
         "text": {
           "$slot": "cta"
         },
-        "label": "お申し込み"
+        "label": {
+          "$t": "event.signup"
+        }
       },
       {
         "type": "source_note",

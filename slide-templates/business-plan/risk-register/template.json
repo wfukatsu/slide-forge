@@ -99,11 +99,21 @@
         "y": 1.62,
         "w": 9.0,
         "headers": [
-          "リスク",
-          "影響",
-          "発生",
-          "対策",
-          "撤退・見直し基準"
+          {
+            "$t": "risk.risk"
+          },
+          {
+            "$t": "common.impact"
+          },
+          {
+            "$t": "risk.likelihood"
+          },
+          {
+            "$t": "risk.mitigation"
+          },
+          {
+            "$t": "risk.exit_criteria"
+          }
         ],
         "rows": {
           "$slot": "risks"
@@ -147,7 +157,9 @@
         "y": 3.74,
         "w": 9.0,
         "h": 1.1,
-        "label": "撤退判断",
+        "label": {
+          "$t": "risk.exit_call"
+        },
         "text": {
           "$slot": "decisionRule"
         }

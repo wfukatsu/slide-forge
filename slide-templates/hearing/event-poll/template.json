@@ -100,7 +100,9 @@
         "text": {
           "$slot": "ask"
         },
-        "label": "当てはまるものはありますか"
+        "label": {
+          "$t": "poll.which_applies"
+        }
       },
       {
         "type": "source_note",

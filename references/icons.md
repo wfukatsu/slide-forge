@@ -18,7 +18,7 @@ cache/icons/      recolored PNGs written out (<slug>-<color>-<px>.png)
 | | `illustrations.icon()` | `icons.asset_icon()` |
 |---|---|---|
 | How it's drawn | Combines Slides shapes | Renders the brand SVG asset to a PNG and pastes it |
-| Vocabulary | 30 generic terms (person / server / database …) | 62 domain terms (data bank, evidence chain, job offer …) |
+| Vocabulary | 32 generic terms (person / server / database …) | 62 domain terms (data bank, evidence chain, job offer …) |
 | Network access | Not required | **Required** (inserted via Drive) |
 | Look | Plain. You control the line weight | On-brand |
 

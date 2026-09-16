@@ -9,7 +9,46 @@ for generic page patterns (skeletons and figure composition), see
 [slide-pattern-catalog.md](slide-pattern-catalog.md).
 
 Each template's **figures** line lists the `type` names of the drawing components used on that page.
-Templates are used via `render_slide_template.py` or the `$template` field in a deck spec.
+The **Inputs** table lists the slots a template takes: name, type, whether it is required, and its limits.
+
+To name a template explicitly, write `$template` on a slide in a deck spec
+and that template expands into one slide. The keys under `data` are the slot
+names from the template's **Inputs** table:
+
+```json
+{
+  "slides": [
+    {
+      "$template": "swot-analysis",
+      "data": {
+        "title": "Our strategic position",
+        "quadrants": ["Strength: …", "Weakness: …", "Opportunity: …", "Threat: …"],
+        "insight": "…",
+        "source": "Board meeting, March 2026"
+      },
+      "notes": "Speaker notes (optional)"
+    }
+  ]
+}
+```
+
+Keys other than `$template` / `data` / `density` / `lang` are merged over the
+rendered slide, so a spec can attach `notes` or retarget `layout`. Density comes
+from the slide, then the spec, then the template default. Expansion runs before
+validation, generation and `--into`, so `--dry-run --strict` checks the inputs
+before anything is created.
+
+The words a template prints for itself — table headers, axis ends — follow `lang`
+and come from `slide-templates/i18n/<lang>.json`. What you write under `data` is
+never translated. A key with no translation prints in the default language, so a
+gap is visible rather than blank.
+
+To render a single slide on its own, use `render_slide_template.py`:
+
+```bash
+.venv/bin/python scripts/render_slide_template.py \
+    --template swot-analysis --data my-swot.json --out out/swot.json
+```
 
 ```bash
 # Rebuild this catalog (same steps when adding a template)
@@ -60,6 +99,15 @@ Organizes internal and external environment into four positive/negative quadrant
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `quadrants` | `string[]` | ✔ | 4 items; ≤ 80 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Distinguish between facts and interpretations
@@ -77,6 +125,16 @@ Shows the strategic focus arising from the overlap of Customer, Competitor, and 
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `labels` | `string[]` | ✔ | 3 items; ≤ 40 chars |
+| `center` | `string` | ✔ | ≤ 36 chars |
+| `details` | `string[][]` | ✔ | 3 items; ≤ 60 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 ### TAM / SAM / SOM (`market-sizing`)
 
 ![TAM / SAM / SOM](images/slide-templates/market-sizing.png)
@@ -88,6 +146,15 @@ Shows the total market down to the obtainable market as nested circles
 **figures**: `governing_message`, `nested_circles`, `so_what`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `rings` | `string[][]` | ✔ | 3–4 items; ≤ 40 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 ### Positioning Map (`positioning-map`)
 
@@ -101,6 +168,18 @@ Shows the positional relationship between us and competitors on two axes
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `points` | `array` (string≤24, number≤1, number≤1) | ✔ | 2–8 items |
+| `xAxis` | `string[]` | ✔ | 2 items; ≤ 24 chars |
+| `yAxis` | `string[]` | ✔ | 2 items; ≤ 24 chars |
+| `highlight` | `string` | ✔ | ≤ 20 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 ### RFM Segments (`rfm-segments`)
 
 ![RFM Segments](images/slide-templates/rfm-segments.png)
@@ -113,6 +192,15 @@ Compares customer segments and measures based on purchase recency, frequency, an
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `rows` | `string[][]` | ✔ | 3–7 items; ≤ 44 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 ### Cohort Retention (`cohort-retention`)
 
 ![Cohort Retention](images/slide-templates/cohort-retention.png)
@@ -124,6 +212,16 @@ Compares retention rates by acquisition cohort across periods
 **figures**: `governing_message`, `table`, `so_what`, `source_note`  
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `headers` | `string[]` | ✔ | 4–10 items; ≤ 16 chars |
+| `rows` | `string[][]` | ✔ | 3–10 items; ≤ 20 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -142,6 +240,15 @@ Shows counts at each stage of the purchase process and the biggest drop-off poin
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `stages` | `string[][]` | ✔ | 3–6 items; ≤ 32 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 ### A/B Test Results (`experiment-result`)
 
 ![A/B Test Results](images/slide-templates/experiment-result.png)
@@ -153,6 +260,17 @@ Shows control and treatment group results, sample sizes, the difference, and the
 **figures**: `governing_message`, `vbars_grouped`, `table`, `so_what`, `source_note`  
 **Inference level**: Causal (asserting causes)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `categories` | `string[]` | ✔ | 1–4 items; ≤ 20 chars |
+| `series` | `array` (string≤20, number[]) | ✔ | 2 items |
+| `resultRows` | `string[][]` | ✔ | 3–5 items; ≤ 48 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 180 chars |
 
 Guardrails:
 
@@ -177,6 +295,18 @@ Places buying-committee members on two axes — influence and stance — to show
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `stakeholders` | `array` (string≤6, number≤1, number≤1) | ✔ | 3–9 items |
+| `xAxis` | `string[]` | ✔ | 2 items; ≤ 24 chars |
+| `yAxis` | `string[]` | ✔ | 2 items; ≤ 24 chars |
+| `champion` | `string` | ✔ | ≤ 6 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Base positions on statements confirmed in meetings. Do not place sales' own hopes as if they were the stakeholder's stance
@@ -197,6 +327,15 @@ Lists each buying-committee member's role, influence, stance, and contact status
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `members` | `string[][]` | ✔ | 3–7 items; ≤ 22 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Write the buying role as the function this person serves in this deal (approver, champion, evaluator, user, gatekeeper, opponent), not their job title
@@ -213,6 +352,15 @@ Shows, as a tree, which path an approval request follows and where it could stal
 **figures**: `governing_message`, `orgchart`, `so_what`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `tree` | `tuple` (string≤30, array) | ✔ | — |
+| `insight` | `string` | ✔ | ≤ 110 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -232,6 +380,15 @@ Lists the items to confirm during the deal and color-codes each as confirmed, hy
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `items` | `array` (integer≤99, string≤16, string≤34, string≤9) | ✔ | 4–8 items |
+| `insight` | `string` | ✔ | ≤ 110 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - State is one of three values: confirmed (verified by the customer's statement or a document), wip (partially confirmed), or missing (unconfirmed)
@@ -249,6 +406,16 @@ Traces how a frontline problem cascades into departmental and executive metrics
 **figures**: `governing_message`, `lead_in`, `flow`, `table`, `source_note`  
 **Inference level**: Causal (asserting causes)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `chain` | `string[]` | ✔ | 3–5 items; ≤ 18 chars |
+| `evidence` | `string[][]` | ✔ | 3–5 items; ≤ 40 chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -268,6 +435,15 @@ Breaks down the open questions that remain blank into who will confirm them and 
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `gaps` | `string[][]` | ✔ | 3–6 items; ≤ 40 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Do not ask about an item if you cannot state why it matters. What decides success is the order of questions, not the quantity
@@ -285,6 +461,17 @@ Arranges buying-committee members by organizational connections, showing role, i
 **figures**: `governing_message`, `influence_graph`, `so_what`, `source_note`  
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `people` | `array` | ✔ | 2–9 items |
+| `links` | `array` | — | ≤ 4 items; default `[]` |
+| `more` | `string` | — | ≤ 60 chars; default `""` |
+| `insight` | `string` | ✔ | ≤ 58 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -304,6 +491,17 @@ Connects Goal, Strategy, and Tactics by support relationships, showing what supp
 **figures**: `governing_message`, `outcome_tree`, `so_what`, `source_note`  
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `nodes` | `array` | ✔ | 2–9 items |
+| `edges` | `array` | — | ≤ 20 items; default `[]` |
+| `more` | `string` | — | ≤ 60 chars; default `""` |
+| `insight` | `string` | ✔ | ≤ 58 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -330,6 +528,15 @@ Shows, on one page, what stage this deal is in now, the amount, and when it will
 **Inference level**: Descriptive (organizing facts)  
 **status**: stable
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `headline` | `array` (string≤10, string≤24) | ✔ | 4 items |
+| `rows` | `string[][]` | ✔ | 3–4 items; ≤ 46 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - forecast is one of four values: Pipeline / Best / Commit / Closed. Demote a Commit to Best if you cannot state its basis
@@ -347,6 +554,15 @@ Lists the current stage's exit criteria and judges each by whether customer-side
 **figures**: `governing_message`, `lead_in`, `table`, `source_note`  
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: stable
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `stage` | `string` | ✔ | ≤ 60 chars |
+| `gates` | `string[][]` | ✔ | 3–6 items; ≤ 40 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -367,6 +583,15 @@ Identifies which of Budget / Authority / Needs / Timeframe is most likely to sta
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: stable
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `items` | `array` (string≤16, string≤80) | ✔ | 4 items |
+| `insight` | `string` | ✔ | ≤ 110 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Fix the order of the four items as Budget → Authority → Needs → Timeframe
@@ -385,6 +610,15 @@ Breaks each unconfirmed issue down into who, asks whom, by when, and what comple
 **figures**: `governing_message`, `lead_in`, `table`, `source_note`  
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: stable
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `actions` | `string[][]` | ✔ | 3–6 items; ≤ 36 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -405,6 +639,15 @@ Lists, in chronological order, who we've met and what we learned
 **Inference level**: Descriptive (organizing facts)  
 **status**: stable
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `milestones` | `array` (string≤10, string≤16) | ✔ | 3–6 items |
+| `rows` | `string[][]` | ✔ | 2–4 items; ≤ 44 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Limit the table to the most recent 4 entries. Keep earlier history in the ledger (account.json); do not put it on the slide
@@ -423,6 +666,17 @@ Decides, before the visit, what to get out of it, how to ask, and how to respond
 **figures**: `governing_message`, `lead_in`, `storyline`, `so_what`, `cards`, `source_note`  
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: stable
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `context` | `string` | ✔ | ≤ 120 chars |
+| `questions` | `string[]` | ✔ | 3–4 items; ≤ 44 chars |
+| `ask` | `string` | ✔ | ≤ 90 chars |
+| `objections` | `array` (string≤20, string≤52) | ✔ | 2–3 items |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -443,6 +697,17 @@ A one-page summary of the win strategy and risks used to decide stage advancemen
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: stable
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `situation` | `string` | ✔ | ≤ 84 chars |
+| `complication` | `string` | ✔ | ≤ 84 chars |
+| `resolution` | `string` | ✔ | ≤ 84 chars |
+| `risks` | `string[][]` | ✔ | 2–3 items; ≤ 46 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Write in resolution why the customer would choose us, not a list of product names
@@ -461,6 +726,16 @@ A one-pager that surfaces issues the customer hasn't yet articulated, to open a 
 **figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: stable
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `steps` | `array` (string≤16, string≤68) | ✔ | 3 items |
+| `question` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -482,6 +757,19 @@ The cost page of a proposal: a Scalar license estimate's line items, list price 
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `lines` | `string[][]` | ✔ | 2–(print 7 · presentation 4) items; ≤ (print 20 · presentation 14) chars |
+| `offerPrice` | `string` | ✔ | ≤ 12 chars |
+| `offerLabel` | `string` | — | ≤ 18 chars; default `"Offer price (annual, e…` |
+| `pricing` | `string[][]` | ✔ | 3–4 items; ≤ 12 chars |
+| `assumptions` | `string[]` | — | ≤ (print 2 · presentation 1) items; ≤ 60 chars; default `[]` |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Transcribe unit prices and amounts from the price-master quotation; never compute them on this slide
@@ -501,6 +789,17 @@ Compares quotation patterns (Standard / Premium, different configurations) side 
 **Inference level**: Diagnostic (identifying factors and structure)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `patternHeaders` | `string[]` | ✔ | 3–4 items; ≤ 14 chars |
+| `rows` | `string[][]` | ✔ | 3–(print 5 · presentation 4) items; ≤ (print 20 · presentation 14) chars |
+| `recommendation` | `string` | ✔ | ≤ (print 55 · presentation 30) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -526,6 +825,15 @@ A period-by-task bar chart showing work streams running in parallel and their mi
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `columns` | `string[]` | ✔ | 3–8 items; ≤ 8 chars |
+| `tasks` | `array` (string≤16, number≤8, number≤8, string≤20) | ✔ | 2–8 items |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Start and end are decimals in column units (0 is the left edge of the first column, the column count is the right edge). Values exceeding the column count raise an error at generation time
@@ -546,6 +854,15 @@ A vertical chronology of dates and events showing how we arrived at the current 
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `events` | `string[][]` | ✔ | 4–9 items; ≤ 44 chars |
+| `insight` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Write only facts in the event column. Keep interpretation and evaluation separate, in "implications"
@@ -564,6 +881,15 @@ Arranges milestones at equal intervals along a single horizontal timeline, showi
 **figures**: `governing_message`, `timeline`, `so_what`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `milestones` | `array` (string≤10, string≤16) | ✔ | 3–6 items |
+| `insight` | `string` | ✔ | ≤ 160 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -589,6 +915,17 @@ Writes events and multi-day spans onto a one-week-per-row month calendar, showin
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 36 chars |
+| `month` | `string` | ✔ | ≤ 7 chars; ≥ 6 chars |
+| `weekStart` | `string` | — | ≤ 3 chars; ≥ 3 chars; default `"mon"` |
+| `events` | `array` (string≤10, string≤10, string≤20, string≤7, string≤5) | ✔ | ≤ 40 items |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | ≤ 20 items; default `[]` |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the calendar header
@@ -612,6 +949,18 @@ Places task bars on date columns, showing the actual working days across holiday
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 36 chars |
+| `start` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `end` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `rows` | `array` (string≤9, string≤14, string≤6, string≤10, string≤10, number≤1) | ✔ | 1–12 items |
+| `today` | `string` | — | ≤ 10 chars; default `""` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | ≤ 20 items; default `[]` |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the calendar header
@@ -633,6 +982,18 @@ Lists dates going down with one task per row, showing each day's owner, due time
 **figures**: `governing_message`, `day_agenda`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 36 chars |
+| `start` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `end` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `items` | `array` (string≤10, string≤24, string≤6, string≤5, string≤9) | ✔ | 1–11 items |
+| `today` | `string` | — | ≤ 10 chars; default `""` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | ≤ 20 items; default `[]` |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -656,6 +1017,20 @@ Places events on weekday columns and hour rows, showing what happens where at ea
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 36 chars |
+| `week` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `days` | `integer` | — | 5–7; default `5` |
+| `startHour` | `integer` | — | 0–23; default `9` |
+| `endHour` | `integer` | — | 1–24; default `18` |
+| `events` | `array` (string≤10, string≤5, string≤5, string≤14, string≤10, string≤7) | ✔ | 1–25 items |
+| `breaks` | `array` (string≤5, string≤5, string≤6) | — | ≤ 3 items; default `[["12:00", "13:00", "Lu…` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | ≤ 7 items; default `[]` |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the header
@@ -677,6 +1052,17 @@ Lays consecutive sprints out in week rows, showing the working days lost to holi
 **figures**: `governing_message`, `sprint_calendar`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 36 chars |
+| `start` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `lengthDays` | `integer` | — | 7–14; default `14` |
+| `sprints` | `array` (string≤6, string≤14, boolean) | ✔ | 1–8 items |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | ≤ 20 items; default `[]` |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -700,6 +1086,16 @@ Lays out the fiscal year's 12 months as small month calendars, marking busy peri
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 36 chars |
+| `startMonth` | `string` | ✔ | ≤ 7 chars; ≥ 6 chars |
+| `marks` | `array` (string≤10, string≤10, string≤12, string≤4) | ✔ | 1–20 items |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | ≤ 30 items; default `[]` |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the month headers
@@ -722,6 +1118,18 @@ Shows the days left to a deadline in calendar days and working days, and shades 
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 36 chars |
+| `label` | `string` | ✔ | ≤ 12 chars; ≥ 1 chars |
+| `deadline` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `today` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `checkpoints` | `array` (string≤10, string≤12) | — | ≤ 3 items; default `[]` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | ≤ 20 items; default `[]` |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the header
@@ -742,6 +1150,21 @@ Lays out daily values as shaded week × weekday cells, showing weekday and seaso
 **figures**: `governing_message`, `calendar_heatmap`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 36 chars |
+| `start` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `end` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `values` | `array` (string≤10, number) | ✔ | 7–371 items |
+| `unit` | `string` | — | ≤ 4 chars; default `"items"` |
+| `levels` | `integer` | — | 3–7; default `5` |
+| `monthly` | `boolean` | — | default `true` |
+| `summary` | `boolean` | — | default `true` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | ≤ 30 items; default `[]` |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -764,6 +1187,19 @@ Places a one-character duty code and colour in each person × day cell, showing 
 **figures**: `governing_message`, `shift_roster`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 36 chars |
+| `start` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `end` | `string` | ✔ | ≤ 10 chars; ≥ 8 chars |
+| `people` | `array` (string≤6, string≤31) | ✔ | 1–12 items |
+| `codes` | `array` (string≤1, string≤8, string≤7, boolean) | ✔ | 1–6 items |
+| `minStaff` | `integer` | — | 0–12; default `0` |
+| `extraHolidays` | `array` (string≤10, string≤10) | — | ≤ 20 items; default `[]` |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -793,6 +1229,15 @@ Decomposes an issue MECE-style, showing structurally where the problem (or the s
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `tree` | `array` | ✔ | 2 items |
+| `insight` | `string` | ✔ | ≤ 88 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - tree is nested as [label, [children…]]. Each child is either the same shape or a string. Depth beyond 4, or insufficient column width, raises an error at render time
@@ -812,6 +1257,15 @@ Decomposes the KGI into its component metrics, showing which metric is driving t
 **figures**: `governing_message`, `mece_tree`, `so_what`, `source_note`  
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `tree` | `array` | ✔ | 2 items |
+| `insight` | `string` | ✔ | ≤ 88 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -833,6 +1287,15 @@ Shows the chain produced by repeatedly asking "why" from an observed event down 
 **Inference level**: Causal (asserting causes)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `chain` | `string[]` | ✔ | 3–6 items; ≤ 32 chars |
+| `insight` | `string` | ✔ | ≤ 88 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - chain[0] is the observed event, and the last entry is the root cause. Don't skip steps — dig one "why" at a time
@@ -852,6 +1315,16 @@ Lists hypothesized causes of a problem by category, to identify where to start v
 **figures**: `governing_message`, `fishbone`, `so_what`, `source_note`  
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `problem` | `string` | ✔ | ≤ 20 chars |
+| `categories` | `array` (string≤8, string[]≤22) | ✔ | 2–6 items |
+| `insight` | `string` | ✔ | ≤ 44 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -873,6 +1346,16 @@ Overlays counts/amounts by cause with cumulative share, showing which cause to t
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `items` | `array` (string≤10, number) | ✔ | 3–10 items |
+| `unit` | `string` | — | ≤ 6 chars; default `"items"` |
+| `insight` | `string` | ✔ | ≤ 44 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Items are automatically sorted by descending value ("other" is always last). The order you pass them in carries no meaning
@@ -892,6 +1375,16 @@ Shows the current state (As-Is) and the target state (To-Be) side by side, and d
 **figures**: `governing_message`, `before_after`, `cards`, `source_note`  
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `asis` | `string[]` | ✔ | 2–4 items; ≤ 26 chars |
+| `tobe` | `string[]` | ✔ | 2–4 items; ≤ 26 chars |
+| `gaps` | `array` (string≤14, string≤34) | ✔ | 1–3 items |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -913,6 +1406,15 @@ Shows the current process flow and maps which step has which pain point
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `steps` | `string[]` | ✔ | 3–6 items; ≤ 12 chars |
+| `pains` | `string[][]` | ✔ | 1–5 items; ≤ 30 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - steps must be the current (As-Is) flow. Do not mix in an ideal flow or the post-improvement state
@@ -932,6 +1434,18 @@ Lists macro-environment factors across Political, Economic, Social, and Technolo
 **figures**: `governing_message`, `comparison`, `so_what`, `source_note`  
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `political` | `string[]` | ✔ | 1–4 items; ≤ 24 chars |
+| `economic` | `string[]` | ✔ | 1–4 items; ≤ 24 chars |
+| `social` | `string[]` | ✔ | 1–4 items; ≤ 24 chars |
+| `technological` | `string[]` | ✔ | 1–4 items; ≤ 24 chars |
+| `insight` | `string` | ✔ | ≤ 44 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -953,6 +1467,18 @@ Evaluates industry competitive structure through five forces (rivalry, new entra
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `rivalry` | `string` | ✔ | ≤ 36 chars |
+| `entrants` | `string` | ✔ | ≤ 40 chars |
+| `substitutes` | `string` | ✔ | ≤ 40 chars |
+| `buyers` | `string` | ✔ | ≤ 36 chars |
+| `suppliers` | `string` | ✔ | ≤ 36 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - Write each force as "Strong / Medium / Weak: rationale" (don't give just the rating or just the rationale). title carries the conclusion — which force squeezes profitability the most
@@ -972,6 +1498,18 @@ Plots issues on two axes — impact and ease of execution — showing where to s
 **figures**: `governing_message`, `posmap`, `so_what`, `source_note`  
 **Inference level**: Strategic (evaluation and direction-setting)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `items` | `array` (string≤10, number≤1, number≤1) | ✔ | 2–8 items |
+| `highlight` | `string[]` | — | ≤ 3 items; ≤ 10 chars; default `[]` |
+| `xAxis` | `string[]` | — | 2 items; ≤ 12 chars; default `["Hard to do", "Easy to…` |
+| `yAxis` | `string[]` | — | 2 items; ≤ 12 chars; default `["Low impact", "High im…` |
+| `insight` | `string` | ✔ | ≤ 44 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -1001,6 +1539,18 @@ The standard read-alone form: claim, supporting evidence table, implication, and
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `headers` | `string[]` | ✔ | 2–3 items; ≤ 10 chars |
+| `rows` | `string[][]` | ✔ | 3–(print 7 · presentation 4) items; ≤ (print 24 · presentation 16) chars |
+| `insight` | `string` | ✔ | ≤ (print 90 · presentation 50) chars |
+| `insightPoints` | `string[]` | — | ≤ (print 3 · presentation 2) items; ≤ (print 24 · presentation 18) chars; default `[]` |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Write the title as "what can be said" in two lines or fewer; never as a caption describing the table
@@ -1019,6 +1569,20 @@ Puts a chart inside a numbered exhibit frame with the reading on the right, maki
 **Inference level**: Diagnostic (identifying factors and structure)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `exhibitNumber` | `integer` | — | 1–99; default `1` |
+| `exhibitTitle` | `string` | ✔ | ≤ 40 chars |
+| `bars` | `array` (string≤(print 5 · presentation 6), number) | ✔ | 2–(print 8 · presentation 5) items |
+| `unit` | `string` | — | ≤ 8 chars; default `""` |
+| `insight` | `string` | ✔ | ≤ (print 90 · presentation 50) chars |
+| `insightPoints` | `string[]` | — | ≤ (print 3 · presentation 2) items; ≤ (print 24 · presentation 18) chars; default `[]` |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1039,6 +1603,17 @@ Situation, complication, and resolution in three tiers plus supporting points, s
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `situation` | `string` | ✔ | ≤ (print 80 · presentation 48) chars |
+| `complication` | `string` | ✔ | ≤ (print 80 · presentation 48) chars |
+| `resolution` | `string` | ✔ | ≤ (print 80 · presentation 48) chars |
+| `points` | `string[]` | — | ≤ (print 4 · presentation 3) items; ≤ (print 46 · presentation 28) chars; default `[]` |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - The condition is that this one page alone enables the decision; the body serves as supporting evidence
@@ -1057,6 +1632,16 @@ Leads with the conclusion, then rationale cards and the next action (So What), r
 **Inference level**: Strategic (evaluation and direction-setting)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `rationale` | `array` (string≤12, string≤(print 48 · presentation 30)) | ✔ | 3–(print 4 · presentation 3) items |
+| `implication` | `string` | ✔ | ≤ (print 100 · presentation 60) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1077,6 +1662,17 @@ Compares options in a dot-rating matrix and shows the recommendation with its re
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `criteria` | `string[]` | ✔ | 3–(print 5 · presentation 4) items; ≤ 8 chars |
+| `options` | `array` (string≤16, integer[]≤4) | ✔ | 2–(print 5 · presentation 4) items |
+| `recommendation` | `string` | ✔ | ≤ (print 100 · presentation 60) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Limit criteria to those that affect the decision; never pad with filler criteria
@@ -1095,6 +1691,15 @@ Lines up the body's action titles in order — the horizontal logic — showing 
 **Inference level**: Strategic (evaluation and direction-setting)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `messages` | `string[]` | ✔ | 4–(print 8 · presentation 5) items; ≤ (print 40 · presentation 26) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1115,6 +1720,16 @@ Pairs the objections expected at the approval meeting with sourced answers, pree
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `headers` | `string[]` | — | 2 items; ≤ 12 chars; default `["Likely concern", "Ans…` |
+| `qa` | `string[][]` | ✔ | 3–(print 5 · presentation 3) items; ≤ (print 50 · presentation 30) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Every answer must carry its basis (exhibit numbers, appendix, test results)
@@ -1133,6 +1748,22 @@ The densest page in the pack: exhibit chart, comparison table, implication, deci
 **Inference level**: Strategic (evaluation and direction-setting)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `exhibitNumber` | `integer` | — | 1–99; default `1` |
+| `exhibitTitle` | `string` | ✔ | ≤ 30 chars |
+| `bars` | `array` (string≤(print 5 · presentation 6), number) | ✔ | 2–(print 6 · presentation 4) items |
+| `unit` | `string` | — | ≤ 8 chars; default `""` |
+| `headers` | `string[]` | ✔ | 2–3 items; ≤ 8 chars |
+| `rows` | `string[][]` | ✔ | 3–(print 5 · presentation 3) items; ≤ (print 16 · presentation 12) chars |
+| `implication` | `string` | ✔ | ≤ (print 55 · presentation 28) chars |
+| `decisions` | `string[][]` | ✔ | 1–2 items; ≤ (print 22 · presentation 16) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1159,6 +1790,16 @@ Shows the profit plan from revenue down to operating income as a year-by-year ta
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `headers` | `string[]` | ✔ | 5 items; ≤ 8 chars |
+| `rows` | `string[][]` | ✔ | 3–(print 7 · presentation 5) items; ≤ (print 9 · presentation 8) chars |
+| `source` | `string` | ✔ | ≤ 80 chars |
+
 Guardrails:
 
 - Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it
@@ -1182,6 +1823,17 @@ Bridges from a starting point to the planned figure driver by driver, showing wh
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `items` | `array` (string≤8, number, string≤5) | ✔ | 3–(print 7 · presentation 5) items |
+| `unit` | `string` | — | ≤ 6 chars; default `""` |
+| `implication` | `string` | ✔ | ≤ (print 100 · presentation 70) chars |
+| `source` | `string` | ✔ | ≤ 80 chars |
+
 Guardrails:
 
 - Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it
@@ -1204,6 +1856,18 @@ Places the year-by-year cost mix beside the up-front/recurring breakdown by line
 **Inference level**: Predictive (projecting future values)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `categories` | `string[]` | ✔ | 2–4 items; ≤ 6 chars |
+| `series` | `array` (string≤5, number[]) | ✔ | 2–4 items |
+| `breakdown` | `string[][]` | ✔ | 2–(print 6 · presentation 4) items; ≤ (print 7 · presentation 5) chars |
+| `unit` | `string` | — | ≤ 6 chars; default `""` |
+| `source` | `string` | ✔ | ≤ 80 chars |
 
 Guardrails:
 
@@ -1229,6 +1893,21 @@ Marks the break-even point where the revenue line meets the total-cost line, wit
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `labels` | `string[]` | ✔ | 3–5 items; ≤ 5 chars |
+| `series` | `array` (string≤8, number[]) | ✔ | 2–3 items |
+| `unit` | `string` | — | ≤ 6 chars; default `""` |
+| `bepValue` | `string` | ✔ | ≤ 8 chars |
+| `bepLabel` | `string` | — | ≤ 14 chars; default `"Break-even revenue"` |
+| `marginValue` | `string` | ✔ | ≤ 8 chars |
+| `marginLabel` | `string` | — | ≤ 14 chars; default `"Margin of safety (vs p…` |
+| `source` | `string` | ✔ | ≤ 80 chars |
+
 Guardrails:
 
 - Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it
@@ -1251,6 +1930,19 @@ Shows several scenarios' trajectories with the assumptions that separate them, m
 **Inference level**: Predictive (projecting future values)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `labels` | `string[]` | ✔ | 3–6 items; ≤ 6 chars |
+| `series` | `array` (string≤8, number[]) | ✔ | 2–3 items |
+| `unit` | `string` | — | ≤ 6 chars; default `""` |
+| `assumptions` | `string[][]` | ✔ | 2–3 items; ≤ (print 12 · presentation 9) chars |
+| `source` | `string` | ✔ | ≤ 80 chars |
+| `yMax` | `number` | — | ≥ 0; default `null` |
 
 Guardrails:
 
@@ -1276,6 +1968,23 @@ Shows when the investment is recovered at the crossing of cumulative investment 
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `roiValue` | `string` | ✔ | ≤ 8 chars |
+| `roiLabel` | `string` | — | ≤ 14 chars; default `"ROI (cumulative)"` |
+| `paybackValue` | `string` | ✔ | ≤ 8 chars |
+| `paybackLabel` | `string` | — | ≤ 14 chars; default `"Payback period"` |
+| `npvValue` | `string` | ✔ | ≤ 8 chars |
+| `npvLabel` | `string` | — | ≤ 14 chars; default `"NPV (net present value…` |
+| `labels` | `string[]` | ✔ | 3–6 items; ≤ 6 chars |
+| `series` | `array` (string≤8, number[]) | ✔ | 2–3 items |
+| `unit` | `string` | — | ≤ 6 chars; default `""` |
+| `source` | `string` | ✔ | ≤ 80 chars |
+
 Guardrails:
 
 - Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it
@@ -1300,6 +2009,16 @@ Lists the major risks with impact and likelihood, paired with the mitigation and
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `risks` | `string[][]` | ✔ | 2–(print 5 · presentation 4) items; ≤ (print 22 · presentation 16) chars |
+| `decisionRule` | `string` | ✔ | ≤ (print 110 · presentation 70) chars |
+| `source` | `string` | ✔ | ≤ 80 chars |
+
 Guardrails:
 
 - Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it
@@ -1322,6 +2041,17 @@ Places the delivery org chart beside the owner and headcount per role to substan
 **Inference level**: Descriptive (organizing facts)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `tree` | `tuple` (string≤18, array) | ✔ | — |
+| `roles` | `string[][]` | ✔ | 2–(print 6 · presentation 4) items; ≤ (print 15 · presentation 12) chars |
+| `notes` | `string[]` | — | ≤ 2 items; ≤ 60 chars; default `[]` |
+| `source` | `string` | ✔ | ≤ 80 chars |
 
 Guardrails:
 
@@ -1352,6 +2082,17 @@ States up front how far the analysis behind this deck actually got (done / runni
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `basis` | `string` | ✔ | ≤ (print 150 · presentation 110) chars |
+| `counts` | `array` (string≤12, number, string≤8) | ✔ | 2–5 items |
+| `headers` | `string[]` | ✔ | 3 items; ≤ 14 chars |
+| `groups` | `string[][]` | ✔ | 2–(print 7 · presentation 5) items; ≤ (print 22 · presentation 16) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Always the second slide. A deck explaining incomplete work misleads the reader unless the basis is disclosed first
@@ -1372,6 +2113,17 @@ Shows what one phase established, using that phase's own summary and its output 
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `phase` | `string` | ✔ | ≤ 60 chars |
+| `finding` | `string` | ✔ | ≤ (print 200 · presentation 150) chars |
+| `headers` | `string[]` | ✔ | 2 items; ≤ 16 chars |
+| `outputs` | `array` (string≤42, string≤(print 46 · presentation 34)) | ✔ | 1–3 items |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Base summary on what the phase recorded itself (the summary in pipeline-progress.json). Rewording for the reader is fine; adding a new claim is not
@@ -1391,6 +2143,16 @@ Shows what the current system is built on, layer by layer, with versions and con
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `lead` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `layers` | `array` (string≤22, string≤(print 52 · presentation 40)) | ✔ | 3–(print 6 · presentation 5) items |
+| `facts` | `string[][]` | ✔ | 2–(print 7 · presentation 5) items; ≤ (print 24 · presentation 18) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Layers are what actually runs. Anything present in config but never called is marked 'declared only' in the note
@@ -1409,6 +2171,16 @@ Shows the detected issues as a severity distribution plus individual entries
 **Inference level**: Diagnostic (identifying factors and structure)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `lead` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `counts` | `array` (string≤12, number, string≤8) | ✔ | 2–4 items |
+| `issues` | `string[][]` | ✔ | 2–(print 7 · presentation 5) items; ≤ (print 24 · presentation 18) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1430,6 +2202,17 @@ Shows a single maturity or readiness score with its bands, and lists the compone
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `score` | `string` | ✔ | ≤ 10 chars |
+| `scoreCaption` | `string` | ✔ | ≤ (print 48 · presentation 34) chars |
+| `dimensions` | `array` (string≤18, number, string≤10) | ✔ | 2–(print 5 · presentation 4) items |
+| `verdict` | `string` | ✔ | ≤ (print 150 · presentation 110) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Always show the score with its bands (what a given score means). A number alone cannot be judged
@@ -1448,6 +2231,17 @@ Compares scores per module and dimension as a surface, showing what is holding t
 **Inference level**: Diagnostic (identifying factors and structure)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `lead` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `columns` | `string[]` | ✔ | 2–(print 6 · presentation 5) items; ≤ 14 chars |
+| `rows` | `array` (string≤20, integer[]≤5) | ✔ | 2–(print 5 · presentation 4) items |
+| `verdict` | `string` | ✔ | ≤ (print 100 · presentation 75) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1468,6 +2262,17 @@ Shows the central context and its neighbours, with the relationship type on each
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `lead` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `center` | `string` | ✔ | ≤ 22 chars |
+| `contexts` | `string[]` | ✔ | 3–6 items; ≤ 24 chars |
+| `relations` | `string[][]` | ✔ | 2–(print 6 · presentation 4) items; ≤ (print 22 · presentation 18) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Relationship types (Shared Kernel / Conformist / Separate Ways ...) use the report's terms as they stand
@@ -1485,6 +2290,18 @@ Pastes the report's structural diagram as an exhibit and adds three things to re
 **Inference level**: Descriptive (organizing facts)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `exhibitNumber` | `string` | ✔ | ≤ 6 chars |
+| `exhibitTitle` | `string` | ✔ | ≤ 44 chars |
+| `image` | `string` | ✔ | ≤ 200 chars |
+| `lead` | `string` | ✔ | ≤ (print 90 · presentation 70) chars |
+| `readings` | `string[]` | ✔ | 2–3 items; ≤ (print 34 · presentation 26) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1507,6 +2324,16 @@ Keeps the options considered, what was adopted or rejected, and why, on one page
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `question` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `options` | `string[][]` | ✔ | 2–4 items; ≤ (print 34 · presentation 26) chars |
+| `decision` | `string` | ✔ | ≤ (print 150 · presentation 110) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Always show at least one rejected option. A table of the adopted option alone is advertising, not a decision record
@@ -1526,6 +2353,16 @@ Shows the sequence, the durations and the dependencies as bands
 **Inference level**: Strategic (evaluation and direction-setting)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `lead` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `columns` | `string[]` | ✔ | 3–(print 8 · presentation 6) items; ≤ 10 chars |
+| `rows` | `array` (string≤(print 24 · presentation 18), number, number, string≤18) | ✔ | 2–(print 7 · presentation 5) items |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1547,6 +2384,16 @@ Lays out the target user's experience in sequence and shows where it stalls
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `persona` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `milestones` | `array` (string≤14, string≤(print 34 · presentation 24)) | ✔ | 3–5 items |
+| `pains` | `array` (string≤18, string≤(print 50 · presentation 38)) | ✔ | 2–3 items |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - Persona attributes are only what the research confirmed. Do not invent an age or an income to fill the card
@@ -1563,6 +2410,18 @@ Shows the flow of an experience as screen mocks ordered by the domain story
 **Inference level**: Descriptive (organizing facts)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `story` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `shot1` | `string` | ✔ | ≤ 200 chars |
+| `shot2` | `string` | ✔ | ≤ 200 chars |
+| `shot3` | `string` | ✔ | ≤ 200 chars |
+| `steps` | `array` (string≤16, string≤(print 44 · presentation 34)) | ✔ | 3 items |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1582,6 +2441,16 @@ Shows one screen mock large, with the points to notice and the specification bes
 **densities**: print / presentation (default print)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `screen` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `shot` | `string` | ✔ | ≤ 200 chars |
+| `notes` | `string[][]` | ✔ | 2–(print 6 · presentation 4) items; ≤ (print 18 · presentation 14) chars |
+| `source` | `string` | ✔ | ≤ 170 chars |
+
 Guardrails:
 
 - The points to notice are only what is visible on the screen. Processing behind it does not go on this page
@@ -1600,6 +2469,17 @@ Shows the premises still unfilled and the phases not started, along with who fil
 **Inference level**: Descriptive (organizing facts)  
 **densities**: print / presentation (default print)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ (print 38 · presentation 30) chars |
+| `lead` | `string` | ✔ | ≤ (print 140 · presentation 100) chars |
+| `headers` | `string[]` | ✔ | 3 items; ≤ 16 chars |
+| `questions` | `string[][]` | ✔ | 2–(print 5 · presentation 4) items; ≤ (print 36 · presentation 28) chars |
+| `nextSteps` | `array` (string≤18, string≤(print 50 · presentation 38)) | ✔ | 2–3 items |
+| `source` | `string` | ✔ | ≤ 170 chars |
 
 Guardrails:
 
@@ -1626,6 +2506,16 @@ Puts the open points on the table up front, each with the reason you are asking
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `items` | `string[][]` | ✔ | 3–5 items; ≤ 40 chars |
+| `ask` | `string` | ✔ | ≤ 60 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - **Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses
@@ -1644,6 +2534,16 @@ Puts your reading up as a hypothesis so the customer can correct what is wrong
 **figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `items` | `array` (string≤16, string≤68) | ✔ | 2–3 items |
+| `ask` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -1664,6 +2564,15 @@ Blank rows to write on during the meeting, on screen or on paper
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `items` | `string[][]` | ✔ | 3–6 items; ≤ 44 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - **Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses
@@ -1682,6 +2591,16 @@ Lets an audience at a seminar or talk say which situation they are in
 **figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `items` | `array` (string≤8, string≤56) | ✔ | 3–4 items |
+| `ask` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -1702,6 +2621,16 @@ Says where answers go, and what the customer gets back for sending them
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `steps` | `array` | ✔ | 2–4 items |
+| `where` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
+
 Guardrails:
 
 - **Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses; check who the answer URL may be shared with before putting it on the page
@@ -1719,6 +2648,16 @@ Shows the QR for the answer destination large, for the end of a talk or a hand-o
 **figures**: `governing_message`, `lead_in`, `image`, `so_what`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `qr` | `string` | ✔ | ≤ 400 chars |
+| `where` | `string` | ✔ | ≤ 120 chars |
+| `source` | `string` | ✔ | ≤ 160 chars |
 
 Guardrails:
 
@@ -1744,6 +2683,16 @@ Three published cases, one line each — the page that reinforces trust after in
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `cases` | `array` (string≤16, string≤68) | ✔ | 2–3 items |
+| `sowhat` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **Only published cases.** No unpublished customer name or figure
@@ -1763,6 +2712,17 @@ One customer, in the order problem -> what was done -> result, with published fi
 **figures**: `governing_message`, `lead_in`, `before_after`, `so_what`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `before` | `array` | ✔ | 2–3 items |
+| `after` | `array` | ✔ | 2–3 items |
+| `result` | `string` | ✔ | ≤ 90 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
 
 Guardrails:
 
@@ -1784,6 +2744,16 @@ Sets the case's situation beside the customer's, showing why it is worth their a
 **figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `rows` | `string[][]` | ✔ | 3–4 items; ≤ 38 chars |
+| `caveat` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
 
 Guardrails:
 
@@ -1812,6 +2782,16 @@ Sets each agreed challenge against what solves it and what changes as a result �
 **Inference level**: Causal (asserting causes)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `rows` | `string[][]` | ✔ | 2–4 items; ≤ 34 chars |
+| `scope_out` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses
@@ -1832,6 +2812,17 @@ Sets what is in against what is not, so expectations line up
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `inside` | `array` | ✔ | 2–4 items |
+| `outside` | `array` | ✔ | 2–4 items |
+| `why` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses
@@ -1850,6 +2841,15 @@ What has to be confirmed for feasibility, and what happens after — as far as w
 **figures**: `governing_message`, `lead_in`, `table`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `rows` | `string[][]` | ✔ | 5–7 items; ≤ 50 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
 
 Guardrails:
 
@@ -1871,6 +2871,17 @@ States the effect as a change in daily work rather than as a set of capabilities
 **Inference level**: Predictive (projecting future values)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `before` | `array` | ✔ | 2–4 items |
+| `after` | `array` | ✔ | 2–4 items |
+| `quant` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses
@@ -1891,6 +2902,17 @@ Separates what is decided in the room from the homework each side takes away
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `steps` | `array` | ✔ | 2–4 items |
+| `decide` | `string` | ✔ | ≤ 100 chars |
+| `rows` | `string[][]` | ✔ | 2–3 items; ≤ 30 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses
@@ -1909,6 +2931,16 @@ Separates the problems on the surface from the structure underneath, distinguish
 **figures**: `governing_message`, `lead_in`, `iceberg`, `source_note`  
 **Inference level**: Causal (asserting causes)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `above` | `array` | ✔ | 2 items |
+| `below` | `array` | ✔ | 2–3 items |
+| `source` | `string` | ✔ | ≤ 200 chars |
 
 Guardrails:
 
@@ -1936,6 +2968,17 @@ The essentials of an event — date, format, audience, price, how to register �
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `rows` | `string[][]` | ✔ | 3–4 items; ≤ 44 chars |
+| `mode` | `string` | ✔ | ≤ 10 chars |
+| `cta` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **For a general audience.** Nothing from which a particular company or person can be inferred
@@ -1957,6 +3000,16 @@ The running order, by time, subject and speaker
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `rows` | `string[][]` | ✔ | 3–6 items; ≤ 40 chars |
+| `note` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **For a general audience.** Nothing from which a particular company or person can be inferred
@@ -1976,6 +3029,16 @@ Who is speaking, and why this talk comes from them
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `speakers` | `array` (string≤14, string≤26, string≤30) | ✔ | 1–4 items |
+| `why` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **For a general audience.** Nothing from which a particular company or person can be inferred
@@ -1994,6 +3057,16 @@ Shows someone who does not yet see a problem what is worth settling at build or 
 **figures**: `governing_message`, `lead_in`, `cards`, `so_what`, `source_note`  
 **Inference level**: Diagnostic (identifying factors and structure)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `items` | `array` (string≤16, string≤60) | ✔ | 3 items |
+| `ask` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
 
 Guardrails:
 
@@ -2015,6 +3088,16 @@ One way of using the product, in the order preconditions -> what you do -> where
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `rows` | `string[][]` | ✔ | 3–5 items; ≤ 50 chars |
+| `fit` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **For a general audience.** Nothing from which a particular company or person can be inferred
@@ -2034,6 +3117,17 @@ The cover page that lets a reader judge, before reading, what the paper settles
 **figures**: `governing_message`, `lead_in`, `flow`, `so_what`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `toc` | `array` | ✔ | 3–5 items |
+| `answers_q` | `string` | ✔ | ≤ 100 chars |
+| `who` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
 
 Guardrails:
 
@@ -2061,6 +3155,16 @@ What a partner gains and what they carry — a page to show a partner
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
 
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `items` | `array` (string≤16, string≤60) | ✔ | 3 items |
+| `ask` | `string` | ✔ | ≤ 100 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
+
 Guardrails:
 
 - **Partner-facing.** Keep customer-specific confidential detail to a minimum (playbook §3)
@@ -2080,6 +3184,15 @@ Settles the joint win theme, RACI, route to market, estimate boundary, IP and co
 **figures**: `governing_message`, `lead_in`, `table`, `source_note`  
 **Inference level**: Descriptive (organizing facts)  
 **status**: experimental
+
+**Inputs**
+
+| Slot | Type | Required | Constraints |
+|---|---|---|---|
+| `title` | `string` | ✔ | ≤ 70 chars |
+| `lead` | `string` | ✔ | ≤ 100 chars |
+| `rows` | `string[][]` | ✔ | 5–7 items; ≤ 50 chars |
+| `source` | `string` | ✔ | ≤ 200 chars |
 
 Guardrails:
 

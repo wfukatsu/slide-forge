@@ -255,8 +255,10 @@ JSON から呼べるプリミティブ（`build_deck.py::FIGURES` に登録）:
   投影用の粗い版は表現を変える（期間を縮める・一覧化する）ほうが効くため。
 - **正規化は `calendar_pages.py` に含めた**（`calendar_normalize.py` は作らない）。日付の正規化と
   年のない日付の拒否は `calendars.parse_date` が担う。
-- **デッキ仕様の `$template` 展開は存在しない**ため、`calendar_pages.py` はテンプレートを
-  展開済みのスライド（`{"slides": [...]}`）を出力する。
+- `calendar_pages.py` はテンプレートを展開済みのスライド（`{"slides": [...]}`）を出力する。
+  P1 の時点でデッキ仕様の `$template` 展開が存在しなかったためで、この前提は後に解消された
+  （`build_deck.expand_slide_templates`）。カレンダーは日付の正規化とページ分割を先に行う
+  必要があるため、出力形式は展開済みのままでよい。
 - P1 はコミット `a26a338`（ブランチ `feat/calendar-templates`）。
 
 ## 10. P2 の実装状況（2026-09-15）

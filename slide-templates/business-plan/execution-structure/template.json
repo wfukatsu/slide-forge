@@ -124,8 +124,12 @@
         "y": 1.6,
         "w": 3.3,
         "headers": [
-          "役割",
-          "担当・人数"
+          {
+            "$t": "exec.role"
+          },
+          {
+            "$t": "exec.staffing"
+          }
         ],
         "rows": {
           "$slot": "roles"

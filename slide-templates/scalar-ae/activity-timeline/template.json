@@ -78,9 +78,15 @@
         "y": 2.35,
         "w": 9.0,
         "headers": [
-          "日付",
-          "会った相手",
-          "得たこと / 次の一手"
+          {
+            "$t": "activity.date"
+          },
+          {
+            "$t": "activity.met"
+          },
+          {
+            "$t": "activity.learned_next"
+          }
         ],
         "rows": {
           "$slot": "rows"

@@ -636,7 +636,8 @@ class ChartMixin:
         else:
             png = self._pie_png(vals, cols, donut, bg)
             self.image(x, y, size, size, png, fit="contain",
-                       alt="円グラフ: " + ", ".join(str(n) for n, _ in items))
+                       alt=self._label("charts.pie_alt")
+                       + ", ".join(str(n) for n, _ in items))
 
         lx = x + size + 0.25
         lw = legend_w or 2.4

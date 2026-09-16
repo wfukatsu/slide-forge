@@ -106,7 +106,9 @@
         "text": {
           "$slot": "result"
         },
-        "label": "公表されている結果"
+        "label": {
+          "$t": "case.published_result"
+        }
       },
       {
         "type": "source_note",

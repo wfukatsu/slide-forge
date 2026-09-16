@@ -76,9 +76,15 @@
         "y": 1.55,
         "w": 9.0,
         "headers": [
-          "合意した課題",
-          "解決する機能",
-          "結果としてどうなるか"
+          {
+            "$t": "csm.agreed_problem"
+          },
+          {
+            "$t": "csm.capability"
+          },
+          {
+            "$t": "csm.outcome"
+          }
         ],
         "rows": {
           "$slot": "rows"
@@ -100,7 +106,9 @@
         "text": {
           "$slot": "scope_out"
         },
-        "label": "本提案では解かないこと"
+        "label": {
+          "$t": "csm.out_of_scope"
+        }
       },
       {
         "type": "source_note",

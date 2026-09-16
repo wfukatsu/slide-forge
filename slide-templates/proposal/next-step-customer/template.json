@@ -98,7 +98,9 @@
         "text": {
           "$slot": "decide"
         },
-        "label": "本日決めたいこと"
+        "label": {
+          "$t": "next.decide_today"
+        }
       },
       {
         "type": "table",
@@ -106,9 +108,15 @@
         "y": 3.35,
         "w": 9.0,
         "headers": [
-          "次回までの宿題",
-          "担当",
-          "期日"
+          {
+            "$t": "next.homework"
+          },
+          {
+            "$t": "common.owner"
+          },
+          {
+            "$t": "next.date"
+          }
         ],
         "rows": {
           "$slot": "rows"

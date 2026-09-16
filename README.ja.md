@@ -600,10 +600,49 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 ```
 
 `--density` は `$density` バリアントを宣言しているテンプレート（`read-alone`
-と `business-plan` パック）にだけ効き、それ以外は無視する。デッキ spec の `$template` フィールドから
-呼び出すこともできる。全テンプレートはレンダリング画像つきで
+と `business-plan` パック）にだけ効き、それ以外は無視する。全テンプレートはレンダリング画像つきで
 [`references/slide-template-catalog.ja.md`](references/slide-template-catalog.ja.md)
 にカタログ化してある。
+
+**デッキ仕様からテンプレートを名指しする。** スライドに `$template` を書くと、その
+テンプレートが 1 枚に展開される。`data` のキーは各テンプレートの**入力**表にある
+スロット名で、型・必須・制約つきでカタログに載っている。
+
+```json
+{
+  "slides": [
+    {
+      "$template": "swot-analysis",
+      "data": {
+        "title": "自社の戦略ポジション",
+        "quadrants": ["強み: …", "弱み: …", "機会: …", "脅威: …"],
+        "insight": "…",
+        "source": "2026 年 3 月 経営会議資料"
+      },
+      "notes": "スピーカーノート（任意）"
+    }
+  ]
+}
+```
+
+`$template` / `data` / `density` / `lang` 以外のキーは展開後のスライドに上書きで合流するので、
+`notes` を足したり `layout` を差し替えたりできる。密度はスライドの `density` → spec の
+`density` → テンプレート既定の順に決まる。展開は検証・生成・`--into` のどれよりも前に
+走るため、`--dry-run --strict` でそのまま検査でき、入力が足りなければ生成前に落ちる。
+
+**スライドに出る語の言語は `lang` で決める。** テンプレートが自分で刷る語（表の見出し、
+軸の両端、`出典:` のような添え物）は `slide-templates/i18n/<lang>.json` から引く。
+`data` に書いた内容そのものは翻訳されない — 언어を切り替えても原稿はそのまま出る。
+
+```json
+{ "lang": "en", "slides": [{ "$template": "gap-analysis", "data": { … } }] }
+```
+
+`lang` はスライド単位でも spec 全体でも書ける（スライド → spec → 既定の `ja` の順）。
+図形を直接描く部品（`source_note` の `出典`、カレンダーの曜日見出しなど）も同じ resource
+を見るので、1 枚の中でテンプレートと図の言語が食い違うことはない。訳が無いキーは既定
+言語のまま出るので、未翻訳は空欄ではなく日本語として目に見える。1 枚だけ描くときは
+`render_slide_template.py --lang en`。
 
 ## テキストの適合
 
@@ -686,7 +725,7 @@ business-plan、nexus、hearing、case-studies、proposal、marketing、partner�
 | `event-announcement.json` | 4 | セミナー / カンファレンス告知の部品 |
 | `read-alone-guide.json` | 30 | 配布・読み切り資料向けの密度パターン |
 | `design-catalog.json` | 49 | デザインパターンのフルカタログ †|
-| `slide-pattern-index.json` | 71 | 1 パターン 1 ページの索引 — 1 枚 = 1 パターン †|
+| `slide-pattern-index.json` | 71 | 1 パターン 1 ページの索引 — 52 枚がパターン、残りは表紙・章扉・区切り †|
 | `cloud-architecture.json` | 6 | クラウドアーキテクチャ図 †|
 | `b2b-account-review.json` | 13 | `b2b-sales` の 8 テンプレートすべてで組んだアカウントレビューの実例 — 表紙、エグゼクティブサマリー、2 軸/MEDDPICC 形式と構造形式の両マップ、それらを支えるページ |
 | `estimate-sample.json` | 2 シート | `spreadsheets` スキル用の明細見積もり ‡|

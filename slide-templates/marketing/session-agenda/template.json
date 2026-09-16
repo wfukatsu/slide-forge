@@ -87,7 +87,9 @@
         "text": {
           "$slot": "note"
         },
-        "label": "補足"
+        "label": {
+          "$t": "agenda.note"
+        }
       },
       {
         "type": "source_note",

@@ -75,9 +75,15 @@
           "$slot": "resolution"
         },
         "labels": [
-          "顧客ゴール",
-          "障害",
-          "勝ち筋"
+          {
+            "$t": "win.customer_goal"
+          },
+          {
+            "$t": "win.obstacle"
+          },
+          {
+            "$t": "win.path"
+          }
         ]
       },
       {
@@ -86,8 +92,12 @@
         "y": 3.15,
         "w": 9.0,
         "headers": [
-          "最大のリスク",
-          "コントロールする次の行動"
+          {
+            "$t": "win.top_risk"
+          },
+          {
+            "$t": "win.next_action"
+          }
         ],
         "rows": {
           "$slot": "risks"

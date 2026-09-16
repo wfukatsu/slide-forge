@@ -100,7 +100,9 @@
         "text": {
           "$slot": "ask"
         },
-        "label": "違っていたら教えてください"
+        "label": {
+          "$t": "hypothesis.correct_us"
+        }
       },
       {
         "type": "source_note",

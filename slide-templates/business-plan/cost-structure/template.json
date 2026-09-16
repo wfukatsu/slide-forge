@@ -144,9 +144,15 @@
         "y": 1.6,
         "w": 3.3,
         "headers": [
-          "費目",
-          "初期",
-          "年間"
+          {
+            "$t": "cost.line"
+          },
+          {
+            "$t": "cost.initial"
+          },
+          {
+            "$t": "cost.annual"
+          }
         ],
         "rows": {
           "$slot": "breakdown"

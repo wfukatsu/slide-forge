@@ -100,7 +100,9 @@
         "text": {
           "$slot": "ask"
         },
-        "label": "次の紹介"
+        "label": {
+          "$t": "visit.next_intro"
+        }
       },
       {
         "type": "cards",

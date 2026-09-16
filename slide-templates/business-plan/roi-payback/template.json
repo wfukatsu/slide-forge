@@ -32,7 +32,9 @@
     },
     "roiLabel": {
       "type": "string",
-      "default": "投資回収率（累計）",
+      "default": {
+        "$t": "finance.roi"
+      },
       "maxLength": 14
     },
     "paybackValue": {
@@ -42,7 +44,9 @@
     },
     "paybackLabel": {
       "type": "string",
-      "default": "投資回収期間",
+      "default": {
+        "$t": "finance.payback"
+      },
       "maxLength": 14
     },
     "npvValue": {
@@ -52,7 +56,9 @@
     },
     "npvLabel": {
       "type": "string",
-      "default": "NPV（正味現在価値）",
+      "default": {
+        "$t": "finance.npv"
+      },
       "maxLength": 14
     },
     "labels": {

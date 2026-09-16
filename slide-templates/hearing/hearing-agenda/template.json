@@ -75,8 +75,12 @@
         "y": 1.62,
         "w": 9.0,
         "headers": [
-          "うかがいたいこと",
-          "なぜうかがうのか"
+          {
+            "$t": "common.what_we_ask"
+          },
+          {
+            "$t": "hearing.why_ask"
+          }
         ],
         "rows": {
           "$slot": "items"
@@ -97,7 +101,9 @@
         "text": {
           "$slot": "ask"
         },
-        "label": "お願い"
+        "label": {
+          "$t": "hearing.request"
+        }
       },
       {
         "type": "source_note",

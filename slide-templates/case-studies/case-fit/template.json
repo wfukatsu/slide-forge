@@ -77,9 +77,15 @@
         "y": 1.55,
         "w": 9.0,
         "headers": [
-          "観点",
-          "事例の状況",
-          "御社の状況"
+          {
+            "$t": "common.aspect"
+          },
+          {
+            "$t": "case.their_situation"
+          },
+          {
+            "$t": "case.your_situation"
+          }
         ],
         "rows": {
           "$slot": "rows"
@@ -101,7 +107,9 @@
         "text": {
           "$slot": "caveat"
         },
-        "label": "当てはまらない点"
+        "label": {
+          "$t": "case.where_it_differs"
+        }
       },
       {
         "type": "source_note",

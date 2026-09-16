@@ -594,10 +594,53 @@ into a deck spec, so it works with any registered master.
 ```
 
 `--density` applies to templates that declare `$density` variants (the
-`read-alone` and `business-plan` packs); others ignore it. The rendered slide can also be pulled in
-from a deck spec with the `$template` field. Every template is catalogued with
-a rendered image in
+`read-alone` and `business-plan` packs); others ignore it. Every template is
+catalogued with a rendered image in
 [`references/slide-template-catalog.md`](references/slide-template-catalog.md).
+
+**Name a template from a deck spec.** Write `$template` on a slide and that
+template expands into one slide. The keys under `data` are the slot names from
+the template's **Inputs** table in the catalog, which also gives each slot's
+type, whether it is required, and its limits.
+
+```json
+{
+  "slides": [
+    {
+      "$template": "swot-analysis",
+      "data": {
+        "title": "Our strategic position",
+        "quadrants": ["Strength: …", "Weakness: …", "Opportunity: …", "Threat: …"],
+        "insight": "…",
+        "source": "Board meeting, March 2026"
+      },
+      "notes": "Speaker notes (optional)"
+    }
+  ]
+}
+```
+
+Keys other than `$template` / `data` / `density` / `lang` are merged over the
+rendered slide, so a spec can attach `notes` or retarget `layout`. Density comes
+from the slide, then the spec, then the template's own default. Expansion runs
+before validation, generation and `--into` alike, so `--dry-run --strict` checks
+the inputs and fails before anything is created.
+
+**`lang` picks the language of the words the slide prints for itself.** Table
+headers, axis ends and furniture like `Source:` come from
+`slide-templates/i18n/<lang>.json`. What you wrote under `data` is never
+translated — your copy is printed as given.
+
+```json
+{ "lang": "en", "slides": [{ "$template": "gap-analysis", "data": { … } }] }
+```
+
+`lang` can sit on a slide or on the spec (slide, then spec, then the `ja`
+default). The drawing primitives read the same resource — `source_note`'s
+`Source`, the calendar weekday heads — so a template and the figures around it
+cannot end up in different languages on one page. A key with no translation is
+printed in the default language, so a gap shows up as a Japanese word rather
+than a blank. For a single slide, `render_slide_template.py --lang en`.
 
 ## Text fitting
 
@@ -679,7 +722,7 @@ declares no `CLOSING` role, so the same spec reports dozens of findings.
 | `event-announcement.json` | 4 | Seminar / conference announcement parts |
 | `read-alone-guide.json` | 30 | Density patterns for print / read-alone decks |
 | `design-catalog.json` | 49 | The full design-pattern catalog †|
-| `slide-pattern-index.json` | 71 | One page per pattern — 1 slide = 1 pattern †|
+| `slide-pattern-index.json` | 71 | One page per pattern — 52 are patterns, the rest are cover, section and divider pages †|
 | `cloud-architecture.json` | 6 | Cloud architecture figures †|
 | `b2b-account-review.json` | 13 | A worked account review built from all eight `b2b-sales` templates — cover, exec summary, both maps in their two-axis/MEDDPICC and structural forms, and their supporting pages |
 | `estimate-sample.json` | 2 sheets | Line-item estimate for the `spreadsheets` skill ‡|

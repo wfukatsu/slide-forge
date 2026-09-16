@@ -240,6 +240,136 @@ def pack_strings(pack: str, lang: str, i18n: dict) -> dict:
             "short": en.get("short") or ja["short"]}
 
 
+def _fmt_num(v) -> str:
+    """A constraint value, which a $density template states per density.
+
+    Per-density values are parenthesized and joined with a separator that is
+    not the one between constraints, so "2-6 items" and "print 7 /
+    presentation 4" cannot be misread as one run of alternatives.
+    """
+    if isinstance(v, dict):
+        inner = v.get("$density", v)
+        if isinstance(inner, dict):
+            return "(" + " · ".join(f"{k} {x}" for k, x in inner.items()) + ")"
+    return str(v)
+
+
+def _resolve_labels(node, lang: str):
+    """Show a label-backed default as the word it prints, not as its marker.
+
+    A default can be {"$t": …} now that slot defaults are language-aware. The
+    catalog is for a reader choosing a template, so it has to show "件" or
+    "items", never the key that produces them.
+    """
+    if isinstance(node, dict):
+        if "$t" in node and isinstance(node["$t"], str):
+            from slide_templates import SlideTemplateError, resolve_label
+            try:
+                return resolve_label(node["$t"], lang)
+            except SlideTemplateError:
+                return node["$t"]
+        return {k: _resolve_labels(v, lang) for k, v in node.items()}
+    if isinstance(node, list):
+        return [_resolve_labels(v, lang) for v in node]
+    return node
+
+
+def _constraint_text(spec: dict, lang: str) -> str:
+    """The limits one slot puts on its value, as catalog prose."""
+    ja = lang == "ja"
+    bits: list[str] = []
+    mn, mx = spec.get("minItems"), spec.get("maxItems")
+    if mn is not None and mx is not None:
+        if isinstance(mn, int) and isinstance(mx, int) and mn == mx:
+            bits.append(f"{mn} 件" if ja else f"{mn} items")
+        else:
+            bits.append(f"{_fmt_num(mn)}〜{_fmt_num(mx)} 件" if ja
+                        else f"{_fmt_num(mn)}–{_fmt_num(mx)} items")
+    elif mx is not None:
+        bits.append(f"最大 {_fmt_num(mx)} 件" if ja else f"≤ {_fmt_num(mx)} items")
+    elif mn is not None:
+        bits.append(f"{_fmt_num(mn)} 件以上" if ja else f"≥ {_fmt_num(mn)} items")
+    if spec.get("maxLength") is not None:
+        bits.append(f"{_fmt_num(spec['maxLength'])} 字以内" if ja
+                    else f"≤ {_fmt_num(spec['maxLength'])} chars")
+    if spec.get("minLength") is not None:
+        bits.append(f"{_fmt_num(spec['minLength'])} 字以上" if ja
+                    else f"≥ {_fmt_num(spec['minLength'])} chars")
+    lo, hi = spec.get("minimum"), spec.get("maximum")
+    if lo is not None and hi is not None:
+        bits.append(f"{_fmt_num(lo)}〜{_fmt_num(hi)}" if ja
+                    else f"{_fmt_num(lo)}–{_fmt_num(hi)}")
+    elif lo is not None:
+        bits.append(f"{_fmt_num(lo)} 以上" if ja else f"≥ {_fmt_num(lo)}")
+    elif hi is not None:
+        bits.append(f"{_fmt_num(hi)} 以下" if ja else f"≤ {_fmt_num(hi)}")
+    if "default" in spec:
+        shown = json.dumps(_resolve_labels(spec["default"], lang), ensure_ascii=False)
+        if len(shown) > 24:
+            shown = shown[:23] + "…"
+        bits.append(f"既定 `{shown}`" if ja else f"default `{shown}`")
+    return ("、" if ja else "; ").join(bits) if bits else "—"
+
+
+def _field_shape(spec: dict) -> str:
+    """What one element of a tuple-shaped slot holds, position by position.
+
+    These fields are positional and unnamed, so the only way to say what a row
+    must contain is to show the order: (string<=8, number). Without it the type
+    column says "array" and the caller has to open template.json.
+    """
+    target = spec
+    items = spec.get("items")
+    if isinstance(items, dict) and items.get("fields") is not None:
+        target = items
+    fields = target.get("fields")
+    if isinstance(fields, dict):
+        fields = [{"name": k, **(v if isinstance(v, dict) else {})}
+                  for k, v in fields.items()]
+    if not isinstance(fields, list) or not fields:
+        return ""
+    parts: list[str] = []
+    for f in fields:
+        if isinstance(f, str):
+            parts.append(f)
+            continue
+        if not isinstance(f, dict):
+            continue
+        txt = str(f.get("name") or f.get("type", "?"))
+        limit = f.get("maxLength")
+        if limit is None:
+            limit = f.get("maximum")
+        if limit is not None:
+            txt += f"≤{_fmt_num(limit)}"
+        parts.append(txt)
+    return "(" + ", ".join(parts) + ")" if parts else ""
+
+
+def slot_lines(t: dict, lang: str) -> list[str]:
+    """The input table: what data this template needs, per slot."""
+    slots = t.get("slots")
+    if not isinstance(slots, dict) or not slots:
+        return []
+    if lang == "ja":
+        out = ["**入力**", "", "| スロット | 型 | 必須 | 制約 |", "|---|---|---|---|"]
+    else:
+        out = ["**Inputs**", "", "| Slot | Type | Required | Constraints |",
+               "|---|---|---|---|"]
+    for name, spec in slots.items():
+        if not isinstance(spec, dict):
+            continue
+        type_text = f"`{spec.get('type', '?')}`"
+        shape = _field_shape(spec)
+        if shape:
+            type_text += f" {shape}"
+        # A required slot that declares a default still renders without input,
+        # so it is not something the caller must supply.
+        must = spec.get("required") and "default" not in spec
+        out.append(f"| `{name}` | {type_text} | {'✔' if must else '—'} | "
+                   f"{_constraint_text(spec, lang)} |")
+    return out + [""]
+
+
 def render_template(t: dict, lang: str, i18n: dict) -> list[str]:
     s = template_strings(t, lang, i18n)
     if lang == "ja":
@@ -269,6 +399,7 @@ def render_template(t: dict, lang: str, i18n: dict) -> list[str]:
     if t.get("_status"):
         meta.append(f"**status**: {t['_status']}")
     lines += ["  \n".join(meta), ""]
+    lines += slot_lines(t, lang)
     if s["guardrails"]:
         lines += [guard_label, ""]
         lines += [f"- {g}" for g in s["guardrails"]]
@@ -295,7 +426,44 @@ def render(lang: str, templates: list[dict], i18n: dict) -> str:
             "[slide-pattern-catalog.md](slide-pattern-catalog.ja.md) にある。",
             "",
             "各テンプレートの **figures** 行は、そのページが使っている描画部品の `type` 名。",
-            "テンプレートは `render_slide_template.py` かデッキ仕様の `$template` で使う。",
+            "**入力**表は、そのテンプレートに渡すデータのスロット名・型・必須・制約。",
+            "",
+            "テンプレートを明示的に指定するには、デッキ仕様のスライドに `$template` を書く。",
+            "そのテンプレートが 1 枚に展開される。`data` のキーが各テンプレートの**入力**表の",
+            "スロット名:",
+            "",
+            "```json",
+            "{",
+            '  "slides": [',
+            "    {",
+            '      "$template": "swot-analysis",',
+            '      "data": {',
+            '        "title": "自社の戦略ポジション",',
+            '        "quadrants": ["強み: …", "弱み: …", "機会: …", "脅威: …"],',
+            '        "insight": "…",',
+            '        "source": "2026 年 3 月 経営会議資料"',
+            "      },",
+            '      "notes": "スピーカーノート（任意）"',
+            "    }",
+            "  ]",
+            "}",
+            "```",
+            "",
+            "`$template` / `data` / `density` / `lang` 以外のキーは展開後のスライドに上書きで",
+            "合流するので、`notes` を足したり `layout` を差し替えたりできる。密度はスライドの",
+            "`density` → spec の `density` → テンプレート既定の順。展開は検証・生成・`--into`",
+            "より前に走るため、`--dry-run --strict` で入力の過不足を生成前に検査できる。",
+            "",
+            "各テンプレートが自分で刷る語（表の見出し、軸の両端など）は `lang` で切り替わり、",
+            "`slide-templates/i18n/<lang>.json` から引く。`data` に書いた内容は翻訳されない。",
+            "訳の無いキーは既定言語のまま出るので、未翻訳は空欄ではなく目に見える。",
+            "",
+            "1 枚だけ JSON に落とすなら `render_slide_template.py` を使う:",
+            "",
+            "```bash",
+            ".venv/bin/python scripts/render_slide_template.py \\",
+            "    --template swot-analysis --data my-swot.json --out out/swot.json",
+            "```",
             "",
             *REGEN_FENCE["ja"],
             "",
@@ -318,7 +486,46 @@ def render(lang: str, templates: list[dict], i18n: dict) -> str:
             "[slide-pattern-catalog.md](slide-pattern-catalog.md).",
             "",
             "Each template's **figures** line lists the `type` names of the drawing components used on that page.",
-            "Templates are used via `render_slide_template.py` or the `$template` field in a deck spec.",
+            "The **Inputs** table lists the slots a template takes: name, type, whether it is required, and its limits.",
+            "",
+            "To name a template explicitly, write `$template` on a slide in a deck spec",
+            "and that template expands into one slide. The keys under `data` are the slot",
+            "names from the template's **Inputs** table:",
+            "",
+            "```json",
+            "{",
+            '  "slides": [',
+            "    {",
+            '      "$template": "swot-analysis",',
+            '      "data": {',
+            '        "title": "Our strategic position",',
+            '        "quadrants": ["Strength: …", "Weakness: …", "Opportunity: …", "Threat: …"],',
+            '        "insight": "…",',
+            '        "source": "Board meeting, March 2026"',
+            "      },",
+            '      "notes": "Speaker notes (optional)"',
+            "    }",
+            "  ]",
+            "}",
+            "```",
+            "",
+            "Keys other than `$template` / `data` / `density` / `lang` are merged over the",
+            "rendered slide, so a spec can attach `notes` or retarget `layout`. Density comes",
+            "from the slide, then the spec, then the template default. Expansion runs before",
+            "validation, generation and `--into`, so `--dry-run --strict` checks the inputs",
+            "before anything is created.",
+            "",
+            "The words a template prints for itself — table headers, axis ends — follow `lang`",
+            "and come from `slide-templates/i18n/<lang>.json`. What you write under `data` is",
+            "never translated. A key with no translation prints in the default language, so a",
+            "gap is visible rather than blank.",
+            "",
+            "To render a single slide on its own, use `render_slide_template.py`:",
+            "",
+            "```bash",
+            ".venv/bin/python scripts/render_slide_template.py \\",
+            "    --template swot-analysis --data my-swot.json --out out/swot.json",
+            "```",
             "",
             *REGEN_FENCE["en"],
             "",
