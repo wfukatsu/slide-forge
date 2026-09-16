@@ -20,9 +20,9 @@
 ```
 
 この文書が扱うのは、その周りの判断である — どの図を選ぶか、どの大きさで
-描くか、何をすると読めなくなるか。描画 API は [diagrams.md](diagrams.md)、
-写真や生成画像は [images.md](images.md)、「証拠チェーン」のような業務語彙を
-表す Scalar 独自のピクトグラムは [icons.md](icons.md) を見ること。
+描くか、何をすると読めなくなるか。描画 API は [diagrams.md](diagrams.ja.md)、
+写真や生成画像は [images.md](images.ja.md)、「証拠チェーン」のような業務語彙を
+表す Scalar 独自のピクトグラムは [icons.md](icons.ja.md) を見ること。
 
 ## 1. 図形が画像に勝つとき
 
@@ -62,7 +62,7 @@
 | 経路や期間上のマイルストーン | `journey` / `timeline` |
 
 どの関係にも当てはまらないなら、それは表かグラフである。
-[charts.md](charts.md) と [patterns.md](patterns.md) を見ること。
+[charts.md](charts.ja.md) と [patterns.md](patterns.ja.md) を見ること。
 
 ## 3. 大きさ
 

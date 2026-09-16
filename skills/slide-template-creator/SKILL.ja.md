@@ -64,7 +64,7 @@ slide-templates/<パック>/<id>/example.json
 ```
 
 を作り、`slide-templates/manifest.json` に登録する。スキーマの全体は
-`references/template-schema.md` に従う。
+[references/template-schema.md](../../references/template-schema.ja.md) に従う。
 
 `scripts/patterns.py` / `pages.py` / `charts.py` / `illustrations.py` の既存
 プリミティブを優先する。新しいプリミティブを足すのは、同じ低レベル描画が繰り返され、

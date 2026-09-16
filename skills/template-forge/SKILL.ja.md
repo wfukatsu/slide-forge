@@ -18,7 +18,7 @@ description: >-
 ## 重要事項
 
 - **Slides API はマスター/レイアウトの作成・改名ができない**
-  （`references/api-notes.md` §1）。したがって本スキルは*派生*で作る:
+  （[references/api-notes.md](../../references/api-notes.ja.md) §1）。したがって本スキルは*派生*で作る:
   ベースをコピーし、ベースが持つ既存のレイアウトページを再スタイルする。
   使わないベースレイアウトはファイル内に残るが、未登録なので無害である。
   ロール名は `templates/<id>.json` のエイリアス表にのみ存在する。

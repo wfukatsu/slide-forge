@@ -8,7 +8,7 @@ slide-forge の主ホストであり配布経路でもあるのは Claude Code �
 スキルの発見、対話的な質問、画像の目視、任意の作業委譲だけである。
 
 **この日本語版は理解のための訳であり、正本は英語版
-[`codex-compatibility.md`](codex-compatibility.md) である。**
+[`codex-compatibility.md`](codex-compatibility.ja.md) である。**
 
 ## リポジトリのクローンへの導入
 
@@ -20,20 +20,20 @@ slide-forge の主ホストであり配布経路でもあるのは Claude Code �
 ...
 ```
 
-リポジトリのルートで Codex を起動する。`AGENTS.md` と `.agents/skills/` 配下の
+リポジトリのルートで Codex を起動する。[AGENTS.md](../AGENTS.ja.md) と `.agents/skills/` 配下の
 スキルが発見されるはずである。シンボリックリンクは意図的に共有の `skills/`
 ディレクトリを指しており、Claude と Codex が別々の複製へ分岐しないようにしている。
 
 `.claude-plugin/marketplace.json` の Claude マーケットプレイスマニフェストと、共有の
 `commands/` / `skills/` が主たる配布を定義する。Codex はこのマニフェストを必要とせず、
 薄い `.agents/skills/forge` を入口として呼び出す。どちらの経路も
-`references/workflow-contract.md` に従う。
+[references/workflow-contract.md](workflow-contract.ja.md) に従う。
 
 ### 対応している入口
 
 | ホスト | スキルの発見 | エンドツーエンドの呼び出し | プロジェクト指示 |
 |---|---|---|---|
-| Codex | `.agents/skills/` | `forge` スキル | `AGENTS.md` |
+| Codex | `.agents/skills/` | `forge` スキル | [AGENTS.md](../AGENTS.ja.md) |
 | Claude Code プラグイン | `.claude-plugin/marketplace.json` | `/slide-forge:forge` | スキルの内容 |
 | Claude Code ローカルクローン | `~/.claude/skills/` からのシンボリックリンク | コマンドとして導入時は `/forge` | スキルの内容 |
 
@@ -75,7 +75,7 @@ Google API への書き込みは、Codex のサンドボックス次第で利用
 
 ## 並列実行と逐次実行
 
-`references/parallel-generation.md` が説明しているのは性能の最適化であって、正しさの
+[references/parallel-generation.md](parallel-generation.ja.md) が説明しているのは性能の最適化であって、正しさの
 要件ではない。Codex に委譲が許されていれば、そのワークフローを使ってよい。委譲が
 使えない、または禁止されている場合は、同じ番号付きのページ断片を主エージェント内で
 逐次作り、断片ごとに検証し、結合して完全なデッキを検証する。QA のページ範囲も同様に

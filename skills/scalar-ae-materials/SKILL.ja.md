@@ -48,7 +48,7 @@ description: >-
 ```
 
 台帳から取れない前提だけを、`AskUserQuestion` で 1 回にまとめて聞く
-（`references/interactive-intake.md` §0・§5 の作法に従う）:
+（[references/interactive-intake.md](../../references/interactive-intake.ja.md) §0・§5 の作法に従う）:
 
 1. 誰に会うか（役職・部門・初対面か）
 2. この訪問で顧客から得たい一言は何か
@@ -117,7 +117,7 @@ description: >-
 が持ち、許諾が「未取得」の事例は顧客に出さない。
 
 その他の台帳に無いページは、`slide-templates` のテンプレートか
-`references/slide-pattern-catalog.md` の型で書く。20KB あるので、必要な
+[references/slide-pattern-catalog.md](../../references/slide-pattern-catalog.ja.md) の型で書く。20KB あるので、必要な
 ページ系統の節だけを開くこと（§2 構造、§3 定量、§4 比較、§5 論理、§6 計画、
 §8 定性、§9 クロージング）。組み上げと検証:
 

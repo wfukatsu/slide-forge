@@ -53,7 +53,7 @@ CLOSING。
 
 **作り方**: `exec_summary` 図（状況・複雑化・解決と、支える論点）、または
 読み物用途なら `exec-summary-readable` テンプレート。
-[slide-patterns.md](../slide-patterns.md) を参照。
+[slide-patterns.md](../slide-patterns.ja.md) を参照。
 
 ## 裏表紙
 

@@ -18,14 +18,14 @@ description: >-
   2 階層以上ネストしたコンテナ（VPC/サブネット）、10 ノード以上、15 エッジ以上、
   あるいはグループ枠つきの公式スタイルのクラウドベンダーアイコンが欲しい場合。
   単純な概念図・フロー図なら `google-slides` スキルの `diagrams.py` に留まる。
-  振り分け表は `references/drawio.md` の冒頭にある。
+  振り分け表は [references/drawio.md](../../references/drawio.ja.md) の冒頭にある。
 - **作業ディレクトリ**: slide-forge のルート — インストール済みプラグインから実行する場合は `${CLAUDE_PLUGIN_ROOT}`、ローカルクローンなら `/path/to/slide-forge`（本文中のリテラルパスはローカルクローンを前提とする）。
 - **drawio デスクトップ CLI が必要**（`brew install --cask drawio`;
   PATH 上の `drawio` またはアプリバンドル）。macOS でのヘッドレス動作を検証済み。
 - **書き出した PNG のビジュアル QA は必須。** シェイプ名の誤り
   （`resIcon` / `prIcon` / azure2 の SVG パス）はエラーにならず、
   ただの色つき四角として描画される — 名前は決して推測せず、必ず調べる
-  （`references/drawio.md` § シェイプ名の調べ方）。
+  （[references/drawio.md](../../references/drawio.ja.md) § シェイプ名の調べ方）。
 - **納品物は 3 点**: PNG を挿入したスライド、書き出した PNG、編集可能な
   `.drawio` ソース。`.drawio` と PNG はデッキの Drive フォルダにアップロードし
   （`scripts/drive_folder.py upload`）、ユーザーが後から図を編集できるようにする
@@ -38,7 +38,7 @@ description: >-
 
 | タスク | 場所 |
 |------|-------|
-| 作図ガイド + 検証済みスタイルレシピ（AWS/GCP/Azure、グループ、エッジ） | `references/drawio.md` |
+| 作図ガイド + 検証済みスタイルレシピ（AWS/GCP/Azure、グループ、エッジ） | [references/drawio.md](../../references/drawio.ja.md) |
 | .drawio を PNG へ書き出す | `.venv/bin/python scripts/drawio_export.py <in.drawio> [--out out/diagrams/x.png] [--scale 2]` |
 | シェイプ名を調べる（決して推測しない） | `grep -ao 'mxgraph\.aws4\.[a-z0-9_]*' /Applications/draw.io.app/Contents/Resources/app.asar \| sort -u` |
 | デッキ仕様へ PNG を挿入する | `{ "type": "image", "x": …, "y": …, "w": …, "h": …, "source": "out/diagrams/x.png", "fit": "contain" }` |
@@ -56,7 +56,7 @@ Python 側は他のスキルと同じく、slide-forge 共有の venv（`.venv`�
 
 ## Phase 1: .drawio を書く
 
-`references/drawio.md` に従い、mxGraph XML を直接書く:
+[references/drawio.md](../../references/drawio.ja.md) に従い、mxGraph XML を直接書く:
 
 - 必須の `id="0"` / `id="1"` ルートセルを持つファイル骨格
 - 座標は px。コンテナの子は親相対座標を使う
@@ -83,7 +83,7 @@ Python 側は他のスキルと同じく、slide-forge 共有の venv（`.venv`�
 
 ## Phase 3: ビジュアル QA（必須）
 
-Read ツールで PNG を開き、`references/drawio.md` 末尾のチェックリストを回す:
+Read ツールで PNG を開き、[references/drawio.md](../../references/drawio.ja.md) 末尾のチェックリストを回す:
 ただの四角になったアイコン（シェイプ名の誤り）、ラベルの重なり、無関係な
 シェイプを横切るエッジ、コンテナからはみ出す子、挿入サイズでの可読性。
 問題がなくなるまで XML を修正して再書き出しする。
@@ -95,7 +95,7 @@ Read ツールで PNG を開き、`references/drawio.md` 末尾のチェック�
 - **コードファーストパス**（`deckkit`）: `image(x, y, w, h, "out/diagrams/arch.png")`。
 - **既存デッキ**: まずバージョンをスナップショットし（`snapshot_version.py`）、
   API で挿入して、必要ならページ番号を振り直す
-  （挿入パターンは `references/code-blocks.md` にある）。
+  （挿入パターンは [references/code-blocks.md](../../references/code-blocks.ja.md) にある）。
 
 ジェネレータは PNG を一時的に Drive へアップロードし、後で削除する —
 スライドは画像のコピーを自分で保持する。

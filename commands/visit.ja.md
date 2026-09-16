@@ -12,7 +12,7 @@ argument-hint: "<顧客名> [訪問の目的 / 相手 / フェーズ] [議事録
 `$ARGUMENTS` を出発点に、`scalar-ae-materials` スキルの流れを**途中で止めずに
 一続きで**実行する。作業ディレクトリは slide-forge ルート。
 
-判断の出典は `references/scalar/sales-playbook.md`。
+判断の出典は [references/scalar/sales-playbook.md](../references/scalar/sales-playbook.ja.md)。
 
 ## Step 1: 台帳を読む
 

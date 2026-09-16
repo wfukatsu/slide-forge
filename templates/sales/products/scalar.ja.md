@@ -30,7 +30,7 @@ ID 列は JSON（hearing-sheet スキル）との突き合わせに使う。書�
 **出典**
 
 - 課題カテゴリ・制約・標準構成: [`references/scalar/proposal-map.ja.md`](../../../references/scalar/proposal-map.ja.md) §3 / §4 / §5 / §6
-- 機能・エディション・バージョン・定価: [`references/scalar/okf-bundle.md`](../../../references/scalar/okf-bundle.md) → OKF バンドル
+- 機能・エディション・バージョン・定価: [`references/scalar/okf-bundle.md`](../../../references/scalar/okf-bundle.ja.md) → OKF バンドル
 - A-2 のスクリーニング設問: [`references/scalar/stage-io-map.ja.md`](../../../references/scalar/stage-io-map.ja.md) §8
 
 **鮮度** — 事例・価格・エディション構成は **3 ヶ月ルール**（調査日 2026-08-05）。
@@ -166,7 +166,7 @@ Scalar の解ける課題を持っていそうかを見分けるのに使う。
 
 ### 費用の出し方
 
-- **定価・課金モデル・Pod の数え方は [`okf-bundle.md`](../../../references/scalar/okf-bundle.md)
+- **定価・課金モデル・Pod の数え方は [`okf-bundle.md`](../../../references/scalar/okf-bundle.ja.md)
   → OKF バンドルを引く。ここにも提案書にも、記憶で数字を書かない**
 - 公開されている定価は引用してよい。**定価（税別）と明記し、参考見積の材料として扱う**。
   顧客に出す見積は AE がレビューする

@@ -6,7 +6,7 @@ slide-forge のエージェント指示とスキル定義を対象に、LLM の�
 画像入力を大きくする構造を特定し、品質と安全性を維持したままトークンコストを
 削減するための改善事項を整理する。
 
-調査対象は `AGENTS.md`、`.agents/skills/forge/SKILL.md`、`skills/*/SKILL.md`、
+調査対象は [AGENTS.md](../AGENTS.ja.md)、`.agents/skills/forge/SKILL.md`、`skills/*/SKILL.md`、
 およびスキルから参照される `references/*.md` とする。
 
 > **注意:** 以下のトークン数はファイルサイズ、語数、日本語比率から求めた概算で
@@ -40,7 +40,7 @@ slide-forge のエージェント指示とスキル定義を対象に、LLM の�
 | 7 | `scalar-ae-materials` | 217 | 10,382 | 台帳、提案、QAのルールが重複 |
 | 8 | `template-forge` | 190 | 9,769 | テンプレート作成知識を広く保持 |
 
-`AGENTS.md` は該当スキルの `SKILL.md` を最後まで読むよう要求している。そのため、
+[AGENTS.md](../AGENTS.ja.md) は該当スキルの `SKILL.md` を最後まで読むよう要求している。そのため、
 スキル本体に置かれた索引、背景説明、サンプルカタログも毎回の固定費になる。
 
 ### 典型的な読込チェーン
@@ -57,8 +57,8 @@ AGENTS.md
             └─ slide-qa/SKILL.md
 ```
 
-図表や画像を使うと、さらに `diagrams.md`、`charts.md`、`patterns.md`、
-`slide-patterns.md`、`images.md`、`api-notes.md` などが追加される。基本チェーンだけでも
+図表や画像を使うと、さらに [diagrams.md](diagrams.ja.md)、[charts.md](charts.ja.md)、[patterns.md](patterns.ja.md)、
+[slide-patterns.md](slide-patterns.ja.md)、[images.md](images.ja.md)、[api-notes.md](api-notes.ja.md) などが追加される。基本チェーンだけでも
 概算15,000〜25,000トークンに達する可能性がある。
 
 ## 改善指摘
@@ -133,7 +133,7 @@ QA、PPTX、Spreadsheet、最終報告を再説明している。これらは下
 
 #### 問題
 
-`forge` は12枚超でファンアウトを要求する。一方、`parallel-generation.md` は、
+`forge` は12枚超でファンアウトを要求する。一方、[parallel-generation.md](parallel-generation.ja.md) は、
 サブエージェントごとにreferenceを再読込するため、並列化は主エージェントの文脈と
 待ち時間を減らしても総トークンを増やすと明記している。
 
@@ -165,8 +165,8 @@ QA、PPTX、Spreadsheet、最終報告を再説明している。これらは下
 スキル内の「詳しくはこのreference」という指示だけでは、エージェントが安全側に
 倒して全文を読む可能性がある。
 
-> **2026-08 追記**: この節が挙げていた肥大化（`google-slides-api.md` 約64KB、
-> `pictogram-catalog.md` 約71KB、各 Composer 15〜36KB）は解消済み。実体は
+> **2026-08 追記**: この節が挙げていた肥大化（[google-slides-api.md](google-slides-api.ja.md) 約64KB、
+> [pictogram-catalog.md](pictogram-catalog.ja.md) 約71KB、各 Composer 15〜36KB）は解消済み。実体は
 > 「大きすぎる」ではなく「現存しない API（SlideBuilder / theme.json /
 > compose_*）を説明していた」ことで、prose を残して現行 API に書き直した結果、
 > 3 系統で 563KB → 109KB になった。名前引きは `illustrations.py --list` /
@@ -289,7 +289,7 @@ referenceの参照条件と必要セクションを明示する。
 2. `forge/SKILL.md` から下位スキルと重複する具体手順を削除
 3. ファンアウト条件を「12枚超」から複雑性を含む判断へ変更
 4. 長大なreferenceへセクション索引と読込条件を追加
-5. QAの差分再検査ルールを `slide-qa` と `validation.md` に追加
+5. QAの差分再検査ルールを `slide-qa` と [validation.md](validation.ja.md) に追加
 6. Scalar系の共通ワークフローと調査ポリシーを一元化
 
 ## 改善後の目標値
@@ -329,7 +329,7 @@ referenceの参照条件と必要セクションを明示する。
 | P0-1 `google-slides-template/SKILL.md` の縮小 | **概ね完了**（625行/42KB → 206行/8.8KB。サイズは目標の 15KB 以下を大きく下回る。行数は目標 200行を 6 行超過） |
 | P1-1 reference のセクション単位ルーティング | **完了**（v1.35.0。営業系の 20〜40KB 文書を §指定で引くようにした） |
 | P1-2 QA 再検査の差分中心化 | **完了**（初回パスを 6〜8 枚レンジの委譲に既定化。修正後は変更ページと近傍に限定） |
-| P0-2 `forge` のルーター化 | 概ね完了（`commands/forge.md` は 2.4KB のルーティング中心） |
+| P0-2 `forge` のルーター化 | 概ね完了（[commands/forge.md](../commands/forge.ja.md) は 2.4KB のルーティング中心） |
 | P0-3 ファンアウト閾値の見直し | 部分対応（17ページまで単一エージェント） |
 | P1-3 Scalar 系共通ルールの一元化 | 部分対応（`scalar/workflow-contract.md` が共通契約を持つが、本体との二段構成は残存） |
 | P2-1 英日重複 | 対応不要と判断（`SKILL.ja.md` はスキルとして登録されず、常時コストは 0） |
@@ -345,6 +345,6 @@ v1.35.0 で追加した実測値（本レビューの「検証方法」に沿っ
 | 視覚 QA 1パス（18枚） | 主コンテキストに約 33,000 画像トークン | 委譲先が所見をテキストで返す |
 
 **意図的に対応しなかった指摘**: `google-slides-template/SKILL.md` の
-「Non-negotiable rules」と `workflow-contract.md` の「Invariants」の重複。
+「Non-negotiable rules」と [workflow-contract.md](workflow-contract.ja.md) の「Invariants」の重複。
 内容がスナップショット義務と素の `--into` による全面置換の禁止であり、別ファイルの
 読込に委ねるとトークンと引き換えに破壊的操作の事故率が上がるため。

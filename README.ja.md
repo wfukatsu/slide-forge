@@ -94,7 +94,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 - Claude Code: `/forge` または `/slide-forge:forge` を使う。
 - Antigravity: `.agents/skills/` から該当する共有スキルを使う。
 
-3ホストとも `references/workflow-contract.md` に従う。選択した生成スキルを1つだけ
+3ホストとも [references/workflow-contract.md](references/workflow-contract.ja.md) に従う。選択した生成スキルを1つだけ
 最後まで読み、その後はタスクが有効化するreferenceの該当節だけを読む。
 
 ホスト互換レイヤー、コマンド、スキル、共通契約を変更した後は次を実行する。
@@ -271,10 +271,10 @@ Codex も同じスキルと Python エンジンを使う。リポジトリのク
 `forge` を名前で呼び出せばよい。Claude 固有の `/slide-forge:forge`
 コマンドやプラグインマーケットプレイスのマニフェストは不要。
 
-プロジェクト全体の Codex 向け指示は `AGENTS.md` にある。ホストツールの
+プロジェクト全体の Codex 向け指示は [AGENTS.md](AGENTS.ja.md) にある。ホストツールの
 マッピング、エージェント委譲が使えない環境向けの逐次フォールバック、
 セットアップの詳細は
-[`references/codex-compatibility.md`](references/codex-compatibility.md)
+[`references/codex-compatibility.md`](references/codex-compatibility.ja.md)
 に記載している。
 
 `.agents/skills/*` のシンボリックリンクは `skills/*` を指しているため、

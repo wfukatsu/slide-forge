@@ -319,11 +319,11 @@ API はリンクを付けても色を変えないため、これが無いとク�
 | `storyline` | アクションタイトルを左の縦罫で連ね、読むと論旨になることを確かめる図。目次・章扉・設計の検証に |
 | `ghost` | 骨子だけのスライドを並べたゴーストデッキ。各カードに状態（`confirmed` / `wip` / `missing`）を付ける。清書前の設計の道具 |
 
-各 `type` の引数は `references/images.md` / `references/icons.md` /
-`references/cloud-icons.md` / `references/charts.md`（表・グラフ）/
-`references/patterns.md`（フレームワーク図）/ `references/events.md`（イベント案内）/
-`references/slide-patterns.md`（ページ部品・分析図・設計図）/
-`references/code-blocks.md`（コード）、
+各 `type` の引数は [references/images.md](images.ja.md) / [references/icons.md](icons.ja.md) /
+[references/cloud-icons.md](cloud-icons.ja.md) / [references/charts.md](charts.ja.md)（表・グラフ）/
+[references/patterns.md](patterns.ja.md)（フレームワーク図）/ [references/events.md](events.ja.md)（イベント案内）/
+[references/slide-patterns.md](slide-patterns.ja.md)（ページ部品・分析図・設計図）/
+[references/code-blocks.md](code-blocks.ja.md)（コード）、
 動く実例は `examples/illustration-gallery.json` /
 `examples/icon-gallery.json` / `examples/cloud-architecture.json` /
 `examples/charts-demo.json` / `examples/patterns-demo.json` /

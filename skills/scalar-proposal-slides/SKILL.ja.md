@@ -40,7 +40,7 @@ description: >-
   Scalar 製品一覧を数量つきで（数量が未指定の場合は月額ライセンス費用も）出力する —
   デッキ上と、最終報告のリスト（proposal-map.md §6）の両方に。
 - **提案する前に制約を確認する** —
-  `references/scalar/proposal-map.md` §4（ScalarDB/DL が適さないケース）。
+  [references/scalar/proposal-map.md](../../references/scalar/proposal-map.ja.md) §4（ScalarDB/DL が適さないケース）。
   課題を Scalar 製品に無理に当てはめない。適さないと言うことも提案品質の
   一部である。
 - **製品事実と価格は OKF バンドルから取る** —
@@ -49,8 +49,8 @@ description: >-
   書かない。バンドルは公開リポジトリなので数値は引用してよい — **定価（税抜）である旨を
   明示**し、参考見積の材料として扱う。顧客に出す見積は営業担当のレビューを通す。
   「非公開」の項目（3年契約・先払いクレジット・値引き率）は営業担当につなぐ。
-- **調査の鮮度**: 事実は `references/scalar/research-2026-08.md` と
-  `references/scalar/proposal-map.md`（§3/§5 は 2026-08-05 付）から取る。どちらも
+- **調査の鮮度**: 事実は [references/scalar/research-2026-08.md](../../references/scalar/research-2026-08.ja.md) と
+  [references/scalar/proposal-map.md](../../references/scalar/proposal-map.ja.md)（§3/§5 は 2026-08-05 付）から取る。どちらも
   **3 か月ルール**に従う — 影響を受ける記述だけを
   `references/scalar/research-policy.md` に従って更新する。並列での再調査は
   自動では行わない。
@@ -59,27 +59,27 @@ description: >-
   バージョンスナップショット（`scripts/snapshot_version.py`）、`slide-qa` スキルに
   よるビジュアル QA — インテイク時に実行有無を選び、既定は実行、終了後に
   `scripts/cleanup_qa.py` で QA ファイルを削除 — と、対話インテイクの作法
-  （`references/interactive-intake.md` セクション 0, 3, 4, 5）。
+  （[references/interactive-intake.md](../../references/interactive-intake.ja.md) セクション 0, 3, 4, 5）。
 
 ## クイックリファレンス
 
 | やること | 使うもの |
 |------|-----|
-| ヒアリングチェックリスト / 提案構成 / 課題→製品マップ / 制約 / 価格 / 標準環境 + BOM | `references/scalar/proposal-map.md` |
+| ヒアリングチェックリスト / 提案構成 / 課題→製品マップ / 制約 / 価格 / 標準環境 + BOM | [references/scalar/proposal-map.md](../../references/scalar/proposal-map.ja.md) |
 | AE に渡すヒアリング様式（記入用） | `templates/sales/hearing-sheet.ja.md`（製品非依存）+ `templates/sales/products/scalar.ja.md`（Scalar 適合判定） |
 | ヒアリングシートの Excel / Google Spreadsheet 化と読み戻し | `hearing-sheet` スキル（`scripts/hearing/hearing_sheet.py`） |
 | 足りない情報を顧客に聞くためのスライド | `hearing-slides` スキル |
 | 提案デッキビルダー（実例。アーキテクチャ + BOM 込み 23 スライド） | `scripts/scalar/build_scalar_proposal.py` |
 | 環境図の元データ（3 環境、AWS） | `examples/scalar-proposal-envs.drawio` → `scripts/drawio_export.py` で PNG 化 |
 | 製品機能 / エディション / バージョン / 定価 / Pod 数の数え方 | `references/scalar/okf-bundle.ja.md` → OKF バンドル |
-| 調査済みの会社・製品の事実 + 落とし穴 | `references/scalar/research-2026-08.md` |
-| セクション順の根拠（課題解決型アウトライン） | `references/deck-outlines.md` |
+| 調査済みの会社・製品の事実 + 落とし穴 | [references/scalar/research-2026-08.md](../../references/scalar/research-2026-08.ja.md) |
+| セクション順の根拠（課題解決型アウトライン） | [references/deck-outlines.md](../../references/deck-outlines.ja.md) |
 | 実行 | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/build_scalar_proposal.py [--folder <Drive URL>]` |
 | まず検証（API 呼び出しなし） | 同じコマンドに `--dry-run` — デッキを作らずに座標とテキスト収まりの検査を実行 |
 
 ## Phase 1: 課題材料を集め、前提を確定させる
 
-`references/interactive-intake.md` のセクション 0/3/4/5 に従う。1 バッチで聞く:
+[references/interactive-intake.md](../../references/interactive-intake.ja.md) のセクション 0/3/4/5 に従う。1 バッチで聞く:
 
 | # | header | 質問 | 選択肢 |
 |---|---|---|---|
@@ -207,8 +207,8 @@ cd /path/to/slide-forge
 | パス | 役割 |
 |------|------|
 | `scripts/scalar/build_scalar_proposal.py` | 提案デッキビルダー（実例。顧客ごとに `PROPOSAL` を書き換える） |
-| `references/scalar/proposal-map.md` | ヒアリング項目、提案構成とその根拠、課題→製品マップ、制約、価格 |
+| [references/scalar/proposal-map.md](../../references/scalar/proposal-map.ja.md) | ヒアリング項目、提案構成とその根拠、課題→製品マップ、制約、価格 |
 | `references/scalar/okf-bundle.ja.md` | OKF バンドルの所在と、製品事実・価格の引用ルール |
-| `references/scalar/research-2026-08.md` | 会社・製品の事実、事例、スライドの落とし穴（scalar-product-slides と共有） |
+| [references/scalar/research-2026-08.md](../../references/scalar/research-2026-08.ja.md) | 会社・製品の事実、事例、スライドの落とし穴（scalar-product-slides と共有） |
 | `examples/scalar-proposal-envs.drawio` / `.png` | 3 環境アーキテクチャ図の元データと書き出し（顧客ごとに書き換える） |
 | `templates/scalar-2026.json` | Scalar 2026 テンプレート |

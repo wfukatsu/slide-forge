@@ -52,7 +52,7 @@ Codex の現在の指示がサブエージェント利用を許可していな�
 ### 1. 主エージェント: 骨子を決める（分担しない）
 
 アウトライン（ページ番号・レイアウト・アクションタイトル・骨格・中身・使うデータ）を
-テキストで確定させ、ユーザーの承認を取る（`references/interactive-intake.md`）。
+テキストで確定させ、ユーザーの承認を取る（[references/interactive-intake.md](interactive-intake.ja.md)）。
 この段階では JSON を書かない。
 
 ### 2. 主エージェント: 作業ディレクトリを用意する
@@ -75,7 +75,7 @@ mkdir -p out/<deck>/pages
 4. 載せる数値・文言を**逐語で**。出典文字列も渡す
 5. 読む reference の**セクション名を明示し、最大2セクションだけ**
    （長い文書を丸ごと読ませない）
-6. 座標は `references/slide-patterns.md` の「骨格の標準座標」に従うこと
+6. 座標は [references/slide-patterns.md](slide-patterns.ja.md) の「骨格の標準座標」に従うこと
 7. 自己検証まで済ませること（下記）
 
 各エージェントが最後に必ず実行する自己検証:

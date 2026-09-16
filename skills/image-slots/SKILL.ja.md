@@ -35,7 +35,7 @@ description: >-
   スコープ外 — それが意図なら、先に手で削除してもらう。
 - **`GEMINI_API_KEY` が必須**で、画像モデルの**無料枠クォータはゼロ**。
   キーは課金が有効なプロジェクトのものでなければならない
-  （`references/images.md`）。
+  （[references/images.md](../../references/images.ja.md)）。
 - **画像生成はツールキット全体で OFF にできる**
   （`config/settings.json` の `imageGeneration: false`）。このスキルを提案する
   前に `.venv/bin/python scripts/settings.py --show` で確認する。OFF のとき
@@ -55,11 +55,11 @@ description: >-
 | デッキ自身の使われ方から*推測*しただけの枠も使う | `--include-inferred`（既定はオフ — 後述） |
 | イラストのスタイルを変える | `--style isometric`（`flat_vector` / `line_art` / `blueprint` / `paper` / `photo`） |
 | 書き込み前のスナップショット | `.venv/bin/python scripts/snapshot_version.py <URL>` |
-| スロットとは何か、画像はどう構図されるか | `references/images.md` |
+| スロットとは何か、画像はどう構図されるか | [references/images.md](../../references/images.ja.md) |
 
 ## 枠はどう見つかるか
 
-テンプレート登録（`references/template-schema.md`）と同じ 3 つのソースを使う:
+テンプレート登録（[references/template-schema.md](../../references/template-schema.ja.md)）と同じ 3 つのソースを使う:
 
 1. スライド上の **PICTURE 系プレースホルダ**（`PICTURE` / `CLIP_ART` /
    `DIAGRAM` / `MEDIA` / `OBJECT` / `SLIDE_IMAGE`）
@@ -101,7 +101,7 @@ description: >-
 画像は枠の形に合わせて生成される: モデルが対応する中で最も近いアスペクト比を選び、
 さらに fill がどの辺を何パーセント切り落とすかを名指しするプロンプト指示を加えて、
 被写体が生き残るようにする。その後 `fit="cover"` で配置され、枠を過不足なく埋める。
-詳細は `references/images.md`。
+詳細は [references/images.md](../../references/images.ja.md)。
 
 生成は (モデル, スタイル, アスペクト比, プロンプト全文) でキャッシュされるため、
 再実行しても再描画・再課金は起きない。`--force` で上書きできる。

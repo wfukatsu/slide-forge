@@ -25,11 +25,11 @@
 
 **作り方**: 「下の層に支えられている」話なら `layers`、1 つの中心と連携先なら
 `hub`、リクエストの経路なら `flow` / `icon_flow`、部品が名前のあるクラウド
-サービスなら `cloud_icon_*`（[cloud-icons.md](../cloud-icons.md)）。
+サービスなら `cloud_icon_*`（[cloud-icons.md](../cloud-icons.ja.md)）。
 
 箱が 9 個を超えたあたりで、スライドの図としては読めなくなる。draw.io で描いて
 PNG に出し、読み取る点を添えてページに置くこと（`architecture-exhibit`）。
-[../../skills/drawio-diagrams/SKILL.md](../../skills/drawio-diagrams/SKILL.md) 参照。
+[../../skills/drawio-diagrams/SKILL.md](../../skills/drawio-diagrams/SKILL.ja.md) 参照。
 
 矢印のあるページでは **`audit_connectors()` を実行する**。指している箱から
 端点が浮いているのがこのページの代表的な不具合で、生成前に捕まえられる。
@@ -49,7 +49,7 @@ PNG に出し、読み取る点を添えてページに置くこと（`architect
 
 1 機能 1 ページ。何をするのか、何のためか、導入に何がかかるか。
 
-**作り方**: その機能自身の形に合う図（[diagrams.md](../diagrams.md)）と、
+**作り方**: その機能自身の形に合う図（[diagrams.md](../diagrams.ja.md)）と、
 要点・提供条件（エディション、GA / プレビュー）の行を `foot()` で。プレビュー
 段階の機能は、そのことをページに書く。
 

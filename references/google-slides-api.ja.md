@@ -3,7 +3,7 @@
 
 Slides REST API そのもののリクエスト形・単位・上限・癖をまとめる。
 
-**先に `references/api-notes.md` を読むこと。** 実際に踏んだ失敗とその対処は
+**先に [references/api-notes.md](api-notes.ja.md) を読むこと。** 実際に踏んだ失敗とその対処は
 そちらにある。この文書は、そこに答えが無く、API 自身の挙動を確かめる必要が
 あるときに開く — 送ったことのないリクエストボディ、これから当たりそうな上限、
 エンジンが露出していない図形やコネクタのプロパティなど。
@@ -13,7 +13,7 @@ Slides REST API そのもののリクエスト形・単位・上限・癖をま�
 描画し、`scripts/deckkit.py` が記述面である。認証は `scripts/_auth.py`。
 以下の Python は説明用で、エンジンの実装ではなくリクエスト JSON を示すための
 素の関数である。通常書くべきものは
-[diagrams.md](diagrams.md) と [template-schema.md](template-schema.md) を参照。
+[diagrams.md](diagrams.ja.md) と [template-schema.md](template-schema.ja.md) を参照。
 
 ## 1. 座標系
 

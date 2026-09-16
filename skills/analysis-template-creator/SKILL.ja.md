@@ -15,7 +15,7 @@ description: >-
 `slide-templates/analysis/` パックに追加・変更する専門スキル。
 
 **スキーマ・検証・登録・互換性の規約は
-[`slide-template-creator`](../slide-template-creator/SKILL.md) が正。**
+[`slide-template-creator`](../slide-template-creator/SKILL.ja.md) が正。**
 このスキルはその上に、分析フレームワーク固有の設計ルールを足すだけで、
 共通規約を再定義しない。作業ディレクトリは slide-forge ルート、
 コマンドは `.venv/bin/python`。
@@ -82,8 +82,8 @@ category は上記 6 種（macro / structure / cause / process / gap / priority�
    に従い既存部品を優先する。フレームワーク固有の形が必要なときだけ
    `patterns.py`（フレームワーク図）か `charts.py`（グラフ）に追加する —
    `fishbone` / `pareto` が前例で、i18n の `register()`、入力検証の
-   `ValueError`、`build_deck.py::FIGURES` への登録、`references/patterns.md`
-   / `references/charts.md` / `references/template-schema.md` の文書化まで
+   `ValueError`、`build_deck.py::FIGURES` への登録、[references/patterns.md](../../references/patterns.ja.md)
+   / [references/charts.md](../../references/charts.ja.md) / [references/template-schema.md](../../references/template-schema.ja.md) の文書化まで
    がセット。
 4. **作成と検証。** template.json + example.json を書き、
    `validate_slide_templates.py --id <id>` → `--pack analysis` →

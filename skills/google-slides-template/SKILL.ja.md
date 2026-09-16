@@ -3,7 +3,7 @@
 *[English — normative skill](SKILL.md)*
 
 この日本語文書は運用概要であり、実行時の正本は `SKILL.md` と
-`references/workflow-contract.md` である。Claude Code を主ホストとし、Codex と
+[references/workflow-contract.md](../../references/workflow-contract.ja.md) である。Claude Code を主ホストとし、Codex と
 Antigravity も同じ `skills/` と Python エンジンを利用する。
 
 ## 適用範囲

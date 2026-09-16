@@ -14,8 +14,8 @@ d = Canvas(deck, ref["slideId"], template)
 d.flow(0.5, 1.3, 9.0, 0.8, ["受付", "審査", "記録"])
 ```
 
-図の系統は [diagrams.md](../diagrams.md)、spec の形は
-[template-schema.md](../template-schema.md)、既製の 101 ページは
+図の系統は [diagrams.md](../diagrams.ja.md)、spec の形は
+[template-schema.md](../template-schema.ja.md)、既製の 101 ページは
 `list_slide_templates.py` を参照。
 
 ## 箇条書き
@@ -50,7 +50,7 @@ d.flow(0.5, 1.3, 9.0, 0.8, ["受付", "審査", "記録"])
 形として意味を持つ数値 — 推移、構成比、順位。
 
 **作り方**: チャート図 — `vbars`、`hbars`、`linechart`、`pie`、`waterfall`、
-`pareto`。Sheets を経由せずネイティブに描く。[charts.md](../charts.md) 参照。
+`pareto`。Sheets を経由せずネイティブに描く。[charts.md](../charts.ja.md) 参照。
 
 すべての数値に `source_note` を付ける。出典のないグラフは主張にすぎない。
 
@@ -93,4 +93,4 @@ d.flow(0.5, 1.3, 9.0, 0.8, ["受付", "審査", "記録"])
 
 **作り方**: `icon_grid`（`cols`、`size`）、1 行なら `icon_row`。名前は
 `illustrations.py --list`、大きさとキャプションは
-[pictogram-catalog.md](../pictogram-catalog.md)。
+[pictogram-catalog.md](../pictogram-catalog.ja.md)。

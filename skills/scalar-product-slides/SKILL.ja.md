@@ -33,7 +33,7 @@ description: >-
   プレビュー状態を明記する）。`pricing/` の数値は公開されている定価なので、
   **定価（税抜）である旨を明示**すれば引用してよい。確定金額としては出さない。
 - **事実は調査してから書く。** 会社情報・バージョン・導入事例は
-  `references/scalar/research-2026-08.md` を起点とするが、**調査日から 3 か月以上
+  [references/scalar/research-2026-08.md](../../references/scalar/research-2026-08.ja.md) を起点とするが、**調査日から 3 か月以上
   経過している場合は再調査する**（下記 Phase 2）。推測で穴を埋めてはならない。
   確認できない項目（資本金など）は載せない。
 - **ビジュアル QA は独立スキル（`slide-qa`）であり、生成時に実行有無を選ぶ**
@@ -51,18 +51,18 @@ description: >-
   リビジョンを記録し、ローカルに PPTX バックアップを取り、編集前にリビジョン ID を
   報告する（`google-slides-template` と共通のルール）。
 - **前提が未指定なら、調査より先に `AskUserQuestion` で確定させる**（Phase 1）。
-  対話の作法は `references/interactive-intake.md`（セクション 0, 3, 4, 5）に従う。
+  対話の作法は [references/interactive-intake.md](../../references/interactive-intake.ja.md)（セクション 0, 3, 4, 5）に従う。
   本スキル固有なのは質問セットのみである。
 
 ## クイックリファレンス
 
 | やること | 使うもの |
 |------|-----|
-| 前提を対話で確定させる際の作法 | `references/interactive-intake.md`（セクション 0, 3, 4, 5） |
+| 前提を対話で確定させる際の作法 | [references/interactive-intake.md](../../references/interactive-intake.ja.md)（セクション 0, 3, 4, 5） |
 | 会社紹介 + 製品概要 + ユースケースデッキ | `scripts/scalar/build_scalar_intro.py` |
 | 機能カタログデッキ（1 機能 = 1 スライド、図解つき） | `scripts/scalar/build_scalar_features.py` |
 | 製品機能 / エディション / バージョン / 定価 | `references/scalar/okf-bundle.ja.md` → OKF バンドル |
-| 調査済みの事実と落とし穴 | `references/scalar/research-2026-08.md` |
+| 調査済みの事実と落とし穴 | [references/scalar/research-2026-08.md](../../references/scalar/research-2026-08.ja.md) |
 | 実行 | `cd /path/to/slide-forge && .venv/bin/python scripts/scalar/<script>.py [--folder <Drive URL>]` |
 
 両スクリプトは 2 つの CLI フラグを受け付ける: `--folder <Drive フォルダ URL>`
@@ -72,7 +72,7 @@ description: >-
 ## Phase 1: デッキ種別と前提を対話で確定させる
 
 調査の**前に**決める。デッキ種別を誤ると調査のやり直しになる（会社紹介と
-機能カタログでは必要な事実が異なる）。`references/interactive-intake.md` の
+機能カタログでは必要な事実が異なる）。[references/interactive-intake.md](../../references/interactive-intake.ja.md) の
 セクション 0（いつ聞くか）、3（アウトライン承認ゲート）、4（生成後の確認）、
 5（聞き方の禁止事項）に従う。
 **質問は 1 バッチでまとめて聞く。1 問ずつの往復はしない。**
@@ -84,7 +84,7 @@ description: >-
 | 1 | デッキ種別 | どのデッキ種別か? | 会社紹介 + 製品概要（`build_scalar_intro.py`、公式ボイラープレートのスライドを再利用） / 機能カタログ（`build_scalar_features.py`、1 機能 = 1 スライド） / ユースケース特化（機能カタログを業種で絞り込み） |
 | 2 | 対象製品 | どの製品か? | ScalarDB / ScalarDL / 両方 |
 | 3 | 想定読者 | 誰が見るか? | 顧客（初回商談・営業） / エンジニア（評価・PoC） / 経営層（投資判断） / パートナー（販売支援） |
-| 4 | 調査 | 事実の鮮度はどこまで必要か? | `references/scalar/research-2026-08.md` をそのまま使う / 再調査する（Phase 2 を実行） |
+| 4 | 調査 | 事実の鮮度はどこまで必要か? | [references/scalar/research-2026-08.md](../../references/scalar/research-2026-08.ja.md) をそのまま使う / 再調査する（Phase 2 を実行） |
 
 - **Q4 を勝手に決めてはならない。** 調査日から 3 か月以上経過している場合は
   「再調査する」を推奨として先頭に置き、`description` に理由（調査日と経過月数）を
@@ -101,7 +101,7 @@ description: >-
 
 ## Phase 2: 調査
 
-`references/scalar/research-2026-08.md` を読み、十分新しければそのまま使う。
+[references/scalar/research-2026-08.md](../../references/scalar/research-2026-08.ja.md) を読み、十分新しければそのまま使う。
 古い場合や新しい情報が必要な場合は、調査エージェントを**並列で**起動する:
 
 1. 会社情報・ニュース: https://scalar-labs.com/ja/（会社情報 / ニュース）、
@@ -198,7 +198,7 @@ cd /path/to/slide-forge
 | `templates/scalar-2026-boilerplate.json` | Scalar 2026 ボイラープレートテンプレート（公式同梱スライド） |
 | `assets/scalar/{logos,product-logos,pictograms}` | ブランド素材（会社・製品ロゴ、ピクトグラム） |
 | `references/scalar/okf-bundle.ja.md` | OKF バンドルの所在と、製品事実・価格の引用ルール |
-| `references/scalar/research-2026-08.md` | 調査済みの事実（会社・製品・事例）とスライド作成の落とし穴 10 件 |
+| [references/scalar/research-2026-08.md](../../references/scalar/research-2026-08.ja.md) | 調査済みの事実（会社・製品・事例）とスライド作成の落とし穴 10 件 |
 
 スクリプトは「そのまま再実行できる実例」であり、構成を変えるときはこの
 2 スクリプトを編集するのが最短経路である。google-slides-template 由来の
