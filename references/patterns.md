@@ -26,9 +26,9 @@ working example using all 6 kinds is `examples/patterns-demo.json`.
 
 ```python
 d.posmap(x, y, w, h, points,
-         x_axis=("低", "高"),     # horizontal axis end labels (left, right)
-         y_axis=("低", "高"),     # vertical axis end labels (bottom, top)
-         highlight=None,          # label(s) to highlight (string or list, e.g. "自社")
+         x_axis=("Low", "High"),  # horizontal axis end labels (left, right)
+         y_axis=("Low", "High"),  # vertical axis end labels (bottom, top)
+         highlight=None,          # label(s) to highlight (string or list, e.g. "Us")
          highlight_color=None,    # highlight color (default success)
          size=10, bubble=0.72)    # bubble diameter (inches)
 ```
@@ -42,10 +42,10 @@ d.posmap(x, y, w, h, points,
 
 ```json
 { "type": "posmap", "x": 0.6, "y": 1.15, "w": 6.4, "h": 4.1,
-  "points": [["A社", 0.85, 0.15], ["自社", 0.85, 0.85]],
-  "xAxis": ["サポートがそこそこ", "サポートが充実"],
-  "yAxis": ["導入までが遅い", "導入までが速い"],
-  "highlight": "自社" }
+  "points": [["Competitor A", 0.85, 0.15], ["Us", 0.85, 0.85]],
+  "xAxis": ["Adequate support", "Strong support"],
+  "yAxis": ["Slow to deploy", "Fast to deploy"],
+  "highlight": "Us" }
 ```
 
 ## gantt — Gantt chart (timeline)
@@ -57,7 +57,7 @@ d.gantt(x, y, w, h, columns, rows,
         zebra=True)     # light stripe on even rows
 ```
 
-- `columns` are the period headings (e.g. `["4月", "5月", "6月"]`).
+- `columns` are the period headings (e.g. `["Apr", "May", "Jun"]`).
 - `rows` is `(row label, start, end)` or `(row label, start, end, bar label)`.
   Start/end are **decimal values in column units**, where 0 is the left edge of the first column
   and `len(columns)` is the right edge.
@@ -69,9 +69,9 @@ d.gantt(x, y, w, h, columns, rows,
 
 ```json
 { "type": "gantt", "x": 0.5, "y": 1.2, "w": 9.0, "h": 3.6,
-  "columns": ["4月", "5月", "6月", "7月"],
-  "rows": [["キックオフ", 0.5, 0.5, "キックオフ"],
-           ["フェーズ1", 1.0, 2.5, "○○実施"]] }
+  "columns": ["Apr", "May", "Jun", "Jul"],
+  "rows": [["Kickoff", 0.5, 0.5, "Kickoff"],
+           ["Phase 1", 1.0, 2.5, "Run the pilot"]] }
 ```
 
 ## orgchart — team/organization chart
@@ -91,8 +91,8 @@ d.orgchart(x, y, w, h, tree, size=10,
 
 ```json
 { "type": "orgchart", "x": 0.7, "y": 1.2, "w": 8.6, "h": 3.6,
-  "tree": ["PJ責任者\n山田", [["営業担当\n佐藤", []],
-           ["開発担当\n鈴木", [["○○担当\n高橋", []]]]]] }
+  "tree": ["Project lead\nA. Tan", [["Sales\nB. Silva", []],
+           ["Engineering\nC. Novak", [["Operations\nD. Mori", []]]]]] }
 ```
 
 ## lean_canvas — Lean Canvas
@@ -125,9 +125,9 @@ d.nested_circles(x, y, w, h, rings, size=10, colors=None)
 
 ```json
 { "type": "nested_circles", "x": 0.7, "y": 1.2, "w": 8.6, "h": 4.0,
-  "rings": [["○○市場の総規模", "1.2兆円"],
-            ["当社ターゲット市場", "800億円"],
-            ["20XX年の獲得目標", "12億円"]] }
+  "rings": [["Total market for XX", "¥1.2T"],
+            ["Our target market", "¥80B"],
+            ["Target for 20XX", "¥1.2B"]] }
 ```
 
 ## testimonial — voice of the customer or key stakeholder
@@ -168,10 +168,10 @@ d.fishbone(x, y, w, h, problem, categories,
 
 ```json
 { "type": "fishbone", "x": 0.5, "y": 1.05, "w": 9.0, "h": 3.0,
-  "problem": "月次締めが5営業日超",
-  "categories": [["人", ["経理の属人化", "承認者の兼務"]],
-                 ["プロセス", ["紙の請求書回付", "締め後の遡り修正"]],
-                 ["システム", ["手作業の転記", "システム間の二重入力"]]] }
+  "problem": "Monthly close takes over 5 working days",
+  "categories": [["People", ["Accounting rests on one person", "Approver holds two roles"]],
+                 ["Process", ["Paper invoices routed by hand", "Retroactive fixes after close"]],
+                 ["Systems", ["Manual re-keying", "Double entry across systems"]]] }
 ```
 
 ## Common notes

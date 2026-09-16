@@ -17,20 +17,20 @@ numbers here were **measured from actual generated output** on a 16:9
 ```
 y=0.000  ┌──────────────────────────────────────────┐
          │                                          │
-y=0.126  │  ■ TITLE プレースホルダ（h=0.351）        │  ← 1 行なら y=0.48 で終わる
+y=0.126  │  # TITLE placeholder (h=0.351)           │  <- one line ends at y=0.48
 y=0.480  │                                          │
-         │  ← ここから下がタイトルの「下」            │
-y=0.840  │ ┌──────────────────────────────────────┐ │  DY0：図の上端
+         │  <- below here is "under" the title      │
+y=0.840  │ ┌──────────────────────────────────────┐ │  DY0: figure top edge
          │ │                                      │ │
-         │ │        図を描いてよい領域              │ │  高さ 3.46in
+         │ │     area you may draw figures in     │ │  height 3.46in
          │ │                                      │ │
-y=4.300  │ └──────────────────────────────────────┘ │  DY1：図の下端
-y=4.380  │  要点行（最大2行 / 10.5pt）               │  NY   ← foot() が描く
-y=4.860  │  提供・補足行（1行 / 9pt）                │  EY   ← foot() が描く
-y=5.197  │  ■ マスターのロゴ・著作権フッター          │  ← ここから下は触らない
+y=4.300  │ └──────────────────────────────────────┘ │  DY1: figure bottom edge
+y=4.380  │  takeaway row (max 2 lines / 10.5pt)     │  NY   <- drawn by foot()
+y=4.860  │  offering / note row (1 line / 9pt)      │  EY   <- drawn by foot()
+y=5.197  │  # master's logo and copyright footer    │  <- never touch below here
 y=5.625  └──────────────────────────────────────────┘
 
-x=0.5 ─────────── 描画幅 W=9.0 ─────────── x=9.5
+x=0.5 ─────────── drawing width W=9.0 ─────────── x=9.5
 ```
 
 `deckkit` constants: `X0=0.5` `W=9.0` `XE=9.5` `DY0=0.84` `DY1=4.30` `NY=4.38` `EY=4.86`
@@ -58,7 +58,7 @@ For templates with a different title size, the ceiling changes too. As a rule of
 Google's `lineSpacing` is a **percentage of a base line height**, not an absolute value. The base is **1.2em** — measured on the live API for Noto Sans JP and Arial alike, at 12pt and 20pt (8-line text boxes read back from thumbnails). It is not the font's own ascent + descent (about 1.45em for Noto Sans JP), which an earlier version of this document assumed. The actual height of one line is:
 
 ```
-行高(in) = フォントサイズ(pt) × 1.2 × lineSpacing(%) ÷ 100 ÷ 72
+line height (in) = font size (pt) × 1.2 × lineSpacing (%) ÷ 100 ÷ 72
 ```
 
 | Setting | Height per line (measured) | Lines that fit in h=4.068in |
