@@ -27,6 +27,11 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 [ガイド付きセットアップのプロンプト](#ガイド付きセットアップ--このプロンプトをコピーする)を
 エージェントに貼り付けて 4 つの質問に答える方法でもよい。
 
+このファイルの外に 2 つの入口がある:
+[`references/commands.md`](references/commands.ja.md) は `/forge`・`/account`・
+`/visit` の 3 コマンド、[`references/README.md`](references/README.ja.md) は
+参照ドキュメント 65 本の索引である。
+
 ## スキル
 
 スキルは 24 種。それぞれの完全な契約 — 入力・ルール・ガードレール — は
@@ -665,7 +670,7 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
   scalar/         Scalar デッキビルダー
 templates/    登録済みマスター (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge のデザインプリセット)
   masters/        マスター .pptx をここに置いてインポートする (gitignored。同ディレクトリの README 参照)
-  sales/ nurture/ marketing/   Markdown 様式: 段階記録とヒアリングシート、ナーチャリングトラックとセグメント、コンテンツブリーフとイベント計画
+  sales/ nurture/ marketing/   Markdown 様式: 段階記録とヒアリングシート、ナーチャリングトラックとセグメント、コンテンツブリーフとイベント計画 (各ディレクトリに README あり。スライドテンプレートではなく記入様式)
 slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (14 パック 101 種、manifest.json)
 assets/       scalar/ (ブランド: ピクトグラム、ロゴ、製品ロゴ), holidays/ (日本の祝日 CSV), cloud-icons/ (gitignored)
 references/   エンジン・ワークフロー・ホスト互換のドキュメント
@@ -781,6 +786,7 @@ AWS、Google Cloud、Azure が再配布を許可していないためリポジ�
 | `examples/scalardb-architecture.py` | ScalarDB アーキテクチャ — クラウドアイコン、ピクトグラム、ブランドロゴ、コネクタを 1 枚に † |
 | `examples/scalardl-architecture.py` | ScalarDL アーキテクチャ、同じ組み合わせ † |
 | `examples/pattern-gallery/deck.py` | `deckkit.py` のコードファーストパス |
+| [`examples/scalardb-scalardl/`](examples/scalardb-scalardl/README.ja.md) | 55 枚の製品機能ウォークスルー（1 機能 1 ページ）。最大の実例 |
 
 ## ライセンス
 

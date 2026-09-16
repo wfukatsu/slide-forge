@@ -88,6 +88,7 @@
 
 - [calendar-template-plan.md](calendar-template-plan.ja.md) — カレンダーパックの実装計画
 - [account-planning-template-plan.md](account-planning-template-plan.ja.md) — APS ページテンプレートの実装計画
+- [`docs/plans/`](../docs/plans/) と [`docs/brainstorms/`](../docs/brainstorms/) — ブレインストームから始まった作業の、同じ種類の記録。`2026-08-15-feat-targeted-slide-update` は `--update-slides` の計画で、完了扱い
 - `agent-token-cost-review.ja.md` — 一度きりのトークンコスト監査*（日本語のみ）*
 
 ## 書くものではなく、生成されるもの

@@ -88,6 +88,7 @@ point in time, and they are **not** statements about how the system works now:
 
 - [calendar-template-plan.md](calendar-template-plan.md) — the calendar pack's implementation plan
 - [account-planning-template-plan.md](account-planning-template-plan.md) — the APS page templates' implementation plan
+- [`docs/plans/`](../docs/plans/) and [`docs/brainstorms/`](../docs/brainstorms/) — the same kind of record for work that started as a brainstorm. `2026-08-15-feat-targeted-slide-update` is the plan behind `--update-slides`, and is marked completed
 - `agent-token-cost-review.ja.md` — a one-off token-cost audit *(Japanese only)*
 
 ## Generated, not written
