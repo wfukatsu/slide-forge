@@ -457,7 +457,7 @@ class PatternMixin:
     # ---- Customer / key-person testimonial ----
 
     def testimonial(self, x, y, w, h, quote, name, *, role=None, points=None,
-                    icon="person", size=10, quote_size=13) -> float:
+                    icon="person", portrait=None, size=10, quote_size=13) -> float:
         """Quote card (verbatim customer voice / internal key-person comment).
         Returns the y-coordinate of the bottom edge.
 
@@ -465,6 +465,13 @@ class PatternMixin:
         Passing points adds bullet-point supplementary notes below the quote.
         **Only use quotes from real, actual statements**
         (being a design component is not a license to fabricate a quote).
+
+        `portrait` replaces the pictogram with an AI-generated picture: pass
+        what to draw (e.g. "30代の会社員の女性の肖像"). Use it for a persona —
+        an invented representative user — never to put a face on a quote from
+        a real person, which would fabricate their likeness. Needs Gemini
+        image generation to be on; the result is cached per prompt, so the
+        same persona keeps the same face across rebuilds.
         """
         self.shape(x, y, w, h, kind="RECTANGLE", fill=self.P.surfaceAlt,
                    stroke=self.P.border)
@@ -472,7 +479,13 @@ class PatternMixin:
         pad = 0.18
         ic = min(0.85, pw - 0.5)
         icx = x + pw / 2
-        self.icon(icon, icx - ic / 2, y + pad, ic)
+        if portrait:
+            # A face needs more room than the pictogram: fill the column,
+            # bounded by the card height so the name and role keep theirs.
+            ic = min(pw - 0.22, h * 0.52)
+            self.ai_image(icx - ic / 2, y + pad, ic, ic, portrait, fit="cover")
+        else:
+            self.icon(icon, icx - ic / 2, y + pad, ic)
         name_y = y + pad + ic + 0.10
         self.label(x + 0.08, name_y, pw - 0.16, 0.26, name, size=size, bold=True,
                    align="CENTER", valign="TOP", color=self.P.text)
@@ -497,6 +510,125 @@ class PatternMixin:
                        align="START", valign="TOP", color=self.P.text,
                        line_spacing=122)
         return y + h
+
+    def journey_map(self, x, y, w, h, stages, rows, emotions, *,
+                    emotion_index=None, label_w=1.2, size=9, stage_size=9.5,
+                    header_h=0.42, curve_h=0.86, corner=None,
+                    emotion_label=None) -> float:
+        """Customer journey map: stages across, layers down, emotion curve.
+        Returns the y-coordinate of the bottom edge.
+
+        `stages` are the column headings. `rows` are the text layers as
+        `(label, [cell per stage])`; a cell holds several bullets separated
+        by newlines. `emotions` is one integer per stage, -2 to +2, drawn as
+        a face on a line against a dashed neutral baseline. By default the
+        curve lands just above the last text row (actions / thoughts /
+        **curve** / issues); `emotion_index` moves it.
+
+        The curve is drawn here rather than composed from `linechart`
+        because every point has to sit on its stage's column centre, and the
+        number of stages comes from the data — a template cannot compute
+        those centres, and a chart brings its own axis area and legend.
+
+        Only plot emotion values that trace back to something observed (a
+        quote, a behaviour, a measure). A curve invented to look like a
+        story is a drawing, not a finding.
+        """
+        n = len(stages)
+        if n < 2:
+            raise ValueError(t("journey_map: needs at least 2 stages"))
+        if len(emotions) != n:
+            raise ValueError(t("journey_map: emotions has {a} values but "
+                               "there are {b} stages", a=len(emotions), b=n))
+        for v in emotions:
+            if not isinstance(v, (int, float)) or v < -2 or v > 2:
+                raise ValueError(t("journey_map: emotion {v} is outside -2..2", v=v))
+        for label, cells in rows:
+            if len(cells) != n:
+                raise ValueError(t("journey_map: row '{label}' has {a} cells "
+                                   "but there are {b} stages",
+                                   label=label, a=len(cells), b=n))
+        P = self.P
+        cw = (w - label_w) / n
+        x0 = x + label_w
+        # Header: the stage names, over a corner cell naming the axis
+        self.shape(x, y, label_w, header_h, kind="RECTANGLE",
+                   fill=P.primaryDark, stroke=None,
+                   text=self._label("cjm.stage", corner), size=size,
+                   bold=True, color="#FFFFFF")
+        for i, s in enumerate(stages):
+            self.shape(x0 + i * cw, y, cw, header_h, kind="RECTANGLE",
+                       fill=P.primary, stroke="#FFFFFF", text=s,
+                       size=stage_size, bold=True, color="#FFFFFF")
+        ei = (len(rows) - 1) if emotion_index is None else emotion_index
+        ei = max(0, min(ei, len(rows)))
+        band_h = (h - header_h - curve_h) / max(1, len(rows))
+        ry = y + header_h
+        for idx in range(len(rows) + 1):
+            if idx == ei:
+                ry = self._journey_curve(x, ry, w, curve_h, label_w, cw, n,
+                                         emotions, size, emotion_label)
+            if idx < len(rows):
+                label, cells = rows[idx]
+                self.shape(x, ry, label_w, band_h, kind="RECTANGLE",
+                           fill=P.surfaceAlt, stroke=P.border, text=label,
+                           size=size, bold=True, color=P.text)
+                for i, cell in enumerate(cells):
+                    self.shape(x0 + i * cw, ry, cw, band_h, kind="RECTANGLE",
+                               fill=P.surface, stroke=P.border, text=cell,
+                               size=size, color=P.text, align="START",
+                               valign="TOP", line_spacing=118,
+                               text_margin=0.04)
+                ry += band_h
+        return y + h
+
+    def _journey_curve(self, x, y, w, h, label_w, cw, n, emotions, size,
+                       emotion_label) -> float:
+        """The emotion row of journey_map. Returns the bottom edge y."""
+        P = self.P
+        self.shape(x, y, label_w, h, kind="RECTANGLE", fill=P.surfaceAlt,
+                   stroke=P.border,
+                   text=self._label("cjm.emotion", emotion_label),
+                   size=size, bold=True, color=P.text)
+        self.shape(x + label_w, y, w - label_w, h, kind="RECTANGLE",
+                   fill=P.surface, stroke=P.border)
+        face = 0.22
+        mid = y + h / 2
+        span = h / 2 - face * 0.7      # keep the topmost face inside the band
+        pts = [(x + label_w + i * cw + cw / 2, mid - (v / 2.0) * span)
+               for i, v in enumerate(emotions)]
+        # Neutral baseline first, then the line, then the faces on top
+        self.line(x + label_w + 0.06, mid, x + w - 0.06, mid,
+                  color=P.border, weight=1.0, dashed=True, free=True)
+        for (x1, y1), (x2, y2) in zip(pts, pts[1:]):
+            self.line(x1, y1, x2, y2, color=P.primary, weight=1.6, free=True)
+        for (cx, cy), v in zip(pts, emotions):
+            self._journey_face(cx, cy, face, v)
+        return y + h
+
+    def _journey_face(self, cx, cy, d, value) -> None:
+        """One face marker. Slides has no arc with a settable sweep, so the
+        mouth is drawn from straight segments — which also stays legible at
+        this size and in black-and-white printing."""
+        P = self.P
+        self.shape(cx - d / 2, cy - d / 2, d, d, kind="ELLIPSE",
+                   fill="#FFFFFF", stroke=P.primaryDark, stroke_weight=1.2)
+        eye = d * 0.09
+        for sx in (-1, 1):
+            self.shape(cx + sx * d * 0.19 - eye / 2, cy - d * 0.14, eye, eye,
+                       kind="ELLIPSE", fill=P.primaryDark, stroke=None)
+        hw = d * 0.20
+        my = cy + d * 0.12
+        if value == 0:
+            self.line(cx - hw, my, cx + hw, my, color=P.primaryDark,
+                      weight=1.2, free=True)
+            return
+        # Corners up for a smile, down for a frown (y grows downward)
+        drop = d * 0.10 if value > 0 else -d * 0.10
+        self.line(cx - hw, my, cx, my + drop, color=P.primaryDark,
+                  weight=1.2, free=True)
+        self.line(cx, my + drop, cx + hw, my, color=P.primaryDark,
+                  weight=1.2, free=True)
 
     # ---- Account graph (influence / discovery) ----
 

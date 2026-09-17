@@ -313,7 +313,7 @@ converted from **camelCase to snake_case** and passed as a keyword argument
 | Cloud icons | `cloud_icon` `cloud_icon_row` `cloud_icon_flow` `cloud_icon_grid` `cloud_zone` |
 | Structural diagrams | `band` `cards` `flow` `hbars` `metric` |
 | Tables/charts | `table` `vbars` `vbars_grouped` `vbars_stacked` `linechart` `pie` `pareto` |
-| Framework diagrams | `posmap` `gantt` `orgchart` `lean_canvas` `nested_circles` `testimonial` `fishbone` |
+| Framework diagrams | `posmap` `gantt` `orgchart` `lean_canvas` `nested_circles` `testimonial` `fishbone` `journey_map` |
 | Event materials | `event_mode_badge` `event_overview` `event_timetable` `event_speakers` `event_access` |
 | Page components | `governing_message` `lead_in` `so_what` `source_note` `exhibit_frame` `list` |
 | Analysis/design diagrams | `mece_tree` `waterfall` `rating_matrix` `exec_summary` `storyline` `ghost` |

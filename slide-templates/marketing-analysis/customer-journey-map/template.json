@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "id": "customer-journey-map",
+  "displayName": "カスタマージャーニーマップ",
+  "pack": "marketing-analysis",
+  "category": "customer",
+  "description": "ステージごとの行動・思考・感情と課題を1枚に並べ、体験が落ち込む地点を示す",
+  "answers": [
+    "ステージごとに顧客は何をし、何を感じ、どこで体験が落ち込むのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 36,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 110,
+          "presentation": 80
+        }
+      }
+    },
+    "stages": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 4,
+      "maxLength": 10
+    },
+    "rows": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 8
+          },
+          {
+            "type": "string[]",
+            "matchLength": "stages",
+            "maxLength": {
+              "$density": {
+                "print": 34,
+                "presentation": 26
+              }
+            }
+          }
+        ]
+      }
+    },
+    "emotions": {
+      "type": "integer[]",
+      "required": true,
+      "matchLength": "stages",
+      "minimum": -2,
+      "maximum": 2
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 86
+    }
+  },
+  "guardrails": [
+    "感情値は観察された事実（発言・行動・数値）に紐づける。物語として見栄えするように上下させない",
+    "セルは調査で確認できたことだけを書く。埋まらないステージは空欄のまま残し、想像で補わない",
+    "施策や解決策はこのページに書かない。ここは『問題・課題・要求』まで",
+    "As-Is と To-Be を1枚に混ぜない。どちらなのかを lead に明記する",
+    "ステージはペルソナの実際の行動単位で切る。社内の業務フェーズで切らない",
+    "箇条書きは1行に収まる長さにする（print で全角14字、presentation で11字が目安）。収まらない要求は2項目に分ける"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "journey_map",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 9.0,
+        "h": 3.15,
+        "stages": {
+          "$slot": "stages"
+        },
+        "rows": {
+          "$slot": "rows"
+        },
+        "emotions": {
+          "$slot": "emotions"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        },
+        "stage_size": {
+          "$density": {
+            "print": 9.5,
+            "presentation": 10.5
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print"
+}

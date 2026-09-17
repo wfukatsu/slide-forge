@@ -20,6 +20,7 @@ working example using all 6 kinds is `examples/patterns-demo.json`.
 | Nested market-size circles (TAM/SAM/SOM) | `nested_circles` | Only use values that have a source |
 | Voice of the customer or key stakeholders | `testimonial` | Only quote things that were actually said |
 | Structure of causes (broken out by category) | `fishbone` | 2–6 categories, up to 4 causes each |
+| Experience and emotion across stages | `journey_map` | Emotion values must trace back to something observed |
 | Cost breakdown over time | `vbars_stacked` (charts) | See `references/charts.md` |
 
 ## posmap — positioning map
@@ -137,11 +138,17 @@ d.testimonial(x, y, w, h, quote, name,
               role=None,      # title (can be multi-line, e.g. "company\ndept role")
               points=None,    # bullet points to place below the quote
               icon="person",  # pictogram on the left (from illustrations' ICONS)
+              portrait=None,  # AI-generated picture instead of the pictogram
               quote_size=13)
 ```
 
 - A person pictogram plus name/title on the left, the quote (in " " quotes, dark primary color)
   on the right.
+- `portrait` takes what to draw (e.g. "a woman in her 30s, office worker") and replaces the
+  pictogram with a generated picture, drawn larger than the pictogram. Needs Gemini image
+  generation to be on; the result is cached per prompt, so the same persona keeps the same
+  face across rebuilds. **Use it for a persona — an invented representative user — never to
+  put a face on a quote from a real person**, which would fabricate their likeness.
 - Passing `points` adds a divider line and bullets below the quote.
 - **Only use quotes from real statements.** Never fabricate a "voice" without an actual
   interview or hearing record.
@@ -172,6 +179,41 @@ d.fishbone(x, y, w, h, problem, categories,
   "categories": [["People", ["Accounting rests on one person", "Approver holds two roles"]],
                  ["Process", ["Paper invoices routed by hand", "Retroactive fixes after close"]],
                  ["Systems", ["Manual re-keying", "Double entry across systems"]]] }
+```
+
+## journey_map — customer journey map
+
+```python
+d.journey_map(x, y, w, h, stages, rows, emotions,
+              # stages:   the column headings (2 or more)
+              # rows:     [(layer label, [cell per stage]), …]
+              #           newlines inside a cell become bullet lines
+              # emotions: one integer per stage, -2 to +2
+              emotion_index=None,  # where the curve goes (default: before the last row)
+              label_w=1.2,         # width of the layer-label column
+              curve_h=0.86,        # height of the emotion row
+              corner=None,         # top-left cell (default: cjm.stage)
+              emotion_label=None)  # emotion row label (default: cjm.emotion)
+```
+
+- A grid of stages across and layers down, with an emotion curve drawn over a dashed
+  neutral baseline.
+- The curve is drawn here rather than by `linechart`: every point has to land on its
+  stage's column centre, and the number of stages comes from the data, so a template
+  cannot compute those centres. A chart would also bring its own axis area and legend.
+- Faces are built from a circle, dots and straight segments, because Slides has no arc
+  with a settable sweep (the same limit `rating_matrix` works around). They stay legible
+  in black-and-white printing.
+- **Plot only emotion values that trace back to something observed** (a quote, a
+  behaviour, a measure). A curve shaped to tell a good story is a drawing, not a finding.
+
+```json
+{ "type": "journey_map", "x": 0.5, "y": 1.55, "w": 9.0, "h": 3.15,
+  "stages": ["Awareness", "Comparison", "Purchase", "Use"],
+  "rows": [["Actions", ["· Sees it on social", "· Narrows on a review site", "· Places the order", "· Receives it"]],
+           ["Thoughts", ["· Looks pricey", "· Stock is unclear", "· Let down by the stockout", "· Still fiddly"]],
+           ["Needs", ["· Show price range first", "· List what is in stock", "· Flag stockouts earlier", "· Reorder in one tap"]]],
+  "emotions": [1, 0, -2, 1] }
 ```
 
 ## Common notes
