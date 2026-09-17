@@ -20,6 +20,10 @@ description: >-
 `${CLAUDE_PLUGIN_ROOT}`、ローカルクローンでは `/path/to/slide-forge`
 （以下に書く `cd` のパスはローカルクローンを前提とする）。
 
+共通の営業資料ルールは `references/scalar/workflow-contract.md`、調査の作法は
+`references/scalar/research-policy.md` に従う。本スキルが持つのは、製品デッキ固有の
+判断と生成のみである。
+
 ## 重要事項
 
 - **前提スキル**: `google-slides-template`（同一リポジトリ） — 認証、共有 venv、
@@ -36,23 +40,9 @@ description: >-
   [references/scalar/research-2026-08.md](../../references/scalar/research-2026-08.ja.md) を起点とするが、**調査日から 3 か月以上
   経過している場合は再調査する**（下記 Phase 2）。推測で穴を埋めてはならない。
   確認できない項目（資本金など）は載せない。
-- **ビジュアル QA は独立スキル（`slide-qa`）であり、生成時に実行有無を選ぶ**
-  （Phase 1 で確認する。既定かつ推奨は実行）。実行する場合はそのスキルに従う —
-  `scripts/fetch_thumbnails.py` で全ページを取得して検査し、終了後に
-  `scripts/cleanup_qa.py` でローカルの QA ファイルを削除する。スキップした場合は
-  報告にその旨を明記し、後続として `slide-qa` を提案する。
-- **Drive フォルダのルール**（`google-slides-template` と共通）: まずデッキ用の
-  Drive フォルダを作成し（`scripts/drive_folder.py create "<title>"`）、その ID を
-  出力先フォルダとして渡し、仕様書や図の元データを `drive_folder.py upload` で
-  同じフォルダに集約する。フォルダ URL はデッキ URL と併せて報告する。
-- **ユーザーが既に持っている既存デッキを更新する場合**（同一 URL のままの
-  インプレース編集 — 通常のボイラープレート複製フローではない）は、先に
-  `.venv/bin/python scripts/snapshot_version.py <URL>` を実行して編集前の
-  リビジョンを記録し、ローカルに PPTX バックアップを取り、編集前にリビジョン ID を
-  報告する（`google-slides-template` と共通のルール）。
-- **前提が未指定なら、調査より先に `AskUserQuestion` で確定させる**（Phase 1）。
-  対話の作法は [references/interactive-intake.md](../../references/interactive-intake.ja.md)（セクション 0, 3, 4, 5）に従う。
-  本スキル固有なのは質問セットのみである。
+
+ビジュアル QA の実行有無、Drive フォルダの扱い、インプレース編集前のスナップショット、
+対話インテイクの作法は、いずれも上記の共通契約が持つ。ここでは再定義しない。
 
 ## クイックリファレンス
 

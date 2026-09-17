@@ -19,6 +19,10 @@ description: >-
 `${CLAUDE_PLUGIN_ROOT}`、ローカルクローンでは `/path/to/slide-forge`
 （以下に書く `cd` のパスはローカルクローンを前提とする）。
 
+共通の営業資料ルールは `references/scalar/workflow-contract.md`、鮮度と調査の作法は
+`references/scalar/research-policy.md` に従う。本スキルが持つのは、提案固有の判断と
+生成のみである。
+
 ## 重要事項
 
 - **前提スキル**: `google-slides-template`（同一リポジトリ） — 認証、共有 venv、
@@ -54,12 +58,6 @@ description: >-
   **3 か月ルール**に従う — 影響を受ける記述だけを
   `references/scalar/research-policy.md` に従って更新する。並列での再調査は
   自動では行わない。
-- **姉妹スキルと共通のルール**（google-slides-template の SKILL.md 参照）:
-  デッキごとの Drive フォルダ（`scripts/drive_folder.py`）、インプレース編集前の
-  バージョンスナップショット（`scripts/snapshot_version.py`）、`slide-qa` スキルに
-  よるビジュアル QA — インテイク時に実行有無を選び、既定は実行、終了後に
-  `scripts/cleanup_qa.py` で QA ファイルを削除 — と、対話インテイクの作法
-  （[references/interactive-intake.md](../../references/interactive-intake.ja.md) セクション 0, 3, 4, 5）。
 
 ## クイックリファレンス
 
