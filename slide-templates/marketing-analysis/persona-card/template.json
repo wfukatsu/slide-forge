@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "id": "persona-card",
+  "displayName": "ペルソナカード",
+  "pack": "marketing-analysis",
+  "category": "customer",
+  "description": "代表ユーザーを実在の人物として描き、ゴールと悩みを1枚で共有する",
+  "answers": [
+    "このペルソナは誰で、何を達成したくて、何に困っているのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 36,
+          "presentation": 30
+        }
+      }
+    },
+    "segment": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 110,
+          "presentation": 80
+        }
+      }
+    },
+    "name": {
+      "type": "string",
+      "required": true,
+      "maxLength": 20
+    },
+    "attributes": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 8,
+          "presentation": 7
+        }
+      }
+    },
+    "portrait": {
+      "type": "string",
+      "required": false,
+      "default": "",
+      "maxLength": 60
+    },
+    "quote": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 56,
+          "presentation": 42
+        }
+      }
+    },
+    "traits": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 4,
+          "presentation": 3
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 30,
+          "presentation": 24
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    "goal": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 60,
+          "presentation": 44
+        }
+      }
+    },
+    "pain": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 60,
+          "presentation": 44
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 86
+    }
+  },
+  "guardrails": [
+    "調査で確認できた事実だけを書く。年齢・年収・家族構成を埋めるために創作しない",
+    "attributes は職業・立場だけを短く書く。欄が狭く語中で改行するため、年齢・居住地・家族構成は traits の行に置く",
+    "quote は実際の発言の逐語のみ。要約した場合は『（要約）』と明記する",
+    "理想的すぎる人物像にしない。都合の良い行動特性だけを並べない",
+    "UX や施策の判断に使わない属性は載せない。項目を作りすぎない",
+    "調査で裏づけていないプロトペルソナは source に『仮説（プロト）』と明記する",
+    "portrait は架空のペルソナの似顔絵にだけ使う。実在の人物の発言に生成した顔を付けない",
+    "portrait を空のままにするとピクトグラムで描かれる。画像生成を使わない場合はそのままでよい"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "segment"
+        }
+      },
+      {
+        "type": "testimonial",
+        "x": 0.5,
+        "y": 1.58,
+        "w": 5.3,
+        "h": 2.1,
+        "quote": {
+          "$slot": "quote"
+        },
+        "name": {
+          "$slot": "name"
+        },
+        "role": {
+          "$slot": "attributes"
+        },
+        "portrait": {
+          "$slot": "portrait"
+        },
+        "size": {
+          "$density": {
+            "print": 9.5,
+            "presentation": 10.5
+          }
+        },
+        "quote_size": {
+          "$density": {
+            "print": 11.5,
+            "presentation": 13
+          }
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 5.95,
+        "y": 1.58,
+        "w": 3.55,
+        "h": 1.0,
+        "text": {
+          "$slot": "goal"
+        },
+        "label": {
+          "$t": "persona.goal"
+        },
+        "size": {
+          "$density": {
+            "print": 10,
+            "presentation": 11
+          }
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 5.95,
+        "y": 2.68,
+        "w": 3.55,
+        "h": 1.0,
+        "text": {
+          "$slot": "pain"
+        },
+        "label": {
+          "$t": "persona.pain"
+        },
+        "size": {
+          "$density": {
+            "print": 10,
+            "presentation": 11
+          }
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.78,
+        "w": 9.0,
+        "h": 0.92,
+        "items": {
+          "$slot": "traits"
+        },
+        "title_size": {
+          "$density": {
+            "print": 9.5,
+            "presentation": 10.5
+          }
+        },
+        "body_size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 9.5
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print"
+}

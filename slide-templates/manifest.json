@@ -72,6 +72,36 @@
       "version": 1
     },
     {
+      "id": "persona-card",
+      "displayName": "ペルソナカード",
+      "pack": "marketing-analysis",
+      "category": "customer",
+      "path": "marketing-analysis/persona-card/template.json",
+      "tags": [
+        "persona",
+        "ux",
+        "customer",
+        "research"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "customer-journey-map",
+      "displayName": "カスタマージャーニーマップ",
+      "pack": "marketing-analysis",
+      "category": "customer",
+      "path": "marketing-analysis/customer-journey-map/template.json",
+      "tags": [
+        "journey",
+        "cjm",
+        "ux",
+        "customer"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
       "id": "cohort-retention",
       "displayName": "コホート継続率",
       "pack": "marketing-analysis",

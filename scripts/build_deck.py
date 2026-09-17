@@ -1772,6 +1772,8 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "testimonial":    ("testimonial",    ["x", "y", "w", "h", "quote", "name"]),
     "fishbone":       ("fishbone",       ["x", "y", "w", "h", "problem",
                                           "categories"]),
+    "journey_map":    ("journey_map",    ["x", "y", "w", "h", "stages",
+                                          "rows", "emotions"]),
     # Event-information diagrams (events.py; drawn purely from shapes, no network needed)
     "event_mode_badge": ("event_mode_badge", ["x", "y", "mode"]),
     "event_overview":   ("event_overview",   ["x", "y", "w", "rows"]),
