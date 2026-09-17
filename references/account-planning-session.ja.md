@@ -13,9 +13,9 @@ Account Planning Session（以下 APS）用のデッキを、事前準備 → �
   定義、ワークショップの進め方、各ページの情報源と考慮点**。
 - Scalar 向けに読み替えたもの: 製品名・組織名・レビュー体制・金額単位。
   読み替え表は §12。
-- 関連ドキュメント: `skills/scalar-account-planning-session/SKILL.md`（APS の
-  進め方）、`skills/scalar-account-plan/SKILL.md`（顧客ごとの活動計画台帳）、`references/scalar/sales-playbook.md`（ステージとゲート定義）、
-  `references/account-planning-template-plan.md`（ページテンプレートの実装計画）。
+- 関連ドキュメント: [skills/scalar-account-planning-session/SKILL.md](../skills/scalar-account-planning-session/SKILL.ja.md)（APS の
+  進め方）、[skills/scalar-account-plan/SKILL.md](../skills/scalar-account-plan/SKILL.ja.md)（顧客ごとの活動計画台帳）、[references/scalar/sales-playbook.md](scalar/sales-playbook.ja.md)（ステージとゲート定義）、
+  [references/account-planning-template-plan.md](account-planning-template-plan.ja.md)（ページテンプレートの実装計画）。
 
 元資料は「テンプレートの書式に厳密に従う必要はなく、参考にするためのサンプル
 としての使い方でも OK」と明記している。この手順書も同じ立場を取る。**埋める
@@ -119,7 +119,7 @@ Account Planning Session（以下 APS）用のデッキを、事前準備 → �
 ## 4. Step 2 — Phase A: 事前資料を作る
 
 各ページの目的・情報源・つまずきどころ。テンプレート ID は
-`references/account-planning-template-plan.md` で定義するもの。
+[references/account-planning-template-plan.md](account-planning-template-plan.ja.md) で定義するもの。
 
 ### 4.1 Corporate Overview
 
@@ -458,7 +458,7 @@ done
 
 マスターを差し替える場合は **`--template` を変えるだけ**（`corporate`、
 `aixdevops`、`blank-16x9` など）。ページ定義側は変更しない。この成立条件は
-`references/account-planning-template-plan.md` §2 に定義する。
+[references/account-planning-template-plan.md](account-planning-template-plan.ja.md) §2 に定義する。
 
 > **`--dry-run` が通っても API に弾かれる制約が 1 つある。** Slides API は幅
 > 32pt（0.444in）未満の表列を拒否する。`build_account_planning.py` の
@@ -690,7 +690,7 @@ Session 資料を出す前に。
 | ULA / ELA Utilization | ライセンス契約の消化状況 |
 | SOW（Share of Wallet） | 顧客 IT 支出内の自社シェア |
 | ARR booking | 年額換算の新規契約額 |
-| InfoMentis / Oracle Sales Methodology | `references/scalar/sales-playbook.md` |
+| InfoMentis / Oracle Sales Methodology | [references/scalar/sales-playbook.md](scalar/sales-playbook.ja.md) |
 
 ## 関連
 

@@ -12,9 +12,9 @@
 |---|---|
 | [commands.md](commands.ja.md) | 3 つのスラッシュコマンド — `/forge`・`/account`・`/visit`。slide-forge を**使いたい**ならここから（中身を変えるのではなく） |
 | [workflow-contract.md](workflow-contract.ja.md) | デッキ生成をエンドツーエンドで動かすための共通契約。どのホストの動き方を変えるときも、まずこれを読む。正本は英語版 |
-| [interactive-intake.md](interactive-intake.md) | 仕様を書く前に、テンプレート・目的・構成・分量をユーザーと確定させる手順 |
-| [validation.md](validation.md) | 2 つのゲート — オフラインの座標検査と、サムネイル QA。それぞれ何を拾えて何を拾えないか |
-| [parallel-generation.md](parallel-generation.md) | 大きなデッキをページ単位に分割して作る（並列／逐次） |
+| [interactive-intake.md](interactive-intake.ja.md) | 仕様を書く前に、テンプレート・目的・構成・分量をユーザーと確定させる手順 |
+| [validation.md](validation.ja.md) | 2 つのゲート — オフラインの座標検査と、サムネイル QA。それぞれ何を拾えて何を拾えないか |
+| [parallel-generation.md](parallel-generation.ja.md) | 大きなデッキをページ単位に分割して作る（並列／逐次） |
 | [codex-compatibility.md](codex-compatibility.ja.md) | Codex ホストでの差異とセットアップ。正本は英語版 |
 
 ## デッキを書く

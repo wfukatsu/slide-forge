@@ -21,9 +21,9 @@ d.box(...) / d.solid(...) / d.label(...) / d.band(...) / d.arrow(...)       # �
 9 つの手段（構造図・表グラフ・イメージ図・フレームワーク図・イベント案内・アイコン・
 クラウドアイコン・画像・コードブロック）はすべて同じ `Canvas` のメソッドなので、
 1 枚のスライドに混ぜて使える。
-ファミリー別の詳細は `references/charts.md` / `references/patterns.md` /
-`references/events.md` / `references/images.md` / `references/icons.md` /
-`references/cloud-icons.md` / `references/code-blocks.md`、実例は
+ファミリー別の詳細は [references/charts.md](charts.ja.md) / [references/patterns.md](patterns.ja.md) /
+[references/events.md](events.ja.md) / [references/images.md](images.ja.md) / [references/icons.md](icons.ja.md) /
+[references/cloud-icons.md](cloud-icons.ja.md) / [references/code-blocks.md](code-blocks.ja.md)、実例は
 `examples/charts-demo.json` / `examples/patterns-demo.json` /
 `examples/event-announcement.json` / `examples/illustration-gallery.json` /
 `examples/icon-gallery.json` / `examples/cloud-architecture.json`。
@@ -95,7 +95,7 @@ d.cloud_icon_row(1.0, 1.9, 8.0, [("aws:rds", "RDS"), ("aws:simple-storage-servic
 
 ## 表・グラフ・コードブロック
 
-表と本格的なグラフは `charts`（同じ Canvas に生えている。`references/charts.md`）。
+表と本格的なグラフは `charts`（同じ Canvas に生えている。[references/charts.md](charts.ja.md)）。
 表はネイティブテーブルなので生成後にユーザーが編集できる。棒・折れ線は基線ゼロ・
 系列色固定（色覚検証済みの並び）・数値の直接ラベルという規約込みで描かれる。
 
@@ -109,7 +109,7 @@ d.linechart(0.5, 1.2, 9.0, 3.2, ["1月", "2月", "3月"],
 d.pie(0.7, 1.3, 2.8, [("移行済み", 62), ("移行中", 23), ("未着手", 15)])
 ```
 
-コードサンプルは `code_block`（`references/code-blocks.md`）。等幅 + ハイライト付き、
+コードサンプルは `code_block`（[references/code-blocks.md](code-blocks.ja.md)）。等幅 + ハイライト付き、
 角は直角。高さは実効行高（`行数 × size × ls × 1.45 / 72 + 0.14in`）で見積もる。
 
 情報量の多いページでは `text_margin`（インチ）でテキストの内側余白を詰めると、

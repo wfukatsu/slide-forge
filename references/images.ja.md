@@ -7,8 +7,8 @@
 |---|---|---|
 | 構造・手順・数値の関係 | `diagrams.Canvas`（`flow` / `cards` / `hbars` / `connect`） | 正確。要素どうしの関係が保証される |
 | 概念・比喩・登場人物 | `illustrations`（`icon_flow` / `pyramid` / `iceberg` …） | 図形で描く。**ネットワーク不要・毎回同じ絵**・テーマ配色 |
-| 業務語彙のアイコン | `icons`（`asset_icon` / `asset_icon_flow` …） | Scalar ブランドの素材 62 種。ブランド準拠。**通信が要る**。→ `icons.md` |
-| クラウド構成図 | `cloud_icons`（`cloud_icon` / `cloud_zone` …） | AWS/GCP/Azure 公式 1,757 種。**色・回転の変更は禁止**。→ `cloud-icons.md` |
+| 業務語彙のアイコン | `icons`（`asset_icon` / `asset_icon_flow` …） | Scalar ブランドの素材 62 種。ブランド準拠。**通信が要る**。→ [icons.md](icons.ja.md) |
+| クラウド構成図 | `cloud_icons`（`cloud_icon` / `cloud_zone` …） | AWS/GCP/Azure 公式 1,757 種。**色・回転の変更は禁止**。→ [cloud-icons.md](cloud-icons.ja.md) |
 | 雰囲気・情景・表紙 | `images`（`ai_image` / `image`） | AI 生成か手持ちの画像。表現力は高いが再現性は生成時のキャッシュ頼み |
 
 いずれも `Canvas` のメソッドとして生えているので、同じスライドに混ぜて使える。
@@ -68,7 +68,7 @@ d.icon_flow(0.5, 1.3, 9.0, [
 d.asset_icon_flow(0.5, 1.15, 9.0, [("job-seeker", "求職者"), ("interview", "面接")])
 ```
 
-一覧・検索・色の扱い・制約は **`references/icons.md`** にまとめてある。
+一覧・検索・色の扱い・制約は **[references/icons.md](icons.ja.md)** にまとめてある。
 
 ## 2. 比喩図（`illustrations`）
 
@@ -104,7 +104,7 @@ Python のシグネチャの引数名のままでは通らない（`hub` の `ce
 ### 台形は `TRAPEZOID` で描いていない
 
 Slides の `TRAPEZOID` は**上底の食い込みが「高さ × 0.25」に固定**で、幅でも
-scaleY でも変えられない（実測。`api-notes.md` セクション 15）。段ごとに幅が違う
+scaleY でも変えられない（実測。[api-notes.md](api-notes.ja.md) セクション 15）。段ごとに幅が違う
 ピラミッドやファネルをこれで積むと、段ごとに傾きが変わって輪郭がギザギザになる。
 
 そこで `pyramid` / `funnel` は「中央の矩形＋左右の直角三角形」の 3 部品で
@@ -310,7 +310,7 @@ d.ai_image(5.2, 1.1, 4.2, 2.6,
 ```
 
 - `type` の正は `scripts/build_deck.py` の `FIGURES` 辞書（45 種）。
-  系統別の一覧は `references/template-schema.md` を参照。
+  系統別の一覧は [references/template-schema.md](template-schema.ja.md) を参照。
 - 位置引数以外のキーは **camelCase → snake_case** に直して渡される
   （`labelSize` → `label_size`、`xAxis` → `x_axis`）。
 - `--dry-run` は API を一切呼ばずに図を座標へ展開し、はみ出し・重なり・文字溢れを

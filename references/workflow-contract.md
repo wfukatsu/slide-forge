@@ -90,6 +90,10 @@ named reference sections.
 QA may be split into ranges when images would crowd the main context. Workers
 return findings only, never image descriptions or generated JSON.
 
+Where delegation is unavailable or disallowed, run the same steps sequentially.
+Output and validation behaviour are unchanged; only elapsed time and
+main-context use increase.
+
 ## Visual QA scope
 
 - First QA pass: inspect every page.
@@ -102,5 +106,6 @@ return findings only, never image descriptions or generated JSON.
 ## See also
 
 - [Nailing Down a Deck's Design Through Dialogue](interactive-intake.md)
+- [Codex Compatibility](codex-compatibility.md)
 - [Validation Gates: Offline Coordinate Checks and Thumbnail QA](validation.md)
 - [Splitting Generation by Page (Parallel or Sequential)](parallel-generation.md)

@@ -9,6 +9,8 @@ description: >-
   google-slides-template); visual QA of finished decks (slide-qa).
 ---
 
+*[日本語](SKILL.ja.md)*
+
 # Slide Template Creator
 
 Create one reusable page specification at a time. Keep Google Slides masters in

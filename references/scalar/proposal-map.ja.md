@@ -3,7 +3,7 @@
 # Scalar 提案デッキ設計資料 — 課題→製品マッピングと提案の型（2026-08-05 調査）
 
 **鮮度に注意**: 事例・価格・エディション構成は陳腐化する。
-`research-2026-08.md` と同じ **3 ヶ月ルール**（調査日から 3 ヶ月以上経過していたら
+[research-2026-08.md](research-2026-08.ja.md) と同じ **3 ヶ月ルール**（調査日から 3 ヶ月以上経過していたら
 再調査してから使う）を適用すること。提案の「型」（§2 の構成・作法）は
 腐りにくいので再調査不要。
 
@@ -33,7 +33,7 @@ BANT（§6）。
 
 ## 2. 提案書に入れる項目（構成と作法）
 
-構成の土台は `references/deck-outlines.md`「課題解決型の提案」。それを
+構成の土台は [references/deck-outlines.md](../deck-outlines.ja.md)「課題解決型の提案」。それを
 B2B 提案書のベストプラクティス（才流・HubSpot・Y's、§6）で補強した標準構成が
 `scripts/scalar/build_scalar_proposal.py`（worked example, 20 枚）。
 
@@ -123,7 +123,7 @@ ScalarDL:
 | ScalarDB Enterprise Premium | AWS $2.79/h・GCP $2.89/h、BYOL ¥200,000/月（税抜） | + SQL/GraphQL・暗号化・ABAC/ベクトル検索/レプリケーション（プレビュー） |
 | ScalarDL Ledger / Auditor | 各 $1.40/h（AWS。Auditor は Ledger と同時購入必須）、BYOL は個別問い合わせ | — |
 
-- 時間課金の単位は Marketplace ページから確認できず（`research-2026-08.md` は
+- 時間課金の単位は Marketplace ページから確認できず（[research-2026-08.md](research-2026-08.ja.md) は
   Pod=2vCPU/4GB と記録。デッキには「×Pod 数〜」程度に留め、確定額を書かない）
 - ScalarDB Analytics は **Pod 単位ではない** — SDBU・時間の従量課金で最小 6 SDBU、
   定価 ¥33.5 / SDBU・時間（`okf/pricing/scalardb-analytics-pricing.md`。最小構成は
@@ -140,7 +140,7 @@ ScalarDL:
 
 初期提案には**システム構成図と構成内訳（BOM）を必ず含める**。標準は次の
 3 環境で、クラウドは **AWS が既定**（指定があれば同じ役割分担で GCP / Azure に
-組み替える。作図の検証済みスタイルは `references/drawio.md`）。
+組み替える。作図の検証済みスタイルは [references/drawio.md](../drawio.ja.md)）。
 
 | 環境 | 役割 | 主な構成 | Scalar 製品 / 数量（既定） |
 |---|---|---|---|

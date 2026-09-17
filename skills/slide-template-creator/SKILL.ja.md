@@ -41,6 +41,7 @@
 ```bash
 .venv/bin/python scripts/list_slide_templates.py
 .venv/bin/python scripts/list_slide_templates.py --tag <term>
+rg '<term>' slide-templates scripts references
 ```
 
 同じ問いに同じ視覚文法で答えている既存テンプレートがあれば、再利用するか拡張する。
@@ -63,7 +64,7 @@ slide-templates/<パック>/<id>/example.json
 ```
 
 を作り、`slide-templates/manifest.json` に登録する。スキーマの全体は
-`references/template-schema.md` に従う。
+[references/template-schema.md](../../references/template-schema.ja.md) に従う。
 
 `scripts/patterns.py` / `pages.py` / `charts.py` / `illustrations.py` の既存
 プリミティブを優先する。新しいプリミティブを足すのは、同じ低レベル描画が繰り返され、
@@ -85,6 +86,14 @@ slide-templates/<パック>/<id>/example.json
 
 検証器はレジストリ・スキーマ・入力の整合を見てから作例を描画し、
 `build_deck.py --dry-run --strict` を走らせる。**監査の指摘はすべて潰す。**
+
+パック内の全テンプレートを対象にする場合:
+
+```bash
+.venv/bin/python scripts/validate_slide_templates.py --pack <パック>
+.venv/bin/python scripts/build_slide_template_catalog.py \
+  --pack <パック> --out out/<パック>-catalog.json
+```
 
 ### 6. 視覚 QA
 

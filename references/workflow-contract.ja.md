@@ -7,15 +7,15 @@
 `skills/` と Python エンジンを使う。
 
 **この日本語版は理解のための訳であり、実行時の正本は英語版
-[`workflow-contract.md`](workflow-contract.md) である。** 差異があれば英語版が優先する。
+[`workflow-contract.md`](workflow-contract.ja.md) である。** 差異があれば英語版が優先する。
 
 ## 必須の状態
 
 1. **ルーティング** — 生成スキルをちょうど 1 つ選び、そのスキルを最後まで読む。
-2. **インテイク** — 欠けている分岐判断だけを聞く。`interactive-intake.md` は該当する
+2. **インテイク** — 欠けている分岐判断だけを聞く。[interactive-intake.md](interactive-intake.ja.md) は該当する
    質問群だけを読む。先に `config/settings.json` を読み（`scripts/settings.py --show`）、
    そこで答えが出ている質問は落とす — Gemini 画像生成の可否と、成果物を Google Slides
-   に出すかローカルの `.pptx` に出すか（`references/settings.md`）。
+   に出すかローカルの `.pptx` に出すか（[references/settings.md](settings.ja.md)）。
 3. **承認** — ページ数・レイアウト・すべてのアクションタイトルを提示する。利用者が
    既にそのアウトラインを提示・承認している場合を除き、承認前にデッキを書かない。
 4. **執筆** — 仕様またはデッキモジュールを作る。選んだ部品が必要とする参照だけを読み、
@@ -56,40 +56,52 @@
 
 | きっかけ | 読むもの |
 |---|---|
-| インテイクの判断が欠けている | `interactive-intake.md` の該当節 |
-| 仕様スキーマ・プレースホルダ | `template-schema.md` |
-| Canvas・コネクタ | `diagrams.md`。合致するレシピがあるときだけ `diagram-cookbook.md` を足す |
-| グラフ・表 | `charts.md` の該当節 |
-| ビジネスフレームワーク | `patterns.md` の該当節 |
-| ページの骨格 | `slide-patterns.md` の該当節 |
-| 出来合いの 1 枚テンプレート（`$template`） | `list_slide_templates.py --tag <term>` で探し、そのテンプレートの `template.json` でスロットを見る。`slide-template-catalog.md` は描画画像を見るときだけ開く |
-| セミナー・イベント告知の図 | `events.md` の該当節 |
-| カレンダーの図（月間、日単位ガント、日次タスク、週間、スプリント、年間、期限カウントダウン、日次ヒートマップ、当番表） | `calendars.md` の該当節 |
-| 名前でピクトグラム・アイコンを指定 | 有効な名前は `illustrations.py --list`（または `--search <term>`）、配置は `diagrams.md` |
-| 画像・画像枠 | `images.md` の該当節 |
-| クラウドアイコン | `cloud-icons.md` の該当節 |
-| コードブロック | `code-blocks.md` |
-| API エラー・実測された制約 | `api-notes.md` を検索し、解決しないときだけ `google-slides-api.md` |
-| 大規模・複雑な執筆や QA | `parallel-generation.md` の該当節 |
-| 視覚 QA | `slide-qa/SKILL.md` と `validation.md` のゲート 2 |
+| インテイクの判断が欠けている | [interactive-intake.md](interactive-intake.ja.md) の該当節 |
+| 仕様スキーマ・プレースホルダ | [template-schema.md](template-schema.ja.md) |
+| Canvas・コネクタ | [diagrams.md](diagrams.ja.md)。合致するレシピがあるときだけ [diagram-cookbook.md](diagram-cookbook.ja.md) を足す |
+| グラフ・表 | [charts.md](charts.ja.md) の該当節 |
+| ビジネスフレームワーク | [patterns.md](patterns.ja.md) の該当節 |
+| ページの骨格 | [slide-patterns.md](slide-patterns.ja.md) の該当節 |
+| 出来合いの 1 枚テンプレート（`$template`） | `list_slide_templates.py --tag <term>` で探し、そのテンプレートの `template.json` でスロットを見る。[slide-template-catalog.md](slide-template-catalog.ja.md) は描画画像を見るときだけ開く |
+| セミナー・イベント告知の図 | [events.md](events.ja.md) の該当節 |
+| カレンダーの図（月間、日単位ガント、日次タスク、週間、スプリント、年間、期限カウントダウン、日次ヒートマップ、当番表） | [calendars.md](calendars.ja.md) の該当節 |
+| 名前でピクトグラム・アイコンを指定 | 有効な名前は `illustrations.py --list`（または `--search <term>`）、配置は [diagrams.md](diagrams.ja.md) |
+| 画像・画像枠 | [images.md](images.ja.md) の該当節 |
+| クラウドアイコン | [cloud-icons.md](cloud-icons.ja.md) の該当節 |
+| コードブロック | [code-blocks.md](code-blocks.ja.md) |
+| API エラー・実測された制約 | [api-notes.md](api-notes.ja.md) を検索し、解決しないときだけ [google-slides-api.md](google-slides-api.ja.md) |
+| 大規模・複雑な執筆や QA | [parallel-generation.md](parallel-generation.ja.md) の該当節 |
+| 視覚 QA | `slide-qa/SKILL.md` と [validation.md](validation.ja.md) のゲート 2 |
 
 長い参照はまず該当見出しを検索する。1 つの節で答えが出るときに、カタログや API
 マニュアルを通読しない。
 
 ## 委譲の方針
 
-並列実行は性能の最適化であって、正しさの要件ではない。委譲が使えない、または
-禁止されている環境では、同じ手順を逐次実行する。出力と検証の挙動は変わらず、
-所要時間と主コンテキストの消費だけが増える。
+委譲は所要時間と主エージェントのコンテキストを最適化するものであって、総トークン
+量を減らすものではない。通常のデッキは 17 ページまで 1 エージェントで作成する。
+18〜20 ページを目安にページ単位のファンアウトを検討し、それより早い分割は、独立した
+ページ群がそれぞれ異なる複雑な図を必要とする場合に限る。各ワーカーに渡すのは、
+関連する 2〜3 ページと、名前を指定した参照節を最大 2 つまで。
+
+画像が主コンテキストを圧迫する場合は、QA をレンジに分割してよい。ワーカーが返すのは
+所見のみで、画像の説明や生成した JSON は返さない。
+
+委譲が使えない、または禁止されている環境では、同じ手順を逐次実行する。出力と検証の
+挙動は変わらず、所要時間と主コンテキストの消費だけが増える。
 
 ## 視覚 QA の範囲
 
-QA が選択されたとき、最初のパスは全ページを検査する。修正後は、変更したページと
-その前後を再検査する。共有レイアウト・マスター・テーマ・フッター・ページ番号に
-関わる変更は影響範囲を広げる。
+- 初回 QA パス: 全ページを検査する。
+- ページ単位の修正後: 変更したページとその前後を検査する。
+- 共有レイアウト・共通部品の修正後: それを使っている全ページを検査する。
+- マスター・テーマ・フッター・ページ番号の変更後: 全ページを検査する。
+- サムネイルを開く前にオフライン監査を実行する。避けられる画像確認を減らせるが、
+  初回の目視パスの代わりにはならない。
 
 ## 関連
 
+- [対話でデッキの設計を固める](interactive-intake.ja.md)
 - [Codex 互換性](codex-compatibility.ja.md)
 - [検証ゲート](validation.ja.md)
 - [ページ単位の分担生成](parallel-generation.ja.md)

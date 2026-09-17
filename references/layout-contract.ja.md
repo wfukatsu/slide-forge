@@ -187,7 +187,7 @@ configure_layout(page_w=13.333, page_h=7.5, margin=0.6,
   テンプレートの `drawText` で座標指定のテキストボックスとして描く。
 - `SLIDE_NUMBER` プレースホルダは生成できない。`add_page_numbers()` が自前で描く。
 - `batchUpdate` は**分割するほど遅い**ので、できる限り 1 回にまとめて送る
-  （`references/api-notes.md` §8 に実測値）。`build_deck.py` の `_batches()` が
+  （[references/api-notes.md](api-notes.ja.md) §8 に実測値）。`build_deck.py` の `_batches()` が
   10,000 リクエスト / 5MB（`MAX_REQUESTS_PER_BATCH` / `MAX_BATCH_BYTES`）を
   上限に自動で切る。図解 55 枚で約 6,000 リクエストなので、通常は 1 バッチで済む。
 - スピーカーノートの `objectId` はスライド作成後にしか分からないため、本体の

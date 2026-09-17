@@ -87,7 +87,7 @@ description: >-
 ## ワークフロー
 
 1. **作成前に形を確定する**（AskUserQuestion、1 ラウンド、
-   `references/interactive-intake.md` §0/§5 の作法に従う）: 明細の粒度と
+   [references/interactive-intake.md](../../references/interactive-intake.ja.md) §0/§5 の作法に従う）: 明細の粒度と
    元資料; 税の扱い（税抜/税込/税率）; 出力 —
    xlsx のみ / Google Spreadsheet も（既定: 両方。納品先が Google Workspace
    なら Spreadsheet 主体）; Drive フォルダ（デッキの裏付けの場合はデッキの

@@ -27,7 +27,7 @@ AWS / GCP / Azure、あるいはオンプレとクラウドにまたがる同一
 
 **作り方**: 環境の枠は `cloud_zone`、その中の名前付きサービスは
 `cloud_icon_row` / `cloud_icon_grid`。サービス名とベンダーアイコンは
-`cloud_icons.py --search <語>` で引く。[cloud-icons.md](../cloud-icons.md) 参照。
+`cloud_icons.py --search <語>` で引く。[cloud-icons.md](../cloud-icons.ja.md) 参照。
 
 ベンダーごとの色はデッキ全体で統一し、全環境に共通のものは 3 回繰り返さず
 1 本の帯にまとめる。

@@ -6,7 +6,7 @@
 各セクションで使う部品の対応表。構成は間引いてよいが、**順序は保つ**こと
 （結論を支える論点が先に出ていないと、後のスライドが宙に浮く）。
 
-対話でどれを使うか決める手順は `references/interactive-intake.md`。
+対話でどれを使うか決める手順は [references/interactive-intake.md](interactive-intake.ja.md)。
 ここの見出しがそのまま選択肢になる。
 
 | 型 | 向いている場面 | 標準の枚数 |
@@ -73,7 +73,7 @@ Presentation 系レイアウト（`CONTENT_PRESENTATION` / `TITLE_ONLY_PRESENTAT
 | 6 | 参考資料 | `table`（URL 一覧） |
 
 - 章ごとに `SECTION` を挟む。挟まないと聴衆が現在地を見失う。
-- コードは**画面で読める分量**まで削る（`references/code-blocks.md` の高さ見積もり）。
+- コードは**画面で読める分量**まで削る（[references/code-blocks.md](code-blocks.ja.md) の高さ見積もり）。
 
 ---
 

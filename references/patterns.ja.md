@@ -19,7 +19,7 @@
 | 市場規模の入れ子（TAM/SAM/SOM） | `nested_circles` | 値は出典のあるものだけ |
 | 顧客・キーマンの声 | `testimonial` | 引用は実在の発言だけ |
 | 原因の構造（カテゴリ別の洗い出し） | `fishbone` | カテゴリ 2〜6・原因は各 4 まで |
-| コスト内訳の推移 | `vbars_stacked`(charts) | `references/charts.md` 参照 |
+| コスト内訳の推移 | `vbars_stacked`(charts) | [references/charts.md](charts.ja.md) 参照 |
 
 ## posmap — ポジショニングマップ
 

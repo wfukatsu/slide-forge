@@ -23,7 +23,7 @@
 られるようにする。
 
 **作り方**: 1 つの中心と連携先なら `hub`、名前のある技術を並べるなら
-`icon_grid` / `cloud_icon_grid`（[cloud-icons.md](../cloud-icons.md)）、
+`icon_grid` / `cloud_icon_grid`（[cloud-icons.md](../cloud-icons.ja.md)）、
 スタックのどこに座るかが主旨なら `layers`。
 
 「サポート対象」と「技術的に可能」を分ける。両者が混ざったロゴの一覧が、

@@ -90,7 +90,7 @@ Drive の階層は初回だけルートを聞いて作る（以降は `config/sa
 ### 2. 手元の材料から埋める（聞く前に読む）
 
 議事録・面談メモ・メール・CRM のエクスポートを先に読む。そのうえで、**足りない
-ものだけを 1 回でまとめて聞く**（`references/interactive-intake.md` §0・§5）。
+ものだけを 1 回でまとめて聞く**（[references/interactive-intake.md](../../references/interactive-intake.ja.md) §0・§5）。
 
 台帳に書くときは、`facts[].kind` で必ず区別する:
 

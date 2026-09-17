@@ -155,7 +155,7 @@ d.arrow(1.87, 3.23, 1.87, 3.51, color=d.P.muted, _anchored=True)
 | 描きたいもの | 手段 |
 |---|---|
 | ScalarDB / ScalarDL | `assets/scalar/product-logos/*.png` を `image()` で貼る |
-| 証拠チェーン・改ざん検知・タイムスタンプ | `asset_icon("evidence-chain")` など（`references/icons.md`） |
+| 証拠チェーン・改ざん検知・タイムスタンプ | `asset_icon("evidence-chain")` など（[references/icons.md](icons.ja.md)） |
 | Scalar のロゴ | `assets/scalar/logos/*.png`、または `asset_icon("scalar-logo")` |
 | 自前運用の PostgreSQL / MySQL / Cassandra | `illustrations.icon("database")` `icon("stack")`（商標の関係でベンダー集には無い） |
 | マネージドな DB エンジン | 公式アイコンがある（`aws:aurora-postgresql-instance` / `azure:database-mysql-server` / `azure:managed-instance-apache-cassandra` など） |

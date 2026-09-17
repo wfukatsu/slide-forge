@@ -1,3 +1,5 @@
+*[English](calendar-template-plan.md)*
+
 # カレンダー表現テンプレート・スキル作成計画
 
 日付を軸にしたスライド表現（月カレンダー、日単位ガント、縦型日次リストなど）を
@@ -221,7 +223,7 @@ JSON から呼べるプリミティブ（`build_deck.py::FIGURES` に登録）:
 - `build_deck.py::FIGURES` への登録、`references/calendars(.ja).md`（プリミティブのリファレンス）の新規作成、
   `template-schema` への追記
 - ルーティング: `commands/forge(.ja).md`、`AGENTS(.ja).md` のスキル表、
-  `references/workflow-contract.md` の段階読込表
+  [references/workflow-contract.md](workflow-contract.ja.md) の段階読込表
 - `README(.ja).md` のパック数・テンプレート数・スキル一覧、`.claude-plugin/marketplace.json` の
   説明文（スキル数）とバージョン
 - 本計画書の英語版 `calendar-template-plan.md`

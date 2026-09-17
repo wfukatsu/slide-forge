@@ -23,7 +23,7 @@ Claude Code では `/forge`・`/account`・`/visit`（マーケットプレイ�
 → 生成 → 任意の視覚 QA → 後片付け → 任意の PPTX・スプレッドシート → 報告、までを走らせる。
 
 スキルは引数から選ばれ、本当に判断がつかないときだけ 1 度質問する。振り分け表は
-[`commands/forge.md`](../commands/forge.md) にある。要約すると、Scalar の製品デッキ、
+[`commands/forge.md`](../commands/forge.ja.md) にある。要約すると、Scalar の製品デッキ、
 課題起点の提案、分析フレームワーク、カレンダー、B2B のステークホルダーマップ、
 情報を集めるためのスライド、nexus-architect の説明には、それぞれ専用のスキルがある。
 それ以外は、マスターがあれば `google-slides-template`、無ければ `google-slides` に落ちる。

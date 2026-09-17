@@ -73,8 +73,10 @@ dependency roadmaps (`nexus/roadmap`), and date-less Now / Next / Later.
 
 ### 3.4 Holiday data
 
-Bundle the Cabinet Office CSV (Shift_JIS, 1955–, CC BY-compatible terms) as
-UTF-8 `assets/holidays/jp.csv`; refresh with `scripts/update_holidays.py`; no
+Bundle the Cabinet Office CSV
+(`https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv` — Shift_JIS, 1955–,
+CC BY-compatible terms) as UTF-8 `assets/holidays/jp.csv`; refresh with
+`scripts/update_holidays.py`; no
 network at generation time; warn (never guess) for uncovered years; company
 closures via `extraHolidays`.
 

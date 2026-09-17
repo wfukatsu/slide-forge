@@ -30,7 +30,7 @@ description: >-
   ローカルクローンでは `/path/to/slide-forge`。認証と venv はリポジトリルートで
   共有される（`config/`、`.venv`）。
 - **PPTX をエクスポートするかどうかは生成時に確定する。** インテイクの出力形式の
-  質問（`references/interactive-intake.md` §2）で決まり、既定は Google Slides
+  質問（[references/interactive-intake.md](../../references/interactive-intake.ja.md) §2）で決まり、既定は Google Slides
   のみ。既存デッキ URL に対するスタンドアロン実行ではインテイクは不要。
 - **`config/settings.json` の `output: local` ならエクスポートは自動。**
   `build_deck.py` / `render_deck.py` が毎回 `localOutputDir` へ書き出すので、

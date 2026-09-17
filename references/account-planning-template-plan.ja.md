@@ -2,7 +2,7 @@
 
 # Account Planning ページテンプレート作成計画
 
-`references/account-planning-session.md` のページ群（先行実装
+[references/account-planning-session.md](account-planning-session.ja.md) のページ群（先行実装
 `scripts/scalar/build_account_planning.py` の `LAYOUT` が定義する 47 ページ）を
 slide-forge で再現するための、ページテンプレート（`slide-templates/`）の
 設計・実装計画。
@@ -84,7 +84,7 @@ slide-forge の分業は既にこうなっている:
 - **マスターのオブジェクト ID を参照しない。** `g1b3a74d17bb_0_0` のような ID を
   テンプレートに書かない。
 - ページサイズは 10 × 5.625 in（16:9）を前提にする。
-- 安全域は `references/layout-contract.md` の実測値に従う:
+- 安全域は [references/layout-contract.md](layout-contract.ja.md) の実測値に従う:
 
   ```
   X0 = 0.5   W = 9.0   XE = 9.5
@@ -137,7 +137,7 @@ slide-forge の分業は既にこうなっている:
 | `scripts/slide_templates.py` | `render_template(template, data, master=None)` に引数追加。`masterProfiles[master]` を `slide` に深いマージしてからスロット解決する。`master` 未指定なら現行と完全に同じ挙動 |
 | `scripts/render_slide_template.py` | `--master <name>` を追加（省略時は既定ジオメトリ） |
 | `scripts/validate_slide_templates.py` | 宣言された全プロファイルについてレンダリング → `build_deck.py --dry-run --strict` を実施。未登録マスター名、既定に存在しない figure インデックスへの参照はエラー |
-| `references/template-schema.md` | `masterProfiles` の節を追加 |
+| [references/template-schema.md](template-schema.ja.md) | `masterProfiles` の節を追加 |
 
 設計上の制約:
 
@@ -384,7 +384,7 @@ done
 
 表が続くとページの見た目が同じになり、要点が沈む。**表は「登録簿」（担当と
 期日があり後から追跡するもの）と「判定基準」だけに残す。** 対応表は
-`references/account-planning-session.md` §9.4「表を使ってよい場所」。
+[references/account-planning-session.md](account-planning-session.ja.md) §9.4「表を使ってよい場所」。
 
 先行実装では 20 表 → 8 表に減らし、次の図に置き換えた:
 `orgchart` / `outcome_tree` / `mece_tree` / `layers` / `gantt` / `timeline` /
@@ -442,7 +442,7 @@ done
 | **F2** L3 `masterProfiles` | §2.4 の 4 ファイル変更。F1 の 9 件を最初のプロファイル対象にする | マスター差分をテンプレートで吸収できる |
 | **F3** P1 テンプレート 7 件 | Plan Document 側 | Appendix が埋まる |
 | **F4** P2 テンプレート 3 件 | Flight Plan など | 議論用の可視化がそろう |
-| **F5** カタログとドキュメント | パックカタログを生成し、`skills/scalar-account-planning-session/SKILL.md` から参照を張る | 運用に載る |
+| **F5** カタログとドキュメント | パックカタログを生成し、[skills/scalar-account-planning-session/SKILL.md](../skills/scalar-account-planning-session/SKILL.ja.md) から参照を張る | 運用に載る |
 
 F1 と F2 は独立。F2 を待たずに F1 を出せる（既定ジオメトリだけで動く）。
 
@@ -517,12 +517,12 @@ done
 
 ## 11. 参照
 
-- `references/account-planning-session.md` — 手順とページ定義
-- `skills/slide-template-creator/SKILL.md` — テンプレート作成のワークフロー
+- [references/account-planning-session.md](account-planning-session.ja.md) — 手順とページ定義
+- [skills/slide-template-creator/SKILL.md](../skills/slide-template-creator/SKILL.ja.md) — テンプレート作成のワークフロー
 - `skills/slide-template-creator/references/template-schema.md` — スキーマ
 - `skills/slide-template-creator/references/design-rules.md` — 骨格・密度・出典
-- `references/layout-contract.md` — 座標の実測値と安全域
-- `references/slide-patterns.md` — 骨格 A〜F の定義
+- [references/layout-contract.md](layout-contract.ja.md) — 座標の実測値と安全域
+- [references/slide-patterns.md](slide-patterns.ja.md) — 骨格 A〜F の定義
 - `scripts/colors.py` — `Palette`（マスター colorScheme → 意味トークン）
 - `scripts/scalar/build_account_planning.py` — 実装済みのページ定義（参照ジオメトリ）
 

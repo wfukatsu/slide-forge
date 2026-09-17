@@ -12,7 +12,7 @@ description: >-
 # Google Slides 生成（ゼロから）
 
 Claude Code を主ホストとする。Codex と Antigravity も同じ共有スキルを利用する。
-このファイルを最後まで読んだ後、`references/workflow-contract.md` に従う。機能表に
+このファイルを最後まで読んだ後、[references/workflow-contract.md](../../references/workflow-contract.ja.md) に従う。機能表に
 載るreferenceを事前に全件読み込まない。
 
 ## 重要事項
@@ -38,24 +38,24 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 |------|-------|
 | JSON 仕様からビルド | `scripts/build_deck.py` + `templates/blank-16x9.json` |
 | デッキを Python で書く | `scripts/deckkit.py`（+ `examples/pattern-gallery/deck.py`、`examples/scalardb-scalardl/deck.py` — grep して使う。全文は読まない） |
-| レイアウトをオフラインで検証（API 不要） | `scripts/validate_layout.py` + `references/layout-contract.md` |
+| レイアウトをオフラインで検証（API 不要） | `scripts/validate_layout.py` + [references/layout-contract.md](../../references/layout-contract.ja.md) |
 | Python デッキをレンダリング | `scripts/render_deck.py` |
 | ビジュアル QA（任意、既定: 実行） | `slide-qa` スキル（`scripts/fetch_thumbnails.py` + チェックリスト + クリーンアップ） |
 | 検証完了後にローカル QA ファイルを削除 | `scripts/cleanup_qa.py` |
 | 既存デッキ編集前のバージョンスナップショット | `scripts/snapshot_version.py` |
-| 図（フロー、アーキテクチャ） | `scripts/diagrams.py`（Canvas）+ `references/diagrams.md`、`references/diagram-cookbook.md` |
-| 高密度なクラウド/データフロー図（draw.io → PNG） | `drawio-diagrams` スキル + `scripts/drawio_export.py` + `references/drawio.md` |
+| 図（フロー、アーキテクチャ） | `scripts/diagrams.py`（Canvas）+ [references/diagrams.md](../../references/diagrams.ja.md)、[references/diagram-cookbook.md](../../references/diagram-cookbook.ja.md) |
+| 高密度なクラウド/データフロー図（draw.io → PNG） | `drawio-diagrams` スキル + `scripts/drawio_export.py` + [references/drawio.md](../../references/drawio.ja.md) |
 | デッキごとの Drive フォルダ（作成 / ファイル収集） | `scripts/drive_folder.py` |
-| チャートと表 | `scripts/charts.py` + `references/charts.md` |
-| 図形描画のピクトグラムとメタファー図 | 名前は `scripts/illustrations.py --list`、配置は `references/diagrams.md` |
-| ビジネスフレームワーク図（posmap、gantt、orgchart…） | `scripts/patterns.py` + `references/patterns.md` |
-| ページ骨格と分析図 | `scripts/pages.py` + `references/slide-patterns.md` |
-| Scalar ブランドピクトグラム | `scripts/icons.py` + `assets/scalar/pictograms` + `references/icons.md` |
-| クラウドベンダーアイコン（AWS/GCP/Azure） | `scripts/cloud_icons.py` + `assets/cloud-icons` + `references/cloud-icons.md` |
+| チャートと表 | `scripts/charts.py` + [references/charts.md](../../references/charts.ja.md) |
+| 図形描画のピクトグラムとメタファー図 | 名前は `scripts/illustrations.py --list`、配置は [references/diagrams.md](../../references/diagrams.ja.md) |
+| ビジネスフレームワーク図（posmap、gantt、orgchart…） | `scripts/patterns.py` + [references/patterns.md](../../references/patterns.ja.md) |
+| ページ骨格と分析図 | `scripts/pages.py` + [references/slide-patterns.md](../../references/slide-patterns.ja.md) |
+| Scalar ブランドピクトグラム | `scripts/icons.py` + `assets/scalar/pictograms` + [references/icons.md](../../references/icons.ja.md) |
+| クラウドベンダーアイコン（AWS/GCP/Azure） | `scripts/cloud_icons.py` + `assets/cloud-icons` + [references/cloud-icons.md](../../references/cloud-icons.ja.md) |
 | クラウドアイコンの復元（初回） | `scripts/fetch_cloud_icons.py` |
-| AI 生成画像（表紙、セクションアート） | `scripts/images.py`（`GEMINI_API_KEY` が必要）+ `references/images.md` |
-| API の落とし穴 | `references/google-slides-api.md`、`references/api-notes.md` |
-| デッキ構成のレシピ | `references/composers/{basic,content,product,usecase,enterprise,db-middleware}.md` |
+| AI 生成画像（表紙、セクションアート） | `scripts/images.py`（`GEMINI_API_KEY` が必要）+ [references/images.md](../../references/images.ja.md) |
+| API の落とし穴 | まず [references/api-notes.md](../../references/api-notes.ja.md) で該当トピックを検索し、解決しない場合にだけ `google-slides-api.md` の該当節を開く |
+| デッキ構成のレシピ | `references/composers/` の中から、合致する 1 ファイル / 1 節だけ |
 
 ---
 
@@ -105,7 +105,7 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 
 指針: 既定は**仕様パス**。コネクタの多いアーキテクチャ/フロー図が中心のデッキでは**コードファースト**に切り替える — オフラインバリデータは、仕様の dry-run では見えないコネクタ端点・重なり・はみ出しを検査できる。
 
-あわせてユーザーと決める（質問は最大 1〜2 個）: 想定読者と目的、おおよそのページ数、出力先の Drive フォルダ（URL/ID、任意）、著作権表記・フッター文言（あれば）、生成後にビジュアル QA を実行するか（既定かつ推奨: 実行。Phase 5 参照）。構成の検討には `references/deck-outlines.md` と `references/composers/` が使える。
+あわせてユーザーと決める（質問は最大 1〜2 個）: 想定読者と目的、おおよそのページ数、出力先の Drive フォルダ（URL/ID、任意）、著作権表記・フッター文言（あれば）、生成後にビジュアル QA を実行するか（既定かつ推奨: 実行。Phase 5 参照）。構成の検討には [references/deck-outlines.md](../../references/deck-outlines.ja.md) と `references/composers/` が使える。
 
 ---
 
@@ -113,7 +113,7 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 
 ### 仕様パス
 
-`templates/blank-16x9.json` に対して `deck.json` を書く。図表の機能はすべて仕様から使える: 図（`diagrams.py` の Canvas）、チャート/表（`charts.py`）、図形描画のピクトグラムとメタファー図（`illustrations.py`）、ビジネスフレームワーク図（`patterns.py`）、ページ骨格と分析図（`pages.py`）、Scalar ピクトグラム（`icons.py`）、クラウドアイコン（`cloud_icons.py`）、AI 画像（`images.py`）。仕様の書式は `references/template-schema.md` を、各部品は各モジュールのリファレンスを参照する。
+`templates/blank-16x9.json` に対して `deck.json` を書く。図表の機能はすべて仕様から使える: 図（`diagrams.py` の Canvas）、チャート/表（`charts.py`）、図形描画のピクトグラムとメタファー図（`illustrations.py`）、ビジネスフレームワーク図（`patterns.py`）、ページ骨格と分析図（`pages.py`）、Scalar ピクトグラム（`icons.py`）、クラウドアイコン（`cloud_icons.py`）、AI 画像（`images.py`）。仕様の書式は [references/template-schema.md](../../references/template-schema.ja.md) を、各部品は各モジュールのリファレンスを参照する。
 
 ### コードファーストパス
 
@@ -130,7 +130,7 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 grep -n "^def \|slide(\|plain(" examples/scalardb-scalardl/deck.py
 ```
 
-コントラクトの規則（フッターセーフエリア、タイトル高さ、コネクタの接続）は `references/layout-contract.md`、作図レシピは `references/diagram-cookbook.md` にある。後者はパターンごとに 1 節（§2 レイヤー、§3 プロセスフロー、§4 スイムレーン、§5 分岐、§6 マトリクス、§7 アーキテクチャ、§8 パイプライン、§9 タイムライン、§10 ツリー）なので、該当レシピだけを開くこと。
+コントラクトの規則（フッターセーフエリア、タイトル高さ、コネクタの接続）は [references/layout-contract.md](../../references/layout-contract.ja.md)、作図レシピは [references/diagram-cookbook.md](../../references/diagram-cookbook.ja.md) にある。後者はパターンごとに 1 節（§2 レイヤー、§3 プロセスフロー、§4 スイムレーン、§5 分岐、§6 マトリクス、§7 アーキテクチャ、§8 パイプライン、§9 タイムライン、§10 ツリー）なので、該当レシピだけを開くこと。
 
 ### 設計原則（両パス共通）
 
@@ -138,7 +138,7 @@ grep -n "^def \|slide(\|plain(" examples/scalardb-scalardl/deck.py
 - **コネクタは図形に接続する**。自由座標の線として描かない — API は線の端点を検証しないため、外れた矢印は QA まで見えない
 - 本文 12pt 以上、タイトル 20pt 以上。WCAG AA コントラスト（4.5:1）。箇条書きは最大 6 個程度、1 スライド 1 メッセージ、60-30-10 の配色規則
 - クラウドアイコン名を推測しない — `scripts/cloud_icons.py --search <term>` で検索する。ベンダーアイコンの再着色・回転・反転はライセンス条項で禁止されている
-- 原則の全体とスライド種別ごとの指針: `references/google-slides-api.md`、`references/composers/`、`references/slide-patterns.md`
+- スライド種別ごとの指針: 合致する Composer とスライドパターンの節だけを読み込む
 
 ---
 
@@ -196,7 +196,7 @@ grep -n "^def \|slide(\|plain(" examples/scalardb-scalardl/deck.py
 
 ユーザーが後で再生成・編集できるものをアップロードする: 仕様（`deck.json`）またはデッキモジュール（`deck.py`）、`.drawio` ソース、書き出した図の PNG。QA サムネイルはローカルに留める。フォルダ URL はプレゼンテーション URL とあわせて報告する。
 
-大規模なデッキでは、ページ単位でサブエージェントにファンアウトできる。分割してよいもの・いけないものは `references/parallel-generation.md` を参照。
+大規模なデッキでは、ページ単位でサブエージェントにファンアウトできる。分割してよいもの・いけないものは [references/parallel-generation.md](../../references/parallel-generation.ja.md) を参照。
 
 ---
 

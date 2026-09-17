@@ -18,7 +18,7 @@ description: >-
 `scripts/calendars.py` と `scripts/calendar_pages.py` が担う。**カレンダーの座標を手で計算しない。**
 
 コマンドはすべて slide-forge のルートで `.venv/bin/python` を使って実行する。
-デッキの流れ（承認 → 検証 → 生成 → QA → 納品）は `references/workflow-contract.md` に従う。
+デッキの流れ（承認 → 検証 → 生成 → QA → 納品）は [references/workflow-contract.md](../../references/workflow-contract.ja.md) に従う。
 
 ## 担当範囲
 
@@ -131,7 +131,7 @@ description: >-
 
 ## カレンダーパックの保守
 
-スキーマ・検証・登録・互換性は [`slide-template-creator`](../slide-template-creator/SKILL.md) に従う。
+スキーマ・検証・登録・互換性は [`slide-template-creator`](../slide-template-creator/SKILL.ja.md) に従う。
 加えて次を守る。
 
 1. **入力は日付、座標は出力。** スロットは ISO 文字列を受け取り、カレンダーの計算は

@@ -14,7 +14,7 @@ description: >-
 
 # 生成済みスライドのビジュアル QA（サムネイルベース）
 
-`references/workflow-contract.md` のQA範囲に従う。初回は必ず全ページを目視し、
+[references/workflow-contract.md](../../references/workflow-contract.ja.md) のQA範囲に従う。初回は必ず全ページを目視し、
 修正後だけ影響範囲に限定して再検査する。
 
 ## 重要事項
@@ -22,7 +22,7 @@ description: >-
 - **スコープ**: 生成後の視覚的検証のみ。オフラインの座標ゲート
   （Gate 1: `build_deck.py --dry-run` / `validate_layout.py`）は生成スキル側に
   属し、生成の**前**に実行される。本スキルは Gate 2 である
-  （2 ゲート構成の理由の全体は `references/validation.md` にある）。
+  （2 ゲート構成の理由の全体は [references/validation.md](../../references/validation.ja.md) にある）。
 - **すべてのコマンドは slide-forge ルートを cwd として実行する** —
   インストール済みプラグインから実行する場合は `${CLAUDE_PLUGIN_ROOT}`、
   ローカルクローンでは `/path/to/slide-forge`。認証と venv はリポジトリルートで
@@ -46,8 +46,8 @@ description: >-
 | サムネイル取得 | `.venv/bin/python scripts/fetch_thumbnails.py <URL or ID> --out out/qa --size LARGE` |
 | ページの限定（分割 QA） | `--pages 3,8,12,20` / `--pages 9-16` |
 | ローカル QA ファイルの削除（最後に必ず） | `.venv/bin/python scripts/cleanup_qa.py`（`--dry-run` でプレビュー） |
-| チェックリストが検出した不具合の修正方法・報告ルール | `references/validation.md`（Gate 2）— 以下のチェックリストは単体で完結しているので、特定の不具合の直し方が要るときだけ開く |
-| 画像が文脈を圧迫するときの QA 分割 | `references/parallel-generation.md` §6 |
+| チェックリストが検出した不具合の修正方法・報告ルール | [references/validation.md](../../references/validation.ja.md)（Gate 2）— 以下のチェックリストは単体で完結しているので、特定の不具合の直し方が要るときだけ開く |
+| 画像が文脈を圧迫するときの QA 分割 | [references/parallel-generation.md](../../references/parallel-generation.ja.md) §6 |
 | 旧版デッキの Drive からの削除 | `drive.files().delete(fileId=…)`（またはゴミ箱へ移動） |
 
 ---
@@ -67,7 +67,7 @@ description: >-
   同じ代償がもう一度かかる。所見テキストなら数百バイトで済む。
 - 主コンテキストで検査してよいのは、ホストやセッションがサブエージェントを
   許可していない場合か、デッキが 1 レンジに収まる場合（目安 8 枚以下）だけ。
-  順次実行の Codex フォールバックは `references/parallel-generation.md` §6。
+  順次実行の Codex フォールバックは [references/parallel-generation.md](../../references/parallel-generation.ja.md) §6。
 - 1 セッションで複数のデッキを QA する場合は `--out out/<deck>/qa` で分離する —
   `cleanup_qa.py` はどちらの慣例も掃除する。
 
@@ -83,7 +83,7 @@ PNG を Read ツールで開く — 既定では委譲したレンジ担当エ�
 4. **各セクションの先頭ページ**（構成がどう読めるか）
 5. 表紙・セクション区切り・クロージング（マスターの装飾と自前の描画の関係）
 
-最小チェックリスト（修正方法つきの完全な表は `references/validation.md` にある）:
+最小チェックリスト（修正方法つきの完全な表は [references/validation.md](../../references/validation.ja.md) にある）:
 
 - [ ] どのプレースホルダー・ボックスでもテキストがはみ出したり切れたりしていない
 - [ ] テキストがテンプレートの装飾（帯、図形、ロゴ）に重なっていない
@@ -139,11 +139,11 @@ identify defects → fix the spec / deck module (originating skill)
 再取得可能）なので、無条件に実行して安全である。標準外の `--out` を使った場合は
 明示的にパスを渡す。
 
-その後、`references/validation.md` に従って報告する:
+その後、[references/validation.md](../../references/validation.ja.md) に従って報告する:
 
 - 修正したものについては、**何が悪くてどう直したか**を述べる（「直した」だけでは
   検証できない）。直していないものについては、その旨を明示する。
 - QA が合格したこと、どのページを検査したか（全ページ、またはレンジ）、
   ローカル QA ファイルをクリーンアップしたことを述べる。
 - 生成スキルから呼び出された場合は、そのスキルの生成後確認
-  （`references/interactive-intake.md` §4）に処理を戻す。
+  （[references/interactive-intake.md](../../references/interactive-intake.ja.md) §4）に処理を戻す。

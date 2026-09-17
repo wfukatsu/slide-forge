@@ -31,7 +31,7 @@ and answer its four questions.
 Two pages sit outside this file:
 [`references/commands.md`](references/commands.md) for the `/forge`, `/account`
 and `/visit` commands, and [`references/README.md`](references/README.md), the
-index of all 65 reference documents.
+index of all 48 reference documents.
 
 ## Skills
 

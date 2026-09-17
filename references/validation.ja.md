@@ -96,7 +96,7 @@ configure_layout(page_w=13.333, page_h=7.5, margin=0.6,
 
 `foot()` が描く要素は意図的に `DY1` より下にあり、チェックからは除外される
 （`FOOT_MODE` フラグで制御）。下端固定の独自要素も同じ仕組みに乗せること。
-詳細は `references/layout-contract.md`。
+詳細は [references/layout-contract.md](layout-contract.ja.md)。
 
 ### テキストの適合は検査の前に行われる
 
@@ -145,7 +145,7 @@ API は文字あふれを黙って受け入れ、Slides の自動調整も有効
 
 サムネイル画像が主コンテキストを圧迫する場合は、初回QAを6〜8枚のレンジへ分ける
 （`--pages 9-16`、指摘はテキストのみ）。数枚の修正QAは局所的に行う。
-`references/parallel-generation.md` を参照。
+[references/parallel-generation.md](parallel-generation.ja.md) を参照。
 
 ### どのページから開くか
 
