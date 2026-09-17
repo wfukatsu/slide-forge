@@ -100,5 +100,5 @@ URL が変わらない。**商談ごとにリンクは 1 本に保つ。**
 
 ## 関連
 
-- [スライドテンプレート カタログ（全 101 種）](slide-template-catalog.ja.md)
+- [スライドテンプレート カタログ（全 108 種）](slide-template-catalog.ja.md)
 - [対話でデッキの設計を確定する](interactive-intake.ja.md)

@@ -900,7 +900,8 @@
       "guardrails": [
         "Always show the score with its bands (what a given score means). A number alone cannot be judged",
         "Component names and weights come from the report's definition. Do not add or round them in the deck",
-        "verdict says only what the number supports. Improvements go to roadmap / decision-record"
+        "verdict says only what the number supports. Improvements go to roadmap / decision-record",
+        "Bars are drawn against scale (default 5) as full. When the indicator uses a different scale, set scale to match"
       ]
     },
     "score-breakdown": {
@@ -1265,6 +1266,83 @@
         "Do not omit where IP, confidentiality and contractual responsibility sit (required by playbook §3)",
         "An unagreed item stays as a row marked 未合意. **Do not ship it blank**",
         "Before naming the customer or their terms, confirm the NDA is in place"
+      ]
+    },
+    "bounded-context-canvas": {
+      "displayName": "Bounded Context Canvas",
+      "description": "Shows one bounded context as a nine-part canvas: what it is responsible for and where its boundary ends",
+      "answers": "What is this context responsible for, and where does its boundary end?",
+      "guardrails": [
+        "Take the Core / Supporting / Generic classification straight from the report. Do not promote or demote it on the slide",
+        "Leave what is undecided in 'assumptions'. An empty cell reads as settled",
+        "Name the counterpart context in inbound and outbound. A pattern name (ACL, OHS) alone does not let the relationship be reconstructed",
+        "One context per page. When you want to line several up, use context-map"
+      ]
+    },
+    "state-machine-matrix": {
+      "displayName": "State x Event Verdict Matrix",
+      "description": "Shows, for every combination of state and event, whether the aggregate accepts it or refuses it",
+      "answers": "Which events does each state accept, and which does it refuse?",
+      "guardrails": [
+        "Use only the four words allow / reject / ignore / defer, taken straight from the report",
+        "Leave no cell empty. That every cell carries a verdict is the point of this table, and a blank cannot be told apart from 'not considered'",
+        "When states or events exceed the cap, split the page and say so in source",
+        "This table cannot carry a transition's effect or postcondition. Put those on their own page if they are needed"
+      ]
+    },
+    "gate-verdict": {
+      "displayName": "Quality Gate Verdict",
+      "description": "Brings the review verdict, the weighted score per perspective, and what remains by priority onto one page",
+      "answers": "Did the quality gate pass, and if it did not, what is still open?",
+      "guardrails": [
+        "Do not write CONDITIONAL_PASS as PASS. A conditional pass means conditions are still open",
+        "Carry the weighted score computed with review-registry.json's weights as it stands. Do not recompute it on the slide",
+        "Do not summarise as 'passed' while P0 is not zero",
+        "When perspectives are trimmed to the cap, name the ones left out in source"
+      ]
+    },
+    "example-map-wall": {
+      "displayName": "Example Mapping (rules, examples, open questions)",
+      "description": "Shows, for one feature, the rules it must obey, the examples that check them, and the questions nobody settled",
+      "answers": "Which rules does this feature obey, which examples check them, and what is unsettled?",
+      "guardrails": [
+        "Do not mix rules and examples. A rule is what always holds; an example is one case that checks it",
+        "Do not show only positive examples. Without at least one example outside the boundary, the rule has not been checked",
+        "Do not drop the open questions. Removing what was not settled makes it look settled",
+        "A feature whose rules exceed the cap is a candidate for splitting. Put the number of rules left out in source"
+      ]
+    },
+    "aggregate-canvas": {
+      "displayName": "Aggregate Boundary and Invariants",
+      "description": "Shows what one aggregate contains and the invariants it keeps, together with the examples that check them",
+      "answers": "How far does this aggregate reach, and which invariants does it keep?",
+      "guardrails": [
+        "Do not list members that sit outside the boundary. When it is only a reference, say so in the kind column",
+        "Write only what is always true as an invariant. Procedures and business rules do not belong here",
+        "Do not leave the violating-operation column empty. An invariant with no known violator cannot be verified",
+        "One aggregate per page. Show relationships between aggregates with context-map or state-machine-matrix"
+      ]
+    },
+    "ux-heatmap": {
+      "displayName": "Screen x UX Axis Heatmap",
+      "description": "Shows which screens and which evaluation axes the UX findings concentrate on",
+      "answers": "Which screen and which axis do the findings concentrate on?",
+      "guardrails": [
+        "The dot count is the number of findings, not their severity. Severity belongs on issue-register",
+        "Take UXI and its band from ux-evaluation.json as they stand. Do not recompute them on the slide",
+        "Do not drop a screen with zero findings. An empty row is the record that it was checked and nothing was wrong",
+        "In an evaluation that was not measured at runtime, do not show axes about perceived speed"
+      ]
+    },
+    "env-parity-matrix": {
+      "displayName": "Environment Parity (identical and different)",
+      "description": "Shows what is kept identical across environments and what is deliberately different, with the reason",
+      "answers": "What is identical across environments, and where do they deliberately differ?",
+      "guardrails": [
+        "Always give a reason for a difference. A difference with no reason is not a difference but an inconsistency nobody has fixed yet",
+        "Do not leave 'what is kept identical' empty. A comparison that guarantees nothing between environments carries no meaning",
+        "When environments exceed the cap, split the columns and say so in source",
+        "Do not put an item that is unverified in production on the identical side. Leave it on the difference side with its reason"
       ]
     }
   }

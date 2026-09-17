@@ -187,7 +187,7 @@ Scalar 製品の事実と価格 — 機能・エディション・バージョ�
 
 ## クイックスタート（スライドテンプレート）
 
-`slide-templates/` には 14 パック・101 種の 1 枚ものテンプレートがある。座標では
+`slide-templates/` には 14 パック・108 種の 1 枚ものテンプレートがある。座標では
 なく意味のある入力スロットを受け取って 1 枚分の spec を生成するので、登録済みの
 どのマスターとも組み合わせられる。
 
@@ -679,7 +679,7 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
 templates/    登録済みマスター (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge のデザインプリセット)
   masters/        マスター .pptx をここに置いてインポートする (gitignored。同ディレクトリの README 参照)
   sales/ nurture/ marketing/   Markdown 様式: 段階記録とヒアリングシート、ナーチャリングトラックとセグメント、コンテンツブリーフとイベント計画 (各ディレクトリに README あり。スライドテンプレートではなく記入様式)
-slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (14 パック 101 種、manifest.json)
+slide-templates/ 再利用可能な 1 枚ものコンテンツテンプレート + レジストリ (14 パック 108 種、manifest.json)
 assets/       scalar/ (ブランド: ピクトグラム、ロゴ、製品ロゴ), holidays/ (日本の祝日 CSV), cloud-icons/ (gitignored)
 references/   エンジン・ワークフロー・ホスト互換のドキュメント
   images/slide-patterns/  パターンカタログ画像 (コミット済み。セットアップ 6 で再生成)
@@ -738,7 +738,7 @@ Slides API では Slides 自身の「はみ出す場合はテキストを縮小�
 これらのページパターンに加えて、`slide-templates/` には 14 のパック
 （marketing-analysis、b2b-sales、scalar-ae、planning、calendar、analysis、read-alone、
 business-plan、nexus、hearing、case-studies、proposal、marketing、partner）で
-101 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
+108 の既製 1 枚ものテンプレートが登録されている。それぞれレンダリング済み画像、
 答える問い、ガードレールつきで
 [`references/slide-template-catalog.md`](references/slide-template-catalog.ja.md)
 にカタログ化されている。read-alone と business-plan パックのテンプレートは `$density`

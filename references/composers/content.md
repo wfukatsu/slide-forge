@@ -16,7 +16,7 @@ d.flow(0.5, 1.3, 9.0, 0.8, ["受付", "審査", "記録"])
 
 See [diagrams.md](../diagrams.md) for the figure families,
 [template-schema.md](../template-schema.md) for the spec form, and
-`list_slide_templates.py` for the 101 ready-made pages.
+`list_slide_templates.py` for the 108 ready-made pages.
 
 ## Bullets
 

@@ -1,6 +1,6 @@
 *[English](slide-template-catalog.md)*
 
-# スライドテンプレート カタログ（全 101 種）
+# スライドテンプレート カタログ（全 108 種）
 
 `slide-templates/` に登録されたテンプレートを実際に 1 枚ずつ生成して
 書き出した画像カタログ。**どのテンプレートで 1 枚を作るかを見て選ぶ**ためのもの。
@@ -73,7 +73,7 @@ done
 | [現状分析パック](#analysis) | 10 種 | コンサルティングの現状分析・課題特定フレームワークをページ化した群 |
 | [読み物パック](#read-alone) | 8 種 | 1 枚で読み切れる高密度スライド（外資コンサル型の配布資料）のページ群 |
 | [事業計画パック](#business-plan) | 8 種 | 事業計画・稟議で承認者が最初に見る「収益・投資・リスク・体制」のページ群 |
-| [Nexus レポートパック](#nexus) | 14 種 | nexus-architect の実行結果をスライドにするページ群 |
+| [Nexus レポートパック](#nexus) | 21 種 | nexus-architect の実行結果をスライドにするページ群 |
 | [ヒアリングパック](#hearing) | 6 種 | 伝えるためではなく**集めるため**のページ群 |
 | [事例パック](#case-studies) | 3 種 | 公表事例を資料に載せるページ群 |
 | [提案パック](#proposal) | 6 種 | 問題解決型提案のうち、再利用できるページが無かった節 |
@@ -2211,12 +2211,14 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 | `dimensions` | `array` (string≤18, number, string≤10) | ✔ | 2〜(print 5 · presentation 4) 件 |
 | `verdict` | `string` | ✔ | (print 150 · presentation 110) 字以内 |
 | `source` | `string` | ✔ | 170 字以内 |
+| `scale` | `number` | — | 0.1 以上、既定 `5` |
 
 使うときの決まり:
 
 - スコアは必ず帯域（何点なら何を意味するか）と一緒に出す。数字だけでは判断できない
 - 内訳の軸名と重みはレポートの定義をそのまま使う。デッキ側で足したり丸めたりしない
 - verdict は数字から言えることだけ。改善策は roadmap / decision-record へ
+- 棒の長さは scale（既定 5）を満点として描く。別スケールの指標を載せるときは scale を必ず合わせる
 
 ### スコアの内訳（対象 × 観点）（`score-breakdown`）
 
@@ -2486,6 +2488,234 @@ nexus-architect の実行結果をスライドにするページ群。どこま�
 - 各行に『誰が / どのコマンドで』埋まるかを必ず書く。宿題の一覧で終わらせない
 - 未着手フェーズ由来の未回答と、レポートが明示した open question を混ぜない（source で区別する）
 - 部分実行のデッキでは最終ページに必ず置く
+
+### 境界づけられたコンテキスト（`bounded-context-canvas`）
+
+![境界づけられたコンテキスト](images/slide-templates/bounded-context-canvas.png)
+
+1 つの境界づけられたコンテキストを 9 区画のキャンバスで示し、担う責務と境界の外側を確定させる
+
+**答える問い**: このコンテキストは何を担い、どこまでが境界か
+
+**figures**: `governing_message`, `lead_in`, `cards`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `purpose` | `string` | ✔ | (print 54 · presentation 38) 字以内 |
+| `classification` | `string` | ✔ | (print 54 · presentation 38) 字以内 |
+| `evolution` | `string` | ✔ | (print 54 · presentation 38) 字以内 |
+| `domainRoles` | `string` | ✔ | (print 54 · presentation 38) 字以内 |
+| `inbound` | `string` | ✔ | (print 54 · presentation 38) 字以内 |
+| `outbound` | `string` | ✔ | (print 54 · presentation 38) 字以内 |
+| `language` | `string` | ✔ | (print 54 · presentation 38) 字以内 |
+| `decisions` | `string` | ✔ | (print 54 · presentation 38) 字以内 |
+| `assumptions` | `string` | ✔ | (print 54 · presentation 38) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- Core / Supporting / Generic の区分はレポートの記述をそのまま使う。スライド上で格上げ・格下げしない
+- 未確定は『前提と未解決』に残す。空欄にすると確定済みに見える
+- 受信・発信には相手のコンテキスト名を必ず書く。パターン名（ACL・OHS）だけでは関係が復元できない
+- 1 ページ 1 コンテキスト。複数を並べたくなったら context-map を使う
+
+### 状態×イベント判定マトリクス（`state-machine-matrix`）
+
+![状態×イベント判定マトリクス](images/slide-templates/state-machine-matrix.png)
+
+集約の状態とイベントの全組み合わせについて、受け付けるか拒否するかの判定を 1 枚で示す
+
+**答える問い**: どの状態でどのイベントを受け付け、どれを拒否するのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `cards`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `headers` | `string[]` | ✔ | 3〜6 件、14 字以内 |
+| `rows` | `string[][]` | ✔ | 2〜(print 5 · presentation 4) 件、12 字以内 |
+| `notes` | `array` (string≤18, string≤(print 50 · presentation 38)) | ✔ | 2 件 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- 判定は allow / reject / ignore / defer の 4 語だけを使い、レポートの語をそのまま持ち込む
+- 空セルを作らない。全セルに判定があることがこの表の価値で、空欄は『未検討』と区別できない
+- 状態またはイベントが上限を超えるときはページを分け、分けたことを source に書く
+- 遷移の効果（Effect）や事後条件はこの表では表せない。必要なら別ページに出す
+
+### 品質ゲート判定（`gate-verdict`）
+
+![品質ゲート判定](images/slide-templates/gate-verdict.png)
+
+レビューの総合判定と観点別の加重スコア、優先度別の残件を 1 枚にまとめる
+
+**答える問い**: 品質ゲートは通ったのか、通っていないなら何が残っているのか
+
+**figures**: `governing_message`, `lead_in`, `metric`, `hbars`, `table`, `so_what`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `verdict` | `string` | ✔ | 22 字以内 |
+| `score` | `string` | ✔ | 24 字以内 |
+| `perspectives` | `array` (string≤14, number≤5, string≤8) | ✔ | 3〜(print 5 · presentation 4) 件 |
+| `headers` | `string[]` | ✔ | 3 件、12 字以内 |
+| `priorities` | `string[][]` | ✔ | 2〜4 件、(print 30 · presentation 22) 字以内 |
+| `insight` | `string` | ✔ | (print 110 · presentation 80) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- CONDITIONAL_PASS を PASS と書かない。条件付き合格は条件が残っている状態
+- 加重スコアは review-registry.json の重みで算出された値をそのまま載せる。スライド上で再計算しない
+- P0 が 0 件でないうちは『合格』と要約しない
+- 観点を上限まで絞ったときは、載せなかった観点を source に明記する
+
+### Example Mapping（規則・例・未決）（`example-map-wall`）
+
+![Example Mapping（規則・例・未決）](images/slide-templates/example-map-wall.png)
+
+1 つの機能について、守るべき規則と確かめる具体例、決まらなかった問いを分けて示す
+
+**答える問い**: この機能はどの規則で動き、どの例で確かめ、何が未決なのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `cards`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `rules` | `string[][]` | ✔ | 2〜(print 4 · presentation 3) 件、(print 30 · presentation 22) 字以内 |
+| `examples` | `string[][]` | ✔ | 2〜(print 4 · presentation 3) 件、(print 24 · presentation 18) 字以内 |
+| `questions` | `array` (string≤18, string≤(print 46 · presentation 34)) | ✔ | 2 件 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- 規則と例を混ぜない。規則は『常に成り立つこと』、例は『それを確かめる 1 ケース』
+- 肯定例だけを載せない。境界の外側を示す否定例が 1 つ以上ないと、規則は確かめられていない
+- 未決の問いを落とさない。決まらなかったことを消すと、決まったように見える
+- 規則が上限を超える機能は分割の検討対象。載せきれなかった規則の件数を source に書く
+
+### 集約の境界と不変条件（`aggregate-canvas`）
+
+![集約の境界と不変条件](images/slide-templates/aggregate-canvas.png)
+
+1 つの集約が含む構成要素と、守り続ける不変条件を、確かめる例と一緒に示す
+
+**答える問い**: この集約はどこまでを含み、どの不変条件を守るのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `cards`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `members` | `string[][]` | ✔ | 2〜(print 4 · presentation 3) 件、(print 22 · presentation 16) 字以内 |
+| `invariants` | `string[][]` | ✔ | 2〜(print 4 · presentation 3) 件、(print 24 · presentation 18) 字以内 |
+| `examples` | `array` (string≤18, string≤(print 46 · presentation 34)) | ✔ | 2 件 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- 境界の外にあるものを構成要素に含めない。参照だけなら種別に『参照』と書く
+- 不変条件は『常に真であること』だけを書く。手順や業務ルールの説明はここに置かない
+- 違反する操作の欄を空にしない。何が破るのか分からない不変条件は検証できない
+- 1 ページ 1 集約。集約間の関係は context-map か state-machine-matrix で示す
+
+### 画面×UX 観点ヒートマップ（`ux-heatmap`）
+
+![画面×UX 観点ヒートマップ](images/slide-templates/ux-heatmap.png)
+
+UX 評価の指摘が、どの画面のどの観点に集中しているかを 1 枚で示す
+
+**答える問い**: どの画面のどの観点に指摘が集中しているのか
+
+**figures**: `governing_message`, `lead_in`, `rating_matrix`, `metric`, `so_what`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `axes` | `string[]` | ✔ | 3〜5 件、10 字以内 |
+| `screens` | `array` (string≤16, integer[]≤4) | ✔ | 2〜(print 5 · presentation 4) 件 |
+| `uxi` | `string` | ✔ | 12 字以内 |
+| `band` | `string` | ✔ | 22 字以内 |
+| `insight` | `string` | ✔ | (print 110 · presentation 80) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- ドットの数は指摘の件数であって重大度ではない。重大度は issue-register で別に示す
+- UXI とバンドは ux-evaluation.json の値をそのまま使う。スライド上で再計算しない
+- 指摘 0 件の画面を表から落とさない。空白のセルこそが『調べて問題がなかった』の記録
+- runtime 計測でない評価では、体感速度に関する観点を載せない
+
+### 環境パリティ（同一と差異）（`env-parity-matrix`）
+
+![環境パリティ（同一と差異）](images/slide-templates/env-parity-matrix.png)
+
+複数環境のうち何を同一に保ち、何を意図的に変えているかを、理由と一緒に示す
+
+**答える問い**: 環境ごとに何が同一で、どこが意図的に違うのか
+
+**figures**: `governing_message`, `lead_in`, `table`, `cards`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 38 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 140 · presentation 100) 字以内 |
+| `headers` | `string[]` | ✔ | 3〜5 件、12 字以内 |
+| `rows` | `string[][]` | ✔ | 2〜(print 4 · presentation 3) 件、(print 22 · presentation 16) 字以内 |
+| `identical` | `array` (string≤18, string≤(print 46 · presentation 34)) | ✔ | 2 件 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- 差異には必ず理由を書く。理由のない差異は差異ではなく、まだ直していない不整合
+- 『同一に保つもの』を空にしない。何も保証していない環境間の比較は意味を持たない
+- 環境が上限を超えるときは列を分け、分けたことを source に書く
+- 本番だけ未確認の項目を『同一』側に書かない。未確認は差異側に理由付きで残す
 
 <a id="hearing"></a>
 

@@ -102,5 +102,5 @@ Run everything from the slide-forge root with `.venv/bin/python`.
 
 ## See also
 
-- [Slide Template Catalog (All 101 Types)](slide-template-catalog.md)
+- [Slide Template Catalog (All 108 Types)](slide-template-catalog.md)
 - [Nailing Down a Deck's Design Through Dialogue](interactive-intake.md)

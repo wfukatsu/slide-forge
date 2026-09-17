@@ -24,7 +24,7 @@ infra と scalardb にはフェーズマニフェストが無いので、状態�
 
 `collect.py` が各ファイルに `kind` を割り当てる。その kind が何になるかが以下。
 1 つのテンプレートを複数の kind で使い回すのは意図的（ファイルごとに 1 枚ではなく、
-パック全体で 14 枚）。
+パック全体で 21 枚）。
 
 | レポート | kind | テンプレート |
 |---|---|---|
@@ -41,6 +41,13 @@ infra と scalardb にはフェーズマニフェストが無いので、状態�
 | `personas.md`、`journey-maps.md`、`domain-story-*.md` | ux / domain-story | `persona-journey` |
 | `ui-mocks/{STORY}-*.html` | ui-mock | `ui-mock-flow`（3 画面）、`ui-mock-detail`（1 画面） |
 | `open-questions.md`、`assumptions.md`、未完了フェーズ | — | `open-questions` |
+| `bounded-contexts-redesign.md`、product の `bounded-contexts.md` | design / domain | `bounded-context-canvas` |
+| `state-machine-{aggregate}.md` | design | `state-machine-matrix` |
+| `aggregate-{aggregate}.md` | design | `aggregate-canvas` |
+| `example-map-{feat}.md` | spec | `example-map-wall` |
+| `review-synthesis.md`、`quality-gate.json` | review | `gate-verdict` |
+| `ux-evaluation.md` の画面ヒートマップ | evaluation | `ux-heatmap` |
+| `env-matrix-{system}.md` | infra | `env-parity-matrix` |
 | `ubiquitous-language.md`、`nfr.md`、`sla.md`、`requirements-definition.md`、生成コードの一覧 | analysis / quality / requirements | `read-alone` を再利用: `dense-comparison-table`、`claim-evidence-table`、`exec-summary-readable` |
 
 用語一覧や NFR の行のような素の表に専用テンプレートは要らない。`read-alone` の
@@ -101,5 +108,5 @@ infra と scalardb にはフェーズマニフェストが無いので、状態�
 
 ## 関連
 
-- [スライドテンプレート カタログ（全 101 種）](slide-template-catalog.ja.md)
+- [スライドテンプレート カタログ（全 108 種）](slide-template-catalog.ja.md)
 - [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)

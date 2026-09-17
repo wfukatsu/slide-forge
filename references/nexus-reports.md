@@ -24,7 +24,7 @@ not show them as "0 % complete".
 ## The mapping
 
 `collect.py` classifies every file into a `kind`; this is what each kind
-becomes. One template serves several report kinds on purpose — the pack has 14
+becomes. One template serves several report kinds on purpose — the pack has 21
 pages, not one per file.
 
 | Report | kind | Template |
@@ -42,6 +42,13 @@ pages, not one per file.
 | `personas.md`, `journey-maps.md`, `domain-story-*.md` | ux / domain-story | `persona-journey` |
 | `ui-mocks/{STORY}-*.html` | ui-mock | `ui-mock-flow` (3 screens), `ui-mock-detail` (1 screen) |
 | `open-questions.md`, `assumptions.md`, unfinished phases | — | `open-questions` |
+| `bounded-contexts-redesign.md`, product `bounded-contexts.md` | design / domain | `bounded-context-canvas` |
+| `state-machine-{aggregate}.md` | design | `state-machine-matrix` |
+| `aggregate-{aggregate}.md` | design | `aggregate-canvas` |
+| `example-map-{feat}.md` | spec | `example-map-wall` |
+| `review-synthesis.md`, `quality-gate.json` | review | `gate-verdict` |
+| `ux-evaluation.md` (the screen heatmap) | evaluation | `ux-heatmap` |
+| `env-matrix-{system}.md` | infra | `env-parity-matrix` |
 | `ubiquitous-language.md`, `nfr.md`, `sla.md`, `requirements-definition.md`, generated code inventory | analysis / quality / requirements | reuse `read-alone`: `dense-comparison-table`, `claim-evidence-table`, `exec-summary-readable` |
 
 A plain table of terms or NFR rows does not need a bespoke template — reusing
@@ -107,5 +114,5 @@ phases for exactly that.
 
 ## See also
 
-- [Slide Template Catalog (All 101 Types)](slide-template-catalog.md)
+- [Slide Template Catalog (All 108 Types)](slide-template-catalog.md)
 - [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)

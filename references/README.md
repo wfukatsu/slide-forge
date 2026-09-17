@@ -32,7 +32,7 @@ this directory end to end.
 | File | What it is for |
 |---|---|
 | [slide-pattern-catalog.md](slide-pattern-catalog.md) | 52 page patterns, each with a rendered image. Generated |
-| [slide-template-catalog.md](slide-template-catalog.md) | 101 one-page templates, each with a rendered image, its **Inputs** table, and guardrails. Generated |
+| [slide-template-catalog.md](slide-template-catalog.md) | 108 one-page templates, each with a rendered image, its **Inputs** table, and guardrails. Generated |
 
 ## Drawing (the `scripts/` engine)
 
