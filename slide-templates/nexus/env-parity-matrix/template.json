@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "id": "phase-digest",
-  "displayName": "フェーズ要約（章扉）",
+  "id": "env-parity-matrix",
+  "displayName": "環境パリティ（同一と差異）",
   "pack": "nexus",
-  "category": "coverage",
-  "description": "1 フェーズが何を明らかにしたかを、そのフェーズ自身の要約と出力ファイルで示す",
+  "category": "infra",
+  "description": "複数環境のうち何を同一に保ち、何を意図的に変えているかを、理由と一緒に示す",
   "answers": [
-    "このフェーズは何を明らかにし、どのレポートに書いたのか"
+    "環境ごとに何が同一で、どこが意図的に違うのか"
   ],
   "inferenceLevel": "descriptive",
   "compatibleLayouts": [
@@ -24,36 +24,56 @@
         }
       }
     },
-    "phase": {
-      "type": "string",
-      "required": true,
-      "maxLength": 60
-    },
-    "finding": {
+    "lead": {
       "type": "string",
       "required": true,
       "maxLength": {
         "$density": {
-          "print": 200,
-          "presentation": 150
+          "print": 140,
+          "presentation": 100
         }
       }
     },
     "headers": {
       "type": "string[]",
       "required": true,
+      "minItems": 3,
+      "maxItems": 5,
+      "maxLength": 12
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 4,
+          "presentation": 3
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 22,
+          "presentation": 16
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 3,
+        "maxItems": 5
+      }
+    },
+    "identical": {
+      "type": "array",
+      "required": true,
       "minItems": 2,
       "maxItems": 2,
-      "maxLength": 16
-    },
-    "outputs": {
-      "type": "array",
       "items": {
         "type": "tuple",
         "fields": [
           {
             "type": "string",
-            "maxLength": 42
+            "maxLength": 18
           },
           {
             "type": "string",
@@ -65,10 +85,7 @@
             }
           }
         ]
-      },
-      "required": true,
-      "minItems": 1,
-      "maxItems": 3
+      }
     },
     "source": {
       "type": "string",
@@ -77,9 +94,10 @@
     }
   },
   "guardrails": [
-    "summary はフェーズが自分で記録した要約（pipeline-progress.json の summary）を土台にする。読み手向けに言い換えるのはよいが、新しい主張を足さない",
-    "outputs は実在するファイルだけ。宣言されているが書かれていないものは open-questions 側に回す",
-    "章扉なので結論は 1 つ。複数の発見があるなら後続ページに分ける"
+    "差異には必ず理由を書く。理由のない差異は差異ではなく、まだ直していない不整合",
+    "『同一に保つもの』を空にしない。何も保証していない環境間の比較は意味を持たない",
+    "環境が上限を超えるときは列を分け、分けたことを source に書く",
+    "本番だけ未確認の項目を『同一』側に書かない。未確認は差異側に理由付きで残す"
   ],
   "slide": {
     "layout": "BLANK",
@@ -99,69 +117,61 @@
         "y": 1.02,
         "w": 9.0,
         "text": {
-          "$slot": "phase"
-        }
-      },
-      {
-        "type": "so_what",
-        "x": 0.5,
-        "y": 1.5,
-        "w": 9.0,
-        "h": {
-          "$density": {
-            "print": 1.65,
-            "presentation": 1.45
-          }
-        },
-        "text": {
-          "$slot": "finding"
-        },
-        "label": {
-          "$t": "phase.conclusion"
+          "$slot": "lead"
         }
       },
       {
         "type": "table",
         "x": 0.5,
-        "y": {
-          "$density": {
-            "print": 3.28,
-            "presentation": 3.08
-          }
-        },
+        "y": 1.6,
         "w": 9.0,
         "headers": {
           "$slot": "headers"
         },
         "rows": {
-          "$slot": "outputs"
+          "$slot": "rows"
         },
         "size": {
           "$density": {
             "print": 9,
-            "presentation": 10
+            "presentation": 10.5
           }
         },
         "row_h": {
           "$density": {
-            "print": 0.32,
-            "presentation": 0.38
+            "print": 0.34,
+            "presentation": 0.4
           }
         },
-        "col_widths": [
-          1.4,
-          1.6
-        ],
+        "header_h": 0.36,
         "textMargin": {
           "$density": {
             "print": 0.02,
             "presentation": 0.04
           }
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.6,
+        "w": 9.0,
+        "h": 0.95,
+        "items": {
+          "$slot": "identical"
         },
-        "aligns": [
-          "START",
-          "START"
-        ]
+        "title_size": {
+          "$density": {
+            "print": 10,
+            "presentation": 11
+          }
+        },
+        "body_size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 9.5
+          }
+        }
       },
       {
         "type": "source_note",

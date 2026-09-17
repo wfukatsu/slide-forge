@@ -81,12 +81,19 @@
       "type": "string",
       "required": true,
       "maxLength": 170
+    },
+    "scale": {
+      "type": "number",
+      "minimum": 0.1,
+      "default": 5,
+      "required": false
     }
   },
   "guardrails": [
     "スコアは必ず帯域（何点なら何を意味するか）と一緒に出す。数字だけでは判断できない",
     "内訳の軸名と重みはレポートの定義をそのまま使う。デッキ側で足したり丸めたりしない",
-    "verdict は数字から言えることだけ。改善策は roadmap / decision-record へ"
+    "verdict は数字から言えることだけ。改善策は roadmap / decision-record へ",
+    "棒の長さは scale（既定 5）を満点として描く。別スケールの指標を載せるときは scale を必ず合わせる"
   ],
   "slide": {
     "layout": "BLANK",
@@ -133,7 +140,10 @@
         "label_w": 2.0,
         "value_w": 1.0,
         "row_h": 0.44,
-        "gap": 0.16
+        "gap": 0.16,
+        "max_value": {
+          "$slot": "scale"
+        }
       },
       {
         "type": "source_note",

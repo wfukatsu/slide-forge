@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "id": "open-questions",
-  "displayName": "未回答の問いと次アクション",
+  "id": "example-map-wall",
+  "displayName": "Example Mapping（規則・例・未決）",
   "pack": "nexus",
-  "category": "coverage",
-  "description": "まだ埋まっていない前提・未着手フェーズを、誰がどう埋めるかと一緒に示す",
+  "category": "spec",
+  "description": "1 つの機能について、守るべき規則と確かめる具体例、決まらなかった問いを分けて示す",
   "answers": [
-    "この資料でまだ答えられていないことは何で、どうすれば埋まるのか"
+    "この機能はどの規則で動き、どの例で確かめ、何が未決なのか"
   ],
   "inferenceLevel": "descriptive",
   "compatibleLayouts": [
@@ -34,27 +34,42 @@
         }
       }
     },
-    "headers": {
-      "type": "string[]",
-      "required": true,
-      "minItems": 3,
-      "maxItems": 3,
-      "maxLength": 16
-    },
-    "questions": {
+    "rules": {
       "type": "string[][]",
       "required": true,
       "minItems": 2,
       "maxItems": {
         "$density": {
-          "print": 5,
-          "presentation": 4
+          "print": 4,
+          "presentation": 3
         }
       },
       "maxLength": {
         "$density": {
-          "print": 36,
-          "presentation": 28
+          "print": 30,
+          "presentation": 22
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    "examples": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 4,
+          "presentation": 3
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 24,
+          "presentation": 18
         }
       },
       "items": {
@@ -63,8 +78,11 @@
         "maxItems": 3
       }
     },
-    "nextSteps": {
+    "questions": {
       "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 2,
       "items": {
         "type": "tuple",
         "fields": [
@@ -76,16 +94,13 @@
             "type": "string",
             "maxLength": {
               "$density": {
-                "print": 50,
-                "presentation": 38
+                "print": 46,
+                "presentation": 34
               }
             }
           }
         ]
-      },
-      "required": true,
-      "minItems": 2,
-      "maxItems": 3
+      }
     },
     "source": {
       "type": "string",
@@ -94,10 +109,10 @@
     }
   },
   "guardrails": [
-    "推測で埋めた項目をここから消さない。埋めていないから未回答なのであって、書けることがないわけではない",
-    "各行に『誰が / どのコマンドで』埋まるかを必ず書く。宿題の一覧で終わらせない",
-    "未着手フェーズ由来の未回答と、レポートが明示した open question を混ぜない（source で区別する）",
-    "部分実行のデッキでは最終ページに必ず置く"
+    "規則と例を混ぜない。規則は『常に成り立つこと』、例は『それを確かめる 1 ケース』",
+    "肯定例だけを載せない。境界の外側を示す否定例が 1 つ以上ないと、規則は確かめられていない",
+    "未決の問いを落とさない。決まらなかったことを消すと、決まったように見える",
+    "規則が上限を超える機能は分割の検討対象。載せきれなかった規則の件数を source に書く"
   ],
   "slide": {
     "layout": "BLANK",
@@ -124,17 +139,18 @@
         "type": "table",
         "x": 0.5,
         "y": 1.6,
-        "w": 9.0,
-        "headers": {
-          "$slot": "headers"
-        },
+        "w": 4.3,
+        "headers": [
+          "RULE",
+          "守るべき規則"
+        ],
         "rows": {
-          "$slot": "questions"
+          "$slot": "rules"
         },
         "size": {
           "$density": {
             "print": 9,
-            "presentation": 10
+            "presentation": 10.5
           }
         },
         "row_h": {
@@ -143,31 +159,73 @@
             "presentation": 0.4
           }
         },
+        "header_h": 0.36,
         "col_widths": [
-          2.4,
-          1.6,
-          2.4
+          0.9,
+          3.4
+        ],
+        "aligns": [
+          "START",
+          "START"
         ],
         "textMargin": {
           "$density": {
             "print": 0.02,
             "presentation": 0.04
           }
+        }
+      },
+      {
+        "type": "table",
+        "x": 5.2,
+        "y": 1.6,
+        "w": 4.3,
+        "headers": [
+          "EX",
+          "種別",
+          "確かめる例"
+        ],
+        "rows": {
+          "$slot": "examples"
         },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10.5
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.34,
+            "presentation": 0.4
+          }
+        },
+        "header_h": 0.36,
+        "col_widths": [
+          0.8,
+          0.9,
+          2.6
+        ],
         "aligns": [
           "START",
-          "START",
+          "CENTER",
           "START"
-        ]
+        ],
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
       },
       {
         "type": "cards",
         "x": 0.5,
-        "y": 3.7,
+        "y": 3.66,
         "w": 9.0,
-        "h": 1.04,
+        "h": 0.9,
         "items": {
-          "$slot": "nextSteps"
+          "$slot": "questions"
         },
         "title_size": {
           "$density": {

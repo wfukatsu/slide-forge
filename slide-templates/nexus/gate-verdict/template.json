@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "id": "gate-verdict",
+  "displayName": "品質ゲート判定",
+  "pack": "nexus",
+  "category": "evaluation",
+  "description": "レビューの総合判定と観点別の加重スコア、優先度別の残件を 1 枚にまとめる",
+  "answers": [
+    "品質ゲートは通ったのか、通っていないなら何が残っているのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "verdict": {
+      "type": "string",
+      "required": true,
+      "maxLength": 22
+    },
+    "score": {
+      "type": "string",
+      "required": true,
+      "maxLength": 24
+    },
+    "perspectives": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      },
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 14
+          },
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+          },
+          {
+            "type": "string",
+            "maxLength": 8
+          }
+        ]
+      }
+    },
+    "headers": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 3,
+      "maxLength": 12
+    },
+    "priorities": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 4,
+      "maxLength": {
+        "$density": {
+          "print": 30,
+          "presentation": 22
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 3,
+        "maxItems": 3
+      }
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 110,
+          "presentation": 80
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "CONDITIONAL_PASS を PASS と書かない。条件付き合格は条件が残っている状態",
+    "加重スコアは review-registry.json の重みで算出された値をそのまま載せる。スライド上で再計算しない",
+    "P0 が 0 件でないうちは『合格』と要約しない",
+    "観点を上限まで絞ったときは、載せなかった観点を source に明記する"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "metric",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 4.3,
+        "h": 1.0,
+        "value": {
+          "$slot": "verdict"
+        },
+        "caption": {
+          "$slot": "score"
+        }
+      },
+      {
+        "type": "hbars",
+        "x": 0.5,
+        "y": 2.8,
+        "w": 4.3,
+        "items": {
+          "$slot": "perspectives"
+        },
+        "max_value": 5,
+        "label_w": 1.5,
+        "value_w": 0.7,
+        "row_h": {
+          "$density": {
+            "print": 0.26,
+            "presentation": 0.32
+          }
+        },
+        "gap": {
+          "$density": {
+            "print": 0.08,
+            "presentation": 0.1
+          }
+        }
+      },
+      {
+        "type": "table",
+        "x": 5.2,
+        "y": 1.6,
+        "w": 4.3,
+        "headers": {
+          "$slot": "headers"
+        },
+        "rows": {
+          "$slot": "priorities"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10.5
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.34,
+            "presentation": 0.4
+          }
+        },
+        "header_h": 0.36,
+        "col_widths": [
+          1.3,
+          0.7,
+          2.6
+        ],
+        "aligns": [
+          "START",
+          "END",
+          "START"
+        ],
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 5.2,
+        "y": {
+          "$density": {
+            "print": 3.5,
+            "presentation": 3.74
+          }
+        },
+        "w": 4.3,
+        "h": {
+          "$density": {
+            "print": 1.0,
+            "presentation": 0.9
+          }
+        },
+        "text": {
+          "$slot": "insight"
+        },
+        "label": "判定の読み方"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

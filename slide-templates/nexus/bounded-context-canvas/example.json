@@ -1,0 +1,14 @@
+{
+  "title": "在庫コンテキストは引当の真実を単独で持つ",
+  "lead": "SVC-3 inventory-service（CTX-003）／ 注文確定の可否を決める唯一の権威。",
+  "purpose": "在庫数と引当の唯一の権威として、注文確定の可否を決める",
+  "classification": "Core（差別化の源泉。内製で保持し外部製品に委ねない）",
+  "evolution": "custom（社内実装。商用製品への置換は現時点で検討外）",
+  "domainRoles": "実行エンジン兼マスタ。分析用の集計値は持たない",
+  "inbound": "order-service から引当・解放コマンド（同期・強整合）",
+  "outbound": "catalog-service へ在庫スナップショット（結果整合）",
+  "language": "引当 Reservation／解放 Release／在庫 OnHand／取り寄せ Backorder",
+  "decisions": "引当は注文確定時のみ。カート投入では引き当てない",
+  "assumptions": "取り寄せ在庫の引当可否は未確定（OQ-008）",
+  "source": "reports/03_design/bounded-contexts-redesign.md の CTX-003（生成 2026-08-18）／サンプルデータ。実データで置き換えること"
+}

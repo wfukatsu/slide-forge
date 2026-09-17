@@ -1,0 +1,47 @@
+{
+  "title": "確定後の取消は拒否し、取消で表す",
+  "lead": "AGG-002 Order の状態遷移。全セルに判定があり、未検討はない。",
+  "headers": [
+    "状態",
+    "確定",
+    "支払成功",
+    "取消"
+  ],
+  "rows": [
+    [
+      "作成中",
+      "allow",
+      "reject",
+      "allow"
+    ],
+    [
+      "確定待ち",
+      "reject",
+      "allow",
+      "allow"
+    ],
+    [
+      "支払済",
+      "reject",
+      "ignore",
+      "defer"
+    ],
+    [
+      "出荷済",
+      "reject",
+      "ignore",
+      "reject"
+    ]
+  ],
+  "notes": [
+    [
+      "冪等性",
+      "支払成功の再送は ignore。二重計上しない"
+    ],
+    [
+      "分散整合",
+      "支払済からの取消は defer。返金完了を待つ"
+    ]
+  ],
+  "source": "reports/03_design/state-machines/state-machine-order.md の State x Event Matrix（生成 2026-08-19）／サンプルデータ。実データで置き換えること"
+}
