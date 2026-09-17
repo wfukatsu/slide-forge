@@ -354,7 +354,7 @@ def build(pack: str, density: str | None = None) -> dict:
         hand = PROMPT_OVERRIDES.get(tid)
         prompt = hand or derived_prompt(t)
         cb = code(wrap(despace(prompt)), "text", TOP + 0.38, 2.6,
-                  size=13, min_h=2.0)
+                  size=13, min_h=1.3)
         slides.append({"layout": "TITLE_ONLY",
                        "title": f"{lab} — こう頼めば出てきます", "figures": [
             lead("実際に入力する日本語の依頼文の例です。"),

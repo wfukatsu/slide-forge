@@ -135,7 +135,12 @@
             "print": 0.02,
             "presentation": 0.04
           }
-        }
+        },
+        "aligns": [
+          "START",
+          "CENTER",
+          "START"
+        ]
       },
       {
         "type": "so_what",

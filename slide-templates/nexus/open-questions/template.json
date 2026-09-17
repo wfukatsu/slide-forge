@@ -153,7 +153,12 @@
             "print": 0.02,
             "presentation": 0.04
           }
-        }
+        },
+        "aligns": [
+          "START",
+          "START",
+          "START"
+        ]
       },
       {
         "type": "cards",
