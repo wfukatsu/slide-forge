@@ -1,0 +1,192 @@
+{
+  "schemaVersion": 1,
+  "id": "env-parity-matrix",
+  "displayName": "環境パリティ（同一と差異）",
+  "pack": "nexus",
+  "category": "infra",
+  "description": "複数環境のうち何を同一に保ち、何を意図的に変えているかを、理由と一緒に示す",
+  "answers": [
+    "環境ごとに何が同一で、どこが意図的に違うのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "headers": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 5,
+      "maxLength": 12
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 4,
+          "presentation": 3
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 22,
+          "presentation": 16
+        }
+      },
+      "items": {
+        "type": "string[]",
+        "minItems": 3,
+        "maxItems": 5
+      }
+    },
+    "identical": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 18
+          },
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 46,
+                "presentation": 34
+              }
+            }
+          }
+        ]
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "差異には必ず理由を書く。理由のない差異は差異ではなく、まだ直していない不整合",
+    "『同一に保つもの』を空にしない。何も保証していない環境間の比較は意味を持たない",
+    "環境が上限を超えるときは列を分け、分けたことを source に書く",
+    "本番だけ未確認の項目を『同一』側に書かない。未確認は差異側に理由付きで残す"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "headers": {
+          "$slot": "headers"
+        },
+        "rows": {
+          "$slot": "rows"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10.5
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.34,
+            "presentation": 0.4
+          }
+        },
+        "header_h": 0.36,
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.6,
+        "w": 9.0,
+        "h": 0.95,
+        "items": {
+          "$slot": "identical"
+        },
+        "title_size": {
+          "$density": {
+            "print": 10,
+            "presentation": 11
+          }
+        },
+        "body_size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 9.5
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

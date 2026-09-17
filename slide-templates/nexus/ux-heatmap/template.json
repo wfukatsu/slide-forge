@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "id": "ux-heatmap",
+  "displayName": "画面×UX 観点ヒートマップ",
+  "pack": "nexus",
+  "category": "evaluation",
+  "description": "UX 評価の指摘が、どの画面のどの観点に集中しているかを 1 枚で示す",
+  "answers": [
+    "どの画面のどの観点に指摘が集中しているのか"
+  ],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "axes": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 5,
+      "maxLength": 10
+    },
+    "screens": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      },
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 16
+          },
+          {
+            "type": "integer[]",
+            "minItems": 3,
+            "maxItems": 5,
+            "minimum": 0,
+            "maximum": 4
+          }
+        ]
+      }
+    },
+    "uxi": {
+      "type": "string",
+      "required": true,
+      "maxLength": 12
+    },
+    "band": {
+      "type": "string",
+      "required": true,
+      "maxLength": 22
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 110,
+          "presentation": 80
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "ドットの数は指摘の件数であって重大度ではない。重大度は issue-register で別に示す",
+    "UXI とバンドは ux-evaluation.json の値をそのまま使う。スライド上で再計算しない",
+    "指摘 0 件の画面を表から落とさない。空白のセルこそが『調べて問題がなかった』の記録",
+    "runtime 計測でない評価では、体感速度に関する観点を載せない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "rating_matrix",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 5.9,
+        "columns": {
+          "$slot": "axes"
+        },
+        "rows": {
+          "$slot": "screens"
+        },
+        "levels": 4,
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.36,
+            "presentation": 0.42
+          }
+        }
+      },
+      {
+        "type": "metric",
+        "x": 6.6,
+        "y": 1.6,
+        "w": 2.9,
+        "h": 0.95,
+        "value": {
+          "$slot": "uxi"
+        },
+        "caption": {
+          "$slot": "band"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 6.6,
+        "y": 2.7,
+        "w": 2.9,
+        "h": 1.6,
+        "text": {
+          "$slot": "insight"
+        },
+        "label": "読み取り"
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}

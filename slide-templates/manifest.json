@@ -1009,6 +1009,110 @@
       "version": 1
     },
     {
+      "id": "bounded-context-canvas",
+      "displayName": "境界づけられたコンテキスト",
+      "pack": "nexus",
+      "category": "design",
+      "path": "nexus/bounded-context-canvas/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "design",
+        "ddd"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "state-machine-matrix",
+      "displayName": "状態×イベント判定マトリクス",
+      "pack": "nexus",
+      "category": "design",
+      "path": "nexus/state-machine-matrix/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "design",
+        "state-machine"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "gate-verdict",
+      "displayName": "品質ゲート判定",
+      "pack": "nexus",
+      "category": "evaluation",
+      "path": "nexus/gate-verdict/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "evaluation",
+        "review"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "example-map-wall",
+      "displayName": "Example Mapping（規則・例・未決）",
+      "pack": "nexus",
+      "category": "spec",
+      "path": "nexus/example-map-wall/template.json",
+      "tags": [
+        "nexus",
+        "product",
+        "spec",
+        "bdd"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "aggregate-canvas",
+      "displayName": "集約の境界と不変条件",
+      "pack": "nexus",
+      "category": "design",
+      "path": "nexus/aggregate-canvas/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "design",
+        "ddd"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "ux-heatmap",
+      "displayName": "画面×UX 観点ヒートマップ",
+      "pack": "nexus",
+      "category": "evaluation",
+      "path": "nexus/ux-heatmap/template.json",
+      "tags": [
+        "nexus",
+        "architect",
+        "evaluation",
+        "ux"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "env-parity-matrix",
+      "displayName": "環境パリティ（同一と差異）",
+      "pack": "nexus",
+      "category": "infra",
+      "path": "nexus/env-parity-matrix/template.json",
+      "tags": [
+        "nexus",
+        "infra",
+        "environment"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
       "id": "hearing-agenda",
       "displayName": "本日うかがいたいこと",
       "pack": "hearing",

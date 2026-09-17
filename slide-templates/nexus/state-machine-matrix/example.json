@@ -1,0 +1,59 @@
+{
+  "title": "確定後のキャンセルは拒否し、取消で表現する",
+  "lead": "AGG-002 Order の状態遷移。5 状態 × 4 イベントの全 20 セルに判定がある。",
+  "headers": [
+    "状態",
+    "確定",
+    "支払成功",
+    "支払失敗",
+    "取消"
+  ],
+  "rows": [
+    [
+      "作成中",
+      "allow",
+      "reject",
+      "reject",
+      "allow"
+    ],
+    [
+      "確定待ち",
+      "reject",
+      "allow",
+      "allow",
+      "allow"
+    ],
+    [
+      "支払済",
+      "reject",
+      "ignore",
+      "reject",
+      "defer"
+    ],
+    [
+      "出荷済",
+      "reject",
+      "ignore",
+      "reject",
+      "reject"
+    ],
+    [
+      "取消済",
+      "reject",
+      "ignore",
+      "ignore",
+      "ignore"
+    ]
+  ],
+  "notes": [
+    [
+      "冪等性",
+      "支払成功の再送は ignore。二重計上を起こさない"
+    ],
+    [
+      "分散整合",
+      "支払済からの取消は defer。返金完了を待って確定する"
+    ]
+  ],
+  "source": "reports/03_design/state-machines/state-machine-order.md の State x Event Matrix（生成 2026-08-19）／サンプルデータ。実データで置き換えること"
+}

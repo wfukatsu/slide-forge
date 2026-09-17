@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "id": "state-machine-matrix",
+  "displayName": "状態×イベント判定マトリクス",
+  "pack": "nexus",
+  "category": "design",
+  "description": "集約の状態とイベントの全組み合わせについて、受け付けるか拒否するかの判定を 1 枚で示す",
+  "answers": [
+    "どの状態でどのイベントを受け付け、どれを拒否するのか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 38,
+          "presentation": 30
+        }
+      }
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 140,
+          "presentation": 100
+        }
+      }
+    },
+    "headers": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 6,
+      "maxLength": 14
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      },
+      "maxLength": 12,
+      "items": {
+        "type": "string[]",
+        "minItems": 3,
+        "maxItems": 6
+      }
+    },
+    "notes": {
+      "type": "array",
+      "required": true,
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": 18
+          },
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 50,
+                "presentation": 38
+              }
+            }
+          }
+        ]
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "判定は allow / reject / ignore / defer の 4 語だけを使い、レポートの語をそのまま持ち込む",
+    "空セルを作らない。全セルに判定があることがこの表の価値で、空欄は『未検討』と区別できない",
+    "状態またはイベントが上限を超えるときはページを分け、分けたことを source に書く",
+    "遷移の効果（Effect）や事後条件はこの表では表せない。必要なら別ページに出す"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.02,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 9.0,
+        "headers": {
+          "$slot": "headers"
+        },
+        "rows": {
+          "$slot": "rows"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10.5
+          }
+        },
+        "row_h": {
+          "$density": {
+            "print": 0.34,
+            "presentation": 0.4
+          }
+        },
+        "header_h": 0.36,
+        "textMargin": {
+          "$density": {
+            "print": 0.02,
+            "presentation": 0.04
+          }
+        }
+      },
+      {
+        "type": "cards",
+        "x": 0.5,
+        "y": 3.8,
+        "w": 9.0,
+        "h": 0.9,
+        "items": {
+          "$slot": "notes"
+        },
+        "title_size": {
+          "$density": {
+            "print": 10,
+            "presentation": 11
+          }
+        },
+        "body_size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 9.5
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.87,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  },
+  "defaultDensity": "print",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  }
+}
