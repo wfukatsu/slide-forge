@@ -285,4 +285,4 @@ d.shift_roster(x, y, w, h, start, end, people, codes,
 - [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)
 - [表とグラフ（charts.py）](charts.ja.md)
 - [ビジネスフレームワーク図（patterns.py）](patterns.ja.md)
-- [スライドテンプレート カタログ（全 108 種）](slide-template-catalog.ja.md)
+- [スライドテンプレート カタログ（全 110 種）](slide-template-catalog.ja.md)

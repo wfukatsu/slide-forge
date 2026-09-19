@@ -190,7 +190,7 @@ thumbnail QA of the `slide-qa` skill is for: see `references/validation.md`.
 
 ## Quick start (slide templates)
 
-`slide-templates/` holds 108 ready-made one-page templates in fourteen packs. A
+`slide-templates/` holds 110 ready-made one-page templates in fourteen packs. A
 template takes semantic input slots (not coordinates) and renders one slide
 into a deck spec, so it works with any registered master.
 
@@ -677,7 +677,7 @@ scripts/      shared engine — one importable package
 templates/    registered masters (scalar-2026*, aixdevops, corporate) + blank-16x9 + themes/ + presets/ (template-forge design presets)
   masters/        drop a master .pptx here and import it (gitignored; see its README)
   sales/ nurture/ marketing/   Markdown forms: stage records and hearing sheet, nurture tracks and segments, content brief and event plan (each has its own README; these are forms, not slide templates)
-slide-templates/ reusable single-slide content templates + registry (108 in 14 packs; manifest.json)
+slide-templates/ reusable single-slide content templates + registry (110 in 14 packs; manifest.json)
 assets/       scalar/ (brand: pictograms, logos, product-logos), holidays/ (Japanese national holidays CSV), cloud-icons/ (gitignored)
 references/   engine, workflow, and host compatibility documentation
   images/slide-patterns/  pattern catalog images (committed; regenerate via Setup 6)
@@ -734,7 +734,7 @@ Which page shapes can this build? See
 | Qualitative/technical pages | 5 | Everything that isn't a number |
 | Closing/appendix pages | 3 | The decision and what follows |
 
-Beyond these page patterns, `slide-templates/` registers 108 ready-made
+Beyond these page patterns, `slide-templates/` registers 110 ready-made
 one-page templates in fourteen packs (marketing-analysis, b2b-sales, scalar-ae,
 planning, calendar, analysis, read-alone, business-plan, nexus, hearing, case-studies,
 proposal, marketing, partner). Each is catalogued with a rendered image, the

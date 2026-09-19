@@ -1,6 +1,6 @@
 *[English](slide-template-catalog.md)*
 
-# スライドテンプレート カタログ（全 108 種）
+# スライドテンプレート カタログ（全 110 種）
 
 `slide-templates/` に登録されたテンプレートを実際に 1 枚ずつ生成して
 書き出した画像カタログ。**どのテンプレートで 1 枚を作るかを見て選ぶ**ためのもの。
@@ -65,7 +65,7 @@ done
 
 | パック | 数 | 何を作るための章か |
 |---|---|---|
-| [マーケティング分析パック](#marketing-analysis) | 8 種 | 市場・顧客・施策効果を分析するページ群 |
+| [マーケティング分析パック](#marketing-analysis) | 10 種 | 市場・顧客・施策効果を分析するページ群 |
 | [B2B セールスパック](#b2b-sales) | 8 種 | 商談のステークホルダー構造とディスカバリー（課題探索）を可視化するページ群 |
 | [Scalar AE パック](#scalar-ae) | 10 種 | Scalar のアカウントエグゼクティブが商談レビュー・活動計画で使う定型ページ群 |
 | [計画パック](#planning) | 3 種 | 時間軸を持つ計画を示すページ群 |
@@ -199,6 +199,78 @@ Customer・Competitor・Companyの重なりから戦略の焦点を示す
 | `rows` | `string[][]` | ✔ | 3〜7 件、44 字以内 |
 | `insight` | `string` | ✔ | 120 字以内 |
 | `source` | `string` | ✔ | 160 字以内 |
+
+### ペルソナカード（`persona-card`）
+
+![ペルソナカード](images/slide-templates/persona-card.png)
+
+代表ユーザーを実在の人物として描き、ゴールと悩みを1枚で共有する
+
+**答える問い**: このペルソナは誰で、何を達成したくて、何に困っているのか
+
+**figures**: `governing_message`, `lead_in`, `testimonial`, `so_what`, `cards`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 36 · presentation 30) 字以内 |
+| `segment` | `string` | ✔ | (print 110 · presentation 80) 字以内 |
+| `name` | `string` | ✔ | 20 字以内 |
+| `attributes` | `string` | ✔ | (print 8 · presentation 7) 字以内 |
+| `portrait` | `string` | — | 60 字以内、既定 `""` |
+| `quote` | `string` | ✔ | (print 56 · presentation 42) 字以内 |
+| `traits` | `string[][]` | ✔ | 3〜(print 4 · presentation 3) 件、(print 30 · presentation 24) 字以内 |
+| `goal` | `string` | ✔ | (print 60 · presentation 44) 字以内 |
+| `pain` | `string` | ✔ | (print 60 · presentation 44) 字以内 |
+| `source` | `string` | ✔ | 86 字以内 |
+
+使うときの決まり:
+
+- 調査で確認できた事実だけを書く。年齢・年収・家族構成を埋めるために創作しない
+- attributes は職業・立場だけを短く書く。欄が狭く語中で改行するため、年齢・居住地・家族構成は traits の行に置く
+- quote は実際の発言の逐語のみ。要約した場合は『（要約）』と明記する
+- 理想的すぎる人物像にしない。都合の良い行動特性だけを並べない
+- UX や施策の判断に使わない属性は載せない。項目を作りすぎない
+- 調査で裏づけていないプロトペルソナは source に『仮説（プロト）』と明記する
+- portrait は架空のペルソナの似顔絵にだけ使う。実在の人物の発言に生成した顔を付けない
+- portrait を空のままにするとピクトグラムで描かれる。画像生成を使わない場合はそのままでよい
+
+### カスタマージャーニーマップ（`customer-journey-map`）
+
+![カスタマージャーニーマップ](images/slide-templates/customer-journey-map.png)
+
+ステージごとの行動・思考・感情と課題を1枚に並べ、体験が落ち込む地点を示す
+
+**答える問い**: ステージごとに顧客は何をし、何を感じ、どこで体験が落ち込むのか
+
+**figures**: `governing_message`, `lead_in`, `journey_map`, `source_note`  
+**推論レベル**: 記述（事実の整理）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | (print 36 · presentation 30) 字以内 |
+| `lead` | `string` | ✔ | (print 110 · presentation 80) 字以内 |
+| `stages` | `string[]` | ✔ | 3〜4 件、10 字以内 |
+| `rows` | `array` (string≤8, string[]≤(print 34 · presentation 26)) | ✔ | 2〜3 件 |
+| `emotions` | `integer[]` | ✔ | -2〜2 |
+| `source` | `string` | ✔ | 86 字以内 |
+
+使うときの決まり:
+
+- 感情値は観察された事実（発言・行動・数値）に紐づける。物語として見栄えするように上下させない
+- セルは調査で確認できたことだけを書く。埋まらないステージは空欄のまま残し、想像で補わない
+- 施策や解決策はこのページに書かない。ここは『問題・課題・要求』まで
+- As-Is と To-Be を1枚に混ぜない。どちらなのかを lead に明記する
+- ステージはペルソナの実際の行動単位で切る。社内の業務フェーズで切らない
+- 箇条書きは1行に収まる長さにする（print で全角14字、presentation で11字が目安）。収まらない要求は2項目に分ける
 
 ### コホート継続率（`cohort-retention`）
 

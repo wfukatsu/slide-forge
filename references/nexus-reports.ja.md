@@ -108,5 +108,5 @@ infra と scalardb にはフェーズマニフェストが無いので、状態�
 
 ## 関連
 
-- [スライドテンプレート カタログ（全 108 種）](slide-template-catalog.ja.md)
+- [スライドテンプレート カタログ（全 110 種）](slide-template-catalog.ja.md)
 - [図解を描く（diagrams.py と Canvas ファミリー）](diagrams.ja.md)

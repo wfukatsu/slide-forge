@@ -32,7 +32,7 @@
 | ファイル | 何のためのものか |
 |---|---|
 | [slide-pattern-catalog.md](slide-pattern-catalog.ja.md) | 52 のページパターン。各項目にレンダリング画像つき。生成物 |
-| [slide-template-catalog.md](slide-template-catalog.ja.md) | 108 の 1 枚ものテンプレート。画像・**入力**表（スロット / 型 / 必須 / 制約）・ガードレールつき。生成物 |
+| [slide-template-catalog.md](slide-template-catalog.ja.md) | 110 の 1 枚ものテンプレート。画像・**入力**表（スロット / 型 / 必須 / 制約）・ガードレールつき。生成物 |
 
 ## 図を描く（`scripts/` のエンジン）
 
