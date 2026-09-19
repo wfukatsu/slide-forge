@@ -322,5 +322,5 @@ Changes from the plan and the prototype:
 ## See also
 
 - [Calendar diagrams (`calendars.py`)](calendars.md)
-- [Slide Template Catalog (All 108 Types)](slide-template-catalog.md)
+- [Slide Template Catalog (All 110 Types)](slide-template-catalog.md)
 - [Deck workflow contract](workflow-contract.md)

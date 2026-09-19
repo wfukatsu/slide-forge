@@ -695,4 +695,4 @@ Session 資料を出す前に。
 ## 関連
 
 - [Account Planning ページテンプレート作成計画](account-planning-template-plan.ja.md)
-- [スライドテンプレート カタログ（全 108 種）](slide-template-catalog.ja.md)
+- [スライドテンプレート カタログ（全 110 種）](slide-template-catalog.ja.md)

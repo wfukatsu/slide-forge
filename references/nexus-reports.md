@@ -114,5 +114,5 @@ phases for exactly that.
 
 ## See also
 
-- [Slide Template Catalog (All 108 Types)](slide-template-catalog.md)
+- [Slide Template Catalog (All 110 Types)](slide-template-catalog.md)
 - [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)

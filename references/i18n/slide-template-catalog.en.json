@@ -72,43 +72,210 @@
     }
   },
   "templates": {
-    "swot-analysis": {
-      "displayName": "SWOT Analysis",
-      "description": "Organizes internal and external environment into four positive/negative quadrants and shows priority actions",
-      "answers": "What are our strategic strengths, weaknesses, opportunities, and threats?",
+    "account-snapshot": {
+      "displayName": "Deal Snapshot",
+      "description": "Shows, on one page, what stage this deal is in now, the amount, and when it will close",
+      "answers": "Where does this deal stand right now, for how much, and when will it close?",
       "guardrails": [
-        "Distinguish between facts and interpretations",
-        "Do not assert causal relationships based on SWOT wording alone"
+        "forecast is one of four values: Pipeline / Best / Commit / Closed. Demote a Commit to Best if you cannot state its basis",
+        "Write an amount only if you can state how it was calculated. If you cannot, write \"undetermined\"",
+        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "action-plan": {
+      "displayName": "Action Plan",
+      "description": "Breaks each unconfirmed issue down into who, asks whom, by when, and what completion looks like",
+      "answers": "To move this deal forward, who does what, by when?",
+      "guardrails": [
+        "Do not include a row whose completion criterion cannot be written. \"Confirm it\" is not a completion criterion",
+        "Do not leave a row without a deadline. If the counterpart is internal, name the meeting body (WPS / Deal Desk)",
+        "Map each row one-to-one to an unconfirmed item in discovery-gaps",
+        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
       ],
       "inference": "Strategic (evaluation and direction-setting)"
     },
-    "three-c-analysis": {
-      "displayName": "3C Analysis",
-      "description": "Shows the strategic focus arising from the overlap of Customer, Competitor, and Company",
-      "answers": "Where is the strategic territory where customer value and competitive advantage overlap?",
-      "guardrails": [],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "market-sizing": {
-      "displayName": "TAM / SAM / SOM",
-      "description": "Shows the total market down to the obtainable market as nested circles",
-      "answers": "How large is the market, and what is the realistic obtainable range?",
-      "guardrails": [],
+    "activity-heatmap": {
+      "displayName": "Daily Heatmap",
+      "description": "Lays out daily values as shaded week × weekday cells, showing weekday and seasonal skew and monthly totals",
+      "answers": "On which weekdays and in which periods is the volume concentrated?",
+      "guardrails": [
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the month headers",
+        "Values are [date, number]. The period is up to 53 weeks. Split longer series into 52-week pages with scripts/calendar_pages.py",
+        "The page handles numbers, so source is required. State the period, the counting definition (what counts as one), the unit, and where the data came from",
+        "Shading is a relative bucket by quantile (levels steps) of this period's values, not an absolute threshold. Do not compare colours with a chart of another period",
+        "Days with no value are white; days with 0 get the lightest colour. Do not mix missing values and zeros (do not fill missing days with 0)",
+        "Low values on holidays and long weekends are a calendar effect, not an anomaly. Read them together with the holiday average card",
+        "The cards below show aggregates only. Put causes or evaluation in the title or body, and do not write correlation as causation"
+      ],
       "inference": "Descriptive (organizing facts)"
     },
-    "positioning-map": {
-      "displayName": "Positioning Map",
-      "description": "Shows the positional relationship between us and competitors on two axes",
-      "answers": "Are we delivering value that differs from competitors?",
-      "guardrails": [],
+    "activity-timeline": {
+      "displayName": "Activity History",
+      "description": "Lists, in chronological order, who we've met and what we learned",
+      "answers": "How much access have we gained with this customer, and what have we learned?",
+      "guardrails": [
+        "Limit the table to the most recent 4 entries. Keep earlier history in the ledger (account.json); do not put it on the slide",
+        "Write only the customer's own statements or documents under \"what we learned.\" Do not write our own impressions",
+        "Do not omit dates, so gaps where we had no contact remain visible",
+        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "aggregate-canvas": {
+      "displayName": "Aggregate Boundary and Invariants",
+      "description": "Shows what one aggregate contains and the invariants it keeps, together with the examples that check them",
+      "answers": "How far does this aggregate reach, and which invariants does it keep?",
+      "guardrails": [
+        "Do not list members that sit outside the boundary. When it is only a reference, say so in the kind column",
+        "Write only what is always true as an invariant. Procedures and business rules do not belong here",
+        "Do not leave the violating-operation column empty. An invariant with no known violator cannot be verified",
+        "One aggregate per page. Show relationships between aggregates with context-map or state-machine-matrix"
+      ]
+    },
+    "architecture-exhibit": {
+      "displayName": "Architecture Exhibit (image plus what to read from it)",
+      "description": "Pastes the report's structural diagram as an exhibit and adds three things to read from it",
+      "answers": "What am I supposed to read from this diagram?",
+      "guardrails": [
+        "Use an image exported by scripts/mermaid_export.py / drawio_export.py / html_shot.py, and inspect it with Read after generating",
+        "The frame is about 2:1. An extremely tall or wide diagram leaves the page mostly margin, so split it or redraw it natively",
+        "Do not paste a diagram that cannot be read at slide size. Split it or redraw it natively",
+        "readings state only what the diagram shows. Do not slip a claim the diagram does not carry into the three points",
+        "Number exhibits sequentially so the body text can refer to them"
+      ]
+    },
+    "bant-risk": {
+      "displayName": "BANT Risk",
+      "description": "Identifies which of Budget / Authority / Needs / Timeframe is most likely to stall the deal",
+      "answers": "Where is the risk in this deal, and is the forecast reasonable?",
+      "guardrails": [
+        "Fix the order of the four items as Budget → Authority → Needs → Timeframe",
+        "Open each item with ok / risk / unknown, and write the basis for that judgment in the same cell",
+        "Send any item still marked unknown to action-plan with a person to confirm with and a deadline",
+        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
+      ],
       "inference": "Diagnostic (identifying factors and structure)"
     },
-    "rfm-segments": {
-      "displayName": "RFM Segments",
-      "description": "Compares customer segments and measures based on purchase recency, frequency, and monetary value",
-      "answers": "Who are the loyal, developing, and dormant customers, and which measures should be applied to each?",
-      "guardrails": [],
+    "bounded-context-canvas": {
+      "displayName": "Bounded Context Canvas",
+      "description": "Shows one bounded context as a nine-part canvas: what it is responsible for and where its boundary ends",
+      "answers": "What is this context responsible for, and where does its boundary end?",
+      "guardrails": [
+        "Take the Core / Supporting / Generic classification straight from the report. Do not promote or demote it on the slide",
+        "Leave what is undecided in 'assumptions'. An empty cell reads as settled",
+        "Name the counterpart context in inbound and outbound. A pattern name (ACL, OHS) alone does not let the relationship be reconstructed",
+        "One context per page. When you want to line several up, use context-map"
+      ]
+    },
+    "break-even": {
+      "displayName": "Break-Even Analysis",
+      "description": "Marks the break-even point where the revenue line meets the total-cost line, with the margin of safety against plan alongside",
+      "answers": "How much must we sell to stop losing money, and how much room does the plan have?",
+      "guardrails": [
+        "Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it",
+        "Always state the fixed/variable cost split definition in the source line. A different split moves the break-even point",
+        "Draw the revenue and total-cost lines on the same horizontal axis (volume or revenue scale) and the same period",
+        "This is a single-year static analysis and says nothing about cash. Payback and cash belong in roi-payback",
+        "The straight-line approximation breaks down where the variable-cost ratio changes by volume band. State the applicable range in the lead-in",
+        "Margin of safety is (plan revenue - break-even revenue) / plan revenue. Pass a pre-computed string",
+        "Put the plan point (the current sales level) into words in the lead-in or source. Do not label the line ends: they always overlap near the crossing point"
+      ]
+    },
+    "buying-committee": {
+      "displayName": "Buying Committee",
+      "description": "Lists each buying-committee member's role, influence, stance, and contact status",
+      "answers": "Who is involved in the purchase, and how much access have we gained so far?",
+      "guardrails": [
+        "Write the buying role as the function this person serves in this deal (approver, champion, evaluator, user, gatekeeper, opponent), not their job title",
+        "Write contact status based on actual meetings held. Do not count a mere business-card exchange as \"contacted\""
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "case-fit": {
+      "displayName": "Why This Case Applies to You",
+      "description": "Sets the case's situation beside the customer's, showing why it is worth their attention",
+      "answers": "How far does that case actually apply to us?",
+      "guardrails": [
+        "**Only published cases.** No unpublished customer name or figure",
+        "Use the figures as the published material states them, and **always put the source (outlet and date) in source**",
+        "Cases and figures fall under the 3-month rule. **Re-check anything past its last-confirmed date before using it**",
+        "Name a customer only within what was agreed with them (the deal side records the promise in stage 5 §6 / stage 6 §5)",
+        "**Always name one thing that does not apply** (caveat). No case applies entirely, and hiding it surfaces during the PoC",
+        "The customer's column carries only facts from the hearing. **Do not fill it with inference**"
+      ]
+    },
+    "case-study-card": {
+      "displayName": "Cases in Brief (three)",
+      "description": "Three published cases, one line each — the page that reinforces trust after interest is there",
+      "answers": "How have other companies solved a problem like this?",
+      "guardrails": [
+        "**Only published cases.** No unpublished customer name or figure",
+        "Use the figures as the published material states them, and **always put the source (outlet and date) in source**",
+        "Cases and figures fall under the 3-month rule. **Re-check anything past its last-confirmed date before using it**",
+        "Name a customer only within what was agreed with them (the deal side records the promise in stage 5 §6 / stage 6 §5)",
+        "Three at most. **The more you line up, the weaker the impression.** Choose the ones closest to this audience"
+      ]
+    },
+    "case-study-detail": {
+      "displayName": "One Case in Depth",
+      "description": "One customer, in the order problem -> what was done -> result, with published figures only",
+      "answers": "What was that company stuck on, what did they do, and what happened?",
+      "guardrails": [
+        "**Only published cases.** No unpublished customer name or figure",
+        "Use the figures as the published material states them, and **always put the source (outlet and date) in source**",
+        "Cases and figures fall under the 3-month rule. **Re-check anything past its last-confirmed date before using it**",
+        "Name a customer only within what was agreed with them (the deal side records the promise in stage 5 §6 / stage 6 §5)",
+        "**Put before and after on the same dimension.** A before/after on shifting dimensions is not a comparison",
+        "One headline figure. **Several at once leaves no impression of which one is the effect**"
+      ]
+    },
+    "challenge-hypothesis": {
+      "displayName": "Challenge Hypothesis One-Pager",
+      "description": "A one-pager that surfaces issues the customer hasn't yet articulated, to open a dialogue",
+      "answers": "What issue has the customer not yet noticed, and what happens if it's left unaddressed?",
+      "guardrails": [
+        "**For customer presentation**. Do not write about individuals' influence, stance, internal politics, or competitors' weaknesses",
+        "Fix the three cards in the order: groundwork → reframing → evidence (cost of inaction)",
+        "Do not assert as fact. Phrase hypotheses so they read as hypotheses, and always end with a question to the customer",
+        "Do not include figures without a source. Cite the source for any public case study"
+      ],
       "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "challenge-solution-map": {
+      "displayName": "Challenge to Solution Mapping",
+      "description": "Sets each agreed challenge against what solves it and what changes as a result — the core of the proposal",
+      "answers": "Which challenge is solved by what, and how?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**Match the challenge slide in both order and wording.** Rephrased, it reads as a different subject",
+        "One challenge per row. **Do not claim one capability solves three** (it breaks down under verification)",
+        "A challenge you cannot solve gets no row; put it below as out of scope. **Do not force the fit**",
+        "Write the result as what happens to the work, not as a restatement of the capability"
+      ]
+    },
+    "chronology": {
+      "displayName": "Chronology",
+      "description": "A vertical chronology of dates and events showing how we arrived at the current state",
+      "answers": "What has happened so far, and what sequence of events led to the current state?",
+      "guardrails": [
+        "Write only facts in the event column. Keep interpretation and evaluation separate, in \"implications\"",
+        "Keep the date granularity consistent (all years, or all year-months, not mixed)",
+        "Limit to 9 rows. Bundle earlier history or narrow the period covered",
+        "If a quiet period is meaningful, don't omit the row — write \"no change\" to show it explicitly"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "claim-evidence-table": {
+      "displayName": "Claim and Evidence Table",
+      "description": "The standard read-alone form: claim, supporting evidence table, implication, and source, all closed on one page",
+      "answers": "Which facts support this claim?",
+      "guardrails": [
+        "Write the title as \"what can be said\" in two lines or fewer; never as a caption describing the table",
+        "Keep the implication within what the table shows. Never restate the title or introduce new information",
+        "Never show a number without a source. Cut any row you cannot source"
+      ],
+      "inference": "Descriptive (organizing facts)"
     },
     "cohort-retention": {
       "displayName": "Cohort Retention",
@@ -120,6 +287,48 @@
       ],
       "inference": "Diagnostic (identifying factors and structure)"
     },
+    "collect-cta": {
+      "displayName": "Where to Send the Answers",
+      "description": "Says where answers go, and what the customer gets back for sending them",
+      "answers": "Who sends the answers, where, and by when?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses; check who the answer URL may be shared with before putting it on the page",
+        "**Say what happens once they answer.** Collecting without returning anything teaches people not to answer",
+        "Give a date and an owner. A request with neither does not move"
+      ]
+    },
+    "collect-qr": {
+      "displayName": "Answer Form (QR)",
+      "description": "Shows the QR for the answer destination large, for the end of a talk or a hand-off in person",
+      "answers": "Where do I go to answer this right now?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses; confirm who can see what the QR points at before putting it up",
+        "**Always spell the URL out as well.** There is always a seat where the QR will not scan",
+        "If it points at a shared sheet, point at the customer version (internal columns and sections removed)"
+      ]
+    },
+    "conclusion-rationale-implication": {
+      "displayName": "Conclusion, Rationale, and So What",
+      "description": "Leads with the conclusion, then rationale cards and the next action (So What), read as a one-page pyramid",
+      "answers": "What is the conclusion, why does it hold, and what happens next?",
+      "guardrails": [
+        "Put the conclusion in the title; never make the reader reach the end of the body to find it",
+        "Limit the rationale to 3-4 non-overlapping points; split to another slide beyond five",
+        "So What states the next action; never a restatement of the rationale or the title"
+      ],
+      "inference": "Strategic (evaluation and direction-setting)"
+    },
+    "context-map": {
+      "displayName": "Context Map",
+      "description": "Shows the central context and its neighbours, with the relationship type on each edge",
+      "answers": "Which boundary is central, and how does it relate to its neighbours?",
+      "guardrails": [
+        "Relationship types (Shared Kernel / Conformist / Separate Ways ...) use the report's terms as they stand",
+        "Do not mix As-Is and To-Be on one page. State which it is in the title",
+        "Many-to-many relationships that the diagram cannot carry go into the table. Do not add lines until it is unreadable",
+        "To paste the original mermaid as it is, use architecture-exhibit"
+      ]
+    },
     "conversion-funnel": {
       "displayName": "Conversion Funnel",
       "description": "Shows counts at each stage of the purchase process and the biggest drop-off point",
@@ -127,38 +336,89 @@
       "guardrails": [],
       "inference": "Diagnostic (identifying factors and structure)"
     },
-    "experiment-result": {
-      "displayName": "A/B Test Results",
-      "description": "Shows control and treatment group results, sample sizes, the difference, and the verdict on a single page",
-      "answers": "How much did the key KPI change as a result of the measure?",
+    "cost-structure": {
+      "displayName": "Investment and Cost Structure",
+      "description": "Places the year-by-year cost mix beside the up-front/recurring breakdown by line item to show how much the business needs",
+      "answers": "How much does this business need, and what is the money spent on and in what order?",
       "guardrails": [
-        "Do not conclude that a non-significant result means zero effect",
-        "State the pre-defined primary KPI and analysis period"
-      ],
-      "inference": "Causal (asserting causes)"
+        "Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it",
+        "At most four cost categories. Fold the fifth and beyond into \"other\" or the stack becomes unreadable",
+        "The total of the stack must match cost of sales plus SG&A in revenue-plan",
+        "Always split up-front (one-time) from annual recurring in the right-hand table. Never show only a combined total",
+        "Put an em dash in cells that do not apply rather than leaving them blank, so they read as deliberate",
+        "Write the headcount x unit-cost assumption behind personnel cost in the source line. An amount alone cannot be assessed",
+        "State the unit and whether figures are tax-exclusive in the lead-in or unit",
+        "At most four periods. Aggregate the years or split into two slides beyond that"
+      ]
     },
-    "influence-map": {
-      "displayName": "Influence Map",
-      "description": "Places buying-committee members on two axes — influence and stance — to show whom to move to win the deal",
-      "answers": "Whom do we need to move to close this deal, and is influence skewed toward the opposing side?",
+    "customer-journey-map": {
+      "displayName": "Customer Journey Map",
+      "description": "Lays out actions, thoughts, emotion and issues stage by stage, showing where the experience drops",
+      "answers": "What does the customer do at each stage, how do they feel, and where does the experience drop?",
       "guardrails": [
-        "Base positions on statements confirmed in meetings. Do not place sales' own hopes as if they were the stakeholder's stance",
-        "Do not place uncontacted stakeholders as \"neutral.\" Put unknowns into discovery-gaps instead",
-        "Base influence on whether the person actually mattered in past approvals, not on job title",
-        "Keep bubble labels to 6 characters or fewer. Put job-title and name details in buying-committee instead",
-        "Bubbles are 0.95in in diameter. If placed too close together, labels get hidden (the --dry-run figure audit stops on \"Text is hidden behind a shape drawn later\"). Merge stakeholders that appear at the same position, or split them out into buying-committee"
+        "Tie every emotion value to something observed — a quote, a behaviour, a measure. Do not move the curve to make a better story",
+        "Fill cells only with what the research confirmed. Leave a stage blank rather than imagining it",
+        "No solutions on this page. It stops at problems, issues and needs",
+        "Do not mix As-Is and To-Be on one page. Say which it is in the lead",
+        "Cut stages by what the persona actually does, not by internal process phases",
+        "Keep each bullet to one line (about 14 full-width characters at print, 11 at presentation). Split a longer need into two bullets"
       ],
-      "inference": "Diagnostic (identifying factors and structure)"
+      "inference": "Descriptive (stating the facts)"
     },
-    "buying-committee": {
-      "displayName": "Buying Committee",
-      "description": "Lists each buying-committee member's role, influence, stance, and contact status",
-      "answers": "Who is involved in the purchase, and how much access have we gained so far?",
+    "daily-agenda": {
+      "displayName": "Daily Task List",
+      "description": "Lists dates going down with one task per row, showing each day's owner, due time, and status",
+      "answers": "Who does what by when, day by day?",
       "guardrails": [
-        "Write the buying role as the function this person serves in this deal (approver, champion, evaluator, user, gatekeeper, opponent), not their job title",
-        "Write contact status based on actual meetings held. Do not count a mere business-card exchange as \"contacted\""
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the calendar header",
+        "Each item is [date, content, owner, due, status]. One task per row; the date cells of several tasks on the same day are merged vertically",
+        "Consecutive weekends and holidays with no tasks collapse into one row labeled with the holiday name. A holiday row still counts as a row",
+        "About 11 rows per slide. Split longer periods by week with scripts/calendar_pages.py",
+        "Status is 完了 / 進行中 / 予定 / 遅延 / 中止 (done / doing / todo / late / cancelled also work). It is shown in text, not only by color",
+        "Write a time or deadline in the due column, and leave it empty when undecided (it shows as \"—\"). Do not fill it in by guessing",
+        "Passing today highlights that day's date cell in red. Align it with the document's creation date, and state the as-of date in source as well"
       ],
       "inference": "Descriptive (organizing facts)"
+    },
+    "daily-gantt": {
+      "displayName": "Day-by-Day Gantt",
+      "description": "Places task bars on date columns, showing the actual working days across holidays and the milestones at day granularity",
+      "answers": "How does the work in the period run in parallel day by day, and when does it finish once holidays are counted?",
+      "guardrails": [
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the calendar header",
+        "Each row is [kind, name, owner, start date, end date, progress]. kind is group (heading) / task (span) / milestone (◆). A milestone sits in its start-date column with an empty end date and progress 0",
+        "Up to 31 days every day is labeled, up to 60 days only Mondays are, and from 61 days to 26 weeks it switches automatically to one column per week. For longer plans use planning/gantt-schedule (monthly)",
+        "The working-day count (excluding weekends, holidays, and extraHolidays) appears to the right of each bar. Do not put dates on work that has no basis for its duration",
+        "Up to 12 rows. Split larger plans into pages by group with scripts/calendar_pages.py",
+        "Dependency arrows are not drawn. For plans that need to show sequencing, use nexus/roadmap",
+        "Do not mix planned values with actuals. When you include progress rates, state the as-of date in source"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "deadline-countdown": {
+      "displayName": "Deadline Countdown",
+      "description": "Shows the days left to a deadline in calendar days and working days, and shades the calendar from today to the deadline",
+      "answers": "How many days (working days) are left to the deadline, and when are the checkpoints on the way?",
+      "guardrails": [
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the header",
+        "today is the document's as-of date and is required. Days left are calendar days from today to the deadline; working days are weekdays from today to the day before the deadline, minus holidays and extraHolidays",
+        "The deadline must fall in today's month or the next month. Show deadlines further out with month-calendar or daily-gantt",
+        "Checkpoints are [date, name], up to 3. Use dates between today and the deadline",
+        "Make label a short phrase that says what the deadline is for, such as \"本番切替まで\" (until the production cutover)",
+        "A document past its as-of date has stale numbers. Update today when distributing, and state the as-of date in source as well"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "decision-record": {
+      "displayName": "Decision and Rationale (ADR)",
+      "description": "Keeps the options considered, what was adopted or rejected, and why, on one page",
+      "answers": "Why was this approach chosen, and on what grounds were the others dropped?",
+      "guardrails": [
+        "Always show at least one rejected option. A table of the adopted option alone is advertising, not a decision record",
+        "Tie the rationale to evaluation dimensions (performance, consistency, operations, cost). Not to preference",
+        "If the decision is not settled, write 'undecided'. Do not make it look decided",
+        "Include what the decision affects (which phases depend on it) in decision"
+      ]
     },
     "decision-structure": {
       "displayName": "Decision Structure",
@@ -171,27 +431,16 @@
       ],
       "inference": "Descriptive (organizing facts)"
     },
-    "discovery-map": {
-      "displayName": "Discovery Map",
-      "description": "Lists the items to confirm during the deal and color-codes each as confirmed, hypothesis, or unconfirmed",
-      "answers": "What do we know in this deal, and what is still just a hypothesis?",
+    "dense-comparison-table": {
+      "displayName": "Option Comparison Matrix",
+      "description": "Compares options in a dot-rating matrix and shows the recommendation with its reasoning on one page",
+      "answers": "Which option is best, and why recommend it?",
       "guardrails": [
-        "State is one of three values: confirmed (verified by the customer's statement or a document), wip (partially confirmed), or missing (unconfirmed)",
-        "Do not mark sales' own guesses as confirmed. Anything whose corroborating source cannot be named is wip or lower",
-        "Do not move on to drafting the proposal while red (missing) items remain"
+        "Limit criteria to those that affect the decision; never pad with filler criteria",
+        "Always state the basis for the scoring (quotes, evaluation sessions) in the source",
+        "Write the recommendation as an overall judgment that concedes weaknesses; never disguise it as a clean sweep"
       ],
       "inference": "Diagnostic (identifying factors and structure)"
-    },
-    "pain-chain": {
-      "displayName": "Pain Chain",
-      "description": "Traces how a frontline problem cascades into departmental and executive metrics",
-      "answers": "Which executive-level number is the frontline issue actually affecting?",
-      "guardrails": [
-        "A chain link is a causal claim. Do not connect two stages with an arrow unless each stage has supporting evidence",
-        "Describe the impact on executive metrics using the customer's own numbers. If it's our own estimate, label it clearly as an estimate",
-        "Do not present correlation as causation"
-      ],
-      "inference": "Causal (asserting causes)"
     },
     "discovery-gaps": {
       "displayName": "Unconfirmed Items and Next Steps",
@@ -204,15 +453,14 @@
       ],
       "inference": "Descriptive (organizing facts)"
     },
-    "influence-map-org": {
-      "displayName": "Influence Map (Org Structure)",
-      "description": "Arranges buying-committee members by organizational connections, showing role, influence, stance, and meeting status",
-      "answers": "Who reports to whom, and where is influence and support concentrated?",
+    "discovery-map": {
+      "displayName": "Discovery Map",
+      "description": "Lists the items to confirm during the deal and color-codes each as confirmed, hypothesis, or unconfirmed",
+      "answers": "What do we know in this deal, and what is still just a hypothesis?",
       "guardrails": [
-        "The contents of people / links are validated by scripts/account_graph.py. Duplicate ids, dangling reportsTo references, and cycles are caught there, so always pass data that has gone through account_graph.load()",
-        "If there are more than 9 people, thin them out with account_graph.extract() and write \"see the draw.io version for the other N people\" in more. Do not cram everyone onto one slide",
-        "Include unmet stakeholders with met: false (drawn as a dashed line). Not having met someone is itself information",
-        "Base stance on statements made in meetings. Do not write sales' own hopes into stance"
+        "State is one of three values: confirmed (verified by the customer's statement or a document), wip (partially confirmed), or missing (unconfirmed)",
+        "Do not mark sales' own guesses as confirmed. Anything whose corroborating source cannot be named is wip or lower",
+        "Do not move on to drafting the proposal while red (missing) items remain"
       ],
       "inference": "Diagnostic (identifying factors and structure)"
     },
@@ -228,100 +476,145 @@
       ],
       "inference": "Strategic (evaluation and direction-setting)"
     },
-    "account-snapshot": {
-      "displayName": "Deal Snapshot",
-      "description": "Shows, on one page, what stage this deal is in now, the amount, and when it will close",
-      "answers": "Where does this deal stand right now, for how much, and when will it close?",
+    "env-parity-matrix": {
+      "displayName": "Environment Parity (identical and different)",
+      "description": "Shows what is kept identical across environments and what is deliberately different, with the reason",
+      "answers": "What is identical across environments, and where do they deliberately differ?",
       "guardrails": [
-        "forecast is one of four values: Pipeline / Best / Commit / Closed. Demote a Commit to Best if you cannot state its basis",
-        "Write an amount only if you can state how it was calculated. If you cannot, write \"undetermined\"",
-        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
+        "Always give a reason for a difference. A difference with no reason is not a difference but an inconsistency nobody has fixed yet",
+        "Do not leave 'what is kept identical' empty. A comparison that guarantees nothing between environments carries no meaning",
+        "When environments exceed the cap, split the columns and say so in source",
+        "Do not put an item that is unverified in production on the identical side. Leave it on the difference side with its reason"
+      ]
+    },
+    "event-announce": {
+      "displayName": "Event and Seminar Announcement",
+      "description": "The essentials of an event — date, format, audience, price, how to register — on one page",
+      "answers": "When and where is this, who is it for, and how do I register?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "**Only confirmed information.** Speakers, venue and time go on once they are settled, not before",
+        "**Name the audience.** 'Anyone welcome' reaches nobody (and leaves the nurture stage undecided)",
+        "Do not drop price, capacity or the registration deadline. **If they will not fit in four rows, combine them into one** (extra rows push out the registration line)",
+        "mode is one of online / offline / hybrid",
+        "The first column of rows is a pictogram name. Only the ones listed by scripts/illustrations.py --list exist (date=calendar, venue=pin, audience=people, price=coin, deadline=clock)"
+      ]
+    },
+    "event-poll": {
+      "displayName": "Does Any of This Apply to You?",
+      "description": "Lets an audience at a seminar or talk say which situation they are in",
+      "answers": "Which situation is this audience in?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "Write the options as buyer situations. **Do not make them choose by product name** — that is a product pitch, not collection",
+        "Aggregate the answers as types. Do not keep who chose what in the material",
+        "If you ask for an answer, say what comes back for it (a deck, a follow-up conversation)"
+      ]
+    },
+    "example-map-wall": {
+      "displayName": "Example Mapping (rules, examples, open questions)",
+      "description": "Shows, for one feature, the rules it must obey, the examples that check them, and the questions nobody settled",
+      "answers": "Which rules does this feature obey, which examples check them, and what is unsettled?",
+      "guardrails": [
+        "Do not mix rules and examples. A rule is what always holds; an example is one case that checks it",
+        "Do not show only positive examples. Without at least one example outside the boundary, the rule has not been checked",
+        "Do not drop the open questions. Removing what was not settled makes it look settled",
+        "A feature whose rules exceed the cap is a candidate for splitting. Put the number of rules left out in source"
+      ]
+    },
+    "exec-summary-readable": {
+      "displayName": "Executive Summary",
+      "description": "Situation, complication, and resolution in three tiers plus supporting points, so the first page alone enables a decision",
+      "answers": "What, in the end, is this document asking the reader to decide?",
+      "guardrails": [
+        "The condition is that this one page alone enables the decision; the body serves as supporting evidence",
+        "Write the resolution tier as a conclusion with numbers; never end on \"to be considered\"",
+        "If the supporting points exceed five, rework the body's chapter structure instead"
+      ],
+      "inference": "Strategic (evaluation and direction-setting)"
+    },
+    "execution-structure": {
+      "displayName": "Execution Structure and Roles",
+      "description": "Places the delivery org chart beside the owner and headcount per role to substantiate that the plan can actually be executed",
+      "answers": "Who executes this business, and how many people does each role need?",
+      "guardrails": [
+        "Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it",
+        "Draw the structure for this business, not the company org chart. Leave out departments that are not involved",
+        "Headcount must match the personnel cost in cost-structure. Do not add people here and forget them in the cost plan",
+        "Always distinguish dedicated from shared assignments. A structure heavy on shared assignments draws feasibility challenges",
+        "Depth of four or more, or over eight leaves, crushes the text. Split into a slide per department",
+        "Two-line node labels (\"role\\nheadcount\") read best. Mask individual names when the deck leaves the company",
+        "When the structure differs between launch and scale-up, state the period and use two slides"
+      ]
+    },
+    "exhibit-analysis": {
+      "displayName": "Exhibit and Implication",
+      "description": "Puts a chart inside a numbered exhibit frame with the reading on the right, making one page referable from the body and appendix",
+      "answers": "What can be read from this exhibit?",
+      "guardrails": [
+        "The exhibit number exists for cross-reference from the body and appendix; sequential numbering is the author's responsibility",
+        "Keep the implication within what the chart shows; never add information that is not in the figure",
+        "Bar chart baselines are fixed at zero. Never exaggerate an axis to inflate a difference"
+      ],
+      "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "experiment-result": {
+      "displayName": "A/B Test Results",
+      "description": "Shows control and treatment group results, sample sizes, the difference, and the verdict on a single page",
+      "answers": "How much did the key KPI change as a result of the measure?",
+      "guardrails": [
+        "Do not conclude that a non-significant result means zero effect",
+        "State the pre-defined primary KPI and analysis period"
+      ],
+      "inference": "Causal (asserting causes)"
+    },
+    "faq-objection-handling": {
+      "displayName": "Anticipated Q&A",
+      "description": "Pairs the objections expected at the approval meeting with sourced answers, preempting the Q&A on one page",
+      "answers": "How will we answer the expected objections?",
+      "guardrails": [
+        "Every answer must carry its basis (exhibit numbers, appendix, test results)",
+        "Leave unanswerable concerns visible; a glossed-over answer destroys the document's credibility",
+        "Limit concerns to ones that will actually come up; never stage weak strawman objections"
       ],
       "inference": "Descriptive (organizing facts)"
     },
-    "phase-gate": {
-      "displayName": "Stage-Gate Criteria",
-      "description": "Lists the current stage's exit criteria and judges each by whether customer-side evidence has been obtained",
-      "answers": "What customer-side evidence shows that the current stage's exit criteria are met?",
+    "fill-in-sheet": {
+      "displayName": "Blanks to Fill in Here",
+      "description": "Blank rows to write on during the meeting, on screen or on paper",
+      "answers": "What do we want filled in while we are in the room?",
       "guardrails": [
-        "State is one of three values: met / partial / unmet. \"We explained it\" or \"we sent the proposal\" does not count as grounds for met",
-        "Evidence must come from the customer side (statements, documents, approval records). Internal agreement is not evidence",
-        "Map each exit criterion to a gate ID in references/scalar/sales-playbook.md §2",
-        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "Leave the blanks blank. **Do not pre-fill a guess and call it 'please confirm'**",
+        "Six items at most. Keep it to what there is time to write",
+        "For anything they cannot answer now, ask who could"
+      ]
+    },
+    "fishbone-diagram": {
+      "displayName": "Fishbone Diagram",
+      "description": "Lists hypothesized causes of a problem by category, to identify where to start verifying",
+      "answers": "Which category does the cause of this problem fall under, and where should verification start?",
+      "guardrails": [
+        "Keep categories to a single consistent basis, such as the 4Ms (Man, Machine, Method, Material) or process names. Do not mix bases",
+        "Limit to 4 causes per category. If there are more, consolidate them or move them to a supplementary document (this diagram is not meant to prove exhaustive coverage)",
+        "What's included here are hypothesized causes. Identify the root cause via why-why or data verification; do not distinguish verified causes with bold or similar formatting (all causes are on equal footing in this diagram)",
+        "State problem as a measurable event (\"monthly defect rate above 3%,\" not \"quality is bad\")",
+        "Write in insight which cause to verify next, and how"
       ],
       "inference": "Diagnostic (identifying factors and structure)"
     },
-    "bant-risk": {
-      "displayName": "BANT Risk",
-      "description": "Identifies which of Budget / Authority / Needs / Timeframe is most likely to stall the deal",
-      "answers": "Where is the risk in this deal, and is the forecast reasonable?",
+    "five-forces": {
+      "displayName": "Five Forces Analysis",
+      "description": "Evaluates industry competitive structure through five forces (rivalry, new entrants, substitutes, buyers, suppliers)",
+      "answers": "Where does competitive pressure in this industry come from, and how strong is it?",
       "guardrails": [
-        "Fix the order of the four items as Budget → Authority → Needs → Timeframe",
-        "Open each item with ok / risk / unknown, and write the basis for that judgment in the same cell",
-        "Send any item still marked unknown to action-plan with a person to confirm with and a deadline",
-        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
-      ],
-      "inference": "Diagnostic (identifying factors and structure)"
-    },
-    "action-plan": {
-      "displayName": "Action Plan",
-      "description": "Breaks each unconfirmed issue down into who, asks whom, by when, and what completion looks like",
-      "answers": "To move this deal forward, who does what, by when?",
-      "guardrails": [
-        "Do not include a row whose completion criterion cannot be written. \"Confirm it\" is not a completion criterion",
-        "Do not leave a row without a deadline. If the counterpart is internal, name the meeting body (WPS / Deal Desk)",
-        "Map each row one-to-one to an unconfirmed item in discovery-gaps",
-        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
+        "Write each force as \"Strong / Medium / Weak: rationale\" (don't give just the rating or just the rationale). title carries the conclusion — which force squeezes profitability the most",
+        "State clearly in title or source which industry (market scope) this covers. The rating changes if the scope changes",
+        "The five forces describe industry structure. Do not write our own company-specific strengths or weaknesses (send those to swot-analysis)",
+        "The rating includes the evaluator's judgment. State the source material for the rating and the evaluation date in source",
+        "The center force (industry rivalry) is also a result of the other four. This diagram does not assert causal arrows"
       ],
       "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "activity-timeline": {
-      "displayName": "Activity History",
-      "description": "Lists, in chronological order, who we've met and what we learned",
-      "answers": "How much access have we gained with this customer, and what have we learned?",
-      "guardrails": [
-        "Limit the table to the most recent 4 entries. Keep earlier history in the ledger (account.json); do not put it on the slide",
-        "Write only the customer's own statements or documents under \"what we learned.\" Do not write our own impressions",
-        "Do not omit dates, so gaps where we had no contact remain visible",
-        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
-      ],
-      "inference": "Descriptive (organizing facts)"
-    },
-    "visit-plan": {
-      "displayName": "Visit Plan",
-      "description": "Decides, before the visit, what to get out of it, how to ask, and how to respond",
-      "answers": "What do we want to get from the customer on this visit, and how will we respond to expected objections?",
-      "guardrails": [
-        "Make the title \"the one thing we want to hear from the customer.\" \"Explain X\" is not an objective",
-        "Always state in ask which person or department we want introduced next, and why",
-        "Frame questions so the answer isn't just Yes/No (include SPIN's Implication and Need-payoff questions)",
-        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
-      ],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "win-plan": {
-      "displayName": "Win Plan (WPS)",
-      "description": "A one-page summary of the win strategy and risks used to decide stage advancement and proposal investment in WPS",
-      "answers": "Why can we win this deal, and how will we neutralize the biggest risk?",
-      "guardrails": [
-        "Write in resolution why the customer would choose us, not a list of product names",
-        "Pair each risk with a next action we can control. Anything without an actionable next step is capped at Best",
-        "Always accompany this with a verbal request for a continue / hold / withdraw decision",
-        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
-      ],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "challenge-hypothesis": {
-      "displayName": "Challenge Hypothesis One-Pager",
-      "description": "A one-pager that surfaces issues the customer hasn't yet articulated, to open a dialogue",
-      "answers": "What issue has the customer not yet noticed, and what happens if it's left unaddressed?",
-      "guardrails": [
-        "**For customer presentation**. Do not write about individuals' influence, stance, internal politics, or competitors' weaknesses",
-        "Fix the three cards in the order: groundwork → reframing → evidence (cost of inaction)",
-        "Do not assert as fact. Phrase hypotheses so they read as hypotheses, and always end with a question to the customer",
-        "Do not include figures without a source. Cite the source for any public case study"
-      ],
-      "inference": "Diagnostic (identifying factors and structure)"
     },
     "gantt-schedule": {
       "displayName": "Gantt Chart",
@@ -336,16 +629,177 @@
       ],
       "inference": "Descriptive (organizing facts)"
     },
-    "chronology": {
-      "displayName": "Chronology",
-      "description": "A vertical chronology of dates and events showing how we arrived at the current state",
-      "answers": "What has happened so far, and what sequence of events led to the current state?",
+    "gap-analysis": {
+      "displayName": "Gap Analysis (As-Is / To-Be)",
+      "description": "Shows the current state (As-Is) and the target state (To-Be) side by side, and defines the gap to be closed",
+      "answers": "Where does the current state diverge from the target state, and what should we set as the issue to solve?",
       "guardrails": [
-        "Write only facts in the event column. Keep interpretation and evaluation separate, in \"implications\"",
-        "Keep the date granularity consistent (all years, or all year-months, not mixed)",
-        "Limit to 9 rows. Bundle earlier history or narrow the period covered",
-        "If a quiet period is meaningful, don't omit the row — write \"no change\" to show it explicitly"
+        "As-Is must be a verified fact; To-Be must be an agreed-upon goal. If placing an unagreed aspiration into To-Be, mark it explicitly as a hypothesis in the title",
+        "List the same dimensions in the same order under asis and tobe, so the gap reads clearly row by row",
+        "Write gaps as \"the issue to be closed,\" not as \"a description of the difference\" (what needs to become what state). The issue cards carry this slide's conclusion",
+        "Do not put the details of solutions (How) on this slide. Send prioritization of issues to priority-matrix",
+        "For any numeric target in To-Be, state the basis (benchmark, management target) in source"
       ],
+      "inference": "Strategic (evaluation and direction-setting)"
+    },
+    "gate-verdict": {
+      "displayName": "Quality Gate Verdict",
+      "description": "Brings the review verdict, the weighted score per perspective, and what remains by priority onto one page",
+      "answers": "Did the quality gate pass, and if it did not, what is still open?",
+      "guardrails": [
+        "Do not write CONDITIONAL_PASS as PASS. A conditional pass means conditions are still open",
+        "Carry the weighted score computed with review-registry.json's weights as it stands. Do not recompute it on the slide",
+        "Do not summarise as 'passed' while P0 is not zero",
+        "When perspectives are trimmed to the cap, name the ones left out in source"
+      ]
+    },
+    "hearing-agenda": {
+      "displayName": "What We Need to Hear Today",
+      "description": "Puts the open points on the table up front, each with the reason you are asking",
+      "answers": "What do we need to be told in this meeting?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "If you cannot say why you are asking, leave it off. Questions are decided by order, not by volume",
+        "Do not arrive with the blanks filled in by guesswork. You ask because it is blank",
+        "Five items at most. Do not exceed what one meeting can answer"
+      ]
+    },
+    "hypothesis-check": {
+      "displayName": "Checking Our Understanding",
+      "description": "Puts your reading up as a hypothesis so the customer can correct what is wrong",
+      "answers": "Where is our understanding wrong?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**Do not assert.** Only rows whose confidence is 推定 belong here; listing confirmed ones checks nothing",
+        "The point is to be corrected. Always end with 'tell us if we have this wrong'",
+        "No figure without a source"
+      ]
+    },
+    "iceberg-challenge": {
+      "displayName": "Structure Beneath the Problems",
+      "description": "Separates the problems on the surface from the structure underneath, distinguishing the proposal from a symptomatic fix",
+      "answers": "What sits beneath the problems we can see?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "The top is **what the customer actually said**; the bottom is our reading of the structure. **Do not mix them**",
+        "The top takes **two short noun phrases** (10 characters each); only two lines fit above the waterline. Wanting three means the surface problems are not narrowed down yet",
+        "Three at most below. **The more root causes you list, the less any of them looks like the root**",
+        "Leave room for this reading to be wrong. Do not assert it before it is agreed"
+      ]
+    },
+    "influence-map": {
+      "displayName": "Influence Map",
+      "description": "Places buying-committee members on two axes — influence and stance — to show whom to move to win the deal",
+      "answers": "Whom do we need to move to close this deal, and is influence skewed toward the opposing side?",
+      "guardrails": [
+        "Base positions on statements confirmed in meetings. Do not place sales' own hopes as if they were the stakeholder's stance",
+        "Do not place uncontacted stakeholders as \"neutral.\" Put unknowns into discovery-gaps instead",
+        "Base influence on whether the person actually mattered in past approvals, not on job title",
+        "Keep bubble labels to 6 characters or fewer. Put job-title and name details in buying-committee instead",
+        "Bubbles are 0.95in in diameter. If placed too close together, labels get hidden (the --dry-run figure audit stops on \"Text is hidden behind a shape drawn later\"). Merge stakeholders that appear at the same position, or split them out into buying-committee"
+      ],
+      "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "influence-map-org": {
+      "displayName": "Influence Map (Org Structure)",
+      "description": "Arranges buying-committee members by organizational connections, showing role, influence, stance, and meeting status",
+      "answers": "Who reports to whom, and where is influence and support concentrated?",
+      "guardrails": [
+        "The contents of people / links are validated by scripts/account_graph.py. Duplicate ids, dangling reportsTo references, and cycles are caught there, so always pass data that has gone through account_graph.load()",
+        "If there are more than 9 people, thin them out with account_graph.extract() and write \"see the draw.io version for the other N people\" in more. Do not cram everyone onto one slide",
+        "Include unmet stakeholders with met: false (drawn as a dashed line). Not having met someone is itself information",
+        "Base stance on statements made in meetings. Do not write sales' own hopes into stance"
+      ],
+      "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "issue-register": {
+      "displayName": "Issue, Debt and Finding Register",
+      "description": "Shows the detected issues as a severity distribution plus individual entries",
+      "answers": "What has been found, and how bad is it?",
+      "guardrails": [
+        "Use the severity the report assigned. Do not raise or lower it in the deck",
+        "The total of counts and the number of issues must agree (say so in the lead if this is an extract)",
+        "No remedies on this page. This page goes as far as 'what was found'",
+        "Every entry keeps its evidence (file, line, endpoint)"
+      ]
+    },
+    "joint-proposal-policy": {
+      "displayName": "Joint Proposal Policy",
+      "description": "Settles the joint win theme, RACI, route to market, estimate boundary, IP and confidentiality, and contractual responsibility on one page",
+      "answers": "Who is responsible for what on this deal, and where does the estimate divide?",
+      "guardrails": [
+        "**Partner proposal material.** Do not present an unagreed item as agreed",
+        "**Always state the estimate boundary.** Left vague until it reaches the customer, it will be disputed later",
+        "Do not omit where IP, confidentiality and contractual responsibility sit (required by playbook §3)",
+        "An unagreed item stays as a row marked 未合意. **Do not ship it blank**",
+        "Before naming the customer or their terms, confirm the NDA is in place"
+      ]
+    },
+    "key-message-storyline": {
+      "displayName": "Storyline",
+      "description": "Lines up the body's action titles in order — the horizontal logic — showing on one page that the titles alone carry the argument",
+      "answers": "Does the argument hold when reading only the titles?",
+      "guardrails": [
+        "Each row must match the action title of its body slide; never rewrite as a summary",
+        "If the argument breaks here, fix the structure before building the slides",
+        "Write each row as a claim (\"what can be said\"); never as a table-of-contents topic"
+      ],
+      "inference": "Strategic (evaluation and direction-setting)"
+    },
+    "kpi-tree": {
+      "displayName": "KPI Tree",
+      "description": "Decomposes the KGI into its component metrics, showing which metric is driving the gap (or the achievement) against target",
+      "answers": "Which component metric is producing the gap between target and actual?",
+      "guardrails": [
+        "The root is a single KGI. Write node labels as \"metric name\\nactual value\" (or \"actual / target\" if showing the ratio to target)",
+        "Only use parent-child relationships explainable by arithmetic (Revenue = New + Existing, New = Leads × Conversion rate, …). Do not include elements that can't be explained this way",
+        "Every figure requires a source. State the period and aggregation definition in source",
+        "Limit to 5 leaves (to preserve the 0.46in node height for two-line labels). When there are many metrics, expand only the bottleneck branch and collapse the rest at a higher level",
+        "Write in insight which metric is the primary driver of the gap, quantified (e.g., of the -12% shortfall, -9% comes from the opportunity-conversion rate)"
+      ],
+      "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "license-estimate": {
+      "displayName": "License Estimate Summary",
+      "description": "The cost page of a proposal: a Scalar license estimate's line items, list price → discount → offered price, and assumptions on one slide",
+      "answers": "How much does this configuration cost, and what are the breakdown and assumptions?",
+      "guardrails": [
+        "Transcribe unit prices and amounts from the price-master quotation; never compute them on this slide",
+        "Never show the discount rate. Show only list total, discount amount, and offered price",
+        "Always show the contract term (monthly / annual / 3-year) in the summary table; never state an amount without its term",
+        "Pod counts must match the quotation and the architecture diagram. State the contract-Pod rule (annual contract = maximum concurrently running Pods) as an assumption"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "license-pattern-compare": {
+      "displayName": "License Pattern Comparison",
+      "description": "Compares quotation patterns (Standard / Premium, different configurations) side by side on configuration, Pod count, and offered price, with an explicit recommendation",
+      "answers": "Which license pattern fits this customer best, and how much do the options differ?",
+      "guardrails": [
+        "Transcribe amounts from the price-master quotation's comparison summary; never show discount rates — compare offered prices",
+        "Keep the row dimensions (configuration, Pods, term, price) aligned across patterns so each row reads straight across",
+        "Write the recommendation from both functional fit and price; never push the cheapest option unconditionally"
+      ],
+      "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "logic-tree": {
+      "displayName": "Logic Tree",
+      "description": "Decomposes an issue MECE-style, showing structurally where the problem (or the solution) lies",
+      "answers": "What elements can this problem be broken down into, and which one matters most?",
+      "guardrails": [
+        "tree is nested as [label, [children…]]. Each child is either the same shape or a string. Depth beyond 4, or insufficient column width, raises an error at render time",
+        "Limit to 5 leaves (to preserve the 0.46in node height). Beyond that, split the tree across two slides",
+        "MECE (mutually exclusive, collectively exhaustive) is not enforced by the component itself. Keep one decomposition criterion per level",
+        "Do not mix a Why tree (cause decomposition) and a How tree (solution decomposition) into a single tree",
+        "Write in insight which branch matters most, and the basis for that judgment"
+      ],
+      "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "market-sizing": {
+      "displayName": "TAM / SAM / SOM",
+      "description": "Shows the total market down to the obtainable market as nested circles",
+      "answers": "How large is the market, and what is the realistic obtainable range?",
+      "guardrails": [],
       "inference": "Descriptive (organizing facts)"
     },
     "milestone-timeline": {
@@ -375,176 +829,61 @@
       ],
       "inference": "Descriptive (organizing facts)"
     },
-    "daily-gantt": {
-      "displayName": "Day-by-Day Gantt",
-      "description": "Places task bars on date columns, showing the actual working days across holidays and the milestones at day granularity",
-      "answers": "How does the work in the period run in parallel day by day, and when does it finish once holidays are counted?",
+    "next-step-customer": {
+      "displayName": "What to Decide Today, and the Next Step",
+      "description": "Separates what is decided in the room from the homework each side takes away",
+      "answers": "What is being decided today, and who does what before the next meeting?",
       "guardrails": [
-        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the calendar header",
-        "Each row is [kind, name, owner, start date, end date, progress]. kind is group (heading) / task (span) / milestone (◆). A milestone sits in its start-date column with an empty end date and progress 0",
-        "Up to 31 days every day is labeled, up to 60 days only Mondays are, and from 61 days to 26 weeks it switches automatically to one column per week. For longer plans use planning/gantt-schedule (monthly)",
-        "The working-day count (excluding weekends, holidays, and extraHolidays) appears to the right of each bar. Do not put dates on work that has no basis for its duration",
-        "Up to 12 rows. Split larger plans into pages by group with scripts/calendar_pages.py",
-        "Dependency arrows are not drawn. For plans that need to show sequencing, use nexus/roadmap",
-        "Do not mix planned values with actuals. When you include progress rates, state the as-of date in source"
-      ],
-      "inference": "Descriptive (organizing facts)"
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**One thing to decide today.** With several, none of them get decided",
+        "Homework carries an owner and a date. **Without both it does not move**",
+        "Always include something on our side. Not a page that only hands the customer homework"
+      ]
     },
-    "daily-agenda": {
-      "displayName": "Daily Task List",
-      "description": "Lists dates going down with one task per row, showing each day's owner, due time, and status",
-      "answers": "Who does what by when, day by day?",
+    "one-page-brief": {
+      "displayName": "One-Page Brief",
+      "description": "The densest page in the pack: exhibit chart, comparison table, implication, decision items, and source, all on one approval-ready page",
+      "answers": "Can the approver confirm the judgment and the decision items from this one page alone?",
       "guardrails": [
-        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the calendar header",
-        "Each item is [date, content, owner, due, status]. One task per row; the date cells of several tasks on the same day are merged vertically",
-        "Consecutive weekends and holidays with no tasks collapse into one row labeled with the holiday name. A holiday row still counts as a row",
-        "About 11 rows per slide. Split longer periods by week with scripts/calendar_pages.py",
-        "Status is 完了 / 進行中 / 予定 / 遅延 / 中止 (done / doing / todo / late / cancelled also work). It is shown in text, not only by color",
-        "Write a time or deadline in the due column, and leave it empty when undecided (it shows as \"—\"). Do not fill it in by guessing",
-        "Passing today highlights that day's date cell in red. Align it with the document's creation date, and state the as-of date in source as well"
+        "This page is the final check for approval. The exhibit and table summarize the body; never introduce a first-appearance number here",
+        "Write decision items so Yes/No can be said, with a deadline. \"Continue considering\" is not a decision item",
+        "Pack in information, not text. Keep table cells short and nominal"
       ],
-      "inference": "Descriptive (organizing facts)"
+      "inference": "Strategic (evaluation and direction-setting)"
     },
-    "weekly-timetable": {
-      "displayName": "Weekly Timetable",
-      "description": "Places events on weekday columns and hour rows, showing what happens where at each time of the week",
-      "answers": "What is on, when and where, this week?",
+    "open-questions": {
+      "displayName": "Open Questions and Next Actions",
+      "description": "Shows the premises still unfilled and the phases not started, along with who fills them and how",
+      "answers": "What can this material not yet answer, and how does that get filled?",
       "guardrails": [
-        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the header",
-        "Each event is [date, start, end, subject, place, category]. Write times as HH:MM. Put any date of the week in week; it is drawn as a Monday-start week",
-        "For 9:00–18:00 (9 hours), one hour is about 0.37in. Events shorter than 30 minutes cannot be drawn, so move them to a list (daily-agenda) instead of rounding the times",
-        "Up to two events at the same time sit side by side. For a week with three or more overlapping, split pages by room or track",
-        "Breaks (breaks, a 12:00–13:00 lunch break by default) appear as a gray band only on days without events there. Holidays with no events are filled with the holiday name",
-        "To include weekends, set days to 7. Columns get narrower, and a one-hour event shows only its subject",
-        "State in source that these are planned events, and as of when"
-      ],
-      "inference": "Descriptive (organizing facts)"
+        "Do not remove an item from here by filling it with a guess. It is open because it is unfilled, not because nothing could be written",
+        "Every row says who fills it and with which command. Do not leave it as a list of homework",
+        "Do not mix open questions arising from unstarted phases with ones the report stated explicitly (distinguish them in source)",
+        "On a partially-run deck, this is always the last page"
+      ]
     },
-    "sprint-calendar": {
-      "displayName": "Sprint Calendar",
-      "description": "Lays consecutive sprints out in week rows, showing the working days lost to holidays and the planning, review, and release days",
-      "answers": "When does each sprint run, how many working days does it have, and when are its events?",
+    "outcome-before-after": {
+      "displayName": "Expected Outcome (how the work changes)",
+      "description": "States the effect as a change in daily work rather than as a set of capabilities",
+      "answers": "What actually changes for the people doing the work?",
       "guardrails": [
-        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the header",
-        "Each sprint is [number, goal, release or not]. start is the Monday of the first sprint; sprints follow one after another every lengthDays (7 or 14)",
-        "Up to 8 weeks per slide (4 two-week sprints, or 8 one-week sprints). Split longer spans with scripts/calendar_pages.py",
-        "Working days are weekdays minus holidays and extraHolidays. The panel also shows how many holidays fell on a weekday, which is grounds for lowering the expected velocity",
-        "Planning is placed on the first working day (marked as moved when the first day is a holiday), and review or release on the last working day, automatically. Do not use this when the actual dates differ",
-        "Goals are one line, up to 14 full-width characters. Phrase them as an outcome that can be checked, not as a task name",
-        "State in source that future sprints are a plan"
-      ],
-      "inference": "Descriptive (organizing facts)"
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**Write work, not capability.** Not 'it becomes ACID' but 'the reconciliation goes away'",
+        "**Only quantified figures with a stated basis.** Without one, state it qualitatively and say it will be measured in the PoC",
+        "Put before and after on the same dimension. A shifted comparison is no comparison",
+        "Do not present a published case's figure as this customer's effect. Cases belong on their own page"
+      ]
     },
-    "year-at-a-glance": {
-      "displayName": "Year at a Glance",
-      "description": "Lays out the fiscal year's 12 months as small month calendars, marking busy periods, closures, and key dates with fills and circles",
-      "answers": "Where in the fiscal year do the busy periods and key dates fall?",
+    "pain-chain": {
+      "displayName": "Pain Chain",
+      "description": "Traces how a frontline problem cascades into departmental and executive metrics",
+      "answers": "Which executive-level number is the frontline issue actually affecting?",
       "guardrails": [
-        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the month headers",
-        "Each mark is [start date, end date, label, kind]. kind is busy (busy period, blue fill) / off (closure, red fill) / key (key date, red circle; leave end date empty)",
-        "Put the first month of the fiscal year (e.g. 2026-04) in startMonth and 12 months are laid out. Dates outside that range are an error",
-        "Dates are 7pt, a density for handouts only. For projection, use month-calendar one month at a time",
-        "The legend lists the labels of each kind. Keep labels short (about 6 full-width characters) and about 3 per kind at most",
-        "To also color company closure dates red, add them to extraHolidays too. An off mark only fills the area",
-        "State in source that these are planned events, and as of when"
-      ],
-      "inference": "Descriptive (organizing facts)"
-    },
-    "deadline-countdown": {
-      "displayName": "Deadline Countdown",
-      "description": "Shows the days left to a deadline in calendar days and working days, and shades the calendar from today to the deadline",
-      "answers": "How many days (working days) are left to the deadline, and when are the checkpoints on the way?",
-      "guardrails": [
-        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the header",
-        "today is the document's as-of date and is required. Days left are calendar days from today to the deadline; working days are weekdays from today to the day before the deadline, minus holidays and extraHolidays",
-        "The deadline must fall in today's month or the next month. Show deadlines further out with month-calendar or daily-gantt",
-        "Checkpoints are [date, name], up to 3. Use dates between today and the deadline",
-        "Make label a short phrase that says what the deadline is for, such as \"本番切替まで\" (until the production cutover)",
-        "A document past its as-of date has stale numbers. Update today when distributing, and state the as-of date in source as well"
-      ],
-      "inference": "Descriptive (organizing facts)"
-    },
-    "activity-heatmap": {
-      "displayName": "Daily Heatmap",
-      "description": "Lays out daily values as shaded week × weekday cells, showing weekday and seasonal skew and monthly totals",
-      "answers": "On which weekdays and in which periods is the volume concentrated?",
-      "guardrails": [
-        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the month headers",
-        "Values are [date, number]. The period is up to 53 weeks. Split longer series into 52-week pages with scripts/calendar_pages.py",
-        "The page handles numbers, so source is required. State the period, the counting definition (what counts as one), the unit, and where the data came from",
-        "Shading is a relative bucket by quantile (levels steps) of this period's values, not an absolute threshold. Do not compare colours with a chart of another period",
-        "Days with no value are white; days with 0 get the lightest colour. Do not mix missing values and zeros (do not fill missing days with 0)",
-        "Low values on holidays and long weekends are a calendar effect, not an anomaly. Read them together with the holiday average card",
-        "The cards below show aggregates only. Put causes or evaluation in the title or body, and do not write correlation as causation"
-      ],
-      "inference": "Descriptive (organizing facts)"
-    },
-    "shift-roster": {
-      "displayName": "Shift Roster",
-      "description": "Places a one-character duty code and colour in each person × day cell, showing the daily headcount and understaffed days",
-      "answers": "Who is on duty each day, and which days are short-staffed?",
-      "guardrails": [
-        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the date headers",
-        "People are [name, schedule]. The schedule is a string of one code character per day of the period (e.g. 日日夜休…), and its length must equal the number of days",
-        "Codes are [character, meaning, colour, counts toward headcount]. Colours are primary / dark / success / danger / info / warning / muted. The legend is added automatically",
-        "One page holds up to 31 days × 12 people. Split longer periods or larger teams by month or by 12 people with scripts/calendar_pages.py",
-        "With minStaff set, days whose total of headcount codes falls below it turn red. State the basis for the required staffing (SLA, staffing plan) in source",
-        "Mind the sharing scope of material that shows real people's names. Use role names or pseudonyms for external audiences and examples",
-        "State in source that this is a plan and as of when the roster applies. Same-day swaps are not reflected"
-      ],
-      "inference": "Descriptive (organizing facts)"
-    },
-    "logic-tree": {
-      "displayName": "Logic Tree",
-      "description": "Decomposes an issue MECE-style, showing structurally where the problem (or the solution) lies",
-      "answers": "What elements can this problem be broken down into, and which one matters most?",
-      "guardrails": [
-        "tree is nested as [label, [children…]]. Each child is either the same shape or a string. Depth beyond 4, or insufficient column width, raises an error at render time",
-        "Limit to 5 leaves (to preserve the 0.46in node height). Beyond that, split the tree across two slides",
-        "MECE (mutually exclusive, collectively exhaustive) is not enforced by the component itself. Keep one decomposition criterion per level",
-        "Do not mix a Why tree (cause decomposition) and a How tree (solution decomposition) into a single tree",
-        "Write in insight which branch matters most, and the basis for that judgment"
-      ],
-      "inference": "Diagnostic (identifying factors and structure)"
-    },
-    "kpi-tree": {
-      "displayName": "KPI Tree",
-      "description": "Decomposes the KGI into its component metrics, showing which metric is driving the gap (or the achievement) against target",
-      "answers": "Which component metric is producing the gap between target and actual?",
-      "guardrails": [
-        "The root is a single KGI. Write node labels as \"metric name\\nactual value\" (or \"actual / target\" if showing the ratio to target)",
-        "Only use parent-child relationships explainable by arithmetic (Revenue = New + Existing, New = Leads × Conversion rate, …). Do not include elements that can't be explained this way",
-        "Every figure requires a source. State the period and aggregation definition in source",
-        "Limit to 5 leaves (to preserve the 0.46in node height for two-line labels). When there are many metrics, expand only the bottleneck branch and collapse the rest at a higher level",
-        "Write in insight which metric is the primary driver of the gap, quantified (e.g., of the -12% shortfall, -9% comes from the opportunity-conversion rate)"
-      ],
-      "inference": "Diagnostic (identifying factors and structure)"
-    },
-    "why-why": {
-      "displayName": "Why-Why Analysis",
-      "description": "Shows the chain produced by repeatedly asking \"why\" from an observed event down to the root cause",
-      "answers": "What is the root cause of this event, and where should we act?",
-      "guardrails": [
-        "chain[0] is the observed event, and the last entry is the root cause. Don't skip steps — dig one \"why\" at a time",
-        "Don't stop at \"the person in charge was careless\" or \"low awareness.\" Dig down to systemic and process-level factors",
-        "Word each step as something verifiable by fact. Mark any step that hasn't been verified with (hypothesis)",
-        "Limit to 6 steps due to width constraints. If the cause branches into multiple paths partway through, use fishbone-diagram instead",
-        "Write in insight the countermeasure (recurrence-prevention action) aimed at the root cause, distinguished from a symptomatic fix"
+        "A chain link is a causal claim. Do not connect two stages with an arrow unless each stage has supporting evidence",
+        "Describe the impact on executive metrics using the customer's own numbers. If it's our own estimate, label it clearly as an estimate",
+        "Do not present correlation as causation"
       ],
       "inference": "Causal (asserting causes)"
-    },
-    "fishbone-diagram": {
-      "displayName": "Fishbone Diagram",
-      "description": "Lists hypothesized causes of a problem by category, to identify where to start verifying",
-      "answers": "Which category does the cause of this problem fall under, and where should verification start?",
-      "guardrails": [
-        "Keep categories to a single consistent basis, such as the 4Ms (Man, Machine, Method, Material) or process names. Do not mix bases",
-        "Limit to 4 causes per category. If there are more, consolidate them or move them to a supplementary document (this diagram is not meant to prove exhaustive coverage)",
-        "What's included here are hypothesized causes. Identify the root cause via why-why or data verification; do not distinguish verified causes with bold or similar formatting (all causes are on equal footing in this diagram)",
-        "State problem as a measurable event (\"monthly defect rate above 3%,\" not \"quality is bad\")",
-        "Write in insight which cause to verify next, and how"
-      ],
-      "inference": "Diagnostic (identifying factors and structure)"
     },
     "pareto-analysis": {
       "displayName": "Pareto Chart",
@@ -559,16 +898,120 @@
       ],
       "inference": "Descriptive (organizing facts)"
     },
-    "gap-analysis": {
-      "displayName": "Gap Analysis (As-Is / To-Be)",
-      "description": "Shows the current state (As-Is) and the target state (To-Be) side by side, and defines the gap to be closed",
-      "answers": "Where does the current state diverge from the target state, and what should we set as the issue to solve?",
+    "partner-value": {
+      "displayName": "Partner Value and Shape of the Collaboration",
+      "description": "What a partner gains and what they carry — a page to show a partner",
+      "answers": "What does a partner get out of carrying this product?",
       "guardrails": [
-        "As-Is must be a verified fact; To-Be must be an agreed-upon goal. If placing an unagreed aspiration into To-Be, mark it explicitly as a hypothesis in the title",
-        "List the same dimensions in the same order under asis and tobe, so the gap reads clearly row by row",
-        "Write gaps as \"the issue to be closed,\" not as \"a description of the difference\" (what needs to become what state). The issue cards carry this slide's conclusion",
-        "Do not put the details of solutions (How) on this slide. Send prioritization of issues to priority-matrix",
-        "For any numeric target in To-Be, state the basis (benchmark, management target) in source"
+        "**Partner-facing.** Keep customer-specific confidential detail to a minimum (playbook §3)",
+        "**Write it as standard, reusable information.** Mixing in one deal's circumstances makes it unusable elsewhere",
+        "State what is in it for the partner (deal size, services, recurring work). **Not only what suits us**",
+        "Do not name a competitor's weakness. Partners trade with the competition too",
+        "Treat prices as list price (excl. tax) reference-estimate material; discounts and multi-year terms stay off (they route to the AE)"
+      ]
+    },
+    "persona-card": {
+      "displayName": "Persona Card",
+      "description": "Draws the representative user as a real person, sharing their goal and pains on one page",
+      "answers": "Who is this persona, what are they trying to achieve, and what is getting in their way?",
+      "guardrails": [
+        "Write only what the research confirmed. Never invent an age, income or family to fill the card",
+        "attributes holds the occupation or role, kept short. Age, location and family belong in the traits row, because the column is narrow and breaks words mid-way",
+        "quote must be verbatim. Mark it as a summary if you had to condense it",
+        "Do not draw an idealised person. Listing only the convenient behaviours defeats the purpose",
+        "Leave out attributes that no UX or campaign decision rests on. Do not multiply the fields",
+        "A proto-persona with no research behind it says so in source",
+        "portrait is for an invented persona only. Never put a generated face on a quote from a real person",
+        "Leaving portrait empty draws the pictogram. That is fine when you are not using image generation"
+      ],
+      "inference": "Descriptive (stating the facts)"
+    },
+    "persona-journey": {
+      "displayName": "Persona and Where the Experience Stalls",
+      "description": "Lays out the target user's experience in sequence and shows where it stalls",
+      "answers": "Who stalls, in which experience, and where?",
+      "guardrails": [
+        "Persona attributes are only what the research confirmed. Do not invent an age or an income to fill the card",
+        "Tie each pain to an observed fact (something said, done, or measured). If it is inference, label it a hypothesis",
+        "No solutions on this page. This page goes as far as the experience as it is"
+      ]
+    },
+    "pest-analysis": {
+      "displayName": "PEST Analysis",
+      "description": "Lists macro-environment factors across Political, Economic, Social, and Technological dimensions, organizing external impacts on the business",
+      "answers": "What external factors are shaping our business environment?",
+      "guardrails": [
+        "Include only external factors that could actually affect our business (not a general news roundup)",
+        "Distinguish facts (enacted regulations, published statistics) from expectations (under deliberation, early signs), and attach a timeframe to expectations",
+        "Do not judge opportunity vs. threat here (pass that judgment to SWOT — this slide sticks to describing the environment)",
+        "Include at least one item in each of the four quadrants. An empty quadrant reads as \"not researched\"",
+        "Consolidate the source of each factor in source (official gazette, statistics, research report name)"
+      ],
+      "inference": "Strategic (evaluation and direction-setting)"
+    },
+    "phase-digest": {
+      "displayName": "Phase Digest (section divider)",
+      "description": "Shows what one phase established, using that phase's own summary and its output files",
+      "answers": "What did this phase establish, and which report says so?",
+      "guardrails": [
+        "Base summary on what the phase recorded itself (the summary in pipeline-progress.json). Rewording for the reader is fine; adding a new claim is not",
+        "outputs lists files that exist. Anything declared but unwritten goes to open-questions",
+        "A section divider carries one conclusion. Split multiple findings onto following pages"
+      ]
+    },
+    "phase-gate": {
+      "displayName": "Stage-Gate Criteria",
+      "description": "Lists the current stage's exit criteria and judges each by whether customer-side evidence has been obtained",
+      "answers": "What customer-side evidence shows that the current stage's exit criteria are met?",
+      "guardrails": [
+        "State is one of three values: met / partial / unmet. \"We explained it\" or \"we sent the proposal\" does not count as grounds for met",
+        "Evidence must come from the customer side (statements, documents, approval records). Internal agreement is not evidence",
+        "Map each exit criterion to a gate ID in references/scalar/sales-playbook.md §2",
+        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
+      ],
+      "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "pipeline-coverage": {
+      "displayName": "Pipeline Coverage",
+      "description": "States up front how far the analysis behind this deck actually got (done / running / not started)",
+      "answers": "How much completed analysis is this proposal or report based on?",
+      "guardrails": [
+        "Always the second slide. A deck explaining incomplete work misleads the reader unless the basis is disclosed first",
+        "counts are actual phase counts. Do not reinterpret them as report pages or hours worked",
+        "Do not relabel a not-started phase as 'out of scope'. skipped (deliberately passed over) and pending (not yet) are different",
+        "Always put the collection time (asOf) in source. The pipeline keeps moving, so the deck is always a snapshot"
+      ]
+    },
+    "poc-plan": {
+      "displayName": "PoC Objective and Pass Criteria",
+      "description": "What has to be confirmed for feasibility, and what happens after — as far as what follows a pass",
+      "answers": "What does the PoC confirm, and what happens if it passes?",
+      "guardrails": [
+        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
+        "**Pass criteria are numeric or answerable yes/no.** 'It works well' is not a criterion",
+        "**Always state what happens on a pass.** A PoC the customer cannot answer that for has not been designed yet",
+        "Say what happens on a fail. A one-way PoC is not a verification",
+        "State the people, effort and data needed from the customer. **Do not say 'no special burden'**"
+      ]
+    },
+    "positioning-map": {
+      "displayName": "Positioning Map",
+      "description": "Shows the positional relationship between us and competitors on two axes",
+      "answers": "Are we delivering value that differs from competitors?",
+      "guardrails": [],
+      "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "priority-matrix": {
+      "displayName": "Issue Priority Matrix",
+      "description": "Plots issues on two axes — impact and ease of execution — showing where to start",
+      "answers": "Among the issues we've identified, which should we tackle first?",
+      "guardrails": [
+        "items is [issue name, x, y]. x / y are relative values from 0 to 1 (0 = left/bottom, 1 = right/top). State the basis for the rating (impact estimate, effort estimate), the evaluator, and the evaluation date in source",
+        "Keep the issue name short enough to fit the bubble (0.8in diameter ≈ 4 characters/line). For 5 or more characters, mark the line break explicitly with \\n, e.g. \"Access request\\nautomation\"",
+        "The top-right quadrant (easy to execute × high impact) is highest priority. But since the coordinates tend to be subjective, use this to agree on relative order rather than debating exact position",
+        "Overlapping bubbles become unreadable. Limit to 8 issues, and merge issues that sit close together",
+        "Use highlight only for issues we've decided to act on (too much emphasis emphasizes nothing)",
+        "This slide does not explain the substance of each issue (what it solves). Define that in gap-analysis or logic-tree before bringing it here"
       ],
       "inference": "Strategic (evaluation and direction-setting)"
     },
@@ -585,157 +1028,6 @@
       ],
       "inference": "Descriptive (organizing facts)"
     },
-    "pest-analysis": {
-      "displayName": "PEST Analysis",
-      "description": "Lists macro-environment factors across Political, Economic, Social, and Technological dimensions, organizing external impacts on the business",
-      "answers": "What external factors are shaping our business environment?",
-      "guardrails": [
-        "Include only external factors that could actually affect our business (not a general news roundup)",
-        "Distinguish facts (enacted regulations, published statistics) from expectations (under deliberation, early signs), and attach a timeframe to expectations",
-        "Do not judge opportunity vs. threat here (pass that judgment to SWOT — this slide sticks to describing the environment)",
-        "Include at least one item in each of the four quadrants. An empty quadrant reads as \"not researched\"",
-        "Consolidate the source of each factor in source (official gazette, statistics, research report name)"
-      ],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "five-forces": {
-      "displayName": "Five Forces Analysis",
-      "description": "Evaluates industry competitive structure through five forces (rivalry, new entrants, substitutes, buyers, suppliers)",
-      "answers": "Where does competitive pressure in this industry come from, and how strong is it?",
-      "guardrails": [
-        "Write each force as \"Strong / Medium / Weak: rationale\" (don't give just the rating or just the rationale). title carries the conclusion — which force squeezes profitability the most",
-        "State clearly in title or source which industry (market scope) this covers. The rating changes if the scope changes",
-        "The five forces describe industry structure. Do not write our own company-specific strengths or weaknesses (send those to swot-analysis)",
-        "The rating includes the evaluator's judgment. State the source material for the rating and the evaluation date in source",
-        "The center force (industry rivalry) is also a result of the other four. This diagram does not assert causal arrows"
-      ],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "priority-matrix": {
-      "displayName": "Issue Priority Matrix",
-      "description": "Plots issues on two axes — impact and ease of execution — showing where to start",
-      "answers": "Among the issues we've identified, which should we tackle first?",
-      "guardrails": [
-        "items is [issue name, x, y]. x / y are relative values from 0 to 1 (0 = left/bottom, 1 = right/top). State the basis for the rating (impact estimate, effort estimate), the evaluator, and the evaluation date in source",
-        "Keep the issue name short enough to fit the bubble (0.8in diameter ≈ 4 characters/line). For 5 or more characters, mark the line break explicitly with \\n, e.g. \"Access request\\nautomation\"",
-        "The top-right quadrant (easy to execute × high impact) is highest priority. But since the coordinates tend to be subjective, use this to agree on relative order rather than debating exact position",
-        "Overlapping bubbles become unreadable. Limit to 8 issues, and merge issues that sit close together",
-        "Use highlight only for issues we've decided to act on (too much emphasis emphasizes nothing)",
-        "This slide does not explain the substance of each issue (what it solves). Define that in gap-analysis or logic-tree before bringing it here"
-      ],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "claim-evidence-table": {
-      "displayName": "Claim and Evidence Table",
-      "description": "The standard read-alone form: claim, supporting evidence table, implication, and source, all closed on one page",
-      "answers": "Which facts support this claim?",
-      "guardrails": [
-        "Write the title as \"what can be said\" in two lines or fewer; never as a caption describing the table",
-        "Keep the implication within what the table shows. Never restate the title or introduce new information",
-        "Never show a number without a source. Cut any row you cannot source"
-      ],
-      "inference": "Descriptive (organizing facts)"
-    },
-    "exhibit-analysis": {
-      "displayName": "Exhibit and Implication",
-      "description": "Puts a chart inside a numbered exhibit frame with the reading on the right, making one page referable from the body and appendix",
-      "answers": "What can be read from this exhibit?",
-      "guardrails": [
-        "The exhibit number exists for cross-reference from the body and appendix; sequential numbering is the author's responsibility",
-        "Keep the implication within what the chart shows; never add information that is not in the figure",
-        "Bar chart baselines are fixed at zero. Never exaggerate an axis to inflate a difference"
-      ],
-      "inference": "Diagnostic (identifying factors and structure)"
-    },
-    "exec-summary-readable": {
-      "displayName": "Executive Summary",
-      "description": "Situation, complication, and resolution in three tiers plus supporting points, so the first page alone enables a decision",
-      "answers": "What, in the end, is this document asking the reader to decide?",
-      "guardrails": [
-        "The condition is that this one page alone enables the decision; the body serves as supporting evidence",
-        "Write the resolution tier as a conclusion with numbers; never end on \"to be considered\"",
-        "If the supporting points exceed five, rework the body's chapter structure instead"
-      ],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "conclusion-rationale-implication": {
-      "displayName": "Conclusion, Rationale, and So What",
-      "description": "Leads with the conclusion, then rationale cards and the next action (So What), read as a one-page pyramid",
-      "answers": "What is the conclusion, why does it hold, and what happens next?",
-      "guardrails": [
-        "Put the conclusion in the title; never make the reader reach the end of the body to find it",
-        "Limit the rationale to 3-4 non-overlapping points; split to another slide beyond five",
-        "So What states the next action; never a restatement of the rationale or the title"
-      ],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "dense-comparison-table": {
-      "displayName": "Option Comparison Matrix",
-      "description": "Compares options in a dot-rating matrix and shows the recommendation with its reasoning on one page",
-      "answers": "Which option is best, and why recommend it?",
-      "guardrails": [
-        "Limit criteria to those that affect the decision; never pad with filler criteria",
-        "Always state the basis for the scoring (quotes, evaluation sessions) in the source",
-        "Write the recommendation as an overall judgment that concedes weaknesses; never disguise it as a clean sweep"
-      ],
-      "inference": "Diagnostic (identifying factors and structure)"
-    },
-    "key-message-storyline": {
-      "displayName": "Storyline",
-      "description": "Lines up the body's action titles in order — the horizontal logic — showing on one page that the titles alone carry the argument",
-      "answers": "Does the argument hold when reading only the titles?",
-      "guardrails": [
-        "Each row must match the action title of its body slide; never rewrite as a summary",
-        "If the argument breaks here, fix the structure before building the slides",
-        "Write each row as a claim (\"what can be said\"); never as a table-of-contents topic"
-      ],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "faq-objection-handling": {
-      "displayName": "Anticipated Q&A",
-      "description": "Pairs the objections expected at the approval meeting with sourced answers, preempting the Q&A on one page",
-      "answers": "How will we answer the expected objections?",
-      "guardrails": [
-        "Every answer must carry its basis (exhibit numbers, appendix, test results)",
-        "Leave unanswerable concerns visible; a glossed-over answer destroys the document's credibility",
-        "Limit concerns to ones that will actually come up; never stage weak strawman objections"
-      ],
-      "inference": "Descriptive (organizing facts)"
-    },
-    "one-page-brief": {
-      "displayName": "One-Page Brief",
-      "description": "The densest page in the pack: exhibit chart, comparison table, implication, decision items, and source, all on one approval-ready page",
-      "answers": "Can the approver confirm the judgment and the decision items from this one page alone?",
-      "guardrails": [
-        "This page is the final check for approval. The exhibit and table summarize the body; never introduce a first-appearance number here",
-        "Write decision items so Yes/No can be said, with a deadline. \"Continue considering\" is not a decision item",
-        "Pack in information, not text. Keep table cells short and nominal"
-      ],
-      "inference": "Strategic (evaluation and direction-setting)"
-    },
-    "license-estimate": {
-      "displayName": "License Estimate Summary",
-      "description": "The cost page of a proposal: a Scalar license estimate's line items, list price → discount → offered price, and assumptions on one slide",
-      "answers": "How much does this configuration cost, and what are the breakdown and assumptions?",
-      "guardrails": [
-        "Transcribe unit prices and amounts from the price-master quotation; never compute them on this slide",
-        "Never show the discount rate. Show only list total, discount amount, and offered price",
-        "Always show the contract term (monthly / annual / 3-year) in the summary table; never state an amount without its term",
-        "Pod counts must match the quotation and the architecture diagram. State the contract-Pod rule (annual contract = maximum concurrently running Pods) as an assumption"
-      ],
-      "inference": "Descriptive (organizing facts)"
-    },
-    "license-pattern-compare": {
-      "displayName": "License Pattern Comparison",
-      "description": "Compares quotation patterns (Standard / Premium, different configurations) side by side on configuration, Pod count, and offered price, with an explicit recommendation",
-      "answers": "Which license pattern fits this customer best, and how much do the options differ?",
-      "guardrails": [
-        "Transcribe amounts from the price-master quotation's comparison summary; never show discount rates — compare offered prices",
-        "Keep the row dimensions (configuration, Pods, term, price) aligned across patterns so each row reads straight across",
-        "Write the recommendation from both functional fit and price; never push the cheapest option unconditionally"
-      ],
-      "inference": "Diagnostic (identifying factors and structure)"
-    },
     "revenue-plan": {
       "displayName": "Revenue Plan (multi-year P/L)",
       "description": "Shows the profit plan from revenue down to operating income as a year-by-year table, making the level and timing of profitability visible on one page",
@@ -750,62 +1042,36 @@
         "Every figure moves when the assumptions move. Show the range of assumptions separately in scenario-comparison"
       ]
     },
-    "sales-buildup": {
-      "displayName": "Revenue Bridge (driver buildup)",
-      "description": "Bridges from a starting point to the planned figure driver by driver, showing what the growth is made of and what it depends on",
-      "answers": "Which drivers add up to the planned revenue, and which one does it depend on most?",
+    "rfm-segments": {
+      "displayName": "RFM Segments",
+      "description": "Compares customer segments and measures based on purchase recency, frequency, and monetary value",
+      "answers": "Who are the loyal, developing, and dormant customers, and which measures should be applied to each?",
+      "guardrails": [],
+      "inference": "Diagnostic (identifying factors and structure)"
+    },
+    "risk-register": {
+      "displayName": "Risks, Mitigations, and Exit Criteria",
+      "description": "Lists the major risks with impact and likelihood, paired with the mitigation and the trigger for exiting or revisiting",
+      "answers": "What could break the plan, how is it handled, and what makes us stop?",
       "guardrails": [
         "Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it",
-        "The third element of each item is total (a sum stacked from zero) or delta (a change from the previous total). The first item must be a total (the starting point)",
-        "The final total must equal the accumulated deltas or generation fails. Transcribe the value from the spreadsheet",
-        "A bridge whose running sum goes negative cannot be drawn. Split the starting point or use a separate slide when the decline is large",
-        "Cut drivers at a granularity someone can act on (new, expansion, churn, price). Do not leave a large lump inside \"other\"",
-        "State the unit in unit or the lead-in. Put the derivation of each driver in the source line",
-        "The total of the buildup must match the revenue in revenue-plan"
+        "One row per risk. Use the same vocabulary for impact and likelihood across every row (high/medium/low)",
+        "Exit and revisit criteria must be observable numbers. \"Depending on the situation\" is not a criterion",
+        "A mitigation is a concrete action an owner can take. \"Be careful\" and \"consider it\" are not mitigations",
+        "Leave out risks already mitigated down to a small residual. Keep only risks that could change an approver's decision",
+        "Put who decides and when into decisionRule. Do not mix the per-row criteria with the division of responsibility",
+        "When used with scenario analysis, align the exit criteria with the level of the low scenario"
       ]
     },
-    "cost-structure": {
-      "displayName": "Investment and Cost Structure",
-      "description": "Places the year-by-year cost mix beside the up-front/recurring breakdown by line item to show how much the business needs",
-      "answers": "How much does this business need, and what is the money spent on and in what order?",
+    "roadmap": {
+      "displayName": "Migration and Implementation Roadmap",
+      "description": "Shows the sequence, the durations and the dependencies as bands",
+      "answers": "What gets done, in what order, over what period?",
       "guardrails": [
-        "Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it",
-        "At most four cost categories. Fold the fifth and beyond into \"other\" or the stack becomes unreadable",
-        "The total of the stack must match cost of sales plus SG&A in revenue-plan",
-        "Always split up-front (one-time) from annual recurring in the right-hand table. Never show only a combined total",
-        "Put an em dash in cells that do not apply rather than leaving them blank, so they read as deliberate",
-        "Write the headcount x unit-cost assumption behind personnel cost in the source line. An amount alone cannot be assessed",
-        "State the unit and whether figures are tax-exclusive in the lead-in or unit",
-        "At most four periods. Aggregate the years or split into two slides beyond that"
-      ]
-    },
-    "break-even": {
-      "displayName": "Break-Even Analysis",
-      "description": "Marks the break-even point where the revenue line meets the total-cost line, with the margin of safety against plan alongside",
-      "answers": "How much must we sell to stop losing money, and how much room does the plan have?",
-      "guardrails": [
-        "Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it",
-        "Always state the fixed/variable cost split definition in the source line. A different split moves the break-even point",
-        "Draw the revenue and total-cost lines on the same horizontal axis (volume or revenue scale) and the same period",
-        "This is a single-year static analysis and says nothing about cash. Payback and cash belong in roi-payback",
-        "The straight-line approximation breaks down where the variable-cost ratio changes by volume band. State the applicable range in the lead-in",
-        "Margin of safety is (plan revenue - break-even revenue) / plan revenue. Pass a pre-computed string",
-        "Put the plan point (the current sales level) into words in the lead-in or source. Do not label the line ends: they always overlap near the crossing point"
-      ]
-    },
-    "scenario-comparison": {
-      "displayName": "Scenario Comparison (low / base / high)",
-      "description": "Shows several scenarios' trajectories with the assumptions that separate them, making the plan's range explicit",
-      "answers": "How far do results move when the assumptions move, and is the worst case acceptable?",
-      "guardrails": [
-        "Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it",
-        "Scenarios differ only by their assumptions. Never derive different results from the same assumptions",
-        "List only the drivers that move the result. Do not include assumptions that stay fixed",
-        "The low scenario must be bad enough to change a decision, not merely \"a bit worse\". Keep the high case at a defensible ceiling",
-        "The base scenario's figures must match revenue-plan",
-        "Do not weight the scenarios by probability. Argue likelihood on a separate slide with evidence",
-        "When this drives an exit decision, tie the scenarios to the exit criteria in risk-register",
-        "Set yMax to the round number just above the maximum. The automatic scale can reach 1.4x the maximum, squashing every line into the lower half of the plot"
+        "If there is no basis for a duration, do not give one. Make it a relative-order diagram instead",
+        "Bands that run in parallel must actually be able to (no dependency between them)",
+        "Milestones (start == end) mark decision points, not work",
+        "If a step depends on a phase that has not started, say so in the lead"
       ]
     },
     "roi-payback": {
@@ -823,296 +1089,33 @@
         "Do not label the line ends: they overlap near the crossing point. Show the amounts in the metric tiles above instead"
       ]
     },
-    "risk-register": {
-      "displayName": "Risks, Mitigations, and Exit Criteria",
-      "description": "Lists the major risks with impact and likelihood, paired with the mitigation and the trigger for exiting or revisiting",
-      "answers": "What could break the plan, how is it handled, and what makes us stop?",
+    "sales-buildup": {
+      "displayName": "Revenue Bridge (driver buildup)",
+      "description": "Bridges from a starting point to the planned figure driver by driver, showing what the growth is made of and what it depends on",
+      "answers": "Which drivers add up to the planned revenue, and which one does it depend on most?",
       "guardrails": [
         "Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it",
-        "One row per risk. Use the same vocabulary for impact and likelihood across every row (high/medium/low)",
-        "Exit and revisit criteria must be observable numbers. \"Depending on the situation\" is not a criterion",
-        "A mitigation is a concrete action an owner can take. \"Be careful\" and \"consider it\" are not mitigations",
-        "Leave out risks already mitigated down to a small residual. Keep only risks that could change an approver's decision",
-        "Put who decides and when into decisionRule. Do not mix the per-row criteria with the division of responsibility",
-        "When used with scenario analysis, align the exit criteria with the level of the low scenario"
+        "The third element of each item is total (a sum stacked from zero) or delta (a change from the previous total). The first item must be a total (the starting point)",
+        "The final total must equal the accumulated deltas or generation fails. Transcribe the value from the spreadsheet",
+        "A bridge whose running sum goes negative cannot be drawn. Split the starting point or use a separate slide when the decline is large",
+        "Cut drivers at a granularity someone can act on (new, expansion, churn, price). Do not leave a large lump inside \"other\"",
+        "State the unit in unit or the lead-in. Put the derivation of each driver in the source line",
+        "The total of the buildup must match the revenue in revenue-plan"
       ]
     },
-    "execution-structure": {
-      "displayName": "Execution Structure and Roles",
-      "description": "Places the delivery org chart beside the owner and headcount per role to substantiate that the plan can actually be executed",
-      "answers": "Who executes this business, and how many people does each role need?",
+    "scenario-comparison": {
+      "displayName": "Scenario Comparison (low / base / high)",
+      "description": "Shows several scenarios' trajectories with the assumptions that separate them, making the plan's range explicit",
+      "answers": "How far do results move when the assumptions move, and is the worst case acceptable?",
       "guardrails": [
         "Keep the title to roughly 30 full-width characters on one line. A second line collides with the lead-in below it",
-        "Draw the structure for this business, not the company org chart. Leave out departments that are not involved",
-        "Headcount must match the personnel cost in cost-structure. Do not add people here and forget them in the cost plan",
-        "Always distinguish dedicated from shared assignments. A structure heavy on shared assignments draws feasibility challenges",
-        "Depth of four or more, or over eight leaves, crushes the text. Split into a slide per department",
-        "Two-line node labels (\"role\\nheadcount\") read best. Mask individual names when the deck leaves the company",
-        "When the structure differs between launch and scale-up, state the period and use two slides"
-      ]
-    },
-    "pipeline-coverage": {
-      "displayName": "Pipeline Coverage",
-      "description": "States up front how far the analysis behind this deck actually got (done / running / not started)",
-      "answers": "How much completed analysis is this proposal or report based on?",
-      "guardrails": [
-        "Always the second slide. A deck explaining incomplete work misleads the reader unless the basis is disclosed first",
-        "counts are actual phase counts. Do not reinterpret them as report pages or hours worked",
-        "Do not relabel a not-started phase as 'out of scope'. skipped (deliberately passed over) and pending (not yet) are different",
-        "Always put the collection time (asOf) in source. The pipeline keeps moving, so the deck is always a snapshot"
-      ]
-    },
-    "phase-digest": {
-      "displayName": "Phase Digest (section divider)",
-      "description": "Shows what one phase established, using that phase's own summary and its output files",
-      "answers": "What did this phase establish, and which report says so?",
-      "guardrails": [
-        "Base summary on what the phase recorded itself (the summary in pipeline-progress.json). Rewording for the reader is fine; adding a new claim is not",
-        "outputs lists files that exist. Anything declared but unwritten goes to open-questions",
-        "A section divider carries one conclusion. Split multiple findings onto following pages"
-      ]
-    },
-    "stack-inventory": {
-      "displayName": "Technology Stack Inventory",
-      "description": "Shows what the current system is built on, layer by layer, with versions and constraints",
-      "answers": "What is this system standing on?",
-      "guardrails": [
-        "Layers are what actually runs. Anything present in config but never called is marked 'declared only' in the note",
-        "Always give the version. Support windows and known vulnerabilities cannot be judged without it",
-        "No judgement (good/bad) on this page. Problems go to issue-register"
-      ]
-    },
-    "issue-register": {
-      "displayName": "Issue, Debt and Finding Register",
-      "description": "Shows the detected issues as a severity distribution plus individual entries",
-      "answers": "What has been found, and how bad is it?",
-      "guardrails": [
-        "Use the severity the report assigned. Do not raise or lower it in the deck",
-        "The total of counts and the number of issues must agree (say so in the lead if this is an extract)",
-        "No remedies on this page. This page goes as far as 'what was found'",
-        "Every entry keeps its evidence (file, line, endpoint)"
-      ]
-    },
-    "score-card": {
-      "displayName": "Evaluation Score (single measure)",
-      "description": "Shows a single maturity or readiness score with its bands, and lists the components",
-      "answers": "Where does this measure put us right now?",
-      "guardrails": [
-        "Always show the score with its bands (what a given score means). A number alone cannot be judged",
-        "Component names and weights come from the report's definition. Do not add or round them in the deck",
-        "verdict says only what the number supports. Improvements go to roadmap / decision-record",
-        "Bars are drawn against scale (default 5) as full. When the indicator uses a different scale, set scale to match"
-      ]
-    },
-    "score-breakdown": {
-      "displayName": "Score Breakdown (subject x dimension)",
-      "description": "Compares scores per module and dimension as a surface, showing what is holding the total down",
-      "answers": "Which subject, on which dimension, is the low one?",
-      "guardrails": [
-        "Row and column order follows the report. If you sort by score, say so",
-        "Scores are integers from 0 to levels. If you round a fractional score, put the rounding rule in source",
-        "Do not make blank (not evaluated) look like 0. Either drop the row or label it in the row heading"
-      ]
-    },
-    "context-map": {
-      "displayName": "Context Map",
-      "description": "Shows the central context and its neighbours, with the relationship type on each edge",
-      "answers": "Which boundary is central, and how does it relate to its neighbours?",
-      "guardrails": [
-        "Relationship types (Shared Kernel / Conformist / Separate Ways ...) use the report's terms as they stand",
-        "Do not mix As-Is and To-Be on one page. State which it is in the title",
-        "Many-to-many relationships that the diagram cannot carry go into the table. Do not add lines until it is unreadable",
-        "To paste the original mermaid as it is, use architecture-exhibit"
-      ]
-    },
-    "architecture-exhibit": {
-      "displayName": "Architecture Exhibit (image plus what to read from it)",
-      "description": "Pastes the report's structural diagram as an exhibit and adds three things to read from it",
-      "answers": "What am I supposed to read from this diagram?",
-      "guardrails": [
-        "Use an image exported by scripts/mermaid_export.py / drawio_export.py / html_shot.py, and inspect it with Read after generating",
-        "The frame is about 2:1. An extremely tall or wide diagram leaves the page mostly margin, so split it or redraw it natively",
-        "Do not paste a diagram that cannot be read at slide size. Split it or redraw it natively",
-        "readings state only what the diagram shows. Do not slip a claim the diagram does not carry into the three points",
-        "Number exhibits sequentially so the body text can refer to them"
-      ]
-    },
-    "decision-record": {
-      "displayName": "Decision and Rationale (ADR)",
-      "description": "Keeps the options considered, what was adopted or rejected, and why, on one page",
-      "answers": "Why was this approach chosen, and on what grounds were the others dropped?",
-      "guardrails": [
-        "Always show at least one rejected option. A table of the adopted option alone is advertising, not a decision record",
-        "Tie the rationale to evaluation dimensions (performance, consistency, operations, cost). Not to preference",
-        "If the decision is not settled, write 'undecided'. Do not make it look decided",
-        "Include what the decision affects (which phases depend on it) in decision"
-      ]
-    },
-    "roadmap": {
-      "displayName": "Migration and Implementation Roadmap",
-      "description": "Shows the sequence, the durations and the dependencies as bands",
-      "answers": "What gets done, in what order, over what period?",
-      "guardrails": [
-        "If there is no basis for a duration, do not give one. Make it a relative-order diagram instead",
-        "Bands that run in parallel must actually be able to (no dependency between them)",
-        "Milestones (start == end) mark decision points, not work",
-        "If a step depends on a phase that has not started, say so in the lead"
-      ]
-    },
-    "persona-journey": {
-      "displayName": "Persona and Where the Experience Stalls",
-      "description": "Lays out the target user's experience in sequence and shows where it stalls",
-      "answers": "Who stalls, in which experience, and where?",
-      "guardrails": [
-        "Persona attributes are only what the research confirmed. Do not invent an age or an income to fill the card",
-        "Tie each pain to an observed fact (something said, done, or measured). If it is inference, label it a hypothesis",
-        "No solutions on this page. This page goes as far as the experience as it is"
-      ]
-    },
-    "ui-mock-flow": {
-      "displayName": "Screen Flow (three UI mocks)",
-      "description": "Shows the flow of an experience as screen mocks ordered by the domain story",
-      "answers": "Which screens does this work pass through, and in what order?",
-      "guardrails": [
-        "Order the mocks by the story ({STORY}-NN-{slug}.html, by NN). Do not reorder them for looks",
-        "Capture with scripts/html_shot.py and inspect with Read before pasting (a capture succeeds even when the styles did not load)",
-        "A mock is a specification, not an implementation. Do not word it so it reads as 'already built'",
-        "A flow that does not fit in three screens is split across pages at a boundary that does fit"
-      ]
-    },
-    "ui-mock-detail": {
-      "displayName": "Screen Detail (one UI mock)",
-      "description": "Shows one screen mock large, with the points to notice and the specification beside it",
-      "answers": "What has been settled on this screen?",
-      "guardrails": [
-        "The points to notice are only what is visible on the screen. Processing behind it does not go on this page",
-        "Capture with scripts/html_shot.py and inspect with Read before pasting",
-        "Mark anything unsettled as 'undecided' in the table. Do not present what the mock happens to draw as settled"
-      ]
-    },
-    "open-questions": {
-      "displayName": "Open Questions and Next Actions",
-      "description": "Shows the premises still unfilled and the phases not started, along with who fills them and how",
-      "answers": "What can this material not yet answer, and how does that get filled?",
-      "guardrails": [
-        "Do not remove an item from here by filling it with a guess. It is open because it is unfilled, not because nothing could be written",
-        "Every row says who fills it and with which command. Do not leave it as a list of homework",
-        "Do not mix open questions arising from unstarted phases with ones the report stated explicitly (distinguish them in source)",
-        "On a partially-run deck, this is always the last page"
-      ]
-    },
-    "hearing-agenda": {
-      "displayName": "What We Need to Hear Today",
-      "description": "Puts the open points on the table up front, each with the reason you are asking",
-      "answers": "What do we need to be told in this meeting?",
-      "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
-        "If you cannot say why you are asking, leave it off. Questions are decided by order, not by volume",
-        "Do not arrive with the blanks filled in by guesswork. You ask because it is blank",
-        "Five items at most. Do not exceed what one meeting can answer"
-      ]
-    },
-    "hypothesis-check": {
-      "displayName": "Checking Our Understanding",
-      "description": "Puts your reading up as a hypothesis so the customer can correct what is wrong",
-      "answers": "Where is our understanding wrong?",
-      "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
-        "**Do not assert.** Only rows whose confidence is 推定 belong here; listing confirmed ones checks nothing",
-        "The point is to be corrected. Always end with 'tell us if we have this wrong'",
-        "No figure without a source"
-      ]
-    },
-    "fill-in-sheet": {
-      "displayName": "Blanks to Fill in Here",
-      "description": "Blank rows to write on during the meeting, on screen or on paper",
-      "answers": "What do we want filled in while we are in the room?",
-      "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
-        "Leave the blanks blank. **Do not pre-fill a guess and call it 'please confirm'**",
-        "Six items at most. Keep it to what there is time to write",
-        "For anything they cannot answer now, ask who could"
-      ]
-    },
-    "event-poll": {
-      "displayName": "Does Any of This Apply to You?",
-      "description": "Lets an audience at a seminar or talk say which situation they are in",
-      "answers": "Which situation is this audience in?",
-      "guardrails": [
-        "**For a general audience.** Nothing from which a particular company or person can be inferred",
-        "Write the options as buyer situations. **Do not make them choose by product name** — that is a product pitch, not collection",
-        "Aggregate the answers as types. Do not keep who chose what in the material",
-        "If you ask for an answer, say what comes back for it (a deck, a follow-up conversation)"
-      ]
-    },
-    "collect-cta": {
-      "displayName": "Where to Send the Answers",
-      "description": "Says where answers go, and what the customer gets back for sending them",
-      "answers": "Who sends the answers, where, and by when?",
-      "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses; check who the answer URL may be shared with before putting it on the page",
-        "**Say what happens once they answer.** Collecting without returning anything teaches people not to answer",
-        "Give a date and an owner. A request with neither does not move"
-      ]
-    },
-    "collect-qr": {
-      "displayName": "Answer Form (QR)",
-      "description": "Shows the QR for the answer destination large, for the end of a talk or a hand-off in person",
-      "answers": "Where do I go to answer this right now?",
-      "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses; confirm who can see what the QR points at before putting it up",
-        "**Always spell the URL out as well.** There is always a seat where the QR will not scan",
-        "If it points at a shared sheet, point at the customer version (internal columns and sections removed)"
-      ]
-    },
-    "case-study-card": {
-      "displayName": "Cases in Brief (three)",
-      "description": "Three published cases, one line each — the page that reinforces trust after interest is there",
-      "answers": "How have other companies solved a problem like this?",
-      "guardrails": [
-        "**Only published cases.** No unpublished customer name or figure",
-        "Use the figures as the published material states them, and **always put the source (outlet and date) in source**",
-        "Cases and figures fall under the 3-month rule. **Re-check anything past its last-confirmed date before using it**",
-        "Name a customer only within what was agreed with them (the deal side records the promise in stage 5 §6 / stage 6 §5)",
-        "Three at most. **The more you line up, the weaker the impression.** Choose the ones closest to this audience"
-      ]
-    },
-    "case-study-detail": {
-      "displayName": "One Case in Depth",
-      "description": "One customer, in the order problem -> what was done -> result, with published figures only",
-      "answers": "What was that company stuck on, what did they do, and what happened?",
-      "guardrails": [
-        "**Only published cases.** No unpublished customer name or figure",
-        "Use the figures as the published material states them, and **always put the source (outlet and date) in source**",
-        "Cases and figures fall under the 3-month rule. **Re-check anything past its last-confirmed date before using it**",
-        "Name a customer only within what was agreed with them (the deal side records the promise in stage 5 §6 / stage 6 §5)",
-        "**Put before and after on the same dimension.** A before/after on shifting dimensions is not a comparison",
-        "One headline figure. **Several at once leaves no impression of which one is the effect**"
-      ]
-    },
-    "case-fit": {
-      "displayName": "Why This Case Applies to You",
-      "description": "Sets the case's situation beside the customer's, showing why it is worth their attention",
-      "answers": "How far does that case actually apply to us?",
-      "guardrails": [
-        "**Only published cases.** No unpublished customer name or figure",
-        "Use the figures as the published material states them, and **always put the source (outlet and date) in source**",
-        "Cases and figures fall under the 3-month rule. **Re-check anything past its last-confirmed date before using it**",
-        "Name a customer only within what was agreed with them (the deal side records the promise in stage 5 §6 / stage 6 §5)",
-        "**Always name one thing that does not apply** (caveat). No case applies entirely, and hiding it surfaces during the PoC",
-        "The customer's column carries only facts from the hearing. **Do not fill it with inference**"
-      ]
-    },
-    "challenge-solution-map": {
-      "displayName": "Challenge to Solution Mapping",
-      "description": "Sets each agreed challenge against what solves it and what changes as a result — the core of the proposal",
-      "answers": "Which challenge is solved by what, and how?",
-      "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
-        "**Match the challenge slide in both order and wording.** Rephrased, it reads as a different subject",
-        "One challenge per row. **Do not claim one capability solves three** (it breaks down under verification)",
-        "A challenge you cannot solve gets no row; put it below as out of scope. **Do not force the fit**",
-        "Write the result as what happens to the work, not as a restatement of the capability"
+        "Scenarios differ only by their assumptions. Never derive different results from the same assumptions",
+        "List only the drivers that move the result. Do not include assumptions that stay fixed",
+        "The low scenario must be bad enough to change a decision, not merely \"a bit worse\". Keep the high case at a defensible ceiling",
+        "The base scenario's figures must match revenue-plan",
+        "Do not weight the scenarios by probability. Argue likelihood on a separate slide with evidence",
+        "When this drives an exit decision, tie the scenarios to the exit criteria in risk-register",
+        "Set yMax to the round number just above the maximum. The automatic scale can reach 1.4x the maximum, squashing every line into the lower half of the plot"
       ]
     },
     "scope-in-out": {
@@ -1126,64 +1129,25 @@
         "State the ranges another vendor or project already owns"
       ]
     },
-    "poc-plan": {
-      "displayName": "PoC Objective and Pass Criteria",
-      "description": "What has to be confirmed for feasibility, and what happens after — as far as what follows a pass",
-      "answers": "What does the PoC confirm, and what happens if it passes?",
+    "score-breakdown": {
+      "displayName": "Score Breakdown (subject x dimension)",
+      "description": "Compares scores per module and dimension as a surface, showing what is holding the total down",
+      "answers": "Which subject, on which dimension, is the low one?",
       "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
-        "**Pass criteria are numeric or answerable yes/no.** 'It works well' is not a criterion",
-        "**Always state what happens on a pass.** A PoC the customer cannot answer that for has not been designed yet",
-        "Say what happens on a fail. A one-way PoC is not a verification",
-        "State the people, effort and data needed from the customer. **Do not say 'no special burden'**"
+        "Row and column order follows the report. If you sort by score, say so",
+        "Scores are integers from 0 to levels. If you round a fractional score, put the rounding rule in source",
+        "Do not make blank (not evaluated) look like 0. Either drop the row or label it in the row heading"
       ]
     },
-    "outcome-before-after": {
-      "displayName": "Expected Outcome (how the work changes)",
-      "description": "States the effect as a change in daily work rather than as a set of capabilities",
-      "answers": "What actually changes for the people doing the work?",
+    "score-card": {
+      "displayName": "Evaluation Score (single measure)",
+      "description": "Shows a single maturity or readiness score with its bands, and lists the components",
+      "answers": "Where does this measure put us right now?",
       "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
-        "**Write work, not capability.** Not 'it becomes ACID' but 'the reconciliation goes away'",
-        "**Only quantified figures with a stated basis.** Without one, state it qualitatively and say it will be measured in the PoC",
-        "Put before and after on the same dimension. A shifted comparison is no comparison",
-        "Do not present a published case's figure as this customer's effect. Cases belong on their own page"
-      ]
-    },
-    "next-step-customer": {
-      "displayName": "What to Decide Today, and the Next Step",
-      "description": "Separates what is decided in the room from the homework each side takes away",
-      "answers": "What is being decided today, and who does what before the next meeting?",
-      "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
-        "**One thing to decide today.** With several, none of them get decided",
-        "Homework carries an owner and a date. **Without both it does not move**",
-        "Always include something on our side. Not a page that only hands the customer homework"
-      ]
-    },
-    "iceberg-challenge": {
-      "displayName": "Structure Beneath the Problems",
-      "description": "Separates the problems on the surface from the structure underneath, distinguishing the proposal from a symptomatic fix",
-      "answers": "What sits beneath the problems we can see?",
-      "guardrails": [
-        "**Customer-facing.** No judgement about an individual's influence, stance or internal politics, and no competitor weaknesses",
-        "The top is **what the customer actually said**; the bottom is our reading of the structure. **Do not mix them**",
-        "The top takes **two short noun phrases** (10 characters each); only two lines fit above the waterline. Wanting three means the surface problems are not narrowed down yet",
-        "Three at most below. **The more root causes you list, the less any of them looks like the root**",
-        "Leave room for this reading to be wrong. Do not assert it before it is agreed"
-      ]
-    },
-    "event-announce": {
-      "displayName": "Event and Seminar Announcement",
-      "description": "The essentials of an event — date, format, audience, price, how to register — on one page",
-      "answers": "When and where is this, who is it for, and how do I register?",
-      "guardrails": [
-        "**For a general audience.** Nothing from which a particular company or person can be inferred",
-        "**Only confirmed information.** Speakers, venue and time go on once they are settled, not before",
-        "**Name the audience.** 'Anyone welcome' reaches nobody (and leaves the nurture stage undecided)",
-        "Do not drop price, capacity or the registration deadline. **If they will not fit in four rows, combine them into one** (extra rows push out the registration line)",
-        "mode is one of online / offline / hybrid",
-        "The first column of rows is a pictogram name. Only the ones listed by scripts/illustrations.py --list exist (date=calendar, venue=pin, audience=people, price=coin, deadline=clock)"
+        "Always show the score with its bands (what a given score means). A number alone cannot be judged",
+        "Component names and weights come from the report's definition. Do not add or round them in the deck",
+        "verdict says only what the number supports. Improvements go to roadmap / decision-record",
+        "Bars are drawn against scale (default 5) as full. When the indicator uses a different scale, set scale to match"
       ]
     },
     "session-agenda": {
@@ -1197,6 +1161,21 @@
         "Always include time for questions. **Without it, nothing you needed to hear gets collected**"
       ]
     },
+    "shift-roster": {
+      "displayName": "Shift Roster",
+      "description": "Places a one-character duty code and colour in each person × day cell, showing the daily headcount and understaffed days",
+      "answers": "Who is on duty each day, and which days are short-staffed?",
+      "guardrails": [
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the date headers",
+        "People are [name, schedule]. The schedule is a string of one code character per day of the period (e.g. 日日夜休…), and its length must equal the number of days",
+        "Codes are [character, meaning, colour, counts toward headcount]. Colours are primary / dark / success / danger / info / warning / muted. The legend is added automatically",
+        "One page holds up to 31 days × 12 people. Split longer periods or larger teams by month or by 12 people with scripts/calendar_pages.py",
+        "With minStaff set, days whose total of headcount codes falls below it turn red. State the basis for the required staffing (SLA, staffing plan) in source",
+        "Mind the sharing scope of material that shows real people's names. Use role names or pseudonyms for external audiences and examples",
+        "State in source that this is a plan and as of when the roster applies. Same-day swaps are not reflected"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
     "speaker-intro": {
       "displayName": "Speakers",
       "description": "Who is speaking, and why this talk comes from them",
@@ -1208,16 +1187,78 @@
         "A speaker from a customer company is handled like a case study: confirm the scope of their consent"
       ]
     },
-    "value-message": {
-      "displayName": "Improvement and Benefit (stages 0-1)",
-      "description": "Shows someone who does not yet see a problem what is worth settling at build or replacement time, and why it is worth it",
-      "answers": "What is worth fixing now so that something else does not happen later?",
+    "sprint-calendar": {
+      "displayName": "Sprint Calendar",
+      "description": "Lays consecutive sprints out in week rows, showing the working days lost to holidays and the planning, review, and release days",
+      "answers": "When does each sprint run, how many working days does it have, and when are its events?",
       "guardrails": [
-        "**For a general audience.** Nothing from which a particular company or person can be inferred",
-        "**Stages 0-1 are the Why Change? stages. Do not load them with product detail** (nurture-map.md §1)",
-        "Fix the three cards in the order situation -> the drawback they have not noticed -> what happens if left alone",
-        "**Write in the buyer's words.** A sentence that opens with a product name is not read at this stage",
-        "Do not assert. End with a question to the reader"
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the header",
+        "Each sprint is [number, goal, release or not]. start is the Monday of the first sprint; sprints follow one after another every lengthDays (7 or 14)",
+        "Up to 8 weeks per slide (4 two-week sprints, or 8 one-week sprints). Split longer spans with scripts/calendar_pages.py",
+        "Working days are weekdays minus holidays and extraHolidays. The panel also shows how many holidays fell on a weekday, which is grounds for lowering the expected velocity",
+        "Planning is placed on the first working day (marked as moved when the first day is a holiday), and review or release on the last working day, automatically. Do not use this when the actual dates differ",
+        "Goals are one line, up to 14 full-width characters. Phrase them as an outcome that can be checked, not as a task name",
+        "State in source that future sprints are a plan"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
+    "stack-inventory": {
+      "displayName": "Technology Stack Inventory",
+      "description": "Shows what the current system is built on, layer by layer, with versions and constraints",
+      "answers": "What is this system standing on?",
+      "guardrails": [
+        "Layers are what actually runs. Anything present in config but never called is marked 'declared only' in the note",
+        "Always give the version. Support windows and known vulnerabilities cannot be judged without it",
+        "No judgement (good/bad) on this page. Problems go to issue-register"
+      ]
+    },
+    "state-machine-matrix": {
+      "displayName": "State x Event Verdict Matrix",
+      "description": "Shows, for every combination of state and event, whether the aggregate accepts it or refuses it",
+      "answers": "Which events does each state accept, and which does it refuse?",
+      "guardrails": [
+        "Use only the four words allow / reject / ignore / defer, taken straight from the report",
+        "Leave no cell empty. That every cell carries a verdict is the point of this table, and a blank cannot be told apart from 'not considered'",
+        "When states or events exceed the cap, split the page and say so in source",
+        "This table cannot carry a transition's effect or postcondition. Put those on their own page if they are needed"
+      ]
+    },
+    "swot-analysis": {
+      "displayName": "SWOT Analysis",
+      "description": "Organizes internal and external environment into four positive/negative quadrants and shows priority actions",
+      "answers": "What are our strategic strengths, weaknesses, opportunities, and threats?",
+      "guardrails": [
+        "Distinguish between facts and interpretations",
+        "Do not assert causal relationships based on SWOT wording alone"
+      ],
+      "inference": "Strategic (evaluation and direction-setting)"
+    },
+    "three-c-analysis": {
+      "displayName": "3C Analysis",
+      "description": "Shows the strategic focus arising from the overlap of Customer, Competitor, and Company",
+      "answers": "Where is the strategic territory where customer value and competitive advantage overlap?",
+      "guardrails": [],
+      "inference": "Strategic (evaluation and direction-setting)"
+    },
+    "ui-mock-detail": {
+      "displayName": "Screen Detail (one UI mock)",
+      "description": "Shows one screen mock large, with the points to notice and the specification beside it",
+      "answers": "What has been settled on this screen?",
+      "guardrails": [
+        "The points to notice are only what is visible on the screen. Processing behind it does not go on this page",
+        "Capture with scripts/html_shot.py and inspect with Read before pasting",
+        "Mark anything unsettled as 'undecided' in the table. Do not present what the mock happens to draw as settled"
+      ]
+    },
+    "ui-mock-flow": {
+      "displayName": "Screen Flow (three UI mocks)",
+      "description": "Shows the flow of an experience as screen mocks ordered by the domain story",
+      "answers": "Which screens does this work pass through, and in what order?",
+      "guardrails": [
+        "Order the mocks by the story ({STORY}-NN-{slug}.html, by NN). Do not reorder them for looks",
+        "Capture with scripts/html_shot.py and inspect with Read before pasting (a capture succeeds even when the styles did not load)",
+        "A mock is a specification, not an implementation. Do not word it so it reads as 'already built'",
+        "A flow that does not fit in three screens is split across pages at a boundary that does fit"
       ]
     },
     "use-case-one-pager": {
@@ -1232,6 +1273,56 @@
         "Do not present a preview capability as an available way of using it"
       ]
     },
+    "ux-heatmap": {
+      "displayName": "Screen x UX Axis Heatmap",
+      "description": "Shows which screens and which evaluation axes the UX findings concentrate on",
+      "answers": "Which screen and which axis do the findings concentrate on?",
+      "guardrails": [
+        "The dot count is the number of findings, not their severity. Severity belongs on issue-register",
+        "Take UXI and its band from ux-evaluation.json as they stand. Do not recompute them on the slide",
+        "Do not drop a screen with zero findings. An empty row is the record that it was checked and nothing was wrong",
+        "In an evaluation that was not measured at runtime, do not show axes about perceived speed"
+      ]
+    },
+    "value-message": {
+      "displayName": "Improvement and Benefit (stages 0-1)",
+      "description": "Shows someone who does not yet see a problem what is worth settling at build or replacement time, and why it is worth it",
+      "answers": "What is worth fixing now so that something else does not happen later?",
+      "guardrails": [
+        "**For a general audience.** Nothing from which a particular company or person can be inferred",
+        "**Stages 0-1 are the Why Change? stages. Do not load them with product detail** (nurture-map.md §1)",
+        "Fix the three cards in the order situation -> the drawback they have not noticed -> what happens if left alone",
+        "**Write in the buyer's words.** A sentence that opens with a product name is not read at this stage",
+        "Do not assert. End with a question to the reader"
+      ]
+    },
+    "visit-plan": {
+      "displayName": "Visit Plan",
+      "description": "Decides, before the visit, what to get out of it, how to ask, and how to respond",
+      "answers": "What do we want to get from the customer on this visit, and how will we respond to expected objections?",
+      "guardrails": [
+        "Make the title \"the one thing we want to hear from the customer.\" \"Explain X\" is not an objective",
+        "Always state in ask which person or department we want introduced next, and why",
+        "Frame questions so the answer isn't just Yes/No (include SPIN's Implication and Need-payoff questions)",
+        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
+      ],
+      "inference": "Strategic (evaluation and direction-setting)"
+    },
+    "weekly-timetable": {
+      "displayName": "Weekly Timetable",
+      "description": "Places events on weekday columns and hour rows, showing what happens where at each time of the week",
+      "answers": "What is on, when and where, this week?",
+      "guardrails": [
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the header",
+        "Each event is [date, start, end, subject, place, category]. Write times as HH:MM. Put any date of the week in week; it is drawn as a Monday-start week",
+        "For 9:00–18:00 (9 hours), one hour is about 0.37in. Events shorter than 30 minutes cannot be drawn, so move them to a list (daily-agenda) instead of rounding the times",
+        "Up to two events at the same time sit side by side. For a week with three or more overlapping, split pages by room or track",
+        "Breaks (breaks, a 12:00–13:00 lunch break by default) appear as a gray band only on days without events there. Holidays with no events are filled with the holiday name",
+        "To include weekends, set days to 7. Columns get narrower, and a one-hour event shows only its subject",
+        "State in source that these are planned events, and as of when"
+      ],
+      "inference": "Descriptive (organizing facts)"
+    },
     "whitepaper-abstract": {
       "displayName": "Technical Paper Abstract (stage 3)",
       "description": "The cover page that lets a reader judge, before reading, what the paper settles",
@@ -1244,106 +1335,45 @@
         "Performance figures, prices and editions fall under the 3-month rule. Put the last-confirmed date in source"
       ]
     },
-    "partner-value": {
-      "displayName": "Partner Value and Shape of the Collaboration",
-      "description": "What a partner gains and what they carry — a page to show a partner",
-      "answers": "What does a partner get out of carrying this product?",
+    "why-why": {
+      "displayName": "Why-Why Analysis",
+      "description": "Shows the chain produced by repeatedly asking \"why\" from an observed event down to the root cause",
+      "answers": "What is the root cause of this event, and where should we act?",
       "guardrails": [
-        "**Partner-facing.** Keep customer-specific confidential detail to a minimum (playbook §3)",
-        "**Write it as standard, reusable information.** Mixing in one deal's circumstances makes it unusable elsewhere",
-        "State what is in it for the partner (deal size, services, recurring work). **Not only what suits us**",
-        "Do not name a competitor's weakness. Partners trade with the competition too",
-        "Treat prices as list price (excl. tax) reference-estimate material; discounts and multi-year terms stay off (they route to the AE)"
-      ]
+        "chain[0] is the observed event, and the last entry is the root cause. Don't skip steps — dig one \"why\" at a time",
+        "Don't stop at \"the person in charge was careless\" or \"low awareness.\" Dig down to systemic and process-level factors",
+        "Word each step as something verifiable by fact. Mark any step that hasn't been verified with (hypothesis)",
+        "Limit to 6 steps due to width constraints. If the cause branches into multiple paths partway through, use fishbone-diagram instead",
+        "Write in insight the countermeasure (recurrence-prevention action) aimed at the root cause, distinguished from a symptomatic fix"
+      ],
+      "inference": "Causal (asserting causes)"
     },
-    "joint-proposal-policy": {
-      "displayName": "Joint Proposal Policy",
-      "description": "Settles the joint win theme, RACI, route to market, estimate boundary, IP and confidentiality, and contractual responsibility on one page",
-      "answers": "Who is responsible for what on this deal, and where does the estimate divide?",
+    "win-plan": {
+      "displayName": "Win Plan (WPS)",
+      "description": "A one-page summary of the win strategy and risks used to decide stage advancement and proposal investment in WPS",
+      "answers": "Why can we win this deal, and how will we neutralize the biggest risk?",
       "guardrails": [
-        "**Partner proposal material.** Do not present an unagreed item as agreed",
-        "**Always state the estimate boundary.** Left vague until it reaches the customer, it will be disputed later",
-        "Do not omit where IP, confidentiality and contractual responsibility sit (required by playbook §3)",
-        "An unagreed item stays as a row marked 未合意. **Do not ship it blank**",
-        "Before naming the customer or their terms, confirm the NDA is in place"
-      ]
+        "Write in resolution why the customer would choose us, not a list of product names",
+        "Pair each risk with a next action we can control. Anything without an actionable next step is capped at Best",
+        "Always accompany this with a verbal request for a continue / hold / withdraw decision",
+        "Internal document. Do not share with customers or partners (it includes individuals' influence, stance, and internal politics)"
+      ],
+      "inference": "Strategic (evaluation and direction-setting)"
     },
-    "bounded-context-canvas": {
-      "displayName": "Bounded Context Canvas",
-      "description": "Shows one bounded context as a nine-part canvas: what it is responsible for and where its boundary ends",
-      "answers": "What is this context responsible for, and where does its boundary end?",
+    "year-at-a-glance": {
+      "displayName": "Year at a Glance",
+      "description": "Lays out the fiscal year's 12 months as small month calendars, marking busy periods, closures, and key dates with fills and circles",
+      "answers": "Where in the fiscal year do the busy periods and key dates fall?",
       "guardrails": [
-        "Take the Core / Supporting / Generic classification straight from the report. Do not promote or demote it on the slide",
-        "Leave what is undecided in 'assumptions'. An empty cell reads as settled",
-        "Name the counterpart context in inbound and outbound. A pattern name (ACL, OHS) alone does not let the relationship be reconstructed",
-        "One context per page. When you want to line several up, use context-map"
-      ]
-    },
-    "state-machine-matrix": {
-      "displayName": "State x Event Verdict Matrix",
-      "description": "Shows, for every combination of state and event, whether the aggregate accepts it or refuses it",
-      "answers": "Which events does each state accept, and which does it refuse?",
-      "guardrails": [
-        "Use only the four words allow / reject / ignore / defer, taken straight from the report",
-        "Leave no cell empty. That every cell carries a verdict is the point of this table, and a blank cannot be told apart from 'not considered'",
-        "When states or events exceed the cap, split the page and say so in source",
-        "This table cannot carry a transition's effect or postcondition. Put those on their own page if they are needed"
-      ]
-    },
-    "gate-verdict": {
-      "displayName": "Quality Gate Verdict",
-      "description": "Brings the review verdict, the weighted score per perspective, and what remains by priority onto one page",
-      "answers": "Did the quality gate pass, and if it did not, what is still open?",
-      "guardrails": [
-        "Do not write CONDITIONAL_PASS as PASS. A conditional pass means conditions are still open",
-        "Carry the weighted score computed with review-registry.json's weights as it stands. Do not recompute it on the slide",
-        "Do not summarise as 'passed' while P0 is not zero",
-        "When perspectives are trimmed to the cap, name the ones left out in source"
-      ]
-    },
-    "example-map-wall": {
-      "displayName": "Example Mapping (rules, examples, open questions)",
-      "description": "Shows, for one feature, the rules it must obey, the examples that check them, and the questions nobody settled",
-      "answers": "Which rules does this feature obey, which examples check them, and what is unsettled?",
-      "guardrails": [
-        "Do not mix rules and examples. A rule is what always holds; an example is one case that checks it",
-        "Do not show only positive examples. Without at least one example outside the boundary, the rule has not been checked",
-        "Do not drop the open questions. Removing what was not settled makes it look settled",
-        "A feature whose rules exceed the cap is a candidate for splitting. Put the number of rules left out in source"
-      ]
-    },
-    "aggregate-canvas": {
-      "displayName": "Aggregate Boundary and Invariants",
-      "description": "Shows what one aggregate contains and the invariants it keeps, together with the examples that check them",
-      "answers": "How far does this aggregate reach, and which invariants does it keep?",
-      "guardrails": [
-        "Do not list members that sit outside the boundary. When it is only a reference, say so in the kind column",
-        "Write only what is always true as an invariant. Procedures and business rules do not belong here",
-        "Do not leave the violating-operation column empty. An invariant with no known violator cannot be verified",
-        "One aggregate per page. Show relationships between aggregates with context-map or state-machine-matrix"
-      ]
-    },
-    "ux-heatmap": {
-      "displayName": "Screen x UX Axis Heatmap",
-      "description": "Shows which screens and which evaluation axes the UX findings concentrate on",
-      "answers": "Which screen and which axis do the findings concentrate on?",
-      "guardrails": [
-        "The dot count is the number of findings, not their severity. Severity belongs on issue-register",
-        "Take UXI and its band from ux-evaluation.json as they stand. Do not recompute them on the slide",
-        "Do not drop a screen with zero findings. An empty row is the record that it was checked and nothing was wrong",
-        "In an evaluation that was not measured at runtime, do not show axes about perceived speed"
-      ]
-    },
-    "env-parity-matrix": {
-      "displayName": "Environment Parity (identical and different)",
-      "description": "Shows what is kept identical across environments and what is deliberately different, with the reason",
-      "answers": "What is identical across environments, and where do they deliberately differ?",
-      "guardrails": [
-        "Always give a reason for a difference. A difference with no reason is not a difference but an inconsistency nobody has fixed yet",
-        "Do not leave 'what is kept identical' empty. A comparison that guarantees nothing between environments carries no meaning",
-        "When environments exceed the cap, split the columns and say so in source",
-        "Do not put an item that is unverified in production on the identical side. Leave it on the difference side with its reason"
-      ]
+        "The title (the conclusion) is one line, up to 36 full-width characters. A second line overlaps the month headers",
+        "Each mark is [start date, end date, label, kind]. kind is busy (busy period, blue fill) / off (closure, red fill) / key (key date, red circle; leave end date empty)",
+        "Put the first month of the fiscal year (e.g. 2026-04) in startMonth and 12 months are laid out. Dates outside that range are an error",
+        "Dates are 7pt, a density for handouts only. For projection, use month-calendar one month at a time",
+        "The legend lists the labels of each kind. Keep labels short (about 6 full-width characters) and about 3 per kind at most",
+        "To also color company closure dates red, add them to extraHolidays too. An off mark only fills the area",
+        "State in source that these are planned events, and as of when"
+      ],
+      "inference": "Descriptive (organizing facts)"
     }
   }
 }

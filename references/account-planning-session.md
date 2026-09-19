@@ -817,4 +817,4 @@ Before shipping the Session materials.
 ## See also
 
 - [Account Planning Page Template Implementation Plan](account-planning-template-plan.md)
-- [Slide Template Catalog (All 108 Types)](slide-template-catalog.md)
+- [Slide Template Catalog (All 110 Types)](slide-template-catalog.md)

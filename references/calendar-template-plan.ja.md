@@ -307,5 +307,5 @@ JSON から呼べるプリミティブ（`build_deck.py::FIGURES` に登録）:
 ## 関連
 
 - [カレンダーの図（`calendars.py`）](calendars.ja.md)
-- [スライドテンプレート カタログ（全 108 種）](slide-template-catalog.ja.md)
+- [スライドテンプレート カタログ（全 110 種）](slide-template-catalog.ja.md)
 - [デッキ生成のワークフロー契約](workflow-contract.ja.md)
