@@ -69,6 +69,11 @@
       "name": "Partner Pack",
       "intro": "The two partner-facing materials the playbook defines but had no template for: what a partner gains by carrying the product, and the joint-proposal policy that settles RACI, the route to market, the estimate boundary and where responsibility sits.",
       "short": "Partner-facing value and the joint-proposal policy"
+    },
+    "pricing": {
+      "name": "Pricing Strategy Pack",
+      "intro": "Pages that present the results of value-based pricing analysis (Nagle & Müller): the economic value build-up, breakeven of a price change, price structure comparison, whether to respond to a competitor's price cut, and the give–get discount policy, each as a one-page format. The pricing-strategy skill's calculators emit slot data for them directly. Every template carries $density variants.",
+      "short": "Pages that present the results of value-based pricing analysis"
     }
   },
   "templates": {
@@ -1374,6 +1379,70 @@
         "State in source that these are planned events, and as of when"
       ],
       "inference": "Descriptive (organizing facts)"
+    },
+    "economic-value-waterfall": {
+      "displayName": "Economic Value Build-Up",
+      "description": "Builds total economic value from the reference value plus positive and negative differentiation value, with the price, the value left to the customer, and the differentiation share alongside",
+      "answers": "What is the product worth to this segment, and where does the price sit within it?",
+      "guardrails": [
+        "Draw one segment per slide. Value differs by segment by design; an averaged value is nobody's value",
+        "Start items with the reference value (cost of the next-best alternative) as kind=total, end with total economic value as kind=total, and put the value drivers in between as kind=delta. The final total must equal the running sum",
+        "Total economic value is the price ceiling, not the recommended price. At the ceiling the customer has no reason left to switch",
+        "Write value drivers as the customer's monetary or psychological benefits. Do not list features or your own development cost (cost only sets the floor)",
+        "Always include negative drivers (learning, migration, operating burden). Stacking only positive value overstates the ceiling",
+        "Copy the amounts from the pricing-strategy skill's eve_calc.py output and state the period and unit (e.g. per system per year) in the lead-in",
+        "Differentiation share = net differentiation value ÷ total economic value. Pass it as a computed string"
+      ]
+    },
+    "breakeven-sales-change": {
+      "displayName": "Breakeven of a Price Change",
+      "description": "Lists, for each candidate price, the volume change needed to keep total contribution, and judges it against the expected volume response",
+      "answers": "How much must volume move for this price change to pay off?",
+      "guardrails": [
+        "Use only incremental, avoidable costs. Sunk costs or allocated fixed costs shift the breakeven",
+        "Breakeven sales change = −ΔP ÷ (CM + ΔP). Copy it from the pricing-strategy skill's breakeven.py output; do not compute it by hand",
+        "Set the baseline to the volume you would have without the change, not today's volume",
+        "Give the basis of the expected column (past discount response, sales input, research) in the source line; write 'unverified' when there is none",
+        "A price cut at or above the contribution margin ratio can never recover profit, however much is sold. Make that explicit in the verdict column",
+        "Treat volume under a competitor match separately (competitor-response). This table assumes competitor prices stay put"
+      ]
+    },
+    "price-structure-compare": {
+      "displayName": "Price Structure Comparison",
+      "description": "Lines up pricing structure options by price-to-value ratio per customer size, showing which tracks value and how revenue and contribution change",
+      "answers": "Which pricing structure best tracks value across customer sizes, and how do revenue and profit change?",
+      "guardrails": [
+        "Rows are customer-size bands, columns are options. Write each cell as 'price (% of value)' with the same size's value as the denominator",
+        "A size band whose price exceeds 100% of value is where discount pressure comes from. Check that band under every option",
+        "Compare options on the same customer distribution. If the distribution is assumed, say so in the lead-in and cite the basis",
+        "For options designed revenue- or contribution-neutral, show that the total is unchanged so the debate moves to whose price changes and how",
+        "Always show the band with the largest increase and the transition plan (new contracts first, existing ones at renewal with a cap)",
+        "Copy the figures from the pricing-strategy skill's structure_compare.py output"
+      ]
+    },
+    "competitor-response": {
+      "displayName": "Competitor Price-Cut Response",
+      "description": "Answers the response questions one by one and compares the loss rate that would justify matching a competitor's price cut with the expected loss",
+      "answers": "Should we respond to the competitor's price cut, and if so, how narrowly?",
+      "guardrails": [
+        "Matching is justified only when the volume lost by not matching exceeds (CM before − CM after) ÷ CM before. Get the threshold from the pricing-strategy skill's breakeven.py --reactive",
+        "Estimate the expected loss from existing customers who can actually leave. Exclude volume locked in multi-year contracts and do not treat the new-pipeline share as churn",
+        "Include at least: the competitor's aim, the loss if we do not respond, the competitor's counter-response, and how narrowly the response can be confined",
+        "Consider a response confined to the affected customers or products, or strengthening value, before an across-the-board match",
+        "Do not produce statements or materials that could read as exchanging price information with competitors (collusion risk). Check below-cost responses with legal for predatory pricing"
+      ]
+    },
+    "give-get-policy": {
+      "displayName": "Give–Get Discount Policy",
+      "description": "Shows discounts and concessions as an exchange table tied to what the customer gives in return and who approves, and names what is never discounted",
+      "answers": "In exchange for what may we discount, and who approves it?",
+      "guardrails": [
+        "Pair every concession with what the customer gives (term, committed volume, prepayment, a public case study, standard terms). Never add a row with a discount and nothing in return",
+        "Write the approval column as role and cap (e.g. rep up to 5%, manager up to 15%) and state the procedure above the cap in the lead-in or source line",
+        "Always name what is never discounted (list price display, specific features, support level). What is conceded in the first negotiation becomes the reference for all later ones",
+        "Define the exchange terms by conditions, not by customer type, to avoid price discrimination issues (different prices for customers on the same terms)",
+        "Settle the policy before the first negotiation, record exceptions, and review them regularly (e.g. in a pricing committee)"
+      ]
     }
   }
 }
