@@ -1,0 +1,207 @@
+{
+  "schemaVersion": 1,
+  "id": "price-structure-compare",
+  "displayName": "価格構造の比較",
+  "pack": "pricing",
+  "category": "structure",
+  "description": "料金体系の案を顧客規模ごとの価格／価値の比率で横並びにし、どの案が価値に連動するかと売上・利益への影響を示す",
+  "answers": [
+    "どの料金体系が顧客規模ごとの価値に最も連動し、売上と利益はどう変わるか"
+  ],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  },
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "headers": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      },
+      "maxLength": 12
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 6,
+          "presentation": 5
+        }
+      },
+      "maxLength": 14
+    },
+    "impactValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 10
+    },
+    "impactLabel": {
+      "type": "string",
+      "default": {
+        "$t": "pricing.cm_change"
+      },
+      "maxLength": 24
+    },
+    "riskValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 10
+    },
+    "riskLabel": {
+      "type": "string",
+      "default": {
+        "$t": "pricing.largest_increase"
+      },
+      "maxLength": 24
+    },
+    "recommendation": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 55,
+          "presentation": 30
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "行は顧客規模の帯、列は案。各セルは『価格（価値に対する %）』で書き、同じ規模の価値を分母にそろえる",
+    "価格／価値が 100% を超える規模帯は、値引き圧力の発生源になる。どの案でもその帯を確認する",
+    "案の比較は同じ顧客分布で行う。分布が仮定なら lead に明記し、出典行に根拠を書く",
+    "売上中立（または貢献利益中立）で設計した案は、総額が変わらないことを数字で示し、議論を『誰の価格がどう動くか』に向ける",
+    "最大の値上げになる規模帯と移行策（新規から適用、更新時に上限付きで移行）を必ず示す",
+    "数値は pricing-strategy スキルの structure_compare.py の出力から転記する"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 6.3,
+        "headers": {
+          "$slot": "headers"
+        },
+        "rows": {
+          "$slot": "rows"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10.5
+          }
+        },
+        "rowH": {
+          "$density": {
+            "print": 0.36,
+            "presentation": 0.44
+          }
+        }
+      },
+      {
+        "type": "metric",
+        "x": 7.05,
+        "y": 1.55,
+        "w": 2.45,
+        "h": 1.05,
+        "value": {
+          "$slot": "impactValue"
+        },
+        "caption": {
+          "$slot": "impactLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "metric",
+        "x": 7.05,
+        "y": 2.75,
+        "w": 2.45,
+        "h": 1.05,
+        "value": {
+          "$slot": "riskValue"
+        },
+        "caption": {
+          "$slot": "riskLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.95,
+        "w": 9.0,
+        "h": 0.8,
+        "label": {
+          "$t": "common.recommended"
+        },
+        "text": {
+          "$slot": "recommendation"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}
