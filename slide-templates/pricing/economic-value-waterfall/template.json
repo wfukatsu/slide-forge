@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "id": "economic-value-waterfall",
+  "displayName": "経済的価値の積み上げ",
+  "pack": "pricing",
+  "category": "value",
+  "description": "参照価値に差別化価値の増減を積み上げて総経済価値を示し、価格・顧客に残す価値・差別化価値の比率を併記する",
+  "answers": [
+    "この顧客セグメントにとって製品の価値はいくらで、価格はそのどこにあるか"
+  ],
+  "inferenceLevel": "diagnostic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "items": {
+      "type": "array",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 7,
+          "presentation": 6
+        }
+      },
+      "items": {
+        "type": "tuple",
+        "fields": [
+          {
+            "type": "string",
+            "maxLength": {
+              "$density": {
+                "print": 12,
+                "presentation": 10
+              }
+            }
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "string",
+            "maxLength": 5
+          }
+        ]
+      }
+    },
+    "unit": {
+      "type": "string",
+      "default": "",
+      "maxLength": 4
+    },
+    "priceValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 10
+    },
+    "priceLabel": {
+      "type": "string",
+      "default": {
+        "$t": "pricing.price"
+      },
+      "maxLength": 24
+    },
+    "incentiveValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 10
+    },
+    "incentiveLabel": {
+      "type": "string",
+      "default": {
+        "$t": "pricing.customer_incentive"
+      },
+      "maxLength": 24
+    },
+    "shareValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 10
+    },
+    "shareLabel": {
+      "type": "string",
+      "default": {
+        "$t": "pricing.differentiation_share"
+      },
+      "maxLength": 24
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "1 枚に 1 セグメントだけを描く。セグメントごとに価値が違うのが前提であり、平均した価値は誰の価値でもない",
+    "items の先頭は参照価値（次善の競合代替品のコスト）を kind=total、最後は総経済価値を kind=total、その間の価値ドライバーは kind=delta で置く。最後の合計は積み上げと一致させる",
+    "総経済価値は価格の天井であって推奨価格ではない。天井いっぱいの価格では顧客に乗り換える理由が残らない",
+    "価値ドライバーは顧客の金銭・心理的便益で書く。機能名や自社の開発コストを並べない（コストが決めるのは価格の床だけ）",
+    "負のドライバー（学習・移行・運用の負担）も必ず入れる。正の価値だけを積むと天井を過大に見せる",
+    "金額は pricing-strategy スキルの eve_calc.py の出力から転記し、期間・単位（例: 1 システムあたり年額）を lead に書く",
+    "差別化価値の比率は 正味の差別化価値 ÷ 総経済価値。算出済みの文字列を渡す"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "waterfall",
+        "x": 0.5,
+        "y": 1.6,
+        "w": 6.1,
+        "h": 3.0,
+        "items": {
+          "$slot": "items"
+        },
+        "unit": {
+          "$slot": "unit"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        }
+      },
+      {
+        "type": "metric",
+        "x": 6.9,
+        "y": 1.6,
+        "w": 2.6,
+        "h": 0.9,
+        "value": {
+          "$slot": "priceValue"
+        },
+        "caption": {
+          "$slot": "priceLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "metric",
+        "x": 6.9,
+        "y": 2.65,
+        "w": 2.6,
+        "h": 0.9,
+        "value": {
+          "$slot": "incentiveValue"
+        },
+        "caption": {
+          "$slot": "incentiveLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "metric",
+        "x": 6.9,
+        "y": 3.7,
+        "w": 2.6,
+        "h": 0.9,
+        "value": {
+          "$slot": "shareValue"
+        },
+        "caption": {
+          "$slot": "shareLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

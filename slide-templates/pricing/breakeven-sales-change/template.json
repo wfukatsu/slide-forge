@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "id": "breakeven-sales-change",
+  "displayName": "価格変更の損益分岐",
+  "pack": "pricing",
+  "category": "financial",
+  "description": "候補価格ごとに、貢献利益を保つのに必要な販売量の変化率を並べ、見込みの数量反応と比べて判定する",
+  "answers": [
+    "この価格変更は、販売量がどれだけ動けば割に合うか"
+  ],
+  "inferenceLevel": "predictive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  },
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 16,
+          "presentation": 12
+        }
+      }
+    },
+    "insight": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 88,
+          "presentation": 44
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "コストは増分で回避可能なものだけを使う。埋没費用や配賦した固定費は入れない（入れると損益分岐がずれる）",
+    "損益分岐販売変化率 = −ΔP ÷ (CM + ΔP)。pricing-strategy スキルの breakeven.py の出力から転記し、手計算しない",
+    "ベースラインは今日の販売量ではなく、価格を変えなかった場合の推移で置く",
+    "見込み列には根拠（過去の値引き時の反応、営業への確認、調査）を出典行に書く。根拠がなければ『未検証』と書く",
+    "値下げ幅が貢献利益率以上の候補は、どれだけ売っても利益が戻らない。判定列で明示する",
+    "競合が追随した場合の数量は別に扱う（competitor-response）。この表は競合の価格が変わらない前提"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 9.0,
+        "headers": [
+          {
+            "$t": "pricing.candidate_price"
+          },
+          {
+            "$t": "pricing.price_change"
+          },
+          {
+            "$t": "pricing.unit_cm"
+          },
+          {
+            "$t": "pricing.breakeven_change"
+          },
+          {
+            "$t": "pricing.expected_change"
+          },
+          {
+            "$t": "pricing.verdict"
+          }
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          1.3,
+          1.1,
+          1.5,
+          1.6,
+          1.4,
+          2.1
+        ],
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10.5
+          }
+        },
+        "rowH": {
+          "$density": {
+            "print": 0.38,
+            "presentation": 0.46
+          }
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.85,
+        "w": 9.0,
+        "h": 0.9,
+        "label": {
+          "$t": "common.result"
+        },
+        "text": {
+          "$slot": "insight"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

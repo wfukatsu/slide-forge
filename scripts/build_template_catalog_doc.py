@@ -33,7 +33,7 @@ IMG_REL = "images/slide-templates"
 
 PACK_ORDER = ["marketing-analysis", "b2b-sales", "scalar-ae", "planning", "calendar",
               "analysis", "read-alone", "business-plan", "nexus", "hearing",
-              "case-studies", "proposal", "marketing", "partner"]
+              "case-studies", "proposal", "marketing", "partner", "pricing"]
 
 PACK_INTRO_JA = {
     "marketing-analysis": (
@@ -122,6 +122,13 @@ PACK_INTRO_JA = {
         "プレイブックが定義しながらテンプレートの無かった 2 種。"
         "担ぐとパートナーに何が得られるかと、RACI・商流・見積境界・責任の所在を"
         "決める共同提案方針書。",
+    ),
+    "pricing": (
+        "価格戦略パック",
+        "価値ベースの価格戦略（Nagle & Müller）の分析結果を示すページ群。経済的価値の積み上げ、"
+        "価格変更の損益分岐、価格構造の比較、競合の値下げへの対応判断、値引きのギブ・ゲットを "
+        "1 枚ずつのフォーマットにしている。pricing-strategy スキルの計算スクリプトの出力を"
+        "そのままスロットに流し込める。全テンプレートが `$density` バリアントを持つ。",
     ),
 }
 

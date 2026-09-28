@@ -1,6 +1,6 @@
 *[English](slide-template-catalog.md)*
 
-# スライドテンプレート カタログ（全 110 種）
+# スライドテンプレート カタログ（全 115 種）
 
 `slide-templates/` に登録されたテンプレートを実際に 1 枚ずつ生成して
 書き出した画像カタログ。**どのテンプレートで 1 枚を作るかを見て選ぶ**ためのもの。
@@ -50,7 +50,7 @@
 
 ```bash
 # このカタログを作り直す（テンプレートを追加したときも同じ手順）
-for pack in marketing-analysis b2b-sales scalar-ae planning calendar analysis read-alone business-plan nexus hearing case-studies proposal marketing partner; do
+for pack in marketing-analysis b2b-sales scalar-ae planning calendar analysis read-alone business-plan nexus hearing case-studies proposal marketing partner pricing; do
   .venv/bin/python scripts/build_slide_template_catalog.py \
       --pack $pack --out out/template-catalog/$pack.json
 done
@@ -79,6 +79,7 @@ done
 | [提案パック](#proposal) | 6 種 | 問題解決型提案のうち、再利用できるページが無かった節 |
 | [マーケティングパック](#marketing) | 6 種 | まだ商談になっていない相手に当てるページ群 |
 | [パートナーパック](#partner) | 2 種 | プレイブックが定義しながらテンプレートの無かった 2 種 |
+| [価格戦略パック](#pricing) | 5 種 | 価値ベースの価格戦略（Nagle & Müller）の分析結果を示すページ群 |
 
 <a id="marketing-analysis"></a>
 
@@ -3502,3 +3503,173 @@ UX 評価の指摘が、どの画面のどの観点に集中しているかを 1
 - 知財・守秘と契約責任の所在を省かない（プレイブック §3 の必須要件）
 - 未合意の項目は「未合意」と書いた行として残す。**空欄で出さない**
 - 顧客名・顧客固有の条件を書く場合、NDA の締結状況を確認してから入れる
+
+<a id="pricing"></a>
+
+## 価格戦略パック（`pricing`）
+
+価値ベースの価格戦略（Nagle & Müller）の分析結果を示すページ群。経済的価値の積み上げ、価格変更の損益分岐、価格構造の比較、競合の値下げへの対応判断、値引きのギブ・ゲットを 1 枚ずつのフォーマットにしている。pricing-strategy スキルの計算スクリプトの出力をそのままスロットに流し込める。全テンプレートが `$density` バリアントを持つ。
+
+### 経済的価値の積み上げ（`economic-value-waterfall`）
+
+参照価値に差別化価値の増減を積み上げて総経済価値を示し、価格・顧客に残す価値・差別化価値の比率を併記する
+
+**答える問い**: この顧客セグメントにとって製品の価値はいくらで、価格はそのどこにあるか
+
+**figures**: `governing_message`, `lead_in`, `waterfall`, `metric`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `items` | `array` (string≤(print 12 · presentation 10), number, string≤5) | ✔ | 3〜(print 7 · presentation 6) 件 |
+| `unit` | `string` | — | 4 字以内、既定 `""` |
+| `priceValue` | `string` | ✔ | 10 字以内 |
+| `priceLabel` | `string` | — | 24 字以内、既定 `"価格"` |
+| `incentiveValue` | `string` | ✔ | 10 字以内 |
+| `incentiveLabel` | `string` | — | 24 字以内、既定 `"顧客に残す価値"` |
+| `shareValue` | `string` | ✔ | 10 字以内 |
+| `shareLabel` | `string` | — | 24 字以内、既定 `"差別化価値の比率"` |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- 1 枚に 1 セグメントだけを描く。セグメントごとに価値が違うのが前提であり、平均した価値は誰の価値でもない
+- items の先頭は参照価値（次善の競合代替品のコスト）を kind=total、最後は総経済価値を kind=total、その間の価値ドライバーは kind=delta で置く。最後の合計は積み上げと一致させる
+- 総経済価値は価格の天井であって推奨価格ではない。天井いっぱいの価格では顧客に乗り換える理由が残らない
+- 価値ドライバーは顧客の金銭・心理的便益で書く。機能名や自社の開発コストを並べない（コストが決めるのは価格の床だけ）
+- 負のドライバー（学習・移行・運用の負担）も必ず入れる。正の価値だけを積むと天井を過大に見せる
+- 金額は pricing-strategy スキルの eve_calc.py の出力から転記し、期間・単位（例: 1 システムあたり年額）を lead に書く
+- 差別化価値の比率は 正味の差別化価値 ÷ 総経済価値。算出済みの文字列を渡す
+
+### 価格変更の損益分岐（`breakeven-sales-change`）
+
+候補価格ごとに、貢献利益を保つのに必要な販売量の変化率を並べ、見込みの数量反応と比べて判定する
+
+**答える問い**: この価格変更は、販売量がどれだけ動けば割に合うか
+
+**figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
+**推論レベル**: 予測（将来値の見通し）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 2〜(print 5 · presentation 4) 件、(print 16 · presentation 12) 字以内 |
+| `insight` | `string` | ✔ | (print 88 · presentation 44) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- コストは増分で回避可能なものだけを使う。埋没費用や配賦した固定費は入れない（入れると損益分岐がずれる）
+- 損益分岐販売変化率 = −ΔP ÷ (CM + ΔP)。pricing-strategy スキルの breakeven.py の出力から転記し、手計算しない
+- ベースラインは今日の販売量ではなく、価格を変えなかった場合の推移で置く
+- 見込み列には根拠（過去の値引き時の反応、営業への確認、調査）を出典行に書く。根拠がなければ『未検証』と書く
+- 値下げ幅が貢献利益率以上の候補は、どれだけ売っても利益が戻らない。判定列で明示する
+- 競合が追随した場合の数量は別に扱う（competitor-response）。この表は競合の価格が変わらない前提
+
+### 価格構造の比較（`price-structure-compare`）
+
+料金体系の案を顧客規模ごとの価格／価値の比率で横並びにし、どの案が価値に連動するかと売上・利益への影響を示す
+
+**答える問い**: どの料金体系が顧客規模ごとの価値に最も連動し、売上と利益はどう変わるか
+
+**figures**: `governing_message`, `lead_in`, `table`, `metric`, `so_what`, `source_note`  
+**推論レベル**: 診断（要因・構造の特定）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `headers` | `string[]` | ✔ | 3〜(print 5 · presentation 4) 件、12 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜(print 6 · presentation 5) 件、14 字以内 |
+| `impactValue` | `string` | ✔ | 10 字以内 |
+| `impactLabel` | `string` | — | 24 字以内、既定 `"貢献利益の変化"` |
+| `riskValue` | `string` | ✔ | 10 字以内 |
+| `riskLabel` | `string` | — | 24 字以内、既定 `"最大の値上げ"` |
+| `recommendation` | `string` | ✔ | (print 55 · presentation 30) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- 行は顧客規模の帯、列は案。各セルは『価格（価値に対する %）』で書き、同じ規模の価値を分母にそろえる
+- 価格／価値が 100% を超える規模帯は、値引き圧力の発生源になる。どの案でもその帯を確認する
+- 案の比較は同じ顧客分布で行う。分布が仮定なら lead に明記し、出典行に根拠を書く
+- 売上中立（または貢献利益中立）で設計した案は、総額が変わらないことを数字で示し、議論を『誰の価格がどう動くか』に向ける
+- 最大の値上げになる規模帯と移行策（新規から適用、更新時に上限付きで移行）を必ず示す
+- 数値は pricing-strategy スキルの structure_compare.py の出力から転記する
+
+### 競合の値下げへの対応判断（`competitor-response`）
+
+競合の値下げに対抗すべきかを判断の問いに一問ずつ答えて整理し、対抗が得になる流出率の閾値と見込みの流出率を比べる
+
+**答える問い**: 競合の値下げに対抗すべきか、するならどの範囲でか
+
+**figures**: `governing_message`, `lead_in`, `table`, `metric`, `so_what`, `source_note`  
+**推論レベル**: 戦略（評価と方向づけ）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜(print 5 · presentation 4) 件、(print 26 · presentation 18) 字以内 |
+| `thresholdValue` | `string` | ✔ | 10 字以内 |
+| `thresholdLabel` | `string` | — | 24 字以内、既定 `"対抗が得になる流出率"` |
+| `expectedValue` | `string` | ✔ | 10 字以内 |
+| `expectedLabel` | `string` | — | 24 字以内、既定 `"見込みの流出率"` |
+| `recommendation` | `string` | ✔ | (print 55 · presentation 30) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- 対抗が正当化されるのは、対抗しない場合に失う数量が閾値 (CM前 − CM後) ÷ CM前 を超えるときだけ。閾値は pricing-strategy スキルの breakeven.py --reactive で出す
+- 見込みの流出率は、実際に流出しうる既存顧客で見積もる。複数年契約で固定された量は外し、新規パイプラインの比率を流出率とみなさない
+- 問いには少なくとも『競合の狙い』『対抗しない場合の損失』『対抗した場合の再反応』『対抗を限定できる範囲』を含める
+- 全面対抗より、影響を受ける顧客・製品に限定した対抗や、価値の強化を先に検討する
+- 競合と価格について情報交換したと受け取られる発言・資料を作らない（共謀の疑い）。原価割れの対抗は略奪的価格の論点を法務に確認する
+
+### 値引きのギブ・ゲット（`give-get-policy`）
+
+値引きや譲歩を、顧客から何を得るかと承認権限に結びつけた交換表で示し、値引きしないものを明記する
+
+**答える問い**: 何と引き換えなら値引きしてよく、誰が承認するか
+
+**figures**: `governing_message`, `lead_in`, `table`, `so_what`, `source_note`  
+**推論レベル**: 戦略（評価と方向づけ）  
+**densities**: print / presentation（既定 print）  
+**status**: experimental
+
+**入力**
+
+| スロット | 型 | 必須 | 制約 |
+|---|---|---|---|
+| `title` | `string` | ✔ | 70 字以内 |
+| `lead` | `string` | ✔ | 100 字以内 |
+| `rows` | `string[][]` | ✔ | 3〜(print 6 · presentation 4) 件、(print 22 · presentation 16) 字以内 |
+| `neverDiscount` | `string` | ✔ | (print 55 · presentation 30) 字以内 |
+| `source` | `string` | ✔ | 170 字以内 |
+
+使うときの決まり:
+
+- すべての譲歩に、顧客から得るもの（期間、数量の確約、前払い、事例公開、標準条件の受け入れなど）を対応させる。見返りのない値引きの行を作らない
+- 承認列は役職と上限（例: 営業 5% まで、部長 15% まで）で書き、上限を超える場合の手続きを出典行か lead に書く
+- 値引きしないもの（定価表示、特定の機能、サポート水準など）を必ず明記する。最初の交渉で譲ったものは以後の参照点になる
+- 価格差別の論点（同じ条件の顧客に違う価格）を避けるため、交換条件は顧客の種類ではなく条件で定義する
+- 最初の交渉の前に確定し、例外は記録して価格委員会などで定期的に見直す

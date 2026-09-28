@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "id": "give-get-policy",
+  "displayName": "値引きのギブ・ゲット",
+  "pack": "pricing",
+  "category": "policy",
+  "description": "値引きや譲歩を、顧客から何を得るかと承認権限に結びつけた交換表で示し、値引きしないものを明記する",
+  "answers": [
+    "何と引き換えなら値引きしてよく、誰が承認するか"
+  ],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  },
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 6,
+          "presentation": 4
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 22,
+          "presentation": 16
+        }
+      }
+    },
+    "neverDiscount": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 55,
+          "presentation": 30
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "すべての譲歩に、顧客から得るもの（期間、数量の確約、前払い、事例公開、標準条件の受け入れなど）を対応させる。見返りのない値引きの行を作らない",
+    "承認列は役職と上限（例: 営業 5% まで、部長 15% まで）で書き、上限を超える場合の手続きを出典行か lead に書く",
+    "値引きしないもの（定価表示、特定の機能、サポート水準など）を必ず明記する。最初の交渉で譲ったものは以後の参照点になる",
+    "価格差別の論点（同じ条件の顧客に違う価格）を避けるため、交換条件は顧客の種類ではなく条件で定義する",
+    "最初の交渉の前に確定し、例外は記録して価格委員会などで定期的に見直す"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 9.0,
+        "headers": [
+          {
+            "$t": "pricing.give"
+          },
+          {
+            "$t": "pricing.get"
+          },
+          {
+            "$t": "pricing.approval"
+          }
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          3.2,
+          3.6,
+          2.2
+        ],
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10.5
+          }
+        },
+        "rowH": {
+          "$density": {
+            "print": 0.36,
+            "presentation": 0.46
+          }
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.95,
+        "w": 9.0,
+        "h": 0.8,
+        "label": {
+          "$t": "pricing.never_discount"
+        },
+        "text": {
+          "$slot": "neverDiscount"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

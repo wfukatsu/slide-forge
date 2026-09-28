@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "id": "competitor-response",
+  "displayName": "競合の値下げへの対応判断",
+  "pack": "pricing",
+  "category": "competition",
+  "description": "競合の値下げに対抗すべきかを判断の問いに一問ずつ答えて整理し、対抗が得になる流出率の閾値と見込みの流出率を比べる",
+  "answers": [
+    "競合の値下げに対抗すべきか、するならどの範囲でか"
+  ],
+  "inferenceLevel": "strategic",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  },
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": {
+        "$density": {
+          "print": 5,
+          "presentation": 4
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 26,
+          "presentation": 18
+        }
+      }
+    },
+    "thresholdValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 10
+    },
+    "thresholdLabel": {
+      "type": "string",
+      "default": {
+        "$t": "pricing.reactive_threshold"
+      },
+      "maxLength": 24
+    },
+    "expectedValue": {
+      "type": "string",
+      "required": true,
+      "maxLength": 10
+    },
+    "expectedLabel": {
+      "type": "string",
+      "default": {
+        "$t": "pricing.expected_loss"
+      },
+      "maxLength": 24
+    },
+    "recommendation": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 55,
+          "presentation": 30
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "対抗が正当化されるのは、対抗しない場合に失う数量が閾値 (CM前 − CM後) ÷ CM前 を超えるときだけ。閾値は pricing-strategy スキルの breakeven.py --reactive で出す",
+    "見込みの流出率は、実際に流出しうる既存顧客で見積もる。複数年契約で固定された量は外し、新規パイプラインの比率を流出率とみなさない",
+    "問いには少なくとも『競合の狙い』『対抗しない場合の損失』『対抗した場合の再反応』『対抗を限定できる範囲』を含める",
+    "全面対抗より、影響を受ける顧客・製品に限定した対抗や、価値の強化を先に検討する",
+    "競合と価格について情報交換したと受け取られる発言・資料を作らない（共謀の疑い）。原価割れの対抗は略奪的価格の論点を法務に確認する"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 1.55,
+        "w": 6.3,
+        "headers": [
+          {
+            "$t": "pricing.question"
+          },
+          {
+            "$t": "common.answer_here"
+          },
+          {
+            "$t": "common.impact"
+          }
+        ],
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          2.2,
+          2.3,
+          1.8
+        ],
+        "size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 10
+          }
+        },
+        "rowH": {
+          "$density": {
+            "print": 0.4,
+            "presentation": 0.48
+          }
+        }
+      },
+      {
+        "type": "metric",
+        "x": 7.05,
+        "y": 1.55,
+        "w": 2.45,
+        "h": 1.05,
+        "value": {
+          "$slot": "thresholdValue"
+        },
+        "caption": {
+          "$slot": "thresholdLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "metric",
+        "x": 7.05,
+        "y": 2.75,
+        "w": 2.45,
+        "h": 1.05,
+        "value": {
+          "$slot": "expectedValue"
+        },
+        "caption": {
+          "$slot": "expectedLabel"
+        },
+        "valueSize": 18
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 3.95,
+        "w": 9.0,
+        "h": 0.8,
+        "label": {
+          "$t": "common.recommended"
+        },
+        "text": {
+          "$slot": "recommendation"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

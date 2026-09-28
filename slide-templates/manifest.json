@@ -1603,6 +1603,82 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "economic-value-waterfall",
+      "displayName": "経済的価値の積み上げ",
+      "pack": "pricing",
+      "category": "value",
+      "path": "pricing/economic-value-waterfall/template.json",
+      "tags": [
+        "pricing",
+        "economic-value",
+        "eve",
+        "waterfall"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "breakeven-sales-change",
+      "displayName": "価格変更の損益分岐",
+      "pack": "pricing",
+      "category": "financial",
+      "path": "pricing/breakeven-sales-change/template.json",
+      "tags": [
+        "pricing",
+        "breakeven",
+        "price-change",
+        "contribution-margin"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "price-structure-compare",
+      "displayName": "価格構造の比較",
+      "pack": "pricing",
+      "category": "structure",
+      "path": "pricing/price-structure-compare/template.json",
+      "tags": [
+        "pricing",
+        "price-structure",
+        "metric",
+        "two-part-tariff"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "competitor-response",
+      "displayName": "競合の値下げへの対応判断",
+      "pack": "pricing",
+      "category": "competition",
+      "path": "pricing/competitor-response/template.json",
+      "tags": [
+        "pricing",
+        "competition",
+        "price-war",
+        "reactive-pricing"
+      ],
+      "status": "experimental",
+      "version": 1
+    },
+    {
+      "id": "give-get-policy",
+      "displayName": "値引きのギブ・ゲット",
+      "pack": "pricing",
+      "category": "policy",
+      "path": "pricing/give-get-policy/template.json",
+      "tags": [
+        "pricing",
+        "discount",
+        "negotiation",
+        "give-get",
+        "policy"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }
