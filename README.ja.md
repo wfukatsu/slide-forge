@@ -4,7 +4,7 @@
 
 Claude Code を主ホストとするエージェント駆動 Google Slides デッキ生成。Codex と
 Antigravity は薄いホスト互換レイヤーを通じて同じ共有スキルを利用する。共有 Python
-エンジンの上に、24 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
+エンジンの上に、25 の生成/支援スキルと 1 つのエンドツーエンドワークフローを載せる。
 Claude Code のプラグインコマンドと共有 `skills/` を動作の正本とし、ホスト固有文書へ
 ワークフローを複製しない。コーポレートテンプレートのデッキ、ゼロからのアーキテクチャ図、デザイン
 仕様からのテンプレート作成、生成前の検証、任意のサムネイルベース視覚 QA
@@ -34,7 +34,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 
 ## スキル
 
-スキルは 24 種。それぞれの完全な契約 — 入力・ルール・ガードレール — は
+スキルは 25 種。それぞれの完全な契約 — 入力・ルール・ガードレール — は
 `skills/<name>/SKILL.md` にある。下の表は「何のためのものか」「他と何が違うか」
 だけを示す。
 
@@ -55,6 +55,7 @@ intake → author (spec JSON or Python) → validate (offline, free) → generat
 | `template-forge` | デザイン仕様 — ブランドカラー、フォント、ロゴ、フッター — から**新しいテンプレート（マスター）**を作成・登録する。Slides API はマスターを作れないため、ベースをコピーして再スタイルし、結果を `templates/<id>.json` に登録する。デザインプリセットを 3 つ同梱。 |
 | `slide-template-creator` | 意味づけされた入力スロット・作例・オフライン検証・カタログプレビューを備えた、再利用可能な**1 枚ものコンテンツテンプレート**を作成・登録する。`slide-templates/` 配下に置かれ、Slides のマスターからは独立している。 |
 | `current-state-analysis` | 提供された材料に**現状分析・課題特定のフレームワーク**を適用する: PEST、Five Forces、業務プロセスのペインポイント、ロジックツリー、KPI ツリー、なぜなぜ、フィッシュボーン、パレート、As-Is/To-Be ギャップ、インパクト×工数マトリクス。事実は図に、解釈は示唆に置き、出典は必須。 |
+| `pricing-strategy` | Nagle & Müller の価値ベースの方法で、根拠の数字が付いた価格の推奨を出す: セグメント別の経済的価値、価格変更の損益分岐、顧客規模別の価格構造、競合への対応、ギブ・ゲットの値引きポリシー。同梱の計算スクリプト（`scripts/pricing/`）は `pricing` テンプレートパック用のスロットデータも書き出す（計算ロジックのスライドは任意）。 |
 | `analysis-template-creator` | **分析フレームワークのテンプレート**そのもの（`slide-templates/analysis/`）とその描画プリミティブを作成・保守する — 1 テンプレート 1 問い、事実と解釈のスロット分離、出典必須、誤用ガードレール。 |
 | `calendar-slides` | 日付つきのタスク・予定を**カレンダースライド**にし、`slide-templates/calendar/` パックを保守する: 月間カレンダー、日単位ガント、日次タスクリスト、週間タイムテーブル、スプリントカレンダー、年間カレンダー、期限カウントダウン、日次ヒートマップ、当番表。日本の祝日データを同梱し、長い期間はページに分割する。月単位の計画（`planning/gantt-schedule`）やマイルストーン年表には使わない。 |
 
@@ -247,7 +248,7 @@ Scalar 製品の事実と価格 — 機能・エディション・バージョ�
 ## Claude Code プラグインとしてのインストール
 
 このリポジトリはプラグインマーケットプレイスを兼ねる
-（`.claude-plugin/marketplace.json`、24 スキルすべてを束ねた 1 プラグイン）:
+（`.claude-plugin/marketplace.json`、25 スキルすべてを束ねた 1 プラグイン）:
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -266,7 +267,7 @@ venv、OAuth 認証情報、クラウドアイコンはマシンローカルで�
 ## Codex での利用
 
 Codex も同じスキルと Python エンジンを使う。リポジトリのクローンでは、
-`.agents/skills/` のエントリが 24 の生成/支援スキルすべてと、エンドツー
+`.agents/skills/` のエントリが 25 の生成/支援スキルすべてと、エンドツー
 エンドの `forge` スキルを公開する。リポジトリルートから Codex を起動し、
 `forge` を名前で呼び出せばよい。Claude 固有の `/slide-forge:forge`
 コマンドやプラグインマーケットプレイスのマニフェストは不要。
@@ -610,6 +611,7 @@ Docs-editors ファイルのエクスポートを拒否する（`exportSizeLimit
 | `template-forge` | ✔ | コピーする場合はベースのマスター | — | — | — |
 | `slide-template-creator` | ✔（カタログ画像の生成時） | — | — | — | — |
 | `current-state-analysis` | ✔ | ✔ copy モードのテンプレートで必要 | — | — | — |
+| `pricing-strategy` | venv は常に、OAuth はスライド生成時のみ | — | — | — | — |
 | `analysis-template-creator` | ✔（カタログ画像の生成時） | — | — | — | — |
 | `calendar-slides` | ✔（デッキ生成とカタログ画像の生成時） | — | — | — | — |
 | `b2b-account-maps` | ✔ | ✔ copy モードのテンプレートで必要 | — | 出力したマップを編集するとき | — |

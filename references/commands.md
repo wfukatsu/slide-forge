@@ -4,7 +4,7 @@
 
 Three commands ship with the plugin. They are the entry point most people
 actually use: a command routes to a skill, so you do not have to know which of
-the 24 skills fits before you start.
+the 25 skills fits before you start.
 
 | Command | Argument | What it produces |
 |---|---|---|

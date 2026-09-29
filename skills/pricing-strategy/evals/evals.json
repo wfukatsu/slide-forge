@@ -1,0 +1,152 @@
+{
+  "skill_name": "pricing-strategy",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're a B2B SaaS company launching a new 'Audit Trail' add-on for our workflow platform next quarter. It records every change with tamper-evident hashes so customers can prove to auditors what happened. Two target segments: regulated mid-size firms (finance, healthcare, ~200 accounts) and large enterprises (~30 accounts) who today either buy a separate logging tool at roughly $40k/year or build something in-house. Our incremental cost is about $6 per seat-month (storage + support). Customers have 100–2,000 seats. We want to keep list price stable and avoid a race to the bottom. Please recommend how to price the add-on, in English, for our exec team.",
+      "expected_output": "A pricing recommendation report in English following the skill's 11-section template: economic value per segment built from reference value (logging tool / in-house) plus value drivers expressed as formulas; a metric recommendation with the five-criteria scoring; ceiling/floor per segment; a chosen strategy with justification; a breakeven table for candidate prices computed with the script (not by hand); launch plan focused on reference-price establishment; discount policy with give-get; measurement plan; ethics/legal checklist with jurisdiction note; assumptions flagged as confirmed/unconfirmed.",
+      "files": [],
+      "assertions": [
+        "The report states a recommended price point (or points) with a price metric (the unit charged for)",
+        "Economic value is built as reference value (next-best alternative) plus differentiation value, with at least two value drivers expressed as formulas with inputs",
+        "A price ceiling and floor (or viable range) is stated for at least one segment",
+        "A pricing strategy (skim, penetration, or neutral) is named and justified with a market or cost condition",
+        "Breakeven sales change is reported for at least two candidate prices, and the figures are arithmetically correct (−ΔCM ÷ new CM)",
+        "Sunk or allocated costs are not used in the breakeven calculation (only incremental cost)",
+        "A discount / concession policy with give–get or pre-approved trade-offs is included",
+        "Assumptions are listed and unconfirmed inputs are flagged as such",
+        "The report is written in English",
+        "Includes an ethics/legal check that notes jurisdiction or that it is not legal advice",
+        "Segments (regulated mid-size vs. large enterprise) receive differentiated treatment (different price, tier, or fence)"
+      ],
+      "request_type": "A"
+    },
+    {
+      "id": 2,
+      "prompt": "新しく個人開発者向けの API サービス（画像から表を抽出する OCR API）をリリースします。競合は 1,000 リクエストあたり 2 ドルの海外サービスが 2 社と、オープンソースの OCR（無料だが精度が低く自前運用が必要）です。うちの精度は表の抽出で競合より明らかに高く、後処理の手作業が減ります。増分コストは 1,000 リクエストあたり 0.3 ドル程度。まだユーザーはいません。フリーミアムにするか、従量課金だけにするか迷っています。日本語で価格の提案書をまとめてください。",
+      "expected_output": "日本語の価格決定レポート（スキルの 11 節テンプレート）。参照価値（競合 2 ドル/1,000 件、OSS の自前運用コスト）と差別化価値（後処理工数の削減など）を算式で示した EVE、価格メトリクスの 5 基準評価（従量／フリーミアム／二部料金）、天井と床、導入期の戦略（参照価格の確立、早期採用者）、候補価格の損益分岐表（スクリプトで計算）、値引き・無料枠のポリシー、測定計画、リスクと法務チェック、前提の確認済み／要確認の区別。",
+      "files": [],
+      "assertions": [
+        "The report states a recommended price point (or points) with a price metric (the unit charged for)",
+        "Economic value is built as reference value (next-best alternative) plus differentiation value, with at least two value drivers expressed as formulas with inputs",
+        "A price ceiling and floor (or viable range) is stated for at least one segment",
+        "A pricing strategy (skim, penetration, or neutral) is named and justified with a market or cost condition",
+        "Breakeven sales change is reported for at least two candidate prices, and the figures are arithmetically correct (−ΔCM ÷ new CM)",
+        "Sunk or allocated costs are not used in the breakeven calculation (only incremental cost)",
+        "A discount / concession policy with give–get or pre-approved trade-offs is included",
+        "Assumptions are listed and unconfirmed inputs are flagged as such",
+        "The report is written in Japanese",
+        "Freemium versus usage-only is evaluated against explicit criteria (e.g., metric criteria, reference-price or free-tier fence) and a choice is made",
+        "Introduction-stage considerations (establishing a reference price, early adopters, or non-price barriers) are addressed"
+      ],
+      "request_type": "A"
+    },
+    {
+      "id": 3,
+      "prompt": "Quick one: we sell an on-prem analytics appliance at $120k with about $45k of incremental cost per unit, ~80 units a year. Product wants to launch a 'Lite' edition at $60k to reach smaller customers, sales says $75k. What volume would each need, and is there a smarter way to structure this so Lite doesn't cannibalize the full edition? Answer in English, keep it short.",
+      "expected_output": "A concise English answer that still uses the method: breakeven/profit analysis for the Lite candidates computed with the script relative to the full edition's contribution, cannibalization framed as a fence/offer-configuration problem (selective degradation of the Lite edition, buyer-identification or capacity fences), a recommendation with the justifying number, and explicit assumptions. Short format is acceptable but the numbers must come from the script and sunk costs must not enter.",
+      "files": [],
+      "assertions": [
+        "The answer is in English and concise (under about 600 words of body text)",
+        "Breakeven or required volume is given for both the $60k and $75k Lite prices relative to the full edition's contribution",
+        "Contribution per unit is computed correctly: full $75k, Lite@$60k $15k, Lite@$75k $30k (assuming $45k incremental cost)",
+        "Cannibalization is addressed with structure (fences, selective degradation / offer configuration), not only with price",
+        "A recommendation is made with a justifying number",
+        "Assumptions (e.g., Lite incremental cost, cannibalization rate) are stated explicitly",
+        "States whether the replacement ratio quoted is net (new units per downgrade) or gross (units to match one full-edition unit)"
+      ],
+      "request_type": "C"
+    },
+    {
+      "id": 4,
+      "prompt": "既存の SaaS（1 ユーザー月額 3,000 円、1 ユーザーあたりの増分コストは月 600 円）で、300 ユーザー契約の大口顧客から 20% の値引きを求められています。応じるべきか、ざっくり教えてください。",
+      "expected_output": "日本語の短い回答（短縮フォーマット）。スクリプトで計算した損益分岐（20% 値引きで必要な販売増 +33.3%、300 ユーザーなら 400 ユーザー相当）、値引きの代わりのギブ・ゲット案、推奨と前提。",
+      "files": [],
+      "assertions": [
+        "The answer is in Japanese",
+        "The answer is brief (roughly 1,200 Japanese characters or less of body text, excluding tables)",
+        "The breakeven for a 20% discount is correct: contribution per user falls from 2,400 to 1,800 yen, requiring about +33.3% volume (about 400 users instead of 300)",
+        "Offers a give–get alternative (e.g., longer term, more users, prepayment, reduced scope) instead of an unconditional discount",
+        "Gives a clear recommendation",
+        "States assumptions"
+      ],
+      "request_type": "E"
+    },
+    {
+      "id": 5,
+      "request_type": "B",
+      "prompt": "業務用の在庫管理 SaaS を 1 拠点あたり月額 5 万円で 3 年間据え置いてきました。増分コストは 1 拠点あたり月 8,000 円、契約は約 400 拠点で年 10% ずつ増えています。原価上昇もあり 15% 値上げを検討していますが、解約が怖いです。値上げすべきか、するならどう進めるべきか、経営会議向けにレポートにしてください。",
+      "expected_output": "雛形 B に沿った日本語レポート。breakeven.py で +15% などの候補の損益分岐販売変化率を算出し、成長トレンドをベースラインとして扱い、価格／価値の位置を確認し、既存顧客への告知・移行計画と測定計画を含む。",
+      "files": [],
+      "assertions": [
+        "値上げするか否か、幅、時期を冒頭で推奨している",
+        "+15% の損益分岐販売変化率が約 −15.2%（貢献利益率 84% の場合 −0.15/(0.84+0.15)）として正しく示されている",
+        "ベースラインを現在の数量ではなく成長トレンドとして扱う旨がある",
+        "原価上昇そのものを値上げの根拠にするのではなく、価値との関係で正当化している",
+        "既存顧客への告知や移行（事前告知、据え置き期間、上限など）の計画がある",
+        "前提に要確認の印が付いている",
+        "日本語で書かれている"
+      ]
+    },
+    {
+      "id": 6,
+      "request_type": "D",
+      "prompt": "We sell a mid-market HR platform at $12 per employee per month (incremental cost about $2). A well-funded competitor just announced $8 for new customers only. About 35% of our pipeline is price-sensitive SMBs; our enterprise accounts are on multi-year contracts. Sales wants to match $8 across the board. What should we do? Keep it short.",
+      "expected_output": "Brief-mode answer in English: works through the competitive response questions, computes that matching (−$4 on a $10 margin) requires volume at risk > 40% to be justified, recommends a selective response (e.g., fenced SMB offer or value reinforcement) rather than across-the-board matching, and notes antitrust caution.",
+      "files": [],
+      "assertions": [
+        "Uses the brief format (recommendation, numbers, assumptions, next step) and stays short",
+        "Computes the reactive breakeven correctly: matching is justified only if volume at risk exceeds 40% (4 ÷ 10)",
+        "Does not recommend across-the-board matching; proposes a selective or fenced response or value-based defense",
+        "Distinguishes the SMB pipeline from enterprise accounts under contract",
+        "Mentions how the competitor might react to our response or the risk of a price war",
+        "Written in English"
+      ]
+    },
+    {
+      "id": 7,
+      "request_type": "C",
+      "prompt": "当社のデータ連携ツールはコネクタ 1 本あたり年 60 万円の単純な従量課金です。顧客のコネクタ数は 1〜3 本が 50 社、4〜8 本が 30 社、9 本以上（平均 15 本）が 10 社。大口では毎回 30〜40% の値引きを求められ、小口では「安すぎて本気度が伝わらない」と言われます。顧客の価値は 1 社あたり年 400〜600 万円程度と見ています。増分コストはコネクタ 1 本あたり年 5 万円。料金体系をどう変えるべきか提案してください。",
+      "expected_output": "雛形 C に沿った日本語レポート。structure_compare.py で現行と、基本料＋従量（売上中立）や段階料金などの案を比較し、規模別の価格／価値の比率で現行の問題を示し、メトリクスの 5 基準評価、フェンス、既存顧客の移行計画を含む。",
+      "files": [],
+      "assertions": [
+        "structure_compare.py（またはスクリプトの出力表）で少なくとも 2 つの構造案を現行と比較している",
+        "規模別の価格／価値の比率を示し、大口で価格が価値を超えるか近いことを指摘している",
+        "売上中立または貢献利益への影響が数値で示されている",
+        "価格メトリクスを 5 基準などで評価している",
+        "抜け道（契約の分割など）とフェンスに触れている",
+        "既存顧客の移行計画がある",
+        "日本語で書かれている"
+      ]
+    },
+    {
+      "id": 8,
+      "request_type": "F",
+      "prompt": "うちは営業部門が見積もりの価格を事実上決めていて、値引き率は担当者の裁量です。価格表は 5 年前のまま、実売価格のデータは誰も集計していません。価格決定の仕組みを立て直したいので、何から手をつけるべきか診断してください。",
+      "expected_output": "雛形 F に沿った日本語の診断。組織・役割（意思決定権限）、プロセス、データ（価格ウォーターフォール、プライスバンド、勝敗分析）、営業インセンティブの観点で現状を評価し、優先課題とロードマップを示す。",
+      "files": [],
+      "assertions": [
+        "組織・権限、プロセス、データ、インセンティブなど複数の観点で診断している",
+        "実売価格（ポケット価格）や価格ウォーターフォールの集計を最初の打ち手の一つに挙げている",
+        "営業の報酬を売上だけでなく利益・価格実現と結びつける提案がある",
+        "値引き権限の設計（ギブ・ゲット、承認レベル）に触れている",
+        "段階的なロードマップ（期間付き）がある",
+        "日本語で書かれている"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "証拠保全 SaaS（Box/SharePoint のファイルのハッシュを台帳に記録し存在証明書を出す）の新プラン価格を決めて、Google スライドにまとめてください。対象は大企業の知財部門と品質保証部門。代替は認定タイムスタンプ（1 件 8 円）や Purview。増分原価は 1,000 件あたり 2,000 円、テナントあたり年 60 万円。",
+      "expected_output": "スライドの作成に入る前に AskUserQuestion を 1 回だけ使い、計算ロジックのスライドの有無（付録／各結果の直後／入れない）、用途（print／presentation）、出力先（Google スライド生成／スロットデータ）、分量を確認する。その後、eve_calc.py などを --slides（計算ロジックを選んだ場合は --slides-logic も）付きで実行し、slide-forge の pricing パックのテンプレートでページを組む。",
+      "files": [],
+      "assertions": [
+        "Before producing any slide data or deck, the response asks the user via AskUserQuestion (a single call) about calculation-logic slides, density/purpose, output destination, and length",
+        "The calculation-logic question offers at least: put them in an appendix, place each after its result slide, and omit them",
+        "If calculation-logic slides are chosen, the calculators are run with --slides DIR --slides-logic and calculation-logic pages are included in the chosen position",
+        "Economic value is built as reference value plus differentiation value, and the per-document comparison with 8-yen timestamps is addressed in the structure/metric choice",
+        "Placeholders beginning with 【要記入】 are replaced before rendering"
+      ],
+      "request_type": "A"
+    }
+  ]
+}

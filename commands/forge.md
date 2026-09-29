@@ -22,6 +22,7 @@ Pick one based on the arguments and context. Only ask once via
 | Scalar solution proposal starting from a customer problem | `scalar-proposal-slides` |
 | Building a reusable, single-slide-unit template | `slide-template-creator` |
 | Current-state analysis / problem identification from material (SWOT, PEST, Five Forces, why-why, logic tree, gap analysis, etc.) | `current-state-analysis` |
+| Value-based pricing: what to charge, a price increase or cut, price structure, discounts, a competitor's price cut — with the numbers as slides | `pricing-strategy` |
 | Adding or changing an analysis-framework template itself | `analysis-template-creator` |
 | Calendar slides from dated tasks/events (month calendar, day-by-day gantt, daily task list, weekly timetable, sprint calendar, year at a glance, deadline countdown, daily heatmap, shift roster) | `calendar-slides` |
 | B2B deal stakeholder map / discovery organization | `b2b-account-maps` |

@@ -3,7 +3,7 @@
 # slide-forge
 
 Claude-first, agent-driven Google Slides deck generation with the same shared
-skills available to Codex and Antigravity through thin host adapters: twenty-four
+skills available to Codex and Antigravity through thin host adapters: twenty-five
 generation/support skills plus one end-to-end workflow on a shared Python
 engine. Claude Code's plugin commands and the shared `skills/` are the behavior
 source of truth; host files do not duplicate workflow logic. It covers corporate-template decks, from-scratch architecture
@@ -35,7 +35,7 @@ index of all 48 reference documents.
 
 ## Skills
 
-Twenty-four skills. Each one's full contract — inputs, rules and guardrails —
+Twenty-five skills. Each one's full contract — inputs, rules and guardrails —
 is in `skills/<name>/SKILL.md`; the rows below say what it is for and what
 makes it different.
 
@@ -56,6 +56,7 @@ makes it different.
 | `template-forge` | Create and register a **new template (master)** from a design spec — brand colours, fonts, logo, footer. The Slides API cannot create masters, so a base is copied and restyled; the result lands in `templates/<id>.json`. Ships 3 design presets. |
 | `slide-template-creator` | Create and register reusable **single-slide content templates** with semantic input slots, examples, offline validation and catalog previews. These live under `slide-templates/` and are independent of Slides masters. |
 | `current-state-analysis` | Run **current-state and problem-identification frameworks** on supplied material: PEST, Five Forces, process pain-points, logic and KPI trees, why-why, fishbone, Pareto, As-Is/To-Be gap analysis, impact-effort matrix. Facts go in the figure, interpretation in the insight, and sources are mandatory. |
+| `pricing-strategy` | Recommend a price with the numbers behind it, following Nagle & Müller's value-based method: economic value by segment, breakeven of a price change, price structure across customer sizes, competitor response, and give–get discount policy. Bundled calculators (`scripts/pricing/`) also write slot data for the `pricing` template pack, including optional calculation-logic slides. |
 | `analysis-template-creator` | Build and maintain the **analysis-framework templates** themselves (`slide-templates/analysis/`) and their drawing primitives — one question per template, fact/interpretation slot split, required sources, misuse guardrails. |
 | `calendar-slides` | Turn dated tasks and events into **calendar slides**, and maintain the `slide-templates/calendar/` pack: month grid, day gantt, day agenda, week timetable, sprint calendar, year at a glance, deadline countdown, daily heatmap, shift roster. Japanese national holidays ship with the repo; long periods split across pages. Not for month-level plans (`planning/gantt-schedule`) or milestone timelines. |
 
@@ -254,7 +255,7 @@ than a blank. For a single slide, `render_slide_template.py --lang en`.
 ## Install as a Claude Code plugin
 
 The repo doubles as a plugin marketplace (`.claude-plugin/marketplace.json`,
-one plugin bundling all twenty-four skills):
+one plugin bundling all twenty-five skills):
 
 ```
 /plugin marketplace add wfukatsu/slide-forge
@@ -274,7 +275,7 @@ skills will be listed twice.
 ## Use with Codex
 
 Codex uses the same skills and Python engine. In a repository clone, the
-`.agents/skills/` entries expose all twenty-four generation/support skills plus the
+`.agents/skills/` entries expose all twenty-five generation/support skills plus the
 end-to-end `forge` skill. Start Codex from the repository root and invoke
 `forge` by name; the Claude-specific `/slide-forge:forge` command and plugin
 marketplace manifest are not required.
@@ -608,6 +609,7 @@ editable source. Details: `references/settings.md`.
 | `template-forge` | ✔ | base master, if copying one | — | — | — |
 | `slide-template-creator` | ✔ (to render catalog previews) | — | — | — | — |
 | `current-state-analysis` | ✔ | ✔ for the copy-mode templates | — | — | — |
+| `pricing-strategy` | venv always; OAuth only to generate slides | — | — | — | — |
 | `analysis-template-creator` | ✔ (to render catalog previews) | — | — | — | — |
 | `calendar-slides` | ✔ (to generate decks and render catalog previews) | — | — | — | — |
 | `b2b-account-maps` | ✔ | ✔ for the copy-mode templates | — | to edit the exported maps | — |
