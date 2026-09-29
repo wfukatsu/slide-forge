@@ -30,6 +30,7 @@ Load exactly one generation skill completely, then read only the reference secti
 | Create/register a new master template | `template-forge` |
 | Create/register a reusable single-slide content template | `slide-template-creator` |
 | Current-state analysis / problem identification from supplied material | `current-state-analysis` |
+| Value-based pricing: what to charge, a price increase or cut, price structure, discounts, a competitor's price cut — with the numbers as slides | `pricing-strategy` |
 | Create/change an analysis-framework slide template | `analysis-template-creator` |
 | Calendar slides from dated tasks/events (month calendar, day-by-day gantt, daily task list, weekly timetable, sprint calendar, year at a glance, deadline countdown, daily heatmap, shift roster) | `calendar-slides` |
 | Create Scalar product/proposal slides | `scalar-product-slides`, `scalar-proposal-slides` |

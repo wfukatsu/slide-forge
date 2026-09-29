@@ -30,6 +30,7 @@
 | 新規マスターテンプレートの作成・登録 | `template-forge` |
 | 再利用可能な 1 枚ものコンテンツテンプレートの作成・登録 | `slide-template-creator` |
 | 提供素材からの現状分析・課題特定 | `current-state-analysis` |
+| 価値ベースの価格戦略（値付け、値上げ・値下げ、料金体系、値引き、競合の値下げ）と、その数字のスライド化 | `pricing-strategy` |
 | 分析フレームワークのスライドテンプレートの作成・変更 | `analysis-template-creator` |
 | 日付つきのタスク・予定からカレンダースライド（月間カレンダー、日単位ガント、日次タスクリスト、週間タイムテーブル、スプリントカレンダー、年間カレンダー、期限カウントダウン、日次ヒートマップ、当番表） | `calendar-slides` |
 | Scalar 社製品・提案スライドの作成 | `scalar-product-slides`, `scalar-proposal-slides` |

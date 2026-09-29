@@ -54,6 +54,16 @@
       "name": "nexus-partial-pipeline-is-disclosed-not-filled",
       "files": ["skills/nexus-report-slides/SKILL.md", "references/nexus-reports.md"],
       "requires": ["work/pipeline-progress.json", "pipeline-coverage", "open-questions", "never writes"]
+    },
+    {
+      "name": "pricing-strategy-slides-gate",
+      "files": ["skills/pricing-strategy/SKILL.md", "skills/pricing-strategy/references/slides.md"],
+      "requires": ["AskUserQuestion", "--slides-logic", "scripts/pricing/", "slide-templates/pricing", "calculation-logic"]
+    },
+    {
+      "name": "pricing-strategy-token-discipline",
+      "files": ["skills/pricing-strategy/SKILL.md"],
+      "requires": ["In brief mode, do not read references", "grep -i", "Read only one of them"]
     }
   ]
 }
