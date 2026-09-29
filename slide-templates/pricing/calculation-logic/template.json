@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "id": "calculation-logic",
+  "displayName": "計算ロジック",
+  "pack": "pricing",
+  "category": "method",
+  "description": "結果のスライドに載せた数字がどの算式とどの入力から出たかを、算式・入力と中間値の表・出典で 1 枚に示す",
+  "answers": [
+    "この数字はどう計算され、どの入力に依存しているか"
+  ],
+  "inferenceLevel": "descriptive",
+  "compatibleLayouts": [
+    "BLANK"
+  ],
+  "defaultDensity": "print",
+  "example": "example.json",
+  "examples": {
+    "print": "example.json",
+    "presentation": "example.presentation.json"
+  },
+  "slots": {
+    "title": {
+      "type": "string",
+      "required": true,
+      "maxLength": 70
+    },
+    "lead": {
+      "type": "string",
+      "required": true,
+      "maxLength": 100
+    },
+    "formula": {
+      "type": "string",
+      "required": true,
+      "maxLength": {
+        "$density": {
+          "print": 110,
+          "presentation": 70
+        }
+      }
+    },
+    "headers": {
+      "type": "string[]",
+      "required": true,
+      "minItems": 3,
+      "maxItems": 3,
+      "maxLength": 12
+    },
+    "rows": {
+      "type": "string[][]",
+      "required": true,
+      "minItems": 2,
+      "maxItems": {
+        "$density": {
+          "print": 6,
+          "presentation": 5
+        }
+      },
+      "maxLength": {
+        "$density": {
+          "print": 72,
+          "presentation": 40
+        }
+      }
+    },
+    "source": {
+      "type": "string",
+      "required": true,
+      "maxLength": 170
+    }
+  },
+  "guardrails": [
+    "対応する結果のスライドと同じ入力・同じ単位で書く。丸めた表示値ではなく計算に使った値を載せる",
+    "1 枚に 1 つの計算だけを書く。複数の案や複数のセグメントは 1 枚ずつに分ける。表は print で 6 行まで（Slides の表の行は約 0.34in より低くならない）",
+    "仮定の入力は値の横か出典行に『仮定・要確認』と書き、確認済みの入力と区別する",
+    "算式は言葉で書く（例: 損益分岐販売変化率 = −価格変化 ÷ (変更前の貢献利益 + 価格変化)）。記号だけにしない",
+    "表の数値には必ず単位（通貨、件、時間、人など）を付ける。単位のない数字は読み手が検算できない",
+    "計算は pricing-strategy スキルのスクリプト（--slides-logic）の出力から転記し、手計算で作り直さない"
+  ],
+  "slide": {
+    "layout": "BLANK",
+    "figures": [
+      {
+        "type": "governing_message",
+        "x": 0.5,
+        "y": 0.42,
+        "w": 9.0,
+        "text": {
+          "$slot": "title"
+        }
+      },
+      {
+        "type": "lead_in",
+        "x": 0.5,
+        "y": 1.0,
+        "w": 9.0,
+        "text": {
+          "$slot": "lead"
+        }
+      },
+      {
+        "type": "so_what",
+        "x": 0.5,
+        "y": 1.5,
+        "w": 9.0,
+        "h": 0.75,
+        "label": {
+          "$t": "pricing.formula"
+        },
+        "text": {
+          "$slot": "formula"
+        },
+        "size": {
+          "$density": {
+            "print": 9,
+            "presentation": 10
+          }
+        }
+      },
+      {
+        "type": "table",
+        "x": 0.5,
+        "y": 2.33,
+        "w": 9.0,
+        "headers": {
+          "$slot": "headers"
+        },
+        "rows": {
+          "$slot": "rows"
+        },
+        "colWidths": [
+          1.6,
+          5.4,
+          2.0
+        ],
+        "size": {
+          "$density": {
+            "print": 8.5,
+            "presentation": 10
+          }
+        },
+        "rowH": {
+          "$density": {
+            "print": 0.34,
+            "presentation": 0.38
+          }
+        }
+      },
+      {
+        "type": "source_note",
+        "x": 0.5,
+        "y": 4.85,
+        "w": 9.0,
+        "source": {
+          "$slot": "source"
+        }
+      }
+    ]
+  }
+}

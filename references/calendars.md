@@ -308,4 +308,4 @@ format.
 - [Drawing Diagrams (diagrams.py and the Canvas family)](diagrams.md)
 - [Tables and charts (charts.py)](charts.md)
 - [Business Framework Diagrams (patterns.py)](patterns.md)
-- [Slide Template Catalog (All 115 Types)](slide-template-catalog.md)
+- [Slide Template Catalog (All 116 Types)](slide-template-catalog.md)
