@@ -1679,6 +1679,22 @@
       ],
       "status": "experimental",
       "version": 1
+    },
+    {
+      "id": "calculation-logic",
+      "displayName": "計算ロジック",
+      "pack": "pricing",
+      "category": "method",
+      "path": "pricing/calculation-logic/template.json",
+      "tags": [
+        "pricing",
+        "calculation",
+        "formula",
+        "assumptions",
+        "appendix"
+      ],
+      "status": "experimental",
+      "version": 1
     }
   ]
 }

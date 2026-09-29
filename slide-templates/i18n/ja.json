@@ -235,6 +235,7 @@
   "pricing.differentiation_share": "差別化価値の比率",
   "pricing.expected_change": "見込みの数量変化",
   "pricing.expected_loss": "見込みの流出率",
+  "pricing.formula": "算式",
   "pricing.get": "引き換えに得るもの（Get）",
   "pricing.give": "譲歩（Give）",
   "pricing.largest_increase": "最大の値上げ",
