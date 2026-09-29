@@ -72,7 +72,7 @@
     },
     "pricing": {
       "name": "Pricing Strategy Pack",
-      "intro": "Pages that present the results of value-based pricing analysis (Nagle & Müller): the economic value build-up, breakeven of a price change, price structure comparison, whether to respond to a competitor's price cut, and the give–get discount policy, each as a one-page format. The pricing-strategy skill's calculators emit slot data for them directly. Every template carries $density variants.",
+      "intro": "Pages that present the results of value-based pricing analysis (Nagle & Müller): the economic value build-up, breakeven of a price change, price structure comparison, whether to respond to a competitor's price cut, the give–get discount policy, and the calculation logic behind the numbers, each as a one-page format. The pricing-strategy skill's calculators emit slot data for them directly. Every template carries $density variants.",
       "short": "Pages that present the results of value-based pricing analysis"
     }
   },
@@ -1442,6 +1442,19 @@
         "Always name what is never discounted (list price display, specific features, support level). What is conceded in the first negotiation becomes the reference for all later ones",
         "Define the exchange terms by conditions, not by customer type, to avoid price discrimination issues (different prices for customers on the same terms)",
         "Settle the policy before the first negotiation, record exceptions, and review them regularly (e.g. in a pricing committee)"
+      ]
+    },
+    "calculation-logic": {
+      "displayName": "Calculation Logic",
+      "description": "Shows on one page which formula and which inputs produced the numbers on a results slide: the formula, a table of inputs and intermediate values, and the source",
+      "answers": "How was this number calculated, and which inputs does it depend on?",
+      "guardrails": [
+        "Use the same inputs and units as the matching results slide. Show the values used in the calculation, not the rounded display values",
+        "One calculation per slide. Split multiple options or segments across slides. The table holds 6 rows in print (a Slides table row never gets shorter than about 0.34in)",
+        "Mark assumed inputs as 'assumed, to confirm' next to the value or in the source line, distinct from confirmed inputs",
+        "Write the formula in words (e.g. breakeven sales change = −price change ÷ (contribution before + price change)), not symbols alone",
+        "Always attach units (currency, documents, hours, people) to the numbers in the table. A number without a unit cannot be checked by the reader",
+        "Copy the calculation from the pricing-strategy skill's scripts (--slides-logic); do not rebuild it by hand"
       ]
     }
   }
