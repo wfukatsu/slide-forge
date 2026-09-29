@@ -3513,6 +3513,8 @@ Pages that present the results of value-based pricing analysis (Nagle & Müller)
 
 ### Economic Value Build-Up (`economic-value-waterfall`)
 
+![Economic Value Build-Up](images/slide-templates/economic-value-waterfall.png)
+
 Builds total economic value from the reference value plus positive and negative differentiation value, with the price, the value left to the customer, and the differentiation share alongside
 
 **Answers**: What is the product worth to this segment, and where does the price sit within it?
@@ -3550,6 +3552,8 @@ Guardrails:
 
 ### Breakeven of a Price Change (`breakeven-sales-change`)
 
+![Breakeven of a Price Change](images/slide-templates/breakeven-sales-change.png)
+
 Lists, for each candidate price, the volume change needed to keep total contribution, and judges it against the expected volume response
 
 **Answers**: How much must volume move for this price change to pay off?
@@ -3579,6 +3583,8 @@ Guardrails:
 - Treat volume under a competitor match separately (competitor-response). This table assumes competitor prices stay put
 
 ### Price Structure Comparison (`price-structure-compare`)
+
+![Price Structure Comparison](images/slide-templates/price-structure-compare.png)
 
 Lines up pricing structure options by price-to-value ratio per customer size, showing which tracks value and how revenue and contribution change
 
@@ -3615,6 +3621,8 @@ Guardrails:
 
 ### Competitor Price-Cut Response (`competitor-response`)
 
+![Competitor Price-Cut Response](images/slide-templates/competitor-response.png)
+
 Answers the response questions one by one and compares the loss rate that would justify matching a competitor's price cut with the expected loss
 
 **Answers**: Should we respond to the competitor's price cut, and if so, how narrowly?
@@ -3648,6 +3656,8 @@ Guardrails:
 
 ### Give–Get Discount Policy (`give-get-policy`)
 
+![Give–Get Discount Policy](images/slide-templates/give-get-policy.png)
+
 Shows discounts and concessions as an exchange table tied to what the customer gives in return and who approves, and names what is never discounted
 
 **Answers**: In exchange for what may we discount, and who approves it?
@@ -3676,6 +3686,8 @@ Guardrails:
 - Settle the policy before the first negotiation, record exceptions, and review them regularly (e.g. in a pricing committee)
 
 ### Calculation Logic (`calculation-logic`)
+
+![Calculation Logic](images/slide-templates/calculation-logic.png)
 
 Shows on one page which formula and which inputs produced the numbers on a results slide: the formula, a table of inputs and intermediate values, and the source
 
