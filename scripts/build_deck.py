@@ -1820,6 +1820,9 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     # Images (images.py)
     "image":        ("image",        ["x", "y", "w", "h", "source"]),
     "aiImage":      ("ai_image",     ["x", "y", "w", "h", "prompt"]),
+    # A chart linked from a Google Spreadsheet (sheets_link.py); --dry-run
+    # draws a same-sized placeholder, so overlaps are still audited
+    "sheetsChart":  ("sheets_chart", ["x", "y", "w", "h", "chart"]),
 }
 
 # Types that call the API (i.e. cannot be run with --dry-run)
@@ -2743,6 +2746,36 @@ def main() -> int:
             print(f"  - {msg}", file=sys.stderr)
         return 1
 
+    # {{sheet:NAME}} tokens become the spreadsheet's formatted values before
+    # anything measures text. --dry-run uses the last build's values (or a
+    # same-width stand-in) so it stays offline.
+    import sheets_link
+    link_problems = sheets_link.validate(spec)
+    if link_problems:
+        print(t("The spec has problems:"), file=sys.stderr)
+        for msg in link_problems:
+            print(f"  - {msg}", file=sys.stderr)
+        return 1
+    bound_names = sheets_link.names_in(spec)
+    bound_values: dict[str, str] = {}
+    bound_templates: list[list[str]] = []
+    if bound_names:
+        if args.dry_run:
+            bound_values = sheets_link.dry_values(spec)
+        else:
+            sid = sheets_link.spreadsheet_id(spec["spreadsheet"])
+            try:
+                bound_values = sheets_link.fetch_values(
+                    _auth.sheets_service(), sid, bound_names)
+            except ValueError as exc:
+                print(f"ERROR: {exc}", file=sys.stderr)
+                return 1
+            sheets_link.save_cache(sid, bound_values)
+            print(t("  bound numbers: {n} value(s) from the spreadsheet",
+                    n=len(bound_values)))
+        spec, bound_templates = sheets_link.substitute(
+            spec, bound_values, plain=lambda s: parse_inline(s)[0])
+
     selected_indices: list[int] | None = None
     if args.update_slides is not None:
         if not args.into:
@@ -2864,6 +2897,7 @@ def main() -> int:
     # ("Source:", weekday heads, the so-what label). Canvas reads the language
     # off the deck, so one spec settles it once for templates and drawing alike.
     deck.lang = spec.get("lang")
+    deck.spreadsheet = spec.get("spreadsheet")
     try:
         warnings = build_from_spec(deck, spec, selected_indices=selected_indices)
         if not args.no_page_numbers:
@@ -2871,6 +2905,13 @@ def main() -> int:
                  if selected_indices is not None else deck.add_page_numbers())
             print(f"  page numbers: {n} slides")
         url = deck.commit()
+        if any(bound_templates):
+            built = (selected_indices if selected_indices is not None
+                     else range(len(spec["slides"])))
+            sheets_link.tag_deck(
+                deck.slides, deck.presentation_id, deck.slide_ids,
+                [bound_templates[i] for i in built],
+                sheets_link.spreadsheet_id(spec["spreadsheet"]), bound_values)
     except Exception:
         # Don't silently orphan a deck that files.copy already created. It's
         # not auto-deleted (a lesson learned from a past deletion incident:

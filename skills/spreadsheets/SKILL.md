@@ -38,6 +38,17 @@ description: >-
   and keep slide summary and sheet totals consistent — the slide shows the
   total, the sheet carries the line items.
 
+## Planning models linked to a deck
+
+When the workbook is a model people simulate in — a business plan with
+assumptions, scenarios and charts whose numbers a deck must follow — use
+`scripts/build_model.py` instead of `build_sheet.py`. It writes through the
+Sheets API (no xlsx), keeps sheet and chart ids across rebuilds, keeps the
+values readers typed into input cells, and creates the named ranges and
+charts a deck links to with `{{sheet:NAME}}` and the `sheetsChart` figure.
+`scripts/sync_deck.py` then carries later changes into the deck. Read
+`references/sheets-link.md` before authoring one.
+
 ## Quick Reference
 
 | Task | Command |

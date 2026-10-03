@@ -106,6 +106,11 @@ def services(creds=None):
     )
 
 
+def sheets_service(creds=None):
+    """Return a Sheets API client (the drive scope already covers it)."""
+    return build("sheets", "v4", credentials=creds or get_credentials())
+
+
 # ---------- Units & colors ----------
 
 def inches(v: float) -> int:

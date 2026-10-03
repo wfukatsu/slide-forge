@@ -673,6 +673,9 @@ scripts/      shared engine — one importable package
   export_template_master.py import_template_master.py   bundled masters <-> Drive
   fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
   build_sheet.py  line-item spreadsheets (xlsx + Google Spreadsheet)
+  build_model.py  planning-model spreadsheets (inputs, scenarios, charts) a deck links to
+  sheets_link.py  {{sheet:NAME}} bound numbers and the sheetsChart figure
+  sync_deck.py    refresh a deck's linked charts and bound numbers from its sheet
   deckkit.py render_deck.py validate_layout.py      code-first path (offline checks)
   drawio_export.py drive_folder.py snapshot_version.py   draw.io export, Drive folders, version snapshots
   scalar/         Scalar deck builders
