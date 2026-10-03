@@ -171,6 +171,11 @@ pasted there).
 ```jsonc
 {
   "title": "Title of the presentation to generate",   // --title overrides it
+  // Optional. The spreadsheet {{sheet:NAME}} tokens and sheetsChart figures
+  // read from (URL or ID). Any string below may contain {{sheet:NAME}}: a
+  // named range or A1 reference, filled with the cell's formatted value
+  // (references/sheets-link.md)
+  "spreadsheet": "https://docs.google.com/spreadsheets/d/<ID>/edit",
   // Optional. What the deck is for: "print" (handout, proposal read on paper)
   // or "presentation" (projected). With "print", text fitting may shrink text
   // down to 8pt (8/9/10pt are fine on paper); otherwise it stops at 70% of the
@@ -319,6 +324,7 @@ converted from **camelCase to snake_case** and passed as a keyword argument
 | Analysis/design diagrams | `mece_tree` `waterfall` `rating_matrix` `exec_summary` `storyline` `ghost` |
 | Code | `code_block` |
 | Images | `image` `aiImage` |
+| Linked spreadsheet chart | `sheetsChart` (`chart` = a build_model chart id, title or chartId; see `references/sheets-link.md`) |
 
 Each page-component and analysis/design-diagram type (`scripts/pages.py`):
 
@@ -395,7 +401,9 @@ not false-positiving).
 
 Brand icons (`asset_icon*`) and cloud icons (`cloud_icon*`) are checked by
 **substituting an equivalently sized rectangle**, so this also catches
-misspelled icon names.
+misspelled icon names. `sheetsChart` gets the same stand-in, and
+`{{sheet:NAME}}` tokens are measured with the values cached by the last live
+build (or a same-width stand-in), so the dry-run stays offline.
 
 All errors are reported together and the process exits with code 1.
 Figure-check results are warnings by default (exit code 0); pass `--strict`

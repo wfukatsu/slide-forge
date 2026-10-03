@@ -39,6 +39,7 @@ Antigravity も同じ `skills/` と Python エンジンを利用する。
 | Spec／placeholder／画像枠 | `template-schema.md` |
 | Canvas／connector | `diagrams.md` の該当節 |
 | chart／table | `charts.md` の該当component |
+| スプレッドシートに追従する数値・グラフ | `sheets-link.md`（spec より先にモデルを作る） |
 | business framework | `patterns.md` の該当component |
 | page skeleton／density | `slide-patterns.md` の該当skeleton。印刷用なら spec に `"density": "print"`（適合で 8pt まで縮小可） |
 | 画像 | `images.md` の該当節 |
@@ -69,6 +70,8 @@ Antigravity も同じ `skills/` と Python エンジンを利用する。
 6. Driveフォルダを先に作り、デッキを生成し、Specと図の編集ソースをアップロードする。
 7. QAを選択した場合は `slide-qa` を実行し、最後にローカルQAファイルを削除する。
 8. 最終版に対してだけPPTXまたは明細Spreadsheetを生成し、URL、検証、QA範囲を報告する。
+   デッキと連携する計画モデルは例外で、spec より先に `build_model.py` で作る。シート変更後は
+   再生成ではなく `sync_deck.py <deck>` で反映する。
 
 通常は17枚以下を単一エージェントで作る。18〜20枚以上、または独立した複雑図が
 複数ある場合に限りファンアウトを検討する。分割時は1エージェント2〜3枚、参照は

@@ -71,6 +71,7 @@ from patterns import PatternMixin  # noqa: E402
 from pages import PageMixin  # noqa: E402
 from events import EventMixin  # noqa: E402
 from calendars import CalendarMixin  # noqa: E402
+from sheets_link import SheetsChartMixin  # noqa: E402
 
 register({
     "unknown text_fit '{mode}' (use one of: {modes})":
@@ -179,7 +180,8 @@ def _corner_safe(kind: str, w: float, h: float) -> str:
 
 
 class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
-             ChartMixin, PatternMixin, PageMixin, EventMixin, CalendarMixin):
+             ChartMixin, PatternMixin, PageMixin, EventMixin, CalendarMixin,
+             SheetsChartMixin):
     """Thin wrapper for drawing shapes on a single slide."""
 
     _seq = 0

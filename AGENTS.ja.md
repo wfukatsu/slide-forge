@@ -45,7 +45,7 @@ Claude Code を主ホスト兼配布経路とする。Codex は同じ共有 Pyth
 | 既存の画像枠への埋め込み | `image-slots` |
 | サムネイルによるビジュアル QA | `slide-qa` |
 | Google Slides の PPTX エクスポート | `pptx-export` |
-| 見積もり / BOM スプレッドシート | `spreadsheets` |
+| 見積もり / BOM スプレッドシート、デッキの数値と連携する計画モデル | `spreadsheets` |
 | 画像生成・出力先スイッチの変更 | `settings` |
 | nexus-architect のレポート・UI モックの説明スライド化 | `nexus-report-slides` |
 

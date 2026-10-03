@@ -675,6 +675,9 @@ scripts/      共有エンジン — 1 つのインポート可能なパッケ�
   export_template_master.py import_template_master.py   同梱マスター <-> Drive
   fetch_thumbnails.py cleanup_qa.py fetch_cloud_icons.py export_pptx.py
   build_sheet.py  明細スプレッドシート (xlsx + Google Spreadsheet)
+  build_model.py  デッキと連携する計画モデル（入力・シナリオ・グラフ）
+  sheets_link.py  {{sheet:名前}} のバインド数値と sheetsChart 図
+  sync_deck.py    リンクグラフとバインド数値をシートからデッキへ反映
   deckkit.py render_deck.py validate_layout.py      コードファーストパス (オフライン検証)
   drawio_export.py drive_folder.py snapshot_version.py   draw.io 書き出し、Drive フォルダ、バージョンスナップショット
   scalar/         Scalar デッキビルダー

@@ -734,6 +734,40 @@ def _scale_spans(spans: list[dict], scale: float) -> list[dict]:
     return out
 
 
+def print_pre_edit_revision(drive, presentation_id: str) -> None:
+    """Print the pre-edit revision so it can be rolled back to. Just warns if it can't be read.
+
+    Every in-place write prints this first: build_deck.py --into and
+    sync_deck.py alike.
+    """
+    try:
+        # Page through every result the same way snapshot_version.py does,
+        # so the latest revision isn't missed even for decks with over
+        # 1000 revisions
+        revisions: list[dict] = []
+        token = None
+        while True:
+            res = drive.revisions().list(
+                fileId=presentation_id,
+                fields="nextPageToken,revisions(id,modifiedTime)",
+                pageSize=1000, pageToken=token,
+            ).execute()
+            revisions.extend(res.get("revisions", []))
+            token = res.get("nextPageToken")
+            if not token:
+                break
+    except Exception as exc:                       # noqa: BLE001 — informational only
+        print(t("  warn: could not read the revision history ({err}); "
+                "snapshot the deck before replacing it", err=exc),
+              file=sys.stderr)
+        return
+    if revisions:
+        last = revisions[-1]
+        print(t("  pre-edit revision: {rev} ({time}) — roll back from "
+                "File > Version history",
+                rev=last.get("id"), time=last.get("modifiedTime")))
+
+
 def load_template(path: str) -> dict:
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -1056,33 +1090,7 @@ class TemplateDeck:
                   missing=", ".join(missing)))
 
     def _print_pre_edit_revision(self) -> None:
-        """Print the pre-edit revision so it can be rolled back to. Just warns if it can't be read."""
-        try:
-            # Page through every result the same way snapshot_version.py does,
-            # so the latest revision isn't missed even for decks with over
-            # 1000 revisions
-            revisions: list[dict] = []
-            token = None
-            while True:
-                res = self.drive.revisions().list(
-                    fileId=self.presentation_id,
-                    fields="nextPageToken,revisions(id,modifiedTime)",
-                    pageSize=1000, pageToken=token,
-                ).execute()
-                revisions.extend(res.get("revisions", []))
-                token = res.get("nextPageToken")
-                if not token:
-                    break
-        except Exception as exc:                       # noqa: BLE001 — informational only
-            print(t("  warn: could not read the revision history ({err}); "
-                    "snapshot the deck before replacing it", err=exc),
-                  file=sys.stderr)
-            return
-        if revisions:
-            last = revisions[-1]
-            print(t("  pre-edit revision: {rev} ({time}) — roll back from "
-                    "File > Version history",
-                    rev=last.get("id"), time=last.get("modifiedTime")))
+        print_pre_edit_revision(self.drive, self.presentation_id)
 
     def _delete_existing_slides(self) -> None:
         """Delete the template's bundled slides that remain right after duplication."""
@@ -1820,6 +1828,9 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     # Images (images.py)
     "image":        ("image",        ["x", "y", "w", "h", "source"]),
     "aiImage":      ("ai_image",     ["x", "y", "w", "h", "prompt"]),
+    # A chart linked from a Google Spreadsheet (sheets_link.py); --dry-run
+    # draws a same-sized placeholder, so overlaps are still audited
+    "sheetsChart":  ("sheets_chart", ["x", "y", "w", "h", "chart"]),
 }
 
 # Types that call the API (i.e. cannot be run with --dry-run)
@@ -2743,6 +2754,36 @@ def main() -> int:
             print(f"  - {msg}", file=sys.stderr)
         return 1
 
+    # {{sheet:NAME}} tokens become the spreadsheet's formatted values before
+    # anything measures text. --dry-run uses the last build's values (or a
+    # same-width stand-in) so it stays offline.
+    import sheets_link
+    link_problems = sheets_link.validate(spec)
+    if link_problems:
+        print(t("The spec has problems:"), file=sys.stderr)
+        for msg in link_problems:
+            print(f"  - {msg}", file=sys.stderr)
+        return 1
+    bound_names = sheets_link.names_in(spec)
+    bound_values: dict[str, str] = {}
+    bound_templates: list[list[str]] = []
+    if bound_names:
+        if args.dry_run:
+            bound_values = sheets_link.dry_values(spec)
+        else:
+            sid = sheets_link.spreadsheet_id(spec["spreadsheet"])
+            try:
+                bound_values = sheets_link.fetch_values(
+                    _auth.sheets_service(), sid, bound_names)
+            except ValueError as exc:
+                print(f"ERROR: {exc}", file=sys.stderr)
+                return 1
+            sheets_link.save_cache(sid, bound_values)
+            print(t("  bound numbers: {n} value(s) from the spreadsheet",
+                    n=len(bound_values)))
+        spec, bound_templates = sheets_link.substitute(
+            spec, bound_values, plain=lambda s: parse_inline(s)[0])
+
     selected_indices: list[int] | None = None
     if args.update_slides is not None:
         if not args.into:
@@ -2864,6 +2905,7 @@ def main() -> int:
     # ("Source:", weekday heads, the so-what label). Canvas reads the language
     # off the deck, so one spec settles it once for templates and drawing alike.
     deck.lang = spec.get("lang")
+    deck.spreadsheet = spec.get("spreadsheet")
     try:
         warnings = build_from_spec(deck, spec, selected_indices=selected_indices)
         if not args.no_page_numbers:
@@ -2871,6 +2913,13 @@ def main() -> int:
                  if selected_indices is not None else deck.add_page_numbers())
             print(f"  page numbers: {n} slides")
         url = deck.commit()
+        if any(bound_templates):
+            built = (selected_indices if selected_indices is not None
+                     else range(len(spec["slides"])))
+            sheets_link.tag_deck(
+                deck.slides, deck.presentation_id, deck.slide_ids,
+                [bound_templates[i] for i in built],
+                sheets_link.spreadsheet_id(spec["spreadsheet"]), bound_values)
     except Exception:
         # Don't silently orphan a deck that files.copy already created. It's
         # not auto-deleted (a lesson learned from a past deletion incident:

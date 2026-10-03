@@ -33,6 +33,7 @@ examples live in `examples/charts-demo.json` (a live demo of 5 of the 6 types, e
 | Share of a whole | `pie` | Up to 6 series. Fold anything beyond that into "Other" |
 | Concentration of factors (80:20) | `pareto` | Auto-sorted by descending value. "Other" always goes last |
 | A single number, large | `metric` (diagrams) | Stronger without turning it into a chart |
+| A number or chart that must follow a spreadsheet (plans, simulations) | `sheetsChart` / `{{sheet:NAME}}` | Linked to a `build_model.py` workbook; `sync_deck.py` refreshes it. See `sheets-link.md` |
 
 ## Shared design conventions
 

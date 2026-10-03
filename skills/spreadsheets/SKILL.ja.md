@@ -3,9 +3,12 @@ name: spreadsheets
 description: >-
   Generate line-item spreadsheets — estimates, BOMs, cost breakdowns,
   comparison tables — as Excel (.xlsx) and/or Google Spreadsheet from one JSON
-  spec. Companion to a deck, and also standalone.
+  spec; and planning-model spreadsheets (assumptions, scenarios, charts) a
+  deck links to and syncs from. Companion to a deck, and also standalone.
   Use for: 見積もりを作って, 見積書, 明細表, 費用内訳を Excel に,
-  BOM をスプレッドシートに, cost breakdown spreadsheet.
+  BOM をスプレッドシートに, cost breakdown spreadsheet,
+  事業計画をスプレッドシートで, シミュレーションできるシート,
+  スライドの数字をスプレッドシートと連携, planning model, scenario model.
   Not: free-form or existing-file xlsx work (document-skills:xlsx); reading or
   analyzing spreadsheets; tables drawn inside slides.
 ---
@@ -39,6 +42,10 @@ description: >-
   （`scalar-proposal-slides` の BOM など）を裏付ける場合は、**デッキの
   Drive フォルダ**に置き、スライドのサマリーとシートの合計を一致させる —
   スライドには 合計 を載せ、シートに 明細 を持たせる。
+
+## デッキと連携する計画モデル
+
+前提・シナリオ・グラフを持ち、デッキの数値を追従させたい計画モデル（事業計画など）は、`build_sheet.py` ではなく `scripts/build_model.py` を使う。Sheets API で直接書き込み（xlsx を経由しない）、再生成してもシートとグラフの ID を保ち、読み手が入力したセルの値も残す。デッキが `{{sheet:名前}}` と `sheetsChart` で参照する名前付き範囲とグラフもここで作る。後の変更は `scripts/sync_deck.py` でデッキに反映する。作る前に `references/sheets-link.ja.md` を読む。
 
 ## クイックリファレンス
 
