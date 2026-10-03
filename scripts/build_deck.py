@@ -734,6 +734,40 @@ def _scale_spans(spans: list[dict], scale: float) -> list[dict]:
     return out
 
 
+def print_pre_edit_revision(drive, presentation_id: str) -> None:
+    """Print the pre-edit revision so it can be rolled back to. Just warns if it can't be read.
+
+    Every in-place write prints this first: build_deck.py --into and
+    sync_deck.py alike.
+    """
+    try:
+        # Page through every result the same way snapshot_version.py does,
+        # so the latest revision isn't missed even for decks with over
+        # 1000 revisions
+        revisions: list[dict] = []
+        token = None
+        while True:
+            res = drive.revisions().list(
+                fileId=presentation_id,
+                fields="nextPageToken,revisions(id,modifiedTime)",
+                pageSize=1000, pageToken=token,
+            ).execute()
+            revisions.extend(res.get("revisions", []))
+            token = res.get("nextPageToken")
+            if not token:
+                break
+    except Exception as exc:                       # noqa: BLE001 — informational only
+        print(t("  warn: could not read the revision history ({err}); "
+                "snapshot the deck before replacing it", err=exc),
+              file=sys.stderr)
+        return
+    if revisions:
+        last = revisions[-1]
+        print(t("  pre-edit revision: {rev} ({time}) — roll back from "
+                "File > Version history",
+                rev=last.get("id"), time=last.get("modifiedTime")))
+
+
 def load_template(path: str) -> dict:
     with open(path, encoding="utf-8") as f:
         return json.load(f)
@@ -1056,33 +1090,7 @@ class TemplateDeck:
                   missing=", ".join(missing)))
 
     def _print_pre_edit_revision(self) -> None:
-        """Print the pre-edit revision so it can be rolled back to. Just warns if it can't be read."""
-        try:
-            # Page through every result the same way snapshot_version.py does,
-            # so the latest revision isn't missed even for decks with over
-            # 1000 revisions
-            revisions: list[dict] = []
-            token = None
-            while True:
-                res = self.drive.revisions().list(
-                    fileId=self.presentation_id,
-                    fields="nextPageToken,revisions(id,modifiedTime)",
-                    pageSize=1000, pageToken=token,
-                ).execute()
-                revisions.extend(res.get("revisions", []))
-                token = res.get("nextPageToken")
-                if not token:
-                    break
-        except Exception as exc:                       # noqa: BLE001 — informational only
-            print(t("  warn: could not read the revision history ({err}); "
-                    "snapshot the deck before replacing it", err=exc),
-                  file=sys.stderr)
-            return
-        if revisions:
-            last = revisions[-1]
-            print(t("  pre-edit revision: {rev} ({time}) — roll back from "
-                    "File > Version history",
-                    rev=last.get("id"), time=last.get("modifiedTime")))
+        print_pre_edit_revision(self.drive, self.presentation_id)
 
     def _delete_existing_slides(self) -> None:
         """Delete the template's bundled slides that remain right after duplication."""

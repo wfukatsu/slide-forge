@@ -77,7 +77,6 @@ that sheet, and reviewers can see exactly what feeds the slides.
 ## 3. Sync
 
 ```bash
-.venv/bin/python scripts/snapshot_version.py <deck>      # a deck people already use
 .venv/bin/python scripts/sync_deck.py <deck> --dry-run   # old → new, per page
 .venv/bin/python scripts/sync_deck.py <deck>
 ```
@@ -96,4 +95,15 @@ is reported and left alone. Linked charts are refreshed with
   large.
 - The Slides API has no linked text or tables; the alt-text tag is what makes
   sync possible. Deleting or retyping a bound element drops it from sync.
-- Linked charts export to PPTX as static images (see `pptx-export`).
+- Linked charts export to PPTX as static images (see `pptx-export`), and
+  bound numbers stop syncing there; under `output: local` keep the Slides deck
+  as the working copy (`settings.md`).
+- Only JSON specs built by `build_deck.py` get `{{sheet:NAME}}`. Python decks
+  (`render_deck.py`, `deckkit`, `scripts/scalar/*`) and builders that call
+  `build_from_spec` directly do not substitute or tag tokens; they can still
+  place `canvas.sheets_chart(x, y, w, h, chart, spreadsheet=…)`, which
+  offline validation (`validate_layout.py`) draws as a stand-in.
+- `build_model.py` needs `--folder` or `--into`; it never picks a target by
+  title alone across Drive.
+- `sync_deck.py` prints the pre-edit revision before it writes; run
+  `snapshot_version.py` too when a PPTX backup is wanted.

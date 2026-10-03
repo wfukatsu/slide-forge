@@ -86,6 +86,11 @@ settings.local_output_dir()              # 絶対パス
 Slides デッキに対して走る。**QA → 書き出し**の順は崩さないこと（書き出しは
 その時点のスナップショットなので、作り直したら取り直す）。
 
+スプレッドシートと連携するデッキ（`references/sheets-link.ja.md`）は、`.pptx` では
+連携が切れる。リンクグラフは画像になり、バインド数値は同期されない。シミュレーションに
+使う成果物は Slides デッキのままとし、`.pptx` を渡した後に `sync_deck.py` を実行したら
+書き出し直す。
+
 ## ヒアリングへの影響
 
 `references/interactive-intake.ja.md` は出力形式と AI 画像を質問する。

@@ -47,6 +47,7 @@ Claude Code を主ホストとする。Codex と Antigravity も同じ共有ス�
 | 高密度なクラウド/データフロー図（draw.io → PNG） | `drawio-diagrams` スキル + `scripts/drawio_export.py` + [references/drawio.md](../../references/drawio.ja.md) |
 | デッキごとの Drive フォルダ（作成 / ファイル収集） | `scripts/drive_folder.py` |
 | チャートと表 | `scripts/charts.py` + [references/charts.md](../../references/charts.ja.md) |
+| スプレッドシートに追従する数値・グラフ（JSON spec のみ） | `scripts/build_model.py` + `sheets_link.py` + `sync_deck.py`、[references/sheets-link.md](../../references/sheets-link.ja.md) |
 | 図形描画のピクトグラムとメタファー図 | 名前は `scripts/illustrations.py --list`、配置は [references/diagrams.md](../../references/diagrams.ja.md) |
 | ビジネスフレームワーク図（posmap、gantt、orgchart…） | `scripts/patterns.py` + [references/patterns.md](../../references/patterns.ja.md) |
 | ページ骨格と分析図 | `scripts/pages.py` + [references/slide-patterns.md](../../references/slide-patterns.ja.md) |

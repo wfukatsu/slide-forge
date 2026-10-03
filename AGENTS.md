@@ -45,7 +45,7 @@ Use the matching skill and read its complete `SKILL.md` before acting:
 | Fill existing image frames | `image-slots` |
 | Thumbnail visual QA | `slide-qa` |
 | Export Google Slides to PPTX | `pptx-export` |
-| Estimate/BOM spreadsheet | `spreadsheets` |
+| Estimate/BOM spreadsheet; planning model whose numbers a deck links to | `spreadsheets` |
 | Change the image-generation or output-destination switches | `settings` |
 | Explain a nexus-architect project's reports / UI mocks as slides | `nexus-report-slides` |
 

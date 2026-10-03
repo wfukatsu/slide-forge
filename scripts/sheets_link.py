@@ -249,7 +249,9 @@ class SheetsChartMixin:
         Size the chart in the sheet to the same aspect (build_model's `size`)
         — Slides scales the chart image to the box.
         """
-        if getattr(self.deck, "dry", False):
+        # Offline when the deck is a stand-in: --dry-run's stub (dry) or a
+        # code-first validator's fake deck (no presentation behind it)
+        if getattr(self.deck, "dry", False) or not hasattr(self.deck, "presentation_id"):
             oid = self.shape(x, y, w, h, kind="RECTANGLE", fill=self.P.border, stroke=None)
         else:
             src = spreadsheet or getattr(self.deck, "spreadsheet", None)

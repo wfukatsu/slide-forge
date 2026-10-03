@@ -14,7 +14,9 @@ Two kinds of element are refreshed (see sheets_link.py):
    the styling and the object ids stay as they are. A span whose text was
    edited by hand since the last sync is reported and left alone.
 
-Run snapshot_version.py first on a deck people are already using.
+The pre-edit revision is printed before anything is written (roll back from
+File > Version history); run snapshot_version.py too when a PPTX backup is
+wanted.
 """
 from __future__ import annotations
 
@@ -52,7 +54,7 @@ def main() -> int:
     args = p.parse_args()
 
     pid = _auth.presentation_id(args.deck)
-    slides, _ = _auth.services()
+    slides, drive = _auth.services()
     sheets = _auth.sheets_service()
     pres = slides.presentations().get(
         presentationId=pid, fields="slides(objectId,pageElements)").execute()
@@ -103,6 +105,9 @@ def main() -> int:
         return 0
     reqs = chart_reqs + text_reqs
     if reqs:
+        # an in-place write: leave the revision to roll back to, as --into does
+        from build_deck import print_pre_edit_revision
+        print_pre_edit_revision(drive, pid)
         slides.presentations().batchUpdate(
             presentationId=pid, body={"requests": reqs}).execute()
     print(t("Synced: {url}", url=f"https://docs.google.com/presentation/d/{pid}/edit"))

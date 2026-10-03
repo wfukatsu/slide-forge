@@ -51,7 +51,6 @@
 ## 3. 同期
 
 ```bash
-.venv/bin/python scripts/snapshot_version.py <deck>      # 既に使われているデッキ
 .venv/bin/python scripts/sync_deck.py <deck> --dry-run   # ページごとに 旧 → 新
 .venv/bin/python scripts/sync_deck.py <deck>
 ```
@@ -62,4 +61,7 @@
 
 - 数値はその場で変わるが、レイアウトは組み直さない。値が大きく長くなる（`9名` → `120名`）と枠からあふれることがある。変化が大きいときはページを再生成する（`build_deck.py --into <deck> --update-slides N`）。
 - Slides API にはリンク付きのテキスト・表がない。同期は代替テキストの記録で成り立っているので、バインドした要素を削除・打ち直すと同期の対象から外れる。
-- リンクグラフは PPTX に書き出すと静止画になる（`pptx-export` 参照）。
+- リンクグラフは PPTX に書き出すと静止画になり（`pptx-export` 参照）、バインド数値も同期されない。`output: local` でも作業用の正本は Slides デッキにする（`settings.ja.md`）。
+- `{{sheet:名前}}` が効くのは `build_deck.py` で生成する JSON spec だけ。Python で組むデッキ（`render_deck.py`、`deckkit`、`scripts/scalar/*`）や `build_from_spec` を直接呼ぶビルダーはトークンの置換・記録をしない。`canvas.sheets_chart(x, y, w, h, chart, spreadsheet=…)` は使え、オフライン検証（`validate_layout.py`）では仮の図形として描かれる。
+- `build_model.py` は `--folder` か `--into` が必須。タイトルだけで Drive 全体から対象を選ぶことはしない。
+- `sync_deck.py` は書き込み前に編集前のリビジョンを表示する。PPTX のバックアップも欲しいときは `snapshot_version.py` も実行する。

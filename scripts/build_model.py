@@ -111,6 +111,78 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _i18n import t, register  # noqa: E402
 
 register({
+    'title is missing':
+        'title がありません',
+    'sheets is empty':
+        'sheets が空です',
+    '{where}: id is missing':
+        '{where}: id がありません',
+    "{where}: duplicate id '{id}'":
+        "{where}: id '{id}' が重複しています",
+    "{where}: id '{id}' cannot be a named range (use letters, digits and _, start with a letter, and avoid cell-like names such as Q1 or R2C3)":
+        "{where}: id '{id}' は名前付き範囲にできません（英数字と _ を使い、英字で始め、Q1 や R2C3 のようなセル番地に見える名前は避ける）",
+    '{where}: name is missing':
+        '{where}: name がありません',
+    "{where}: duplicate or reserved sheet name '{name}'":
+        "{where}: シート名 '{name}' が重複しているか予約済みです",
+    '{where}: give exactly one of value / formula':
+        '{where}: value と formula はどちらか一方だけを指定してください',
+    '{where}: columns is empty':
+        '{where}: columns が空です',
+    '{where}: column headers must be unique':
+        '{where}: 列見出しが重複しています',
+    '{where}: {got} values do not match the {want} columns':
+        '{where}: 値 {got} 個が列数 {want} と一致しません',
+    '{where}: header is empty':
+        '{where}: header が空です',
+    '{where}: wider than the header':
+        '{where}: header より列が多いです',
+    "{where}: unknown block type '{kind}' (heading / note / inputs / table / grid)":
+        "{where}: 未知のブロック type '{kind}'（heading / note / inputs / table / grid）",
+    '{ph} used in column A':
+        '{ph} が A 列で使われています',
+    '{ph} is only usable inside a table row':
+        '{ph} は表の行の中でだけ使えます',
+    "'{id}' is an input; it has no columns":
+        "'{id}' は入力セルなので列を指定できません",
+    '{ph} needs a previous column in this table':
+        '{ph} にはこの表の前の列が必要です',
+    "row '{id}' has no column '{col}'":
+        "行 '{id}' に列 '{col}' がありません",
+    "row '{id}' has no column '{col}' (columns: {cols})":
+        "行 '{id}' に列 '{col}' がありません（列: {cols}）",
+    '{ph} needs a column; outside a table write {alt}':
+        '{ph} には列が必要です。表の外では {alt} と書いてください',
+    "row '{id}' has no column '{col}'; the tables do not share this column":
+        "行 '{id}' に列 '{col}' がありません。表どうしでこの列が共通していません",
+    "unknown id '{id}'":
+        "未知の id '{id}'",
+    "unknown row in '{ref}'":
+        "'{ref}' に未知の行があります",
+    "'{ref}': both rows must be in the same table with an id":
+        "'{ref}': 両方の行が id 付きの同じ表にある必要があります",
+    "unknown row '{id}'":
+        "未知の行 '{id}'",
+    "unknown table '{id}'":
+        "未知の表 '{id}'",
+    'unknown placeholder {ph}':
+        '未知のプレースホルダ {ph}',
+    '{where}: id missing or duplicated':
+        '{where}: id がないか重複しています',
+    "{where}: unknown sheet '{name}'":
+        "{where}: 未知のシート '{name}'",
+    "{where}: data must name a grid (got '{got}')":
+        "{where}: data には grid の id を指定してください（指定値: '{got}'）",
+    "{where}: unknown type '{kind}' ({allowed})":
+        "{where}: 未知の type '{kind}'（{allowed}）",
+    '{where}: COMBO needs seriesTypes for each of the {n} series':
+        '{where}: COMBO には {n} 系列それぞれの seriesTypes が必要です',
+    '{where}: legend must be one of {allowed}':
+        '{where}: legend は {allowed} のいずれかです',
+    '{where}: size must be [w, h] in inches':
+        '{where}: size は [w, h]（インチ）で指定してください',
+    "ERROR: give --folder (the deck's Drive folder) or --into <spreadsheet>; a title alone is not a safe target to rebuild":
+        "ERROR: --folder（デッキの Drive フォルダ）か --into <スプレッドシート> を指定してください。タイトルだけでは再構築の対象を安全に決められません",
     "Build a planning-model Google Spreadsheet from a JSON spec":
         "JSON スペックから計画モデルの Google Spreadsheet を生成する",
     "path to the model spec JSON": "モデルスペック JSON のパス",
@@ -251,26 +323,26 @@ class Layout:
     def _place(self) -> None:
         spec = self.spec
         if not spec.get("title"):
-            self.errors.append("title is missing")
+            self.errors.append(t("title is missing"))
         sheets = spec.get("sheets")
         if not isinstance(sheets, list) or not sheets:
-            self.errors.append("sheets is empty")
+            self.errors.append(t("sheets is empty"))
             return
         seen_sheets: set[str] = set()
         seen_ids: set[str] = set()
 
         def claim(ident, where):
             if not isinstance(ident, str) or not ident:
-                self.errors.append(f"{where}: id is missing")
+                self.errors.append(t("{where}: id is missing", where=where))
                 return False
             if ident in seen_ids:
-                self.errors.append(f"{where}: duplicate id '{ident}'")
+                self.errors.append(t("{where}: duplicate id '{id}'", where=where, id=ident))
                 return False
             if not _NAME_RE.match(ident) or _CELLISH_RE.match(ident):
-                self.errors.append(
-                    f"{where}: id '{ident}' cannot be a named range (use letters, "
+                self.errors.append(t(
+                    "{where}: id '{id}' cannot be a named range (use letters, "
                     "digits and _, start with a letter, and avoid cell-like names "
-                    "such as Q1 or R2C3)")
+                    "such as Q1 or R2C3)", where=where, id=ident))
                 return False
             seen_ids.add(ident)
             return True
@@ -279,10 +351,11 @@ class Layout:
             where = f"sheets[{si}]"
             name = sheet.get("name")
             if not name:
-                self.errors.append(f"{where}: name is missing")
+                self.errors.append(t("{where}: name is missing", where=where))
                 continue
             if name in seen_sheets or name == META_SHEET:
-                self.errors.append(f"{where}: duplicate or reserved sheet name '{name}'")
+                self.errors.append(t("{where}: duplicate or reserved sheet name '{name}'",
+                                    where=where, name=name))
                 continue
             seen_sheets.add(name)
             cells: dict[tuple[int, int], Cell] = {}
@@ -308,7 +381,7 @@ class Layout:
                         if not claim(row.get("id"), rw):
                             continue
                         if ("value" in row) == ("formula" in row):
-                            self.errors.append(f"{rw}: give exactly one of value / formula")
+                            self.errors.append(t("{where}: give exactly one of value / formula", where=rw))
                             continue
                         cells[(r, 0)] = Cell(row.get("label", row["id"]), literal=True,
                                              style="total" if row.get("style") == "total" else None)
@@ -332,11 +405,11 @@ class Layout:
                 elif kind == "table":
                     cols = block.get("columns") or []
                     if not cols:
-                        self.errors.append(f"{bw}: columns is empty")
+                        self.errors.append(t("{where}: columns is empty", where=bw))
                         continue
                     headers = [c if isinstance(c, str) else c.get("header", "") for c in cols]
                     if len(set(headers)) != len(headers):
-                        self.errors.append(f"{bw}: column headers must be unique")
+                        self.errors.append(t("{where}: column headers must be unique", where=bw))
                     tid = block.get("id")
                     if tid is not None and not claim(tid, bw):
                         continue
@@ -356,8 +429,9 @@ class Layout:
                             continue
                         vals = row.get("values")
                         if vals is not None and len(vals) != len(cols):
-                            self.errors.append(
-                                f"{rw}: {len(vals)} values do not match the {len(cols)} columns")
+                            self.errors.append(t(
+                                "{where}: {got} values do not match the {want} columns",
+                                where=rw, got=len(vals), want=len(cols)))
                             continue
                         style = row.get("style")
                         cells[(r, 0)] = Cell(row.get("label", rid or ""), literal=True,
@@ -402,7 +476,7 @@ class Layout:
                     header = block.get("header") or []
                     body = block.get("cells") or []
                     if not header:
-                        self.errors.append(f"{bw}: header is empty")
+                        self.errors.append(t("{where}: header is empty", where=bw))
                         continue
                     nrows = block.get("rows", len(body))
                     if block.get("title"):
@@ -413,7 +487,8 @@ class Layout:
                     fmts = block.get("formats") or []
                     for i, line in enumerate(body):
                         if len(line) > len(header):
-                            self.errors.append(f"{bw}.cells[{i}]: wider than the header")
+                            self.errors.append(t("{where}: wider than the header",
+                                                   where=f"{bw}.cells[{i}]"))
                         for j, v in enumerate(line):
                             if v is None:
                                 continue
@@ -434,8 +509,9 @@ class Layout:
                     self.max_col[name] = max(self.max_col[name], len(header))
                     r += 1 + nrows
                 else:
-                    self.errors.append(f"{bw}: unknown block type '{kind}' "
-                                       "(heading / note / inputs / table / grid)")
+                    self.errors.append(t("{where}: unknown block type '{kind}' "
+                                         "(heading / note / inputs / table / grid)",
+                                         where=bw, kind=kind))
                     continue
                 r += 1  # blank row between blocks
             widths = list(sheet.get("widths") or [])
@@ -471,17 +547,17 @@ class Layout:
                 return str(r + 1)
             if tok == "prev":
                 if c == 0:
-                    raise ValueError("{prev} used in column A")
+                    raise ValueError(t("{ph} used in column A", ph="{prev}"))
                 return col_letter(c - 1)
             if tok in ("first", "last"):
                 if not ctx:
-                    raise ValueError(f"{{{tok}}} is only usable inside a table row")
+                    raise ValueError(t("{ph} is only usable inside a table row", ph="{" + tok + "}"))
                 return col_letter(ctx["c0"] if tok == "first" else ctx["c1"])
             if tok.startswith("@"):
                 ref, _, header = tok[1:].partition(":")
                 if ref in self.inputs:
                     if header:
-                        raise ValueError(f"'{ref}' is an input; it has no columns")
+                        raise ValueError(t("'{id}' is an input; it has no columns", id=ref))
                     s, rr, cc = self.inputs[ref]
                     return a1(s, rr, cc, absolute=True)
                 if ref in self.rows:
@@ -489,36 +565,37 @@ class Layout:
                     if header == "<":
                         # the previous column of the current one
                         if not ctx or not ctx["c0"] < c <= ctx["c1"]:
-                            raise ValueError(f"{{@{ref}:<}} needs a previous column in this table")
+                            raise ValueError(t("{ph} needs a previous column in this table",
+                                             ph="{@" + ref + ":<}"))
                         hdr = ctx["headers"][c - ctx["c0"] - 1]
                         if hdr not in info["headers"]:
-                            raise ValueError(f"row '{ref}' has no column '{hdr}'")
+                            raise ValueError(t("row '{id}' has no column '{col}'", id=ref, col=hdr))
                         cc = info["c0"] + info["headers"].index(hdr)
                     elif header:
                         if header not in info["headers"]:
-                            raise ValueError(f"row '{ref}' has no column '{header}' "
-                                             f"(columns: {info['headers']})")
+                            raise ValueError(t("row '{id}' has no column '{col}' (columns: {cols})",
+                                               id=ref, col=header, cols=info["headers"]))
                         cc = info["c0"] + info["headers"].index(header)
                     else:
                         if not ctx:
-                            raise ValueError(f"{{@{ref}}} needs a column; outside a "
-                                             f"table write {{@{ref}:HEADER}}")
+                            raise ValueError(t("{ph} needs a column; outside a table write {alt}",
+                                               ph="{@" + ref + "}", alt="{@" + ref + ":HEADER}"))
                         hdr = ctx["headers"][c - ctx["c0"]] if ctx["c0"] <= c <= ctx["c1"] else None
                         if hdr not in info["headers"]:
-                            raise ValueError(f"row '{ref}' has no column '{hdr}'; the "
-                                             "tables do not share this column")
+                            raise ValueError(t("row '{id}' has no column '{col}'; the tables "
+                                               "do not share this column", id=ref, col=hdr))
                         cc = info["c0"] + info["headers"].index(hdr)
                     return a1(info["sheet"], info["row"], cc)
-                raise ValueError(f"unknown id '{ref}'")
+                raise ValueError(t("unknown id '{id}'", id=ref))
             if tok.startswith("range:"):
                 ref = tok[6:]
                 if ".." in ref:
                     a, b = ref.split("..", 1)
                     if a not in self.rows or b not in self.rows:
-                        raise ValueError(f"unknown row in '{ref}'")
+                        raise ValueError(t("unknown row in '{ref}'", ref=ref))
                     ia, ib = self.rows[a], self.rows[b]
                     if ia["sheet"] != ib["sheet"] or ia["table"] != ib["table"] or ia["table"] is None:
-                        raise ValueError(f"'{ref}': both rows must be in the same table with an id")
+                        raise ValueError(t("'{ref}': both rows must be in the same table with an id", ref=ref))
                     return a1_range(ia["sheet"], ia["row"], ia["c0"], ib["row"], ib["c1"])
                 if ref in self.rows:
                     info = self.rows[ref]
@@ -526,14 +603,14 @@ class Layout:
                 if ref in self.grids:
                     g = self.grids[ref]
                     return a1_range(g["sheet"], g["r0"] + 1, 0, g["r0"] + g["nrows"], g["ncols"] - 1)
-                raise ValueError(f"unknown row '{ref}'")
+                raise ValueError(t("unknown row '{id}'", id=ref))
             if tok.startswith("hdr:"):
                 ref = tok[4:]
                 if ref not in self.tables:
-                    raise ValueError(f"unknown table '{ref}'")
+                    raise ValueError(t("unknown table '{id}'", id=ref))
                 tb = self.tables[ref]
                 return a1_range(tb["sheet"], tb["hdr_row"], tb["c0"], tb["hdr_row"], tb["c1"])
-            raise ValueError(f"unknown placeholder {{{tok}}}")
+            raise ValueError(t("unknown placeholder {ph}", ph="{" + tok + "}"))
 
         return _PH_RE.sub(sub, formula)
 
@@ -544,31 +621,35 @@ class Layout:
             where = f"charts[{i}]"
             cid = ch.get("id")
             if not cid or cid in seen:
-                self.errors.append(f"{where}: id missing or duplicated")
+                self.errors.append(t("{where}: id missing or duplicated", where=where))
                 continue
             seen.add(cid)
             if ch.get("sheet") not in self.cells:
-                self.errors.append(f"{where}: unknown sheet '{ch.get('sheet')}'")
+                self.errors.append(t("{where}: unknown sheet '{name}'", where=where,
+                                     name=ch.get("sheet")))
                 continue
             if ch.get("data") not in self.grids:
-                self.errors.append(f"{where}: data must name a grid (got '{ch.get('data')}')")
+                self.errors.append(t("{where}: data must name a grid (got '{got}')", where=where,
+                                     got=ch.get("data")))
                 continue
             kind = ch.get("type", "COLUMN")
             if kind not in CHART_TYPES:
-                self.errors.append(f"{where}: unknown type '{kind}' ({'/'.join(CHART_TYPES)})")
+                self.errors.append(t("{where}: unknown type '{kind}' ({allowed})", where=where,
+                                     kind=kind, allowed="/".join(CHART_TYPES)))
                 continue
             g = self.grids[ch["data"]]
             st = ch.get("seriesTypes")
             if kind == "COMBO" and (not st or len(st) != g["ncols"] - 1):
-                self.errors.append(f"{where}: COMBO needs seriesTypes for each of the "
-                                   f"{g['ncols'] - 1} series")
+                self.errors.append(t("{where}: COMBO needs seriesTypes for each of the "
+                                     "{n} series", where=where, n=g["ncols"] - 1))
                 continue
             if ch.get("legend") and ch["legend"] not in LEGENDS:
-                self.errors.append(f"{where}: legend must be one of {sorted(LEGENDS)}")
+                self.errors.append(t("{where}: legend must be one of {allowed}", where=where,
+                                     allowed=sorted(LEGENDS)))
                 continue
             size = ch.get("size", [6.0, 3.4])
             if not (isinstance(size, list) and len(size) == 2):
-                self.errors.append(f"{where}: size must be [w, h] in inches")
+                self.errors.append(t("{where}: size must be [w, h] in inches", where=where))
                 continue
             self.charts.append(ch)
 
@@ -1004,6 +1085,13 @@ def main() -> int:
                     print(f"  {sheet}!{col_letter(c)}{r + 1}  {cell.value}")
     if args.dry_run:
         return 0
+    if not (args.folder or args.into):
+        # Without a folder the title would be looked up across all of Drive,
+        # and a same-named spreadsheet found there would be rebuilt in place
+        print(t("ERROR: give --folder (the deck's Drive folder) or --into "
+                "<spreadsheet>; a title alone is not a safe target to rebuild"),
+              file=sys.stderr)
+        return 1
 
     sid = build(lay, into=args.into, folder=args.folder, reset_inputs=args.reset_inputs)
     errs = check_errors(sid, lay)

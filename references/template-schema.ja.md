@@ -161,6 +161,10 @@
 ```jsonc
 {
   "title": "生成するプレゼンテーションのタイトル",   // --title で上書き可
+  // 任意。{{sheet:名前}} と sheetsChart が参照するスプレッドシート（URL または ID）。
+  // 以下のどの文字列にも {{sheet:名前}}（名前付き範囲か A1 参照）を書け、
+  // セルの表示値に置き換わる（references/sheets-link.ja.md）
+  "spreadsheet": "https://docs.google.com/spreadsheets/d/<ID>/edit",
   // 任意。デッキの用途。"print"（配布資料・紙で読む提案書）か "presentation"
   // （投影）。"print" ならテキストの適合で 8pt まで縮めてよい（紙なら 8/9/10pt も
   // 読める）。それ以外は元のサイズの 70% で止める。minFontSize を明示すれば
@@ -301,6 +305,7 @@ API はリンクを付けても色を変えないため、これが無いとク�
 | 分析図・設計図 | `mece_tree` `waterfall` `rating_matrix` `exec_summary` `storyline` `ghost` |
 | コード | `code_block` |
 | 画像 | `image` `aiImage` |
+| スプレッドシートのリンクグラフ | `sheetsChart`（`chart` は build_model のグラフ ID、タイトル、または chartId。`references/sheets-link.ja.md` 参照） |
 
 ページ部品と分析図・設計図（`scripts/pages.py`）の各型:
 
@@ -377,6 +382,8 @@ BODY プレースホルダに収まらなければ警告する（`--strict` で�
 （終了コード 0）で、`--strict` を付けると 1 件でも失敗にする。
 
 ---
+
+`sheetsChart` は同じ大きさの仮の矩形で検査し、`{{sheet:名前}}` は直前の本生成でキャッシュした値（無ければ同じ幅の仮の値）で文字量を測る。dry-run はオフラインのまま。
 
 ## 3. 新しいロールを足す
 

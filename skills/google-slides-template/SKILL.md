@@ -64,6 +64,7 @@ for the named topic before opening a large range.
 | Canvas, flows, connectors | Relevant section of `references/diagrams.md` |
 | Dense architecture diagram | `drawio-diagrams` skill; then its routed `drawio.md` section |
 | Chart/table | Matching component in `references/charts.md` |
+| Numbers/charts that follow a spreadsheet | `references/sheets-link.md` (build the model before the spec) |
 | Business framework | Matching component in `references/patterns.md` |
 | Page skeleton/density | Matching skeleton in `references/slide-patterns.md` |
 | Image generation/placement | Matching sections in `references/images.md` |
@@ -183,7 +184,9 @@ shared layout, master, theme, footer, or page-number change expands the impact
 scope. Clean local QA files at the end.
 
 Run `pptx-export` or `spreadsheets` only against the final verified deck. Make
-spreadsheet totals agree with slide summaries.
+spreadsheet totals agree with slide summaries. A planning model the deck links
+to is the exception — it is built before the spec; after the sheet changes, run
+`sync_deck.py <deck>` rather than regenerating.
 
 Report the presentation and Drive-folder URLs; spec/source locations and
 optional deliverables; the offline validation result; QA scope, defects fixed,
@@ -204,3 +207,4 @@ final adjustment choices from the relevant intake section.
 | Visual QA | `slide-qa` skill |
 | Export PowerPoint | `pptx-export` skill |
 | Build estimate/BOM | `spreadsheets` skill |
+| Linked planning model / carry sheet changes into the deck | `scripts/build_model.py` / `scripts/sync_deck.py` |

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import os
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -79,6 +81,7 @@ class LayoutTest(unittest.TestCase):
         self.assertEqual(keys["cnt|Q2"], "'売上'!D2")
         self.assertNotIn("cnt|FY", keys)
 
+    @patch.dict(os.environ, {"GSLIDES_LANG": "en"})
     def test_bad_reference_is_reported(self):
         spec = {"title": "x", "sheets": [{"name": "s", "blocks": [
             {"type": "inputs", "rows": [{"id": "a", "formula": "={@nope}"}]}]}]}

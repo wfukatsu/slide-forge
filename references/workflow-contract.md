@@ -19,12 +19,16 @@ and Python engine through thin host adapters.
    approved that outline.
 4. **Author** — create the spec or deck module. Load only the references needed
    by the chosen components; use the routing table in the generation skill.
+   When the deck's numbers must follow a spreadsheet (plans, simulations),
+   build the model first (`spreadsheets` skill, `build_model.py`): the spec
+   binds to it with `{{sheet:NAME}}` and `sheetsChart`
+   (`sheets-link.md`).
 5. **Validate** — run offline strict validation before any API write.
 6. **Generate** — create the Drive folder first, then generate and upload the
    editable sources. Remove a partial deck after a failed generation.
 7. **Verify** — when QA was selected, follow `slide-qa` and clean local QA files.
 8. **Deliver** — run optional PPTX or spreadsheet skills only after the deck is
-   final. Report URLs, local deliverables, QA scope/results, and cleanup. Under
+   final (a linked planning model is the exception: it was built in step 4). Report URLs, local deliverables, QA scope/results, and cleanup. Under
    `output: local` the generator already exported the `.pptx` on its last run;
    report that path instead of exporting again.
 
@@ -48,7 +52,9 @@ or materially changed scope may still require user input.
   customer-facing artifact.
 - API success is not visual QA.
 - Fix the source and regenerate; do not hide source defects by patching only the
-  generated artifact.
+  generated artifact. `sync_deck.py` is not a patch: it carries spreadsheet
+  values into the spans the spec bound to them (and prints the pre-edit
+  revision first), so the spec and the deck still agree.
 - Preserve one final customer-facing URL and remove superseded artifacts made
   during the current run.
 
@@ -63,6 +69,7 @@ Do not preload every file named by a skill. Read the complete selected
 | Spec schema or placeholders | `template-schema.md` |
 | Canvas or connectors | `diagrams.md`; add `diagram-cookbook.md` only for a matching recipe |
 | Chart or table | Matching section of `charts.md` |
+| Numbers or charts linked to a spreadsheet | `sheets-link.md` |
 | Business framework | Matching section of `patterns.md` |
 | Page skeleton | Matching section of `slide-patterns.md` |
 | Ready-made one-page template (`$template`) | `list_slide_templates.py --tag <term>` to find it, then that template's `template.json` for its slots. Open `slide-template-catalog.md` only to browse the rendered images |

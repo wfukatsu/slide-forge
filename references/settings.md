@@ -88,6 +88,11 @@ Visual QA (`slide-qa`) still runs against the Slides deck — thumbnails come fr
 the Slides API — so keep the QA-then-export order: an export is a snapshot, and
 a regenerated deck needs re-exporting.
 
+A deck linked to a spreadsheet (`references/sheets-link.md`) loses its links in
+the `.pptx`: linked charts become pictures and bound numbers stop syncing.
+Keep the Slides deck as the deliverable people simulate with, and after a
+`sync_deck.py` run export again if a `.pptx` was handed out.
+
 ## What this means at intake
 
 `references/interactive-intake.md` asks about the output format and about AI

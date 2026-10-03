@@ -3,9 +3,12 @@ name: spreadsheets
 description: >-
   Generate line-item spreadsheets — estimates, BOMs, cost breakdowns,
   comparison tables — as Excel (.xlsx) and/or Google Spreadsheet from one JSON
-  spec. Companion to a deck, and also standalone.
+  spec; and planning-model spreadsheets (assumptions, scenarios, charts) a
+  deck links to and syncs from. Companion to a deck, and also standalone.
   Use for: 見積もりを作って, 見積書, 明細表, 費用内訳を Excel に,
-  BOM をスプレッドシートに, cost breakdown spreadsheet.
+  BOM をスプレッドシートに, cost breakdown spreadsheet,
+  事業計画をスプレッドシートで, シミュレーションできるシート,
+  スライドの数字をスプレッドシートと連携, planning model, scenario model.
   Not: free-form or existing-file xlsx work (document-skills:xlsx); reading or
   analyzing spreadsheets; tables drawn inside slides.
 ---
