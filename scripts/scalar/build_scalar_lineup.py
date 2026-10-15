@@ -58,6 +58,28 @@ def _va(d, x1, y1, x2, y2, color=None):
     d.arrow(x1, y1, x2, y2, color=color or d.P.muted, weight=1.0, _anchored=True)
 
 
+def _v(d, a, b, color=None, **kw):
+    """Vertical arrow between two boxes (edge to edge)."""
+    return d.vlink(a, b, color=color or d.P.muted, weight=1.0, **kw)
+
+
+def _node(d, x, y, w, h, text, icon, accent=None, *, size=8, icon_size=0.28):
+    """A pictogram an arrow can reach: the picture and its label in a box."""
+    return d.node(x, y, w, h, text, icon=icon, icon_size=icon_size,
+                  horizontal=True, size=size,
+                  icon_color=accent or d.P.primary)
+
+
+def _node_row(d, y, items, accent=None, *, x=FX + 0.15, w=4.95, h=0.46,
+              gap=0.15, size=8, icon_size=0.28):
+    """Pictogram nodes side by side across the figure. Returns their ids."""
+    n = len(items)
+    cw = (w - gap * (n - 1)) / n
+    return [_node(d, x + i * (cw + gap), y, cw, h, t, ic, accent, size=size,
+                  icon_size=icon_size)
+            for i, (ic, t) in enumerate(items)]
+
+
 def _panel(d, x, y, w, h, heading, body, accent, *, body_size=9.5,
            heading_size=10.5, line_spacing=130):
     """Surface card with a straight accent bar on top (so: RECTANGLE, no rounding)."""
@@ -188,17 +210,16 @@ def fig_lineup(d, accent):
 
 
 def fig_db_core(d, accent):
-    d.icon("server", FX + 2.30, FY + 0.02, 0.34, label="アプリケーション",
-           label_size=8, label_w=1.8)
-    _pill(d, FX + 0.20, FY + 0.78, 4.85, 0.46,
-          "ScalarDB Cluster — Consensus Commit（統一 API / SQL）", accent,
-          size=9, bold=True)
-    d.icon_row(FX + 0.30, FY + 1.44, 4.65,
-               [("database", "RDBMS"), ("stack", "NoSQL"),
-                ("cloud", "NewSQL")], size=0.30, label_size=8)
-    _va(d, FX + 2.47, FY + 0.66, FX + 2.47, FY + 0.76)
-    for cx in (FX + 1.07, FX + 2.62, FX + 4.17):
-        _va(d, cx, FY + 1.28, cx, FY + 1.42)
+    app = _node(d, FX + 1.68, FY + 0.04, 1.9, 0.48, "アプリケーション", "server",
+                accent)
+    band = _pill(d, FX + 0.20, FY + 0.78, 4.85, 0.46,
+                 "ScalarDB Cluster — Consensus Commit（統一 API / SQL）", accent,
+                 size=9, bold=True)
+    _v(d, app, band)
+    for n in _node_row(d, FY + 1.44, [("database", "RDBMS"), ("stack", "NoSQL"),
+                                      ("cloud", "NewSQL")], accent,
+                       x=FX + 0.30, w=4.65, h=0.44):
+        _v(d, band, n)
     _caption(d, "1 つのトランザクションが複数・異種の DB へ原子的に反映される")
 
 
@@ -219,36 +240,43 @@ def fig_db_saga(d, accent):
                 align="CENTER", color=d.P.text)
         if i:
             _va(d, bx - gap, FY + 1.02, bx - 0.02, FY + 1.02, accent)
-    d.arrow(x0 + 3 * (bw + gap) + bw / 2, FY + 1.48, x0 + bw / 2, FY + 1.48,
-            color=d.P.danger, weight=1.2, dashed=True, _anchored=True)
-    d.label(FX + 0.10, FY + 1.54, 5.05, 0.26, "失敗時は逆順に補償処理（TCC は取消）",
+    # Compensation runs back from the last step to the first: down out of the
+    # last box, along under the row, and up into the first box
+    first, last = x0 + bw / 2, x0 + 3 * (bw + gap) + bw / 2
+    yb, yu = FY + 1.38, FY + 1.54
+    kw = dict(color=d.P.danger, weight=1.2, dashed=True)
+    d.line(last, yb, last, yu, _anchored=(True, False), **kw)
+    d.line(last, yu, first, yu, free=True, **kw)
+    d.line(first, yu, first, yb, end_arrow="FILL_ARROW",
+           _anchored=(False, True), **kw)
+    d.label(FX + 0.10, FY + 1.6, 5.05, 0.26, "失敗時は逆順に補償処理（TCC は取消）",
             size=8, align="CENTER", color=d.P.danger)
     _caption(d, "2PC に参加できない外部サービスを含んでも整合性を保つ")
 
 
 def fig_db_analytics(d, accent):
-    d.icon_row(FX + 0.20, FY + 0.10, 4.85,
-               [("database", "基幹 RDBMS"), ("stack", "NoSQL"),
-                ("folder", "ストレージ")], size=0.32, label_size=8)
-    for cx in (FX + 1.01, FX + 2.62, FX + 4.24):
-        _va(d, cx, FY + 0.74, cx, FY + 0.90)
-    _pill(d, FX + 0.20, FY + 0.94, 4.85, 0.46,
-          "ScalarDB Analytics（Apache Spark カタログ）", accent, size=9,
-          bold=True)
-    d.label(FX + 0.20, FY + 1.44, 4.85, 0.24,
+    srcs = _node_row(d, FY + 0.06, [("database", "基幹 RDBMS"), ("stack", "NoSQL"),
+                                    ("folder", "ストレージ")], accent,
+                     x=FX + 0.20, w=4.85)
+    pill = _pill(d, FX + 0.20, FY + 0.94, 4.85, 0.46,
+                 "ScalarDB Analytics（Apache Spark カタログ）", accent, size=9,
+                 bold=True)
+    for n in srcs:
+        _v(d, n, pill)
+    bi = _pill(d, FX + 1.20, FY + 1.58, 2.85, 0.36,
+               "BI・レポート ／ AI・機械学習", d.P.muted, size=8.5)
+    _v(d, pill, bi)
+    d.label(FX + 0.20, FY + 2.0, 4.85, 0.24,
             "WHERE 句の条件はバックエンド DB へプッシュダウン（3.19）", size=8,
             align="CENTER", color=d.P.muted)
-    _va(d, FX + 2.62, FY + 1.72, FX + 2.62, FY + 1.84)
-    _pill(d, FX + 1.20, FY + 1.86, 2.85, 0.36,
-          "BI・レポート ／ AI・機械学習", d.P.muted, size=8.5)
 
 
 def fig_dl_core(d, accent):
-    d.icon("server", FX + 2.30, FY + 0.02, 0.32, label="アプリケーション",
-           label_size=8, label_w=1.8)
-    _va(d, FX + 2.46, FY + 0.62, FX + 2.46, FY + 0.76)
-    d.shape(FX + 0.15, FY + 0.80, 2.40, 1.08, kind="RECTANGLE",
-            fill=lighten(accent, 0.9), stroke=accent)
+    app = _node(d, FX + 0.45, FY + 0.06, 1.8, 0.46, "アプリケーション", "server",
+                accent)
+    ledger = d.shape(FX + 0.15, FY + 0.80, 2.40, 1.08, kind="RECTANGLE",
+                     fill=lighten(accent, 0.9), stroke=accent)
+    _v(d, app, ledger)
     d.label(FX + 0.22, FY + 0.86, 2.26, 0.26, "ScalarDL Ledger", size=9,
             bold=True, align="CENTER", color=darken(accent, 0.35))
     d.label(FX + 0.22, FY + 1.16, 2.26, 0.64,
@@ -291,52 +319,47 @@ def fig_uc_microservices(d, accent):
 
 
 def fig_uc_ai_data(d, accent):
-    d.icon_row(FX + 0.15, FY + 0.04, 4.95,
-               [("database", "基幹 RDBMS"), ("stack", "NoSQL"),
-                ("search", "ベクトル\nストア")], size=0.30, label_size=8)
-    for cx in (FX + 0.97, FX + 2.62, FX + 4.28):
-        _va(d, cx, FY + 0.76, cx, FY + 0.92)
-    _pill(d, FX + 0.15, FY + 0.96, 4.95,
-          0.44, "ScalarDB 統一 API（暗号化・レコード単位のアクセス制御）",
-          accent, size=8.5, bold=True)
-    _va(d, FX + 2.62, FY + 1.42, FX + 2.62, FY + 1.52)
-    d.icon_row(FX + 0.90, FY + 1.54, 3.45,
-               [("bot", "RAG / LLM"), ("chart", "横断分析")],
-               size=0.26, label_size=8)
+    srcs = _node_row(d, FY + 0.04, [("database", "基幹 RDBMS"), ("stack", "NoSQL"),
+                                    ("search", "ベクトルストア")], accent)
+    pill = _pill(d, FX + 0.15, FY + 0.82, 4.95, 0.44,
+                 "ScalarDB 統一 API（暗号化・レコード単位のアクセス制御）",
+                 accent, size=8.5, bold=True)
+    for n in srcs:
+        _v(d, n, pill)
+    for n in _node_row(d, FY + 1.46, [("bot", "RAG / LLM"), ("chart", "横断分析")],
+                       accent, x=FX + 0.90, w=3.45, h=0.42, icon_size=0.26):
+        _v(d, pill, n)
     _caption(d, "データを別基盤へコピーせずに AI から参照できる")
 
 
 def fig_uc_evidence(d, accent):
-    d.icon_row(FX + 0.15, FY + 0.04, 4.95,
-               [("bot", "AI の生成物"), ("document", "操作・同意ログ"),
-                ("folder", "業務ファイル")], size=0.30, label_size=8)
-    for cx in (FX + 0.97, FX + 2.62, FX + 4.28):
-        _va(d, cx, FY + 0.76, cx, FY + 0.90)
-    _pill(d, FX + 0.15, FY + 0.94, 4.95, 0.40, "ハッシュ値を計算（実データは預けない）",
-          d.P.muted, size=8.5)
-    _va(d, FX + 2.62, FY + 1.36, FX + 2.62, FY + 1.48)
-    _pill(d, FX + 0.15, FY + 1.52, 3.20, 0.44,
-          "ScalarDL — 順序を持つハッシュの連鎖", accent, size=8.5, bold=True)
-    _pill(d, FX + 3.50, FY + 1.52, 1.60, 0.44, "タイム\nスタンプ", d.P.muted,
-          size=8)
-    d.arrow(FX + 3.37, FY + 1.74, FX + 3.48, FY + 1.74, color=d.P.muted,
-            weight=1.0, _anchored=True)
+    srcs = _node_row(d, FY + 0.04, [("bot", "AI の生成物"), ("document", "操作・同意ログ"),
+                                    ("folder", "業務ファイル")], accent, size=7.5)
+    hashed = _pill(d, FX + 0.15, FY + 0.82, 4.95, 0.40,
+                   "ハッシュ値を計算（実データは預けない）", d.P.muted, size=8.5)
+    for n in srcs:
+        _v(d, n, hashed)
+    chain = _pill(d, FX + 0.15, FY + 1.46, 3.20, 0.44,
+                  "ScalarDL — 順序を持つハッシュの連鎖", accent, size=8.5,
+                  bold=True)
+    _v(d, hashed, chain)
+    stamp = _pill(d, FX + 3.50, FY + 1.46, 1.60, 0.44, "タイム\nスタンプ",
+                  d.P.muted, size=8)
+    d.hlink(chain, stamp, color=d.P.muted, weight=1.0)
     _caption(d, "いつ（WHEN）・どの順序で（SEQUENCE）・何が（WHAT）を後から証明する")
 
 
 def fig_case_tsuneishi(d, accent):
-    d.shape(FX + 0.10, FY + 0.18, 1.55, 1.30, kind="RECTANGLE",
-            fill=lighten(d.P.muted, 0.85), stroke=d.P.muted)
+    mono = d.shape(FX + 0.10, FY + 0.18, 1.55, 1.30, kind="RECTANGLE",
+                   fill=lighten(d.P.muted, 0.85), stroke=d.P.muted)
     d.label(FX + 0.16, FY + 0.32, 1.43, 1.00,
             "十数年\n稼働した\n基幹モノリス\n（ブラック\nボックス化）", size=8,
             align="CENTER", valign="MIDDLE", color=d.P.text, line_spacing=126)
-    d.arrow(FX + 1.70, FY + 0.83, FX + 2.00, FY + 0.83, color=accent,
-            weight=1.4, _anchored=True)
-    for i in range(3):
-        for j in range(3):
-            d.shape(FX + 2.10 + j * 0.62, FY + 0.20 + i * 0.44, 0.54, 0.36,
-                    kind="ROUND_RECTANGLE", fill=lighten(accent, 0.85),
-                    stroke=accent)
+    cells = [[d.shape(FX + 2.10 + j * 0.62, FY + 0.20 + i * 0.44, 0.54, 0.36,
+                      kind="ROUND_RECTANGLE", fill=lighten(accent, 0.85),
+                      stroke=accent)
+              for j in range(3)] for i in range(3)]
+    d.hlink(mono, cells[1][0], color=accent, weight=1.4)
     d.label(FX + 2.10, FY + 1.54, 1.86, 0.24, "9 マイクロサービス", size=8,
             align="CENTER", color=d.P.text)
     _pill(d, FX + 4.10, FY + 0.20, 1.05, 0.56, "Kong\nKonnect\n(API 管理)",

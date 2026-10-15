@@ -272,20 +272,23 @@ def draw_tobe(d: Canvas, tobe: dict) -> None:
 def draw_solution(d: Canvas, _p: dict) -> None:
     """The AI-driven development x ScalarDB proposal figure (generate->verify loop and data layer)."""
     ac = d.P.primary
-    d.icon_row(1.5, 1.15, 7.0, [("bot", "AI が生成"), ("check", "自動テスト"),
-                                ("sync", "AI が自己修正"), ("people", "人がレビュー")],
-               size=0.5, label_size=9)
-    d.shape(1.2, 2.35, 7.6, 0.55, kind="ROUND_RECTANGLE", fill=ac, stroke=None,
-            text="ScalarDB — 統一 API と分散 ACID（整合性は基盤が保証）",
-            size=11, bold=True, color="#FFFFFF")
-    d.icon_row(1.7, 3.35, 6.6, [("stack", "開発環境\n(ローカル・無料)"),
-                                ("cloud", "テスト環境\n(aidd-infra-test)"),
-                                ("database", "既存 DB\n(PostgreSQL 等)")],
-               size=0.5, label_size=9)
-    for cx in (2.45, 4.2, 5.95, 7.7):
-        d.arrow(cx, 1.95, cx, 2.31, color=d.P.muted, weight=1.2, _anchored=True)
-    for cx in (2.8, 5.0, 7.2):
-        d.arrow(cx, 2.94, cx, 3.31, color=d.P.muted, weight=1.2, _anchored=True)
+    # Each arrow joins two boxes edge to edge: the pictograms sit in nodes
+    tops = [d.node(1.2 + i * 1.93, 1.2, 1.78, 0.62, t, icon=ic, icon_size=0.42,
+                   horizontal=True, size=9, icon_color=ac)
+            for i, (ic, t) in enumerate([("bot", "AI が生成"), ("check", "自動テスト"),
+                                         ("sync", "AI が自己修正"), ("people", "人がレビュー")])]
+    band = d.shape(1.2, 2.35, 7.6, 0.55, kind="ROUND_RECTANGLE", fill=ac, stroke=None,
+                   text="ScalarDB — 統一 API と分散 ACID（整合性は基盤が保証）",
+                   size=11, bold=True, color="#FFFFFF")
+    bottoms = [d.node(1.45 + i * 2.45, 3.3, 2.1, 1.05, t, icon=ic,
+                      icon_size=0.42, size=8.5, icon_color=ac)
+               for i, (ic, t) in enumerate([("stack", "開発環境\n(ローカル・無料)"),
+                                            ("cloud", "テスト環境\n(aidd-infra-test)"),
+                                            ("database", "既存 DB\n(PostgreSQL 等)")])]
+    for n in tops:
+        d.vlink(n, band, color=d.P.muted, weight=1.2)
+    for n in bottoms:
+        d.vlink(band, n, color=d.P.muted, weight=1.2)
     d.label(0.7, 4.55, 8.6, 0.55,
             "AI は統一 API に向けて書くだけでよく、横断更新の整合性は基盤が保証。"
             "同じ構成を 2 環境に用意することで、生成→テスト→修正が自走する",

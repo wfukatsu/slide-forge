@@ -263,20 +263,23 @@ def draw_tobe(d: Canvas, tobe: dict) -> None:
 def draw_solution(d: Canvas, _p: dict) -> None:
     """The proposal figure for the ScalarDB unified transaction layer."""
     ac = d.P.primary
-    d.icon_row(1.5, 1.15, 7.0, [("browser", "受発注"), ("stack", "在庫"),
-                                ("chart", "会計"), ("bulb", "新サービス")],
-               size=0.5, label_size=9)
-    d.shape(1.2, 2.35, 7.6, 0.55, kind="ROUND_RECTANGLE", fill=ac, stroke=None,
-            text="ScalarDB Cluster — 複数 DB 横断の ACID トランザクション / 統一 API",
-            size=11, bold=True, color="#FFFFFF")
-    d.icon_row(1.7, 3.35, 6.6, [("database", "MySQL\n(既存)"),
-                                ("database", "PostgreSQL\n(既存)"),
-                                ("database", "Oracle\n(既存)")],
-               size=0.5, label_size=9)
-    for cx in (2.45, 4.2, 5.95, 7.7):
-        d.arrow(cx, 1.95, cx, 2.31, color=d.P.muted, weight=1.2, _anchored=True)
-    for cx in (2.8, 5.0, 7.2):
-        d.arrow(cx, 2.94, cx, 3.31, color=d.P.muted, weight=1.2, _anchored=True)
+    # Each arrow joins two boxes edge to edge: the pictograms sit in nodes
+    tops = [d.node(1.2 + i * 1.93, 1.2, 1.78, 0.62, t, icon=ic, icon_size=0.42,
+                   horizontal=True, size=9, icon_color=ac)
+            for i, (ic, t) in enumerate([("browser", "受発注"), ("stack", "在庫"),
+                                         ("chart", "会計"), ("bulb", "新サービス")])]
+    band = d.shape(1.2, 2.35, 7.6, 0.55, kind="ROUND_RECTANGLE", fill=ac, stroke=None,
+                   text="ScalarDB Cluster — 複数 DB 横断の ACID トランザクション / 統一 API",
+                   size=11, bold=True, color="#FFFFFF")
+    bottoms = [d.node(1.45 + i * 2.45, 3.3, 2.1, 1.05, t, icon=ic,
+                      icon_size=0.42, size=8.5, icon_color=ac)
+               for i, (ic, t) in enumerate([("database", "MySQL\n(既存)"),
+                                            ("database", "PostgreSQL\n(既存)"),
+                                            ("database", "Oracle\n(既存)")])]
+    for n in tops:
+        d.vlink(n, band, color=d.P.muted, weight=1.2)
+    for n in bottoms:
+        d.vlink(band, n, color=d.P.muted, weight=1.2)
     d.label(0.7, 4.55, 8.6, 0.55,
             "アプリケーションは ScalarDB の統一 API を通して読み書きするだけで、"
             "複数 DB にまたがる更新の整合性を基盤が保証。既存 DB・既存システムはそのまま",
