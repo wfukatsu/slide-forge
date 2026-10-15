@@ -72,6 +72,14 @@ ICONS = (
 )
 
 
+
+# A glyph that is the picture itself (✓ ✕ </> ¥) is centred in its shape with
+# no inner margin and no fitting. With Slides' default 0.1in a side, a 0.3in
+# icon leaves the glyph a frame about 0.1in wide: it drifts off centre, wraps
+# ("</>" on two lines) or gets shrunk by the text fitter
+_GLYPH = dict(text_margin=0.0, text_fit="none", align="CENTER",
+              valign="MIDDLE")
+
 class IllustrationMixin:
     """Mixin that adds pictograms and metaphor diagrams to `Canvas`."""
 
@@ -291,20 +299,26 @@ class IllustrationMixin:
         col = c if c != self.P.primary else self.P.success
         self.shape(x + 0.04 * s, y + 0.04 * s, 0.92 * s, 0.92 * s, kind="ELLIPSE",
                    fill=col, stroke=None, text="✓", color="#FFFFFF",
-                   size=max(8, s * 46), bold=True)
+                   size=max(8, s * 46), bold=True, **_GLYPH)
 
     def _icon_cross(self, x, y, s, c):
         col = c if c != self.P.primary else self.P.danger
         self.shape(x + 0.04 * s, y + 0.04 * s, 0.92 * s, 0.92 * s, kind="ELLIPSE",
                    fill=col, stroke=None, text="✕", color="#FFFFFF",
-                   size=max(8, s * 40), bold=True)
+                   size=max(8, s * 40), bold=True, **_GLYPH)
 
     def _icon_warning(self, x, y, s, c):
         col = c if c != self.P.primary else self.P.warning
         self.shape(x, y + 0.06 * s, s, 0.88 * s, kind="TRIANGLE", fill=col,
-                   stroke=darken(col, 0.25), stroke_weight=1.2, text="!",
-                   color=readable_on(col), size=max(8, s * 30), bold=True,
-                   valign="BOTTOM")
+                   stroke=darken(col, 0.25), stroke_weight=1.2)
+        # The "!" is drawn, not typed. A triangle's text frame is its own
+        # inscribed box minus Slides' 0.1in inset, so a typed "!" lands off
+        # the centre line (and shrinks or wraps in a small icon)
+        mark = readable_on(col)
+        self.shape(x + 0.445 * s, y + 0.36 * s, 0.11 * s, 0.32 * s,
+                   kind="ROUND_RECTANGLE", fill=mark, stroke=None)
+        self.shape(x + 0.44 * s, y + 0.73 * s, 0.12 * s, 0.12 * s,
+                   kind="ELLIPSE", fill=mark, stroke=None)
 
     def _icon_mail(self, x, y, s, c):
         self.shape(x + 0.04 * s, y + 0.20 * s, 0.92 * s, 0.60 * s,
@@ -338,7 +352,7 @@ class IllustrationMixin:
     def _icon_code(self, x, y, s, c):
         self.shape(x + 0.02 * s, y + 0.14 * s, 0.96 * s, 0.72 * s,
                    kind="ROUND_RECTANGLE", fill=c, stroke=None, text="</>",
-                   color="#FFFFFF", size=max(7, s * 20), bold=True)
+                   color="#FFFFFF", size=max(7, s * 20), bold=True, **_GLYPH)
 
     def _icon_stack(self, x, y, s, c):
         for i in range(3):
@@ -411,7 +425,7 @@ class IllustrationMixin:
         self.shape(x + 0.06 * s, y + 0.06 * s, 0.88 * s, 0.88 * s, kind="ELLIPSE",
                    fill=lighten(self.P.warning, 0.2), stroke=darken(self.P.warning, 0.3),
                    stroke_weight=1.4, text="¥", color=darken(self.P.warning, 0.5),
-                   size=max(8, s * 32), bold=True)
+                   size=max(8, s * 32), bold=True, **_GLYPH)
 
     def _icon_chip(self, x, y, s, c):
         for i in range(4):
