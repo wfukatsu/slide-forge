@@ -31,6 +31,8 @@ sys.path.insert(0, SCRIPT_DIR)
 from _i18n import t, register  # noqa: E402
 
 register({
+    "title_at must be top or bottom: {v}":
+        "title_at は top か bottom を指定してください: {v}",
     "Cloud icons have not been fetched yet.\n"
     "  The icons are vendor assets, so they are not included in the repository.\n"
     "  Fetch them into your environment with this command (1-2 min, ~8.6MB):\n"
@@ -350,9 +352,11 @@ class CloudIconMixin:
                 label_w=cell - 0.3, vendor=vendor, px=px))
             if i < n - 1:
                 ay = y + size / 2
+                # A pointer set in the gap between pictures, not a connector:
+                # there is no edge to land on, so it is free of the edge check
                 self.arrow(cx + size / 2 + 0.08, ay, cx + cell - size / 2 - 0.08, ay,
                            color=arrow_color or self.P.muted, weight=1.25,
-                           _anchored=True)
+                           free=True)
         return bottom
 
     def cloud_icon_grid(self, x: float, y: float, w: float, items, *, cols: int = 4,
@@ -376,17 +380,28 @@ class CloudIconMixin:
     def cloud_zone(self, x: float, y: float, w: float, h: float, *,
                    vendor: str | None = None, title: str | None = None,
                    color: str | None = None, fill=None, dash: str = "DASH",
-                   title_size: float = 9) -> float:
+                   title_size: float = 9, title_at: str = "top") -> float:
         """Draw a zone frame (cloud, region, VPC, etc.) with a heading in the top-left.
 
         **Draw the frame first, then layer content on top.** Drawing it later
         would hide the content. Returns the bottom y of the frame.
+
+        `title_at="bottom"` centres the heading along the bottom edge instead.
+        Use it when arrows enter the zone from above: a top-left heading
+        spans most of a narrow zone, so an arrow dropping to the box inside
+        would run across its text.
         """
+        if title_at not in ("top", "bottom"):
+            raise ValueError(t("title_at must be top or bottom: {v}", v=title_at))
         c = color or (VENDOR_COLOR.get(vendor) if vendor else self.P.muted)
         self.shape(x, y, w, h, kind="RECTANGLE", fill=fill, stroke=c,
                    dash=dash, stroke_weight=1.0)
         text = title if title is not None else (VENDOR_LABEL.get(vendor) or "")
-        if text:
+        if text and title_at == "bottom":
+            self.label(x + 0.05, y + h - 0.3, w - 0.1, 0.24, text,
+                       size=title_size, bold=True, align="CENTER",
+                       valign="MIDDLE", color=c)
+        elif text:
             self.label(x + 0.1, y + 0.06, min(w - 0.2, 3.2), 0.24, text,
                        size=title_size, bold=True, align="START", valign="MIDDLE",
                        color=c)

@@ -28,58 +28,67 @@ bd = SourceFileLoader("bd", os.path.join(SKILL_DIR, "scripts", "build_deck.py"))
 from diagrams import Canvas, lighten  # noqa: E402
 
 TEMPLATE = os.path.join(SKILL_DIR, "templates", "scalar-2026.json")
-LOGO = os.path.join(SKILL_DIR, "assets", "brand", "product-logos",
+LOGO = os.path.join(SKILL_DIR, "assets", "scalar", "product-logos",
                     "scalardb-logo-horizontal.png")
 
 
 def draw_overview(d: Canvas) -> None:
-    """アプリ → ScalarDB → 各データベース の 3 層。"""
+    """アプリ → ScalarDB → 各データベース の 3 層。
+
+    矢印はすべて箱の辺から辺へ引く。アイコンは node() で箱に入れ、vlink() で
+    つなぐ。座標を手で打つと、矢印が宙に浮くかキャプションの上で止まる。
+    """
     # 1) アプリ層
     d.label(0.5, 0.95, 9.0, 0.24, "アプリケーション", size=9.5, align="START",
             color=d.P.muted)
-    d.icon_row(0.9, 1.25, 8.2, [("browser", "Web アプリ"), ("mobile", "モバイル"),
-                                ("server", "バッチ"), ("bot", "エージェント")],
-               size=0.5, label_size=8.5)
+    gap = 0.15
+    cw = (8.2 - gap * 3) / 4
+    apps = [d.node(0.9 + i * (cw + gap), 1.25, cw, 0.62, t, icon=ic,
+                   icon_size=0.4, horizontal=True, size=9,
+                   icon_color=d.P.primary)
+            for i, (ic, t) in enumerate([("browser", "Web アプリ"),
+                                         ("mobile", "モバイル"),
+                                         ("server", "バッチ"),
+                                         ("bot", "エージェント")])]
 
     # 2) ScalarDB 層（ロゴ + 帯）。ロゴは画像なので枠を先に敷いて上に載せる
-    band_y = 2.45
-    d.shape(0.9, band_y, 8.2, 0.72, kind="ROUND_RECTANGLE",
-            fill=lighten(d.P.primary, 0.88), stroke=d.P.primary)
+    band_y = 2.3
+    band = d.shape(0.9, band_y, 8.2, 0.72, kind="ROUND_RECTANGLE",
+                   fill=lighten(d.P.primary, 0.88), stroke=d.P.primary)
     d.image(1.15, band_y + 0.16, 1.5, 0.42, LOGO, fit="contain",
             alt="ScalarDB")
     d.label(2.85, band_y + 0.06, 6.0, 0.6,
             "1 つのトランザクションで複数のデータベースをまたいで整合性を保つ",
             size=10.5, align="START", valign="MIDDLE", color=d.P.text)
+    for a in apps:
+        d.vlink(a, band, color=d.P.muted, weight=1.0)
 
-    # 3) データベース層。マネージドは公式アイコン、自前運用は図形のピクトグラム
-    zone_y = 3.55
-    d.label(0.5, zone_y - 0.28, 9.0, 0.24, "バックエンドのデータベース", size=9.5,
-            align="START", color=d.P.muted)
-    for i, (vendor, item) in enumerate([
-        ("aws", ("aws:dynamodb", "DynamoDB")),
-        ("azure", ("azure:cosmos-db", "Cosmos DB")),
-        ("gcp", ("gcp:cloud-spanner", "Spanner")),
+    # 3) データベース層。マネージドは公式アイコン、自前運用は図形のピクトグラム。
+    #    見出しは枠の下に置く（上から入る矢印と重ねないため）
+    zone_y = 3.45
+    dbs = []
+    for i, (vendor, name, label) in enumerate([
+        ("aws", "aws:dynamodb", "DynamoDB"),
+        ("azure", "azure:cosmos-db", "Cosmos DB"),
+        ("gcp", "gcp:cloud-spanner", "Spanner"),
     ]):
         zx = 0.9 + i * 2.15
-        d.cloud_zone(zx, zone_y, 1.95, 1.5, vendor=vendor, title_size=8)
-        d.cloud_icon(item[0], zx + 0.72, zone_y + 0.34, 0.5, label=item[1],
-                     label_size=8.5, label_w=1.8)
-    # 自前運用のデータベースには公式アイコンが無いので図形で描く
+        d.cloud_zone(zx, zone_y, 1.95, 1.6, vendor=vendor, title_size=8,
+                     title_at="bottom")
+        dbs.append(d.node(zx + 0.3, zone_y + 0.14, 1.35, 1.05, label,
+                          cloud_icon=name, icon_size=0.5, size=8.5))
     ox = 0.9 + 3 * 2.15
-    d.cloud_zone(ox, zone_y, 1.95, 1.5, title="オンプレミス / 自前運用", title_size=8)
-    d.icon_row(ox + 0.05, zone_y + 0.34, 1.85,
-               [("database", "PostgreSQL"), ("stack", "Cassandra")],
-               size=0.42, label_size=7.5, gap=0.02)
+    d.cloud_zone(ox, zone_y, 1.95, 1.6, title="オンプレミス / 自前運用",
+                 title_size=8, title_at="bottom")
+    for k, (ic, label) in enumerate([("database", "PostgreSQL"),
+                                     ("stack", "Cassandra")]):
+        dbs.append(d.node(ox + 0.08 + k * 0.92, zone_y + 0.14, 0.87, 1.05,
+                          label, icon=ic, icon_size=0.42, size=7.5,
+                          icon_color=d.P.primary))
 
     # 4) 層をつなぐ
-    for i in range(4):
-        cx = 0.9 + 8.2 / 4 * (i + 0.5)
-        d.arrow(cx, 2.15, cx, band_y - 0.06, color=d.P.muted, weight=1.0,
-                _anchored=True)
-    for i in range(4):
-        zx = 0.9 + i * 2.15 + 0.975
-        d.arrow(zx, band_y + 0.78, zx, zone_y - 0.04, color=d.P.muted, weight=1.0,
-                _anchored=True)
+    for n in dbs:
+        d.vlink(band, n, color=d.P.muted, weight=1.0)
 
 
 def draw_multi_region(d: Canvas) -> None:

@@ -26,15 +26,16 @@ bd = SourceFileLoader("bd", os.path.join(SKILL_DIR, "scripts", "build_deck.py"))
 from diagrams import Canvas, lighten  # noqa: E402
 
 TEMPLATE = os.path.join(SKILL_DIR, "templates", "scalar-2026.json")
-BRAND = os.path.join(SKILL_DIR, "assets", "brand", "product-logos")
+BRAND = os.path.join(SKILL_DIR, "assets", "scalar", "product-logos")
 LOGO_DL = os.path.join(BRAND, "scalardl-logo-horizontal.png")
 
 
 def _band(d: Canvas, x, y, w, h, *, logo=None, text=None, text_size=10.5,
-          fill=None, stroke=None):
-    """製品の帯。ロゴを左に置き、右に説明を書く。"""
-    d.shape(x, y, w, h, kind="ROUND_RECTANGLE",
-            fill=fill or lighten(d.P.primary, 0.88), stroke=stroke or d.P.primary)
+          fill=None, stroke=None) -> str:
+    """製品の帯。ロゴを左に置き、右に説明を書く。矢印でつなげるよう帯の id を返す。"""
+    oid = d.shape(x, y, w, h, kind="ROUND_RECTANGLE",
+                  fill=fill or lighten(d.P.primary, 0.88),
+                  stroke=stroke or d.P.primary)
     tx = x + 0.25
     if logo:
         d.image(x + 0.25, y + (h - 0.34) / 2, 1.45, 0.34, logo, fit="contain",
@@ -43,51 +44,62 @@ def _band(d: Canvas, x, y, w, h, *, logo=None, text=None, text_size=10.5,
     if text:
         d.label(tx, y, x + w - tx - 0.2, h, text, size=text_size,
                 align="START", valign="MIDDLE", color=d.P.text)
-    return y + h
+    return oid
 
 
 def draw_stack(d: Canvas) -> None:
-    """クライアント → ScalarDL → ScalarDB → データベース の 4 層。"""
+    """クライアント → ScalarDL → ScalarDB → データベース の 4 層。
+
+    矢印はすべて箱の辺から辺へ引く（node() + vlink()）。アイコンやキャプションを
+    狙って座標を打つと、矢印が宙に浮くか文字の上で止まる。
+    """
     d.label(0.5, 0.92, 9.0, 0.22, "クライアント", size=9, align="START",
             color=d.P.muted)
-    d.icon_row(1.2, 1.16, 7.6, [("browser", "業務アプリ"), ("mobile", "モバイル"),
-                                ("server", "外部システム")],
-               size=0.42, label_size=8.5)
+    clients = [d.node(1.2 + i * 2.6, 1.16, 2.4, 0.52, t, icon=ic,
+                      icon_size=0.34, horizontal=True, size=9,
+                      icon_color=d.P.primary)
+               for i, (ic, t) in enumerate([("browser", "業務アプリ"),
+                                            ("mobile", "モバイル"),
+                                            ("server", "外部システム")])]
+    dl = _band(d, 1.2, 1.98, 7.6, 0.62, logo=LOGO_DL,
+               text="コントラクトを実行し、資産の履歴をハッシュでつないで残す")
+    db = _band(d, 1.2, 2.88, 7.6, 0.5, text="ScalarDB（トランザクション層）",
+               text_size=10, fill=lighten(d.P.info, 0.9), stroke=d.P.info)
+    for c in clients:
+        d.vlink(c, dl, color=d.P.muted, weight=1.0)
+    d.vlink(dl, db, color=d.P.muted, weight=1.0)
 
-    y = _band(d, 1.2, 2.05, 7.6, 0.62, logo=LOGO_DL,
-              text="コントラクトを実行し、資産の履歴をハッシュでつないで残す")
-    y = _band(d, 1.2, y + 0.42, 7.6, 0.5, text="ScalarDB（トランザクション層）",
-              text_size=10, fill=lighten(d.P.info, 0.9), stroke=d.P.info) + 0.42
-
-    d.label(0.5, y - 0.24, 9.0, 0.22, "バックエンドのデータベース", size=9,
-            align="START", color=d.P.muted)
+    # 見出しは枠の下に置く。上から入る矢印と重ねないため
+    y = 3.66
+    dbs = []
     for i, (vendor, name, label) in enumerate([
         ("aws", "aws:dynamodb", "DynamoDB"),
         ("azure", "azure:cosmos-db", "Cosmos DB"),
         ("gcp", "gcp:cloud-spanner", "Spanner"),
     ]):
         zx = 1.2 + i * 1.95
-        d.cloud_zone(zx, y, 1.75, 1.12, vendor=vendor, title_size=7.5)
-        d.cloud_icon(name, zx + 0.65, y + 0.3, 0.42, label=label, label_size=8,
-                     label_w=1.6)
+        d.cloud_zone(zx, y, 1.75, 1.3, vendor=vendor, title_size=7.5,
+                     title_at="bottom")
+        dbs.append(d.node(zx + 0.25, y + 0.1, 1.25, 0.86, label,
+                          cloud_icon=name, icon_size=0.4, size=8))
     ox = 1.2 + 3 * 1.95
-    d.cloud_zone(ox, y, 1.75, 1.12, title="自前運用", title_size=7.5)
-    d.icon_row(ox + 0.05, y + 0.3, 1.65,
-               [("database", "PostgreSQL"), ("stack", "Cassandra")],
-               size=0.36, label_size=7.5, gap=0.02)
-
-    # 層をつなぐ（上下の縦矢印）
-    for cx in (5.0,):
-        d.arrow(cx, 1.92, cx, 2.03, color=d.P.muted, weight=1.0, _anchored=True)
-        d.arrow(cx, 2.67, cx, 3.07, color=d.P.muted, weight=1.0, _anchored=True)
-        d.arrow(cx, 3.57, cx, y - 0.02, color=d.P.muted, weight=1.0, _anchored=True)
+    d.cloud_zone(ox, y, 1.75, 1.3, title="自前運用", title_size=7.5,
+                 title_at="bottom")
+    for k, (ic, label) in enumerate([("database", "PostgreSQL"),
+                                     ("stack", "Cassandra")]):
+        dbs.append(d.node(ox + 0.06 + k * 0.83, y + 0.1, 0.8, 0.86, label,
+                          icon=ic, icon_size=0.34, size=7,
+                          icon_color=d.P.primary))
+    for n in dbs:
+        d.vlink(db, n, color=d.P.muted, weight=1.0)
 
 
 def draw_auditor(d: Canvas) -> None:
     """Auditor 構成。管理主体を分けて相互に検証する。"""
-    d.icon_row(3.6, 0.95, 2.8, [("browser", "クライアント")], size=0.42,
-               label_size=9)
-
+    client = d.node(4.25, 0.95, 1.5, 0.56, "クライアント", icon="browser",
+                    icon_size=0.38, horizontal=True, size=9,
+                    icon_color=d.P.primary)
+    bands = []
     for i, (title, product, note, db, dbname) in enumerate([
         ("運用主体 A", "ScalarDL Ledger", "資産の更新を実行して記録する",
          "aws:dynamodb", "DynamoDB"),
@@ -98,8 +110,9 @@ def draw_auditor(d: Canvas) -> None:
         accent = d.P.primary if i == 0 else d.P.success
         zx = 0.5 + i * 4.85
         d.cloud_zone(zx, 1.95, 4.15, 2.55, title=title, title_size=9, color=accent)
-        _band(d, zx + 0.25, 2.35, 3.65, 0.5, text=product, text_size=10.5,
-              fill=lighten(accent, 0.88), stroke=accent)
+        bands.append(_band(d, zx + 0.25, 2.35, 3.65, 0.5, text=product,
+                           text_size=10.5, fill=lighten(accent, 0.88),
+                           stroke=accent))
         d.label(zx + 0.25, 2.92, 3.65, 0.24, note, size=8.5, align="CENTER",
                 color=d.P.muted)
         d.cloud_zone(zx + 0.25, 3.3, 3.65, 1.0,
@@ -108,11 +121,11 @@ def draw_auditor(d: Canvas) -> None:
                      label_w=2.0)
 
     # クライアントから両方へ。Ledger と Auditor は互いに検証し合う
-    d.arrow(4.6, 1.62, 3.0, 1.92, color=d.P.muted, weight=1.0, _anchored=True)
-    d.arrow(5.4, 1.62, 7.1, 1.92, color=d.P.muted, weight=1.0, _anchored=True)
-    d.line(4.68, 2.6, 5.32, 2.6, color=d.P.danger, weight=1.5,
-           start_arrow="FILL_ARROW", end_arrow="FILL_ARROW", _anchored=True)
-    d.label(3.95, 2.16, 2.1, 0.24, "相互に検証", size=8.5, align="CENTER",
+    for band in bands:
+        d.link(client, band, gap=0.0, color=d.P.muted, weight=1.0)
+    d.hlink(bands[0], bands[1], color=d.P.danger, weight=1.5,
+            start_arrow="FILL_ARROW")
+    d.label(3.95, 2.0, 2.1, 0.24, "相互に検証", size=8.5, align="CENTER",
             color=d.P.danger)
     d.label(0.5, 4.62, 9.0, 0.26,
             "片方が改ざんされても、もう片方と突き合わせれば検知できる",

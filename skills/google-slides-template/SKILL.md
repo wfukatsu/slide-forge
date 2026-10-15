@@ -47,6 +47,9 @@ empty image frames in an existing deck.
   authoring, unless that exact outline was already approved.
 - Run strict offline validation before every API write.
 - Template decorations, logos, and footers are inherited. Do not redraw them.
+- In a Canvas figure, arrows join boxes: wrap pictograms in `d.node()` and
+  join with `d.vlink()` / `d.hlink()` / `d.elbow()` / `d.link()`. Never aim
+  typed coordinates at an icon or its caption (`references/diagrams.md`).
 - Fix the source spec and regenerate. Do not patch around a source defect only
   in the generated artifact.
 - API success is not visual QA. When QA is selected, follow `slide-qa`.

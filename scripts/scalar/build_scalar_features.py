@@ -64,19 +64,49 @@ def _va(d: Canvas, x1, y1, x2, y2, color=None):
             _anchored=True)
 
 
+def _v(d: Canvas, a, b, **kw):
+    """Vertical arrow between two boxes (edge to edge)."""
+    return d.vlink(a, b, color=kw.pop("color", d.P.muted), weight=1.0, **kw)
+
+
+def _h(d: Canvas, a, b, **kw):
+    """Horizontal arrow between two boxes (edge to edge)."""
+    return d.hlink(a, b, color=kw.pop("color", d.P.muted), weight=1.0, **kw)
+
+
+def _node(d: Canvas, x, y, w, h, text, icon, *, size=8, icon_size=0.28,
+          horizontal=True, color=None):
+    """A pictogram an arrow can reach: the picture and its label in a box."""
+    return d.node(x, y, w, h, text, icon=icon, icon_size=icon_size,
+                  horizontal=horizontal, size=size,
+                  icon_color=color or d.P.primary)
+
+
+def _fanout(d: Canvas, src, dsts, *, bus_y, color=None):
+    """One box feeding several boxes below it: a drop, a bus, an arrow into each."""
+    c = color or d.P.muted
+    sx, sy, sw, sh = d.rects[src][:4]
+    cx = sx + sw / 2
+    tops = [d.rects[t][:4] for t in dsts]
+    xs = [tx + tw / 2 for tx, _, tw, _ in tops]
+    d.line(cx, sy + sh, cx, bus_y, color=c, weight=1.0, _anchored=(True, False))
+    d.line(min(xs + [cx]), bus_y, max(xs + [cx]), bus_y, color=c, weight=1.0,
+           free=True)
+    for (tx, ty, tw, _), x in zip(tops, xs):
+        d.line(x, bus_y, x, ty, color=c, weight=1.0, end_arrow="FILL_ARROW",
+               _anchored=(False, True))
+
+
 # ---------------------------------------------------------------- ScalarDB figures
 
 def fig_db_acid(d, accent):
-    d.icon("server", 1.35, FY + 0.02, 0.36, label="アプリケーション",
-           label_size=8, label_w=1.6)
-    _pill(d, 0.7, FY + 0.80, 3.4, 0.44, "ScalarDB — Consensus Commit",
-          accent, size=9.5, bold=True)
-    d.icon_row(0.9, FY + 1.42, 3.0, [("database", "MySQL"),
-                                     ("stack", "DynamoDB")],
-               size=0.32, label_size=8)
-    _va(d, 1.53, FY + 0.68, 1.53, FY + 0.78)
-    for cx in (1.65, 3.15):
-        _va(d, cx, FY + 1.26, cx, FY + 1.40)
+    app = _node(d, 1.0, FY + 0.04, 1.95, 0.5, "アプリケーション", "server")
+    band = _pill(d, 0.7, FY + 0.80, 3.4, 0.44, "ScalarDB — Consensus Commit",
+                 accent, size=9.5, bold=True)
+    _v(d, app, band)
+    for x, (ic, t) in zip((0.85, 2.55), [("database", "MySQL"),
+                                         ("stack", "DynamoDB")]):
+        _v(d, band, _node(d, x, FY + 1.42, 1.4, 0.48, t, ic))
     d.label(4.35, FY + 0.55, 1.35, 0.95,
             "Prepare →\nCommit\n失敗時は\n自動復旧", size=8, align="START",
             color=d.P.muted, line_spacing=125)
@@ -84,16 +114,15 @@ def fig_db_acid(d, accent):
 
 
 def fig_db_multistorage(d, accent):
-    d.icon("server", 1.35, FY + 0.02, 0.34, label="アプリ", label_size=8)
-    _pill(d, 0.7, FY + 0.72, 3.4, 0.4, "統一 API（CRUD / SQL）", accent,
-          size=9, bold=True)
-    _pill(d, 0.8, FY + 1.34, 1.5, 0.32, "ns: orders", d.P.info, size=8)
-    _pill(d, 2.7, FY + 1.34, 1.5, 0.32, "ns: items", d.P.info, size=8)
-    d.icon("database", 1.38, FY + 1.84, 0.34, label="MySQL", label_size=7.5)
-    d.icon("stack", 3.28, FY + 1.84, 0.34, label="Cassandra", label_size=7.5)
-    _va(d, 1.52, FY + 0.60, 1.52, FY + 0.70)
-    for cx in (1.55, 3.45):
-        _va(d, cx, FY + 1.14, cx, FY + 1.32)
+    app = _node(d, 1.0, FY + 0.0, 1.3, 0.42, "アプリ", "server")
+    band = _pill(d, 0.7, FY + 0.56, 3.4, 0.38, "統一 API（CRUD / SQL）", accent,
+                 size=9, bold=True)
+    _v(d, app, band)
+    for x, ns, ic, db in ((0.8, "ns: orders", "database", "MySQL"),
+                          (2.7, "ns: items", "stack", "Cassandra")):
+        chip = _pill(d, x, FY + 1.08, 1.5, 0.3, ns, d.P.info, size=8)
+        _v(d, band, chip)
+        _v(d, chip, _node(d, x, FY + 1.52, 1.5, 0.42, db, ic, size=7.5))
     d.label(4.4, FY + 0.9, 1.3, 0.7, "名前空間ごとに\n格納先を\n自動選択",
             size=8, align="START", color=d.P.muted, line_spacing=125)
     _caption(d, "異なる DB を 1 つの論理 DB として扱い、横断トランザクションも可能")
@@ -117,28 +146,32 @@ def fig_db_2pc(d, accent):
 
 
 def fig_db_cluster(d, accent):
-    d.icon_row(0.6, FY + 0.15, 2.0, [("browser", "Web"), ("mobile", "モバイル")],
-               size=0.32, label_size=7.5)
     d.cloud_zone(2.95, FY + 0.05, 2.6, 1.78, title="Kubernetes", title_size=8)
+    cluster = d.shape(3.08, FY + 0.36, 2.34, 0.74, kind="RECTANGLE",
+                      fill=lighten(accent, 0.94), stroke=lighten(accent, 0.5))
     for i in range(3):
-        _pill(d, 3.12 + i * 0.79, FY + 0.55, 0.72, 0.4, "Node", accent,
+        _pill(d, 3.17 + i * 0.76, FY + 0.53, 0.68, 0.4, "Node", accent,
               size=8)
-    d.label(3.1, FY + 1.15, 2.3, 0.4, "メンバーシップを自動調整\nHelm でデプロイ",
+    for y, (ic, t) in zip((FY + 0.3, FY + 0.78), [("browser", "Web"),
+                                                  ("mobile", "モバイル")]):
+        n = _node(d, 0.6, y, 1.15, 0.36, t, ic, size=7.5, icon_size=0.24)
+        _h(d, n, cluster, y=y + 0.18)
+    d.label(3.1, FY + 1.2, 2.3, 0.4, "メンバーシップを自動調整\nHelm でデプロイ",
             size=7.5, align="CENTER", color=d.P.muted, line_spacing=120)
-    _va(d, 2.62, FY + 0.5, 2.92, FY + 0.7)
     _caption(d, "コンシステントハッシングで最適なノードへ自動ルーティング",
              y=FY + 2.0)
 
 
 def fig_db_sql(d, accent):
-    _code(d, 0.6, FY + 0.1, 2.35, 0.95,
-          "SELECT o.id, i.name\nFROM orders o\nJOIN items i ON …")
-    _pill(d, 3.35, FY + 0.2, 2.05, 0.72, "ScalarDB Cluster\n(SQL)", accent,
-          size=9, bold=True)
-    _va(d, 3.0, FY + 0.57, 3.32, FY + 0.57)
-    d.icon_row(3.55, FY + 1.3, 1.7, [("database", ""), ("stack", "")],
-               size=0.32)
-    _va(d, 4.38, FY + 0.94, 4.38, FY + 1.28)
+    code = _code(d, 0.6, FY + 0.1, 2.35, 0.95,
+                 "SELECT o.id, i.name\nFROM orders o\nJOIN items i ON …")
+    pill = _pill(d, 3.35, FY + 0.2, 2.05, 0.72, "ScalarDB Cluster\n(SQL)",
+                 accent, size=9, bold=True)
+    _h(d, code, pill)
+    for x, (ic, t) in zip((3.3, 4.42), [("database", "RDB"),
+                                        ("stack", "NoSQL")]):
+        _v(d, pill, _node(d, x, FY + 1.28, 1.02, 0.4, t, ic, size=7.5,
+                          icon_size=0.24))
     for i, t in enumerate(["JDBC", "Spring Data", "Java API"]):
         _pill(d, 0.62 + i * 0.83, FY + 1.32, 0.76, 0.3, t, accent, size=7,
               light=0.93)
@@ -146,27 +179,30 @@ def fig_db_sql(d, accent):
 
 
 def fig_db_graphql(d, accent):
-    _code(d, 0.6, FY + 0.1, 2.35, 1.05,
-          "query {\n  order(id: 1) {\n    items { name }\n  }\n}", size=7.5)
-    _pill(d, 3.35, FY + 0.2, 2.05, 0.85,
-          "Cluster (GraphQL)\nスキーマ自動生成", accent, size=8.5, bold=True)
-    _va(d, 3.0, FY + 0.62, 3.32, FY + 0.62)
-    d.icon_row(3.55, FY + 1.35, 1.7, [("database", ""), ("stack", "")],
-               size=0.32)
-    _va(d, 4.38, FY + 1.07, 4.38, FY + 1.33)
+    code = _code(d, 0.6, FY + 0.1, 2.35, 1.05,
+                 "query {\n  order(id: 1) {\n    items { name }\n  }\n}",
+                 size=7.5)
+    pill = _pill(d, 3.35, FY + 0.2, 2.05, 0.85,
+                 "Cluster (GraphQL)\nスキーマ自動生成", accent, size=8.5,
+                 bold=True)
+    _h(d, code, pill)
+    for x, (ic, t) in zip((3.3, 4.42), [("database", "RDB"),
+                                        ("stack", "NoSQL")]):
+        _v(d, pill, _node(d, x, FY + 1.36, 1.02, 0.4, t, ic, size=7.5,
+                          icon_size=0.24))
     _caption(d, "ScalarDB のスキーマから GraphQL API を自動生成・2PC にも対応")
 
 
 def fig_db_auth(d, accent):
-    d.icon("person", 0.72, FY + 0.35, 0.4, label="ユーザー", label_size=8)
+    user = _node(d, 0.5, FY + 0.56, 1.2, 0.44, "ユーザー", "person")
     d.icon("lock", 2.02, FY + 0.12, 0.26)
-    _pill(d, 1.85, FY + 0.45, 2.55, 0.66,
-          "認証 USERPASS / OIDC\n認可 GRANT + ロール", accent, size=8.5)
-    _va(d, 1.32, FY + 0.72, 1.82, FY + 0.72)
-    d.icon("database", 4.85, FY + 0.25, 0.34)
-    d.icon("stack", 4.85, FY + 0.95, 0.34)
-    _va(d, 4.43, FY + 0.72, 4.8, FY + 0.55)
-    _va(d, 4.43, FY + 0.82, 4.8, FY + 1.05)
+    pill = _pill(d, 1.85, FY + 0.45, 2.35, 0.66,
+                 "認証 USERPASS / OIDC\n認可 GRANT + ロール", accent, size=8.5)
+    _h(d, user, pill)
+    for y, (ic, t) in zip((FY + 0.3, FY + 0.86), [("database", "RDB"),
+                                                  ("stack", "NoSQL")]):
+        n = _node(d, 4.5, y, 1.2, 0.4, t, ic, size=7.5, icon_size=0.24)
+        _h(d, pill, n)
     _caption(d, "テーブル・名前空間単位の最小権限を異種 DB 全体で一元管理",
              y=FY + 1.85)
 
@@ -211,30 +247,31 @@ def fig_db_abac(d, accent):
 
 
 def fig_db_vector(d, accent):
-    d.icon("document", 0.72, FY + 0.2, 0.38, label="文書", label_size=8)
-    _pill(d, 1.75, FY + 0.22, 1.65, 0.62, "埋め込み生成\nBedrock / OpenAI…",
-          accent, size=8)
-    _pill(d, 3.75, FY + 0.22, 1.65, 0.62, "ScalarDB\n統一 API", accent,
-          size=8.5, bold=True)
-    _va(d, 1.32, FY + 0.5, 1.72, FY + 0.5)
-    _va(d, 3.43, FY + 0.5, 3.72, FY + 0.5)
-    for i, t in enumerate(["OpenSearch", "pgvector", "Azure AI Search"]):
-        _pill(d, 0.8 + i * 1.62, FY + 1.42, 1.5, 0.34, t, d.P.info, size=7.5)
-    _va(d, 4.58, FY + 0.86, 3.0, FY + 1.4)
+    doc = _node(d, 0.55, FY + 0.31, 1.0, 0.44, "文書", "document")
+    emb = _pill(d, 1.75, FY + 0.22, 1.65, 0.62, "埋め込み生成\nBedrock / OpenAI…",
+                accent, size=8)
+    api = _pill(d, 3.75, FY + 0.22, 1.65, 0.62, "ScalarDB\n統一 API", accent,
+                size=8.5, bold=True)
+    _h(d, doc, emb)
+    _h(d, emb, api)
+    stores = [_pill(d, 0.8 + i * 1.62, FY + 1.42, 1.5, 0.34, t, d.P.info,
+                    size=7.5)
+              for i, t in enumerate(["OpenSearch", "pgvector", "Azure AI Search"])]
+    _fanout(d, api, stores, bus_y=FY + 1.13)
     _caption(d, "ストアを差し替えてもアプリのコードは変わらない")
 
 
 def fig_db_nontx(d, accent):
-    d.icon("server", 0.72, FY + 0.62, 0.4, label="アプリ", label_size=8)
-    _pill(d, 1.95, FY + 0.18, 2.85, 0.5, "ACID トランザクション（一貫性）",
-          accent, size=8.5)
-    _pill(d, 1.95, FY + 1.08, 2.85, 0.5, "非トランザクショナル（高速）",
-          d.P.info, size=8.5)
-    _va(d, 1.32, FY + 0.75, 1.92, FY + 0.45)
-    _va(d, 1.32, FY + 0.95, 1.92, FY + 1.3)
-    d.icon("database", 5.0, FY + 0.62, 0.4, label="同じ DB", label_size=7.5)
-    _va(d, 4.83, FY + 0.45, 4.97, FY + 0.7)
-    _va(d, 4.83, FY + 1.3, 4.97, FY + 0.95)
+    app = _node(d, 0.55, FY + 0.65, 1.05, 0.46, "アプリ", "server")
+    tx = _pill(d, 1.95, FY + 0.18, 2.85, 0.5, "ACID トランザクション（一貫性）",
+               accent, size=8.5)
+    ntx = _pill(d, 1.95, FY + 1.08, 2.85, 0.5, "非トランザクショナル（高速）",
+                d.P.info, size=8.5)
+    db = _node(d, 5.0, FY + 0.56, 0.72, 0.64, "同じ DB", "database", size=7,
+               icon_size=0.26, horizontal=False)
+    for p in (tx, ntx):
+        d.elbow(app, p, color=d.P.muted, weight=1.0)
+        d.elbow(p, db, color=d.P.muted, weight=1.0)
     _caption(d, "ワークロードごとに「保証」と「性能」のバランスを選択できる")
 
 
@@ -270,31 +307,32 @@ def fig_db_analytics(d, accent):
 
 
 def fig_db_mcp(d, accent):
-    d.icon("bot", 0.75, FY + 0.05, 0.4, label="LLM / エージェント",
-           label_size=8, label_w=1.7)
-    _pill(d, 2.1, FY + 0.12, 3.25, 0.44, "MCP Server — SQL / CRUD ツール",
-          accent, size=8.5, bold=True)
-    _pill(d, 2.1, FY + 0.92, 3.25, 0.4, "ScalarDB（ACID 保証）", accent,
-          size=8.5)
-    d.icon_row(2.75, FY + 1.44, 2.0, [("database", "PostgreSQL"),
-                                     ("stack", "DynamoDB")],
-               size=0.28, label_size=7)
-    _va(d, 1.6, FY + 0.34, 2.07, FY + 0.34)
-    _va(d, 3.72, FY + 0.58, 3.72, FY + 0.9)
-    _va(d, 3.72, FY + 1.34, 3.72, FY + 1.42)
+    bot = _node(d, 0.5, FY + 0.0, 1.45, 0.7, "LLM / エージェント", "bot",
+                size=7.5, icon_size=0.28, horizontal=False)
+    mcp = _pill(d, 2.1, FY + 0.12, 3.25, 0.44, "MCP Server — SQL / CRUD ツール",
+                accent, size=8.5, bold=True)
+    core = _pill(d, 2.1, FY + 0.82, 3.25, 0.4, "ScalarDB（ACID 保証）", accent,
+                 size=8.5)
+    _h(d, bot, mcp)
+    _v(d, mcp, core)
+    for x, (ic, t) in zip((2.25, 3.8), [("database", "PostgreSQL"),
+                                        ("stack", "DynamoDB")]):
+        _v(d, core, _node(d, x, FY + 1.42, 1.4, 0.4, t, ic, size=7.5,
+                          icon_size=0.24))
     _caption(d, "自然言語からの操作でもデータ整合性が壊れない")
 
 
 def fig_db_import(d, accent):
-    d.icon("database", 0.9, FY + 0.45, 0.44, label="既存 DB（稼働中）",
-           label_size=8, label_w=1.7)
-    d.label(1.05, FY + 0.12, 1.9, 0.22, "--import（数秒）", size=7.5,
-            align="CENTER", color=d.P.muted)
-    _va(d, 1.85, FY + 0.67, 3.02, FY + 0.67)
+    src = _node(d, 0.6, FY + 0.42, 1.35, 0.72, "既存 DB（稼働中）", "database",
+                horizontal=False, icon_size=0.34)
     d.cloud_zone(3.05, FY + 0.05, 2.5, 1.95, title="ScalarDB 管理下",
                  title_size=8, color=accent)
-    d.icon("database", 3.95, FY + 0.45, 0.44)
-    _pill(d, 3.25, FY + 1.2, 2.1, 0.56, "トランザクション用の\nメタデータ列を自動追加",
+    dst = _node(d, 3.4, FY + 0.42, 1.8, 0.72, "同じ DB（データ移行なし）",
+                "database", horizontal=False, icon_size=0.34)
+    _h(d, src, dst)
+    d.label(1.95, FY + 0.5, 1.45, 0.22, "--import（数秒）", size=7.5,
+            align="CENTER", color=d.P.muted)
+    _pill(d, 3.25, FY + 1.3, 2.1, 0.5, "トランザクション用の\nメタデータ列を自動追加",
           accent, size=7.5)
     _caption(d, "データ移行なし・アプリ停止なしで横断トランザクションの対象に")
 
@@ -356,16 +394,15 @@ def fig_dl_auditor(d, accent):
 
 
 def fig_dl_contract(d, accent):
-    d.icon("code", 0.75, FY + 0.1, 0.4, label="Java Contract", label_size=8,
-           label_w=1.5)
-    d.icon("key", 0.78, FY + 1.15, 0.36, label="所有者の秘密鍵",
-           label_size=7.5, label_w=1.5)
-    _pill(d, 2.25, FY + 0.62, 1.95, 0.52, "署名付きで\n登録・実行", accent,
-          size=8.5)
-    _pill(d, 4.55, FY + 0.62, 1.0, 0.52, "Ledger", accent, size=9, bold=True)
-    _va(d, 1.4, FY + 0.45, 2.2, FY + 0.75)
-    _va(d, 1.4, FY + 1.3, 2.2, FY + 1.0)
-    _va(d, 4.23, FY + 0.88, 4.52, FY + 0.88)
+    reg = _pill(d, 2.25, FY + 0.45, 1.95, 0.95, "署名付きで\n登録・実行", accent,
+                size=8.5)
+    for y, (ic, t) in zip((FY + 0.5, FY + 0.97), [("code", "Java Contract"),
+                                                  ("key", "所有者の秘密鍵")]):
+        n = _node(d, 0.55, y, 1.45, 0.38, t, ic, size=7.5, icon_size=0.26)
+        _h(d, n, reg, y=y + 0.19)
+    ledger = _pill(d, 4.55, FY + 0.66, 1.0, 0.52, "Ledger", accent, size=9,
+                   bold=True)
+    _h(d, reg, ledger)
     _caption(d, "署名が一致する所有者だけが実行でき、ロジックの改ざんも検知")
 
 
@@ -394,14 +431,14 @@ def fig_dl_table(d, accent):
 
 
 def fig_dl_hash(d, accent):
-    d.icon("document", 0.75, FY + 0.08, 0.36, label="ファイル・ログ",
-           label_size=7.5, label_w=1.5)
-    _pill(d, 2.3, FY + 0.15, 1.8, 0.5, "ハッシュ値のみ格納", accent, size=8.5)
-    _pill(d, 4.45, FY + 0.15, 1.05, 0.5, "Ledger", accent, size=9, bold=True)
-    d.label(1.35, FY + 0.02, 1.0, 0.2, "ハッシュ化", size=7, align="CENTER",
-            color=d.P.muted)
-    _va(d, 1.4, FY + 0.4, 2.27, FY + 0.4)
-    _va(d, 4.13, FY + 0.4, 4.42, FY + 0.4)
+    doc = _node(d, 0.55, FY + 0.15, 1.45, 0.5, "ファイル・ログ", "document",
+                size=7.5)
+    hashed = _pill(d, 2.35, FY + 0.15, 1.8, 0.5, "ハッシュ化して\n値だけを格納",
+                   accent, size=8)
+    ledger = _pill(d, 4.45, FY + 0.15, 1.05, 0.5, "Ledger", accent, size=9,
+                   bold=True)
+    _h(d, doc, hashed)
+    _h(d, hashed, ledger)
     d.icon("documents", 0.75, FY + 1.25, 0.36, label="コレクション（集合）",
            label_size=7.5, label_w=1.7)
     d.label(2.3, FY + 1.35, 3.2, 0.4, "追加・除去の履歴も台帳で管理し、\n不正な差し替えを検知",
@@ -423,13 +460,14 @@ def fig_dl_ns(d, accent):
 
 
 def fig_dl_proof(d, accent):
-    _pill(d, 0.7, FY + 0.45, 1.5, 0.5, "Ledger", accent, size=9, bold=True)
-    _pill(d, 2.55, FY + 0.35, 1.75, 0.7, "Asset Proof\nハッシュ + 署名",
-          accent, size=8.5)
-    d.icon("person", 4.75, FY + 0.35, 0.4, label="クライアントの\n手元に保全",
-           label_size=7.5, label_w=1.4)
-    _va(d, 2.23, FY + 0.7, 2.52, FY + 0.7)
-    _va(d, 4.33, FY + 0.7, 4.7, FY + 0.7)
+    ledger = _pill(d, 0.7, FY + 0.45, 1.5, 0.5, "Ledger", accent, size=9,
+                   bold=True)
+    proof = _pill(d, 2.55, FY + 0.35, 1.75, 0.7, "Asset Proof\nハッシュ + 署名",
+                  accent, size=8.5)
+    client = _node(d, 4.62, FY + 0.22, 1.1, 0.96, "クライアントの\n手元に保全",
+                   "person", size=7, icon_size=0.34, horizontal=False)
+    _h(d, ledger, proof)
+    _h(d, proof, client)
     d.label(0.7, FY + 1.55, 4.6, 0.3, "実行のたびに「実行時点の証拠」が発行される",
             size=8.5, align="CENTER", color=d.P.text)
     _caption(d, "後から Ledger 側を書き換えても、手元の証拠との乖離で検知")

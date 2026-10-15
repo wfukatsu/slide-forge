@@ -169,10 +169,21 @@ the API won't error even if the endpoints are off. "The arrow floats away from
 the shape / digs into its border" is something you can only notice by
 generating the deck and looking at the thumbnail.
 
+**Put both ends of an arrow on a box's edge.** A pictogram (`icon` /
+`cloud_icon` / `asset_icon`) or a label has no edge an arrow can land on;
+aim typed coordinates at an icon or its caption and the arrow ends in the
+air or on the text. Put what you want to join in a `d.node()` box and join
+the boxes with the helpers below.
+
 ```python
 a = d.shape(1.0, 1.0, 1.6, 0.6, text="A")    # the shape() family returns an objectId
 b = d.shape(4.0, 2.0, 1.6, 0.6, text="B")
+db = d.node(1.0, 3.0, 1.2, 0.9, "DynamoDB", cloud_icon="aws:dynamodb",
+            icon_size=0.4)                   # picture + label in a box; returns its id
 
+d.vlink(a, db)                   # vertical: upper box's bottom edge -> lower box's top edge
+d.hlink(a, b)                    # horizontal: left box's right edge -> right box's left edge
+d.elbow(band, cosmos, sy=...)    # right-angled: out of one side, into the other's side
 d.connect(a, b)                  # a real API connector; the line follows if a shape moves
 d.connect(a, b, category="BENT") # elbow; routes cross less in a one-to-many fan-out
 d.link(a, b)                     # ends where the centre-to-centre line crosses each edge
@@ -182,16 +193,36 @@ d.line(..., free=True)           # axes, ticks, leader lines — lines meant not
 
 | Use case | What to use |
 |---|---|
-| Shape A → B, should follow if moved | `d.connect(a, b)` |
-| Shape A → B, should align exactly to the edge | `d.link(a, b)` |
+| Stacked boxes A -> B (layer diagram) | `d.vlink(a, b)` |
+| Boxes side by side A -> B (process) | `d.hlink(a, b)` |
+| Several boxes -> one wide band (apps -> platform) | `d.vlink(box, band)` per box; it runs through the narrower box's centre, so the arrows stay parallel |
+| Round a corner to an offset box | `d.elbow(a, b)` |
+| Shape A -> B, should follow if moved | `d.connect(a, b)` (sites are edge midpoints only; several into one wide band converge on one point) |
+| Shape A -> B, diagonal, exact to the edge | `d.link(a, b)` |
+| Pictogram -> pictogram inside `icon_flow` and friends | the part's own pointer in the gap, not a connector |
 | Waypoints, axes, leader lines | `d.line(..., free=True)` |
 
+`vlink()` / `hlink()` raise when the boxes do not overlap vertically
+(horizontally) — the arrow would float beside one of them. Use `elbow()` or
+`link()` then.
+
 `connect()`'s connection sites are determined automatically from the relative
-position (0=top, 1=left, 2=bottom, 3=right). `audit_connectors()` returns
-endpoints that are more than 0.22in away from any shape, and endpoints that are
-embedded more than 0.06in inside a shape. Large containers like zones and text
-boxes are excluded from this check (an arrow passing through a container is
-normal). **Always call this before generating.**
+position (0=top, 1=left, 2=bottom, 3=right).
+
+`audit_connectors()` judges in two tiers:
+
+- **Lines that claim an edge** (`link` / `vlink` / `hlink` / `elbow`, or a
+  hand-drawn line with `_anchored=True`): each end must sit within
+  `CONN_ANCHOR_TOL` (0.08in) of a shape's edge. Text boxes are not edges, so
+  an arrow stopping on an icon's caption is caught here. A line anchored at
+  one end only takes a pair, e.g. `_anchored=(True, False)`
+- **Any other line**: endpoints more than 0.22in away from any shape, and
+  endpoints embedded more than 0.06in inside a shape. Large containers like
+  zones and text boxes are excluded (an arrow passing through a container is
+  normal)
+
+**Always call this before generating.** `_anchored=True` lines used to be
+skipped, so the drift of hand-typed arrow coordinates passed the audit.
 
 ## Self-checks (4 audits, always call before generating)
 

@@ -160,8 +160,15 @@ feature map.
 - Titles are action titles ("what can we claim"). The form
   "Feature name — one-line value" fits well
 - Compose diagrams from the `illustrations` pictograms, `_pill` (rounded
-  chips), `cloud_zone`, and `_anchored` arrows. Official cloud icons must not
+  chips), `cloud_zone`, and `d.node()` boxes. Official cloud icons must not
   be modified
+- **Arrows join boxes, never icons or captions, and never by typed
+  coordinates.** Put each thing an arrow touches in a `d.node()` (picture +
+  label in a box) or a shape, and join them with `d.vlink()` / `d.hlink()` /
+  `d.elbow()` (`references/diagrams.md` "Lines connecting shapes"). Several
+  boxes into one wide band: one `vlink()` per box, so the arrows stay
+  parallel. `audit_connectors()` reports any arrow end more than 0.08in off a
+  box edge — fix the figure, do not loosen the check
 
 ## Phase 4: Generate and QA
 

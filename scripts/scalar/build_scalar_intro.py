@@ -46,10 +46,14 @@ DROP_KEPT_POSITIONS = (1, 10)
 # ---------------------------------------------------------------- Figure slides
 
 def _band(d: Canvas, x, y, w, h, *, logo=None, text=None, text_size=10.5,
-          fill=None, stroke=None):
-    """A product band. Places the logo on the left and description text on the right."""
-    d.shape(x, y, w, h, kind="ROUND_RECTANGLE",
-            fill=fill or lighten(d.P.primary, 0.88), stroke=stroke or d.P.primary)
+          fill=None, stroke=None, return_id=False):
+    """A product band. Places the logo on the left and description text on the right.
+
+    Returns the bottom y, or the band's id with return_id=True (to join it
+    with an arrow)."""
+    oid = d.shape(x, y, w, h, kind="ROUND_RECTANGLE",
+                  fill=fill or lighten(d.P.primary, 0.88),
+                  stroke=stroke or d.P.primary)
     tx = x + 0.25
     if logo:
         d.image(x + 0.25, y + (h - 0.34) / 2, 1.45, 0.34, logo, fit="contain",
@@ -58,7 +62,7 @@ def _band(d: Canvas, x, y, w, h, *, logo=None, text=None, text_size=10.5,
     if text:
         d.label(tx, y, x + w - tx - 0.2, h, text, size=text_size,
                 align="START", valign="MIDDLE", color=d.P.text)
-    return y + h
+    return oid if return_id else y + h
 
 
 def draw_company_data(d: Canvas) -> None:
@@ -127,51 +131,55 @@ def draw_challenges(d: Canvas) -> None:
 
 
 def draw_db_arch(d: Canvas) -> None:
-    """ScalarDB: the 3 layers of app -> ScalarDB -> each database."""
+    """ScalarDB: the 3 layers of app -> ScalarDB -> each database.
+
+    Every arrow joins two boxes edge to edge (node() + vlink()), so none of
+    them can stop short of a box or end on a caption.
+    """
     d.label(0.5, 0.95, 9.0, 0.24, "アプリケーション", size=9.5, align="START",
             color=d.P.muted)
-    d.icon_row(0.9, 1.25, 8.2, [("browser", "Web アプリ"), ("mobile", "モバイル"),
-                                ("server", "バッチ"), ("bot", "AI エージェント")],
-               size=0.5, label_size=8.5)
+    gap = 0.15
+    cw = (8.2 - gap * 3) / 4
+    clients = [d.node(0.9 + i * (cw + gap), 1.25, cw, 0.62, t, icon=ic,
+                      icon_size=0.4, horizontal=True, size=9,
+                      icon_color=d.P.primary)
+               for i, (ic, t) in enumerate([("browser", "Web アプリ"),
+                                            ("mobile", "モバイル"),
+                                            ("server", "バッチ"),
+                                            ("bot", "AI エージェント")])]
 
-    # Both a "heading" and a "downward arrow" go between the band and the zone.
-    # Raise the band slightly to make room for the heading's height, and draw
-    # the arrow from below the heading (overlapping it would cut through the text)
-    band_y = 2.40
-    d.shape(0.9, band_y, 8.2, 0.72, kind="ROUND_RECTANGLE",
-            fill=lighten(d.P.primary, 0.88), stroke=d.P.primary)
+    band_y = 2.30
+    band = d.shape(0.9, band_y, 8.2, 0.72, kind="ROUND_RECTANGLE",
+                   fill=lighten(d.P.primary, 0.88), stroke=d.P.primary)
     d.image(1.15, band_y + 0.16, 1.5, 0.42, LOGO_DB, fit="contain", alt="ScalarDB")
     d.label(2.85, band_y + 0.06, 6.0, 0.6,
             "Consensus Commit による DB 非依存の ACID トランザクション（SQL / GraphQL / CRUD / ベクトル検索）",
             size=10, align="START", valign="MIDDLE", color=d.P.text)
+    for c in clients:
+        d.vlink(c, band, color=d.P.muted, weight=1.0)
 
-    zone_y = 3.55
-    caption_y = band_y + 0.74          # just below the band
-    d.label(0.5, caption_y, 9.0, 0.19, "バックエンドのデータベース", size=9.0,
-            align="START", color=d.P.muted)
-    for i, (vendor, item) in enumerate([
-        ("aws", ("aws:dynamodb", "DynamoDB")),
-        ("azure", ("azure:cosmos-db", "Cosmos DB")),
-        ("gcp", ("gcp:cloud-spanner", "Spanner")),
+    zone_y = 3.45
+    dbs = []
+    for i, (vendor, name, label) in enumerate([
+        ("aws", "aws:dynamodb", "DynamoDB"),
+        ("azure", "azure:cosmos-db", "Cosmos DB"),
+        ("gcp", "gcp:cloud-spanner", "Spanner"),
     ]):
         zx = 0.9 + i * 2.15
-        d.cloud_zone(zx, zone_y, 1.95, 1.5, vendor=vendor, title_size=8)
-        d.cloud_icon(item[0], zx + 0.72, zone_y + 0.34, 0.5, label=item[1],
-                     label_size=8.5, label_w=1.8)
+        d.cloud_zone(zx, zone_y, 1.95, 1.6, vendor=vendor, title_size=8,
+                     title_at="bottom")
+        dbs.append(d.node(zx + 0.3, zone_y + 0.14, 1.35, 1.05, label,
+                          cloud_icon=name, icon_size=0.5, size=8.5))
     ox = 0.9 + 3 * 2.15
-    d.cloud_zone(ox, zone_y, 1.95, 1.5, title="オンプレミス / 自前運用", title_size=8)
-    d.icon_row(ox + 0.05, zone_y + 0.34, 1.85,
-               [("database", "PostgreSQL"), ("stack", "Cassandra")],
-               size=0.42, label_size=7.5, gap=0.02)
-
-    for i in range(4):
-        cx = 0.9 + 8.2 / 4 * (i + 0.5)
-        d.arrow(cx, 2.15, cx, band_y - 0.06, color=d.P.muted, weight=1.0,
-                _anchored=True)
-    for i in range(4):
-        zx = 0.9 + i * 2.15 + 0.975
-        d.arrow(zx, caption_y + 0.22, zx, zone_y - 0.04, color=d.P.muted, weight=1.0,
-                _anchored=True)
+    d.cloud_zone(ox, zone_y, 1.95, 1.6, title="オンプレミス / 自前運用", title_size=8,
+                 title_at="bottom")
+    for k, (ic, label) in enumerate([("database", "PostgreSQL"),
+                                     ("stack", "Cassandra")]):
+        dbs.append(d.node(ox + 0.08 + k * 0.92, zone_y + 0.14, 0.87, 1.05,
+                          label, icon=ic, icon_size=0.42, size=7.5,
+                          icon_color=d.P.primary))
+    for n in dbs:
+        d.vlink(band, n, color=d.P.muted, weight=1.0)
 
 
 def draw_db_lineup(d: Canvas) -> None:
@@ -197,8 +205,10 @@ def draw_db_lineup(d: Canvas) -> None:
 
 def draw_dl_auditor(d: Canvas) -> None:
     """ScalarDL: Auditor configuration. Separate operating entities mutually verify each other."""
-    d.icon_row(3.6, 0.95, 2.8, [("browser", "クライアント")], size=0.42,
-               label_size=9)
+    client = d.node(4.25, 0.95, 1.5, 0.56, "クライアント", icon="browser",
+                    icon_size=0.38, horizontal=True, size=9,
+                    icon_color=d.P.primary)
+    bands = []
     for i, (title, product, note, db, dbname) in enumerate([
         ("運用主体 A", "ScalarDL Ledger", "資産の更新を実行して記録する",
          "aws:dynamodb", "DynamoDB"),
@@ -208,18 +218,20 @@ def draw_dl_auditor(d: Canvas) -> None:
         accent = d.P.primary if i == 0 else d.P.success
         zx = 0.5 + i * 4.85
         d.cloud_zone(zx, 1.95, 4.15, 2.55, title=title, title_size=9, color=accent)
-        _band(d, zx + 0.25, 2.35, 3.65, 0.5, text=product, text_size=10.5,
-              fill=lighten(accent, 0.88), stroke=accent)
+        band = _band(d, zx + 0.25, 2.35, 3.65, 0.5, text=product,
+                     text_size=10.5, fill=lighten(accent, 0.88), stroke=accent,
+                     return_id=True)
+        bands.append(band)
         d.label(zx + 0.25, 2.92, 3.65, 0.24, note, size=8.5, align="CENTER",
                 color=d.P.muted)
         d.cloud_zone(zx + 0.25, 3.3, 3.65, 1.0,
                      vendor="aws" if i == 0 else "azure", title_size=7.5)
         d.cloud_icon(db, zx + 1.86, 3.52, 0.4, label=dbname, label_size=8,
                      label_w=2.0)
-    d.arrow(4.6, 1.62, 3.0, 1.92, color=d.P.muted, weight=1.0, _anchored=True)
-    d.arrow(5.4, 1.62, 7.1, 1.92, color=d.P.muted, weight=1.0, _anchored=True)
-    d.line(4.68, 2.6, 5.32, 2.6, color=d.P.danger, weight=1.5,
-           start_arrow="FILL_ARROW", end_arrow="FILL_ARROW", _anchored=True)
+    for band in bands:
+        d.link(client, band, gap=0.0, color=d.P.muted, weight=1.0)
+    d.hlink(bands[0], bands[1], color=d.P.danger, weight=1.5,
+            start_arrow="FILL_ARROW")
     d.label(3.95, 2.16, 2.1, 0.24, "相互に検証", size=8.5, align="CENTER",
             color=d.P.danger)
     d.label(0.5, 4.62, 9.0, 0.26,
