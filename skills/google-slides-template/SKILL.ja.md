@@ -26,9 +26,7 @@ Antigravity も同じ `skills/` と Python エンジンを利用する。
 - 作成前に枚数、各ページのレイアウト、全アクションタイトルの承認を得る。
 - API書込み前に `--dry-run --strict` を通す。
 - マスターのロゴ、フッター、装飾を重ね描きしない。
-- Canvas の図では矢印を箱どうしにつなぐ。ピクトグラムは `d.node()` に入れ、
-  `d.vlink()` / `d.hlink()` / `d.elbow()` / `d.link()` で結ぶ。アイコンや
-  キャプションに向けて座標を手打ちしない（`references/diagrams.ja.md`）。
+- Canvas の矢印は箱どうしをつなぐ（`d.node()` と `vlink` / `hlink` / `elbow`）。座標を手打ちしない。
 - 不具合はソースを直して再生成する。
 - API成功をVisual QAの代わりにしない。
 

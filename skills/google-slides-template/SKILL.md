@@ -47,9 +47,6 @@ empty image frames in an existing deck.
   authoring, unless that exact outline was already approved.
 - Run strict offline validation before every API write.
 - Template decorations, logos, and footers are inherited. Do not redraw them.
-- In a Canvas figure, arrows join boxes: wrap pictograms in `d.node()` and
-  join with `d.vlink()` / `d.hlink()` / `d.elbow()` / `d.link()`. Never aim
-  typed coordinates at an icon or its caption (`references/diagrams.md`).
 - Fix the source spec and regenerate. Do not patch around a source defect only
   in the generated artifact.
 - API success is not visual QA. When QA is selected, follow `slide-qa`.
@@ -64,7 +61,7 @@ for the named topic before opening a large range.
 |---|---|
 | Intake questions or final adjustment choices | Applicable sections of `references/interactive-intake.md` |
 | Spec fields, placeholders, body roles, image slots | `references/template-schema.md` |
-| Canvas, flows, connectors | Relevant section of `references/diagrams.md` |
+| Canvas, flows, connectors (arrows join boxes: `node()` + `vlink` / `hlink` / `elbow`, never typed coordinates) | Relevant section of `references/diagrams.md` |
 | Dense architecture diagram | `drawio-diagrams` skill; then its routed `drawio.md` section |
 | Chart/table | Matching component in `references/charts.md` |
 | Numbers/charts that follow a spreadsheet | `references/sheets-link.md` (build the model before the spec) |
