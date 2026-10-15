@@ -93,12 +93,27 @@ register({
     "Shape has no recorded geometry: {id}": "座標が分からない図形です: {id}",
     "connect() can only join shapes drawn by this Canvas":
         "connect() は Canvas が描いた図形どうしにのみ使えます",
+    "vlink: x={x:.2f} misses a box spanning {a:.2f}-{b:.2f}; "
+    "the boxes do not overlap horizontally — use elbow() or link()":
+        "vlink: x={x:.2f} が {a:.2f}〜{b:.2f} の箱から外れています。"
+        "箱が左右に重なっていないので elbow() か link() を使ってください",
+    "hlink: y={y:.2f} misses a box spanning {a:.2f}-{b:.2f}; "
+    "the boxes do not overlap vertically — use elbow() or link()":
+        "hlink: y={y:.2f} が {a:.2f}〜{b:.2f} の箱から外れています。"
+        "箱が上下に重なっていないので elbow() か link() を使ってください",
+    "node: pass only one of icon / cloud_icon / asset_icon":
+        "node: icon / cloud_icon / asset_icon はどれか 1 つだけ指定してください",
     "start point": "始点",
     "end point": "終点",
     "The {endpoint} of a connector does not touch any shape "
     "(nearest shape is {near:.2f}in away)":
         "コネクタの{endpoint}がどの図形にも接していません"
         "（最寄りの図形まで {near:.2f}in）",
+    "The {endpoint} of an anchored arrow is {gap:.2f}in "
+    "off the nearest shape edge; join boxes with "
+    "vlink() / hlink() / link() instead of typed coordinates":
+        "矢印の{endpoint}が最寄りの図形の辺から {gap:.2f}in ずれています。"
+        "座標の手打ちではなく vlink() / hlink() / link() で箱どうしをつないでください",
     "The {endpoint} of a connector is buried inside a shape ({depth:.2f}in deep)":
         "コネクタの{endpoint}が図形の内部に埋まっています（{depth:.2f}in 食い込み）",
     "Text is hidden behind a shape drawn later ({area:.3f}in²): "
@@ -178,6 +193,13 @@ def _corner_safe(kind: str, w: float, h: float) -> str:
         return kind
     return _SQUARED_OFF.get(kind, kind)
 
+
+
+def _ends(anchored) -> tuple[bool, bool]:
+    """Normalise _anchored (bool or a (start, end) pair) to a pair."""
+    if isinstance(anchored, (tuple, list)):
+        return bool(anchored[0]), bool(anchored[1])
+    return bool(anchored), bool(anchored)
 
 class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
              ChartMixin, PatternMixin, PageMixin, EventMixin, CalendarMixin,
@@ -602,11 +624,16 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
              free=False, _anchored=False) -> str:
         """Draw a line by specifying coordinates directly.
 
-        To connect two shapes, use connect() (API-level connection) or link()
-        (snaps endpoints to the edge). This method won't complain even if the
-        endpoints are offset from the shapes.
+        **Do not use this to join two boxes.** Typed coordinates drift off
+        the boxes they are meant to join (the arrow floats short of a box, or
+        ends on its caption). Join boxes with vlink() / hlink() (straight,
+        parallel-friendly), elbow() (right-angled), link() (diagonal) or
+        connect() (bound by the API) — they compute the ends from the boxes.
+
         free=True explicitly marks "a line that correctly doesn't touch any shape"
-        (axes, dividers, etc.).
+        (axes, dividers, etc.). _anchored=True claims both ends sit on a shape
+        edge; audit_connectors() holds it to that (CONN_ANCHOR_TOL). Pass a
+        pair, e.g. _anchored=(True, False), to claim only one end.
         """
         oid = self._oid("l")
         # A STRAIGHT line is drawn from the element rectangle's "top-left to
@@ -642,7 +669,8 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         self._seq += 1
         self.connectors.append({
             "oid": oid, "p1": (x1, y1), "p2": (x2, y2),
-            "free": free or _anchored, "anchored": _anchored,
+            "free": free and not any(_ends(_anchored)),
+            "anchored": _ends(_anchored),
             "seq": self._seq,
         })
         # Lines live only in `connectors`, so they are registered here too;
@@ -766,7 +794,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         self._seq += 1
         self.connectors.append({"oid": oid, "p1": p1, "p2": p2,
                                 "free": True, "anchored": True,
-                                "seq": self._seq})
+                                "bound": True, "seq": self._seq})
         return oid
 
     # ---- Connector self-checks ----
@@ -775,6 +803,10 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     CONN_REACH = 0.22       # farther than this from any shape counts as "not connected"
     CONN_BURY = 0.06        # deeper than this inside a shape counts as "buried"
     CONN_CONTAINER = 6.0    # shapes with area beyond this are treated as containers and excluded from the check
+    # An anchored line (link() / vlink() / hlink() / _anchored=True) claims its
+    # ends sit on a shape's edge. Allow only this much air (or overlap) at
+    # each end; anything more renders as a visibly floating or buried arrow
+    CONN_ANCHOR_TOL = 0.08
 
     @staticmethod
     def _dist_to_rect(px, py, rect):
@@ -798,18 +830,39 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         Excluded from the check:
           - lines marked free=True (axes, tick marks, leader lines, etc., where not
             touching is correct)
-          - lines drawn with connect() / link() (touch a shape by definition)
+          - lines drawn with connect() (bound to shapes by the API)
           - text boxes (no visible boundary)
           - shapes with a large area (containers like zones; it's normal for an
             arrow to pass through them)
+
+        Anchored lines (link() / vlink() / hlink() / elbow(), or a hand-placed
+        line with _anchored=True) get the strict check: each end must sit on
+        the edge of a shape — containers included — within CONN_ANCHOR_TOL.
+        A hand-typed coordinate that lands near a label or an icon's caption
+        is exactly the "arrow that does not quite connect" this exists for.
         """
-        targets = [r for r in self.rects.values()
-                   if r[4] != "TEXT_BOX" and r[2] * r[3] <= self.CONN_CONTAINER]
-        if not targets:
-            return []
+        edges = [r for r in self.rects.values() if r[4] != "TEXT_BOX"]
+        targets = [r for r in edges if r[2] * r[3] <= self.CONN_CONTAINER]
         out = []
         for conn in self.connectors:
-            if conn["free"]:
+            if conn.get("bound"):
+                continue
+            ends = conn.get("anchored")
+            if ends and any(ends):
+                for name, p, on in ((t("start point"), conn["p1"], ends[0]),
+                                    (t("end point"), conn["p2"], ends[1])):
+                    if not on or not edges:
+                        continue
+                    gap = min((self._dist_to_rect(p[0], p[1], r) for r in edges),
+                              key=abs)
+                    if abs(gap) > self.CONN_ANCHOR_TOL:
+                        out.append(t(
+                            "The {endpoint} of an anchored arrow is {gap:.2f}in "
+                            "off the nearest shape edge; join boxes with "
+                            "vlink() / hlink() / link() instead of typed "
+                            "coordinates", endpoint=name, gap=abs(gap)))
+                continue
+            if conn["free"] or not targets:
                 continue
             for name, p in ((t("start point"), conn["p1"]),
                             (t("end point"), conn["p2"])):
@@ -1223,6 +1276,131 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         return self.line(p1[0], p1[1], p2[0], p2[1], color=color, weight=weight,
                          dashed=dashed, end_arrow=end_arrow,
                          start_arrow=start_arrow, _anchored=True)
+
+    def _box(self, ref):
+        rect = self.rects.get(ref) if isinstance(ref, str) else ref
+        if rect is None:
+            raise ValueError(t("Shape has no recorded geometry: {id}", id=ref))
+        return rect[:4]
+
+    def vlink(self, src, dst, *, x=None, color=None, weight=1.25,
+              dashed=False, end_arrow="FILL_ARROW",
+              start_arrow="NONE") -> str:
+        """A vertical arrow from one box's edge to the facing edge of another.
+
+        src / dst are objectIds (or (x, y, w, h) rects); whichever is higher
+        is left from its bottom edge, the other entered at its top edge. The
+        line runs at `x`, which defaults to the centre of the narrower box —
+        so several boxes above one wide band each get their own parallel
+        arrow instead of all converging on the band's centre (what connect()
+        does). Raises if `x` misses either box, since the arrow would then
+        float beside it.
+        """
+        sx, sy, sw, sh = self._box(src)
+        tx, ty, tw, th = self._box(dst)
+        if x is None:
+            x = sx + sw / 2 if sw <= tw else tx + tw / 2
+        for bx, bw in ((sx, sw), (tx, tw)):
+            if not bx - 1e-6 <= x <= bx + bw + 1e-6:
+                raise ValueError(t(
+                    "vlink: x={x:.2f} misses a box spanning {a:.2f}-{b:.2f}; "
+                    "the boxes do not overlap horizontally — use elbow() or "
+                    "link()", x=x, a=bx, b=bx + bw))
+        y1, y2 = (sy + sh, ty) if sy + sh <= ty else (sy, ty + th)
+        return self.line(x, y1, x, y2, color=color, weight=weight,
+                         dashed=dashed, end_arrow=end_arrow,
+                         start_arrow=start_arrow, _anchored=True)
+
+    def hlink(self, src, dst, *, y=None, color=None, weight=1.25,
+              dashed=False, end_arrow="FILL_ARROW",
+              start_arrow="NONE") -> str:
+        """A horizontal arrow from one box's edge to the facing edge of
+        another. `y` defaults to the centre of the shorter box. See vlink()."""
+        sx, sy, sw, sh = self._box(src)
+        tx, ty, tw, th = self._box(dst)
+        if y is None:
+            y = sy + sh / 2 if sh <= th else ty + th / 2
+        for by, bh in ((sy, sh), (ty, th)):
+            if not by - 1e-6 <= y <= by + bh + 1e-6:
+                raise ValueError(t(
+                    "hlink: y={y:.2f} misses a box spanning {a:.2f}-{b:.2f}; "
+                    "the boxes do not overlap vertically — use elbow() or "
+                    "link()", y=y, a=by, b=by + bh))
+        x1, x2 = (sx + sw, tx) if sx + sw <= tx else (sx, tx + tw)
+        return self.line(x1, y, x2, y, color=color, weight=weight,
+                         dashed=dashed, end_arrow=end_arrow,
+                         start_arrow=start_arrow, _anchored=True)
+
+    def elbow(self, src, dst, *, via=None, sy=None, color=None, weight=1.25,
+              dashed=False, end_arrow="FILL_ARROW") -> list[str]:
+        """A right-angled arrow: out of src's side edge, along to `via` (an x
+        between the boxes, default the midpoint of the gap), up or down, then
+        into dst's facing side at dst's centre height.
+
+        `sy` picks where it leaves src (default src's centre height); give
+        each of several elbows out of one box its own sy so they do not
+        overlap. Returns the three segment ids.
+        """
+        ax, ay, aw, ah = self._box(src)
+        bx, by, bw, bh = self._box(dst)
+        rightward = ax + aw <= bx
+        x1 = ax + aw if rightward else ax
+        x2 = bx if rightward else bx + bw
+        y1 = ay + ah / 2 if sy is None else sy
+        y2 = by + bh / 2
+        xm = (x1 + x2) / 2 if via is None else via
+        kw = dict(color=color, weight=weight, dashed=dashed)
+        return [self.line(x1, y1, xm, y1, _anchored=(True, False), **kw),
+                self.line(xm, y1, xm, y2, free=True, **kw),
+                self.line(xm, y2, x2, y2, end_arrow=end_arrow,
+                          _anchored=(False, True), **kw)]
+
+    def node(self, x, y, w, h, text, *, icon=None, cloud_icon=None,
+             asset_icon=None, icon_color=None, icon_size=0.3,
+             horizontal=False, size=8, bold=False, fill="#FFFFFF",
+             stroke=None, kind="ROUND_RECTANGLE") -> str:
+        """A box holding a pictogram and its label. Returns the box's id.
+
+        Pictograms (icon / cloud_icon / asset_icon) have no edge an arrow can
+        land on — an arrow aimed at one ends in the air or on its caption.
+        Put the picture in a node and join the nodes with vlink() / hlink() /
+        elbow(): the arrow then meets a visible edge exactly.
+
+        horizontal=False stacks the picture over the label (a component in an
+        architecture diagram); True puts the label to its right (a row in a
+        list or a client box).
+        """
+        if sum(v is not None for v in (icon, cloud_icon, asset_icon)) > 1:
+            raise ValueError(t("node: pass only one of icon / cloud_icon / "
+                               "asset_icon"))
+        oid = self.shape(x, y, w, h, kind=kind, fill=fill,
+                         stroke=stroke or self.P.border)
+        has_pic = any(v is not None for v in (icon, cloud_icon, asset_icon))
+        s = icon_size if has_pic else 0.0
+        if horizontal:
+            ix, iy = x + 0.08, y + (h - s) / 2
+        else:
+            ix, iy = x + (w - s) / 2, y + 0.07
+        if icon is not None:
+            self.icon(icon, ix, iy, s, color=icon_color)
+        elif cloud_icon is not None:
+            self.cloud_icon(cloud_icon, ix, iy, s, label="")
+        elif asset_icon is not None:
+            self.asset_icon(asset_icon, ix, iy, s, color=icon_color)
+        # The label keeps a thin inset: a node is often narrow, and Slides'
+        # default 0.1in a side would wrap a short name like "NoSQL"
+        lab = dict(kind="TEXT_BOX", fill=None, stroke=None, size=size,
+                   bold=bold, color=self.P.text, valign="MIDDLE",
+                   text_margin=0.03)
+        if horizontal:
+            lx = ix + s + (0.04 if has_pic else 0.0)
+            self.shape(lx, y, x + w - lx - 0.04, h, text=text, align="START",
+                       **lab)
+        else:
+            top = iy + s + (0.02 if has_pic else 0.0)
+            self.shape(x + 0.03, top, w - 0.06, y + h - top - 0.05, text=text,
+                       align="CENTER", line_spacing=110, **lab)
+        return oid
 
     def arrow_shape(self, x, y, w, h, *, fill=None, text=None, **kw) -> str:
         """Thick arrow (for things like a process flow)."""

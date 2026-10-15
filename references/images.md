@@ -56,7 +56,7 @@ one and get caught by `audit_overlaps()`.
 
 **`icon_flow` draws its arrow into the gap of `w / count − size − 0.2in`.** If you enlarge the
 icons, this can go negative, causing an arrow meant to point right to be drawn backward (since
-it's an `_anchored` line, `audit_connectors()` won't catch it). When the gap runs out it stops
+it's a pointer in the gap, not an edge-to-edge connector, `audit_connectors()` won't catch it). When the gap runs out it stops
 with a `ValueError`; either lower `size`, widen `w`, or switch to `icon_row`, which needs no
 arrow. In tight frames (e.g. cover or section-divider cards), `icon_row` tends to fit better.
 

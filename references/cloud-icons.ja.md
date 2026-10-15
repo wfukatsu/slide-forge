@@ -143,9 +143,11 @@ d.cloud_icon_row(1.0, 1.9, 8.0, [
 クラウドアイコン・ピクトグラム・ブランドロゴ・コネクタを 1 枚に混ぜられる。
 
 ```python
+band = d.shape(0.9, 2.45, 8.2, 0.72, kind="ROUND_RECTANGLE")   # ScalarDB の層
 d.cloud_zone(0.9, 3.55, 1.95, 1.5, vendor="aws")
-d.cloud_icon("aws:dynamodb", 1.62, 3.89, 0.5, label="DynamoDB")
-d.arrow(1.87, 3.23, 1.87, 3.51, color=d.P.muted, _anchored=True)
+db = d.node(1.05, 3.85, 1.65, 1.0, "DynamoDB", cloud_icon="aws:dynamodb",
+            icon_size=0.5)       # 矢印はアイコンでなく箱の辺に付ける
+d.vlink(band, db, color=d.P.muted)
 ```
 
 ### 自社製品・OSS のアイコンは別で用意する

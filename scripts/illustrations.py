@@ -151,9 +151,11 @@ class IllustrationMixin:
                 label_size=label_size, label_w=cell - 0.5))
             if i < n - 1:
                 ay = y + size / 2
+                # A pointer set in the gap between pictures, not a connector:
+                # there is no edge to land on, so it is free of the edge check
                 self.arrow(cx + size / 2 + 0.10, ay, cx + cell - size / 2 - 0.10, ay,
                            color=arrow_color or self.P.primary, weight=1.5,
-                           _anchored=True)
+                           free=True)
         return bottom
 
     def icon_grid(self, x: float, y: float, w: float, items, *, cols: int = 4,
