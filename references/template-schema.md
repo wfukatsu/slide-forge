@@ -181,6 +181,13 @@ pasted there).
   // down to 8pt (8/9/10pt are fine on paper); otherwise it stops at 70% of the
   // size. An explicit minFontSize still wins. assemble_spec.py --density sets it
   "density": "print",
+  // Optional. Who the deck is written for: "standard" (default) or "eli5"
+  // (newcomers). With "eli5", --dry-run audits plain words — acronyms
+  // explained at first use, short titles and sentences, at most 3 points per
+  // body (references/eli5.md). assemble_spec.py --reading-level sets it
+  "readingLevel": "eli5",
+  // Optional, with "eli5". Acronyms this audience already knows (not audited)
+  "plainTerms": ["AI"],
   "slides": [
     {
       "layout": "CONTENT",        // required; a role name or a layout key

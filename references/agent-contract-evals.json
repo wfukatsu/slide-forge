@@ -64,6 +64,11 @@
       "name": "pricing-strategy-token-discipline",
       "files": ["skills/pricing-strategy/SKILL.md"],
       "requires": ["In brief mode, do not read references", "grep -i", "Read only one of them"]
+    },
+    {
+      "name": "eli5-reading-level-is-routed-and-audited",
+      "files": ["references/workflow-contract.md", "references/interactive-intake.md", "references/eli5.md", "commands/forge.md", "scripts/reading_level.py"],
+      "requires": ["readingLevel", "eli5.md", "plainTerms", "--dry-run --strict", "where the analogy breaks"]
     }
   ]
 }

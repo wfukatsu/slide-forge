@@ -49,6 +49,7 @@ capability table below.
 | Drive folder per deck (create / collect files) | `scripts/drive_folder.py` |
 | Charts and tables | `scripts/charts.py` + `references/charts.md` |
 | Numbers/charts that follow a spreadsheet (JSON specs only) | `scripts/build_model.py` + `sheets_link.py` + `sync_deck.py`; `references/sheets-link.md` |
+| ELI5 / plain-language deck for newcomers (JSON specs) | `"readingLevel": "eli5"` in the spec + `references/eli5.md` |
 | Shape-drawn pictograms and metaphor figures | `scripts/illustrations.py --list` for the names; `references/diagrams.md` for placement |
 | Business-framework figures (posmap, gantt, orgchart…) | `scripts/patterns.py` + `references/patterns.md` |
 | Page scaffolding and analysis figures | `scripts/pages.py` + `references/slide-patterns.md` |

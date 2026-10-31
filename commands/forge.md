@@ -34,7 +34,9 @@ Pick one based on the arguments and context. Only ask once via
 Load the selected skill completely, then follow it and the shared contract.
 Do not load unselected generation skills. Ask only for missing branch
 decisions, including QA (default: run), relevant delivery formats, and density
-(`print` for proposals/handouts, `presentation` for talks). Read
+(`print` for proposals/handouts, `presentation` for talks), and the reading
+level when the audience may be new to the subject (`"readingLevel": "eli5"`
+for an ELI5 / plain-language deck — `references/eli5.md`). Read
 `config/settings.json` first (`scripts/settings.py --show`) — it may already
 settle image generation and the deliverable destination; route a request to
 change them to the `settings` skill.

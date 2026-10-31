@@ -42,7 +42,7 @@ Antigravity も同じ `skills/` と Python エンジンを利用する。
 | chart／table | `charts.md` の該当component |
 | スプレッドシートに追従する数値・グラフ | `sheets-link.md`（spec より先にモデルを作る） |
 | business framework | `patterns.md` の該当component |
-| page skeleton／density | `slide-patterns.md` の該当skeleton。印刷用なら spec に `"density": "print"`（適合で 8pt まで縮小可） |
+| page skeleton／density／ELI5 | `slide-patterns.md` の該当skeleton。印刷用なら spec に `"density": "print"`（適合で 8pt まで縮小可）。はじめての人向けなら `"readingLevel": "eli5"` と `eli5.md` |
 | 画像 | `images.md` の該当節 |
 | 画像生成の ON/OFF・成果物の出力先 | `settings.md` |
 | API問題 | `api-notes.md` を検索し、未解決時だけ `google-slides-api.md` |

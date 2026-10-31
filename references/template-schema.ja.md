@@ -170,6 +170,13 @@
   // 読める）。それ以外は元のサイズの 70% で止める。minFontSize を明示すれば
   // そちらが優先。assemble_spec.py --density でも設定できる
   "density": "print",
+  // 任意。デッキの読み手の水準。"standard"（既定）か "eli5"（はじめての人向け）。
+  // "eli5" なら --dry-run でやさしい言葉になっているかを検査する（略語は最初に
+  // 出たところで説明、短いタイトルと文、本文の項目は 3 つまで。references/eli5.ja.md）。
+  // assemble_spec.py --reading-level でも設定できる
+  "readingLevel": "eli5",
+  // 任意（"eli5" のとき）。この聞き手がすでに知っている略語（検査しない）
+  "plainTerms": ["AI"],
   "slides": [
     {
       "layout": "CONTENT",        // 必須。ロール名またはレイアウトキー

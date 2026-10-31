@@ -28,6 +28,7 @@ import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
+import reading_level  # noqa: E402
 import settings  # noqa: E402
 from _i18n import t, register  # noqa: E402
 from _text import (  # noqa: E402
@@ -243,6 +244,10 @@ register({
     "Text fitted to its box ({n}):": "テキストを枠に合わせた箇所（{n} 件）:",
     "'density' must be one of: {densities}":
         "'density' は {densities} のいずれかです",
+    "Reading-level audit (ELI5) found {n} findings:":
+        "読みやすさの検査（ELI5）で {n} 件:",
+    "reading-level audit (ELI5): no problems":
+        "読みやすさの検査（ELI5）: 問題なし",
     "{slot} still overflows its slot at {size:g}pt; reduce the text, lower "
     "minFontSize, or split the slide":
         "{slot} は {size:g}pt まで縮めても枠に収まりません。文を減らすか "
@@ -2004,6 +2009,7 @@ def validate_figures(spec: dict, page: dict, template: dict | None = None) -> li
         (spec.get("defaults") or {}).get("textMargin"), "defaults")
     problems += _check_text_fit(spec.get("defaults") or {}, "defaults")
     problems += _check_density(spec)
+    problems += reading_level.check_spec(spec)
     for i, s in enumerate(spec.get("slides", [])):
         problems += _check_text_margin(s.get("textMargin"), f"slides[{i}]")
         problems += _check_text_fit(s, f"slides[{i}]")
@@ -2857,6 +2863,18 @@ def main() -> int:
             for msg in findings:
                 print(f"  - {msg}", file=sys.stderr)
             return 1 if args.strict else 0
+        # An ELI5 deck (spec "readingLevel": "eli5") is also held to plain
+        # words: unexplained acronyms, long titles and sentences, crowded
+        # bodies (reading_level.py, references/eli5.md)
+        plain_findings = reading_level.audit(spec)
+        if plain_findings:
+            print("\n" + t("Reading-level audit (ELI5) found {n} findings:",
+                           n=len(plain_findings)), file=sys.stderr)
+            for msg in plain_findings:
+                print(f"  - {msg}", file=sys.stderr)
+            return 1 if args.strict else 0
+        if reading_level.is_eli5(spec):
+            print(t("reading-level audit (ELI5): no problems"))
         if any(s.get("figures") for s in spec["slides"]):
             print(t("figure audit (connectors / overlaps / text overflow): "
                     "no problems"))

@@ -66,6 +66,7 @@
 | Canvas・コネクタ | [diagrams.md](diagrams.ja.md)。合致するレシピがあるときだけ [diagram-cookbook.md](diagram-cookbook.ja.md) を足す |
 | グラフ・表 | [charts.md](charts.ja.md) の該当節 |
 | スプレッドシートと連携する数値・グラフ | [sheets-link.md](sheets-link.ja.md) |
+| ELI5・はじめての人向けのやさしいデッキ（`readingLevel: eli5`） | [eli5.md](eli5.ja.md) |
 | ビジネスフレームワーク | [patterns.md](patterns.ja.md) の該当節 |
 | ページの骨格 | [slide-patterns.md](slide-patterns.ja.md) の該当節 |
 | 出来合いの 1 枚テンプレート（`$template`） | `list_slide_templates.py --tag <term>` で探し、そのテンプレートの `template.json` でスロットを見る。[slide-template-catalog.md](slide-template-catalog.ja.md) は描画画像を見るときだけ開く |

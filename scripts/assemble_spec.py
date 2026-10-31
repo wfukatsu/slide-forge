@@ -31,6 +31,10 @@ from _i18n import t, register  # noqa: E402
 register({
     "what the deck is for: print lets text fitting shrink down to 8pt":
         "デッキの用途。print にするとテキストの適合で 8pt まで縮められる",
+    "who the deck is written for: eli5 holds it to plain words in the "
+    "dry-run audit (references/eli5.md)":
+        "デッキの読み手。eli5 にすると dry-run の検査でやさしい言葉に"
+        "なっているかを確かめる（references/eli5.md）",
     "Merge per-page spec fragments into one deck spec":
         "ページ単位のスペック断片を 1 つのデッキスペックに統合する",
     "{path}: not readable as JSON: {e}": "{path}: JSON として読めません: {e}",
@@ -119,6 +123,10 @@ def main() -> int:
     ap.add_argument("--density", choices=("print", "presentation"),
                     help=t("what the deck is for: print lets text fitting "
                            "shrink down to 8pt"))
+    ap.add_argument("--reading-level", choices=("standard", "eli5"),
+                    help=t("who the deck is written for: eli5 holds it to "
+                           "plain words in the dry-run audit "
+                           "(references/eli5.md)"))
     args = ap.parse_args()
 
     paths = expand(args.inputs)
@@ -147,6 +155,8 @@ def main() -> int:
         spec["defaults"] = json.loads(args.defaults)
     if args.density:
         spec["density"] = args.density
+    if args.reading_level:
+        spec["readingLevel"] = args.reading_level
 
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(spec, f, ensure_ascii=False, indent=2)
