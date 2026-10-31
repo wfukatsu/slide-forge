@@ -70,6 +70,7 @@ Do not preload every file named by a skill. Read the complete selected
 | Canvas or connectors | `diagrams.md`; add `diagram-cookbook.md` only for a matching recipe |
 | Chart or table | Matching section of `charts.md` |
 | Numbers or charts linked to a spreadsheet | `sheets-link.md` |
+| ELI5 / plain-language deck for newcomers (`readingLevel: eli5`) | `eli5.md` |
 | Business framework | Matching section of `patterns.md` |
 | Page skeleton | Matching section of `slide-patterns.md` |
 | Ready-made one-page template (`$template`) | `list_slide_templates.py --tag <term>` to find it, then that template's `template.json` for its slots. Open `slide-template-catalog.md` only to browse the rendered images |

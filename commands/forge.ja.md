@@ -29,7 +29,9 @@ Claude Code をこのコマンドの主ホストとする。`$ARGUMENTS` を起�
 
 選択したスキルだけを最後まで読み、共通契約に従う。未選択の生成スキルは読み込まない。
 質問は未指定の分岐だけに限定し、QA（既定は実行）、必要な納品形式、密度
-（提案・配布は `print`、登壇は `presentation`）を確定する。先に
+（提案・配布は `print`、登壇は `presentation`）、聞き手に前提知識がないかもしれない
+ときは読み手の水準（ELI5・やさしい説明なら `"readingLevel": "eli5"` —
+`references/eli5.ja.md`）を確定する。先に
 `scripts/settings.py --show` を読む — 画像生成と成果物の出力先は設定済みの
 ことがある。変更を頼まれたら `settings` スキルに回す。
 

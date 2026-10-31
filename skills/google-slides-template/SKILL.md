@@ -66,7 +66,7 @@ for the named topic before opening a large range.
 | Chart/table | Matching component in `references/charts.md` |
 | Numbers/charts that follow a spreadsheet | `references/sheets-link.md` (build the model before the spec) |
 | Business framework | Matching component in `references/patterns.md` |
-| Page skeleton/density | Matching skeleton in `references/slide-patterns.md` |
+| Page skeleton/density; ELI5 reading level | Matching skeleton in `references/slide-patterns.md`; for a newcomer audience (`"readingLevel": "eli5"`), `references/eli5.md` |
 | Image generation/placement | Matching sections in `references/images.md` |
 | Image generation on/off, deliverable destination | `references/settings.md` |
 | Scalar or cloud icons | `icons.md` or matching section of `cloud-icons.md` |
