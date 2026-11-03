@@ -112,6 +112,22 @@ class ElbowTest(unittest.TestCase):
         self.assertEqual(c.audit_connectors(), [])
 
 
+class StepsVTest(unittest.TestCase):
+    def test_arrows_join_the_numbered_circles(self):
+        import deckkit
+        c = canvas()
+        deckkit.steps_v(c, 0.5, 1.0, 4.3, [("a", "x"), ("b", "y"), ("c", "z")])
+        circles = [r for r in c.rects.values() if abs(r[2] - 0.34) < 1e-9]
+        self.assertEqual(len(circles), 3)
+        arrows = [x for x in c.connectors if x["oid"].startswith("dg")
+                  and x["p1"][0] == x["p2"][0]]
+        self.assertEqual(len(arrows), 2)
+        for (top, low), arrow in zip(zip(circles, circles[1:]), arrows):
+            self.assertAlmostEqual(arrow["p1"][1], top[1] + top[3])
+            self.assertAlmostEqual(arrow["p2"][1], low[1])
+        self.assertEqual(c.audit_connectors(), [])
+
+
 class NodeTest(unittest.TestCase):
     def test_node_returns_a_box_arrows_can_join(self):
         c = canvas()
