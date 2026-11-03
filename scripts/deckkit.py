@@ -305,11 +305,12 @@ def layers(d, x, y, w, items, *, row_h=0.62, gap=0.1, label_w=1.55):
 
 def steps_v(d, x, y, w, items, *, row_h=0.52, gap=0.16, num_w=0.34):
     """Numbered vertical flow. items is an array of (heading, description). Returns the bottom y."""
+    prev = None
     for i, (head, body) in enumerate(items):
         ry = y + i * (row_h + gap)
-        d.shape(x, ry + (row_h - num_w) / 2, num_w, num_w, kind="ELLIPSE",
-                fill=d.P.primary, stroke=None, text=str(i + 1), size=10,
-                bold=True, color="#FFFFFF")
+        num = d.shape(x, ry + (row_h - num_w) / 2, num_w, num_w, kind="ELLIPSE",
+                      fill=d.P.primary, stroke=None, text=str(i + 1), size=10,
+                      bold=True, color="#FFFFFF")
         d.shape(x + num_w + 0.12, ry, w - num_w - 0.12, row_h,
                 kind="ROUND_RECTANGLE", fill=lighten(d.P.primary, 0.93),
                 stroke=lighten(d.P.primary, 0.7))
@@ -318,9 +319,12 @@ def steps_v(d, x, y, w, items, *, row_h=0.52, gap=0.16, num_w=0.34):
         d.label(x + num_w + 0.26, ry + 0.28, w - num_w - 0.4, row_h - 0.3, body,
                 size=8.5, align="START", valign="TOP", color=d.P.text,
                 line_spacing=110)
-        if i < len(items) - 1:
-            d.arrow(x + num_w / 2, ry + row_h + 0.01, x + num_w / 2,
-                    ry + row_h + gap - 0.01, color=d.P.primary, weight=1.5)
+        # Circle to circle. The arrow used to run through the gap between the
+        # boxes, which sits beside the circles: it touched neither and showed
+        # as little more than its arrowhead
+        if prev is not None:
+            d.vlink(prev, num, color=d.P.primary, weight=1.5)
+        prev = num
     return y + len(items) * (row_h + gap) - gap
 
 
