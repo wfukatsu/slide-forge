@@ -31,8 +31,9 @@ class RunTest(unittest.TestCase):
         self.assertIn("1", found[0])
 
     def test_a_picture_or_a_section_breaks_the_run(self):
-        for middle in (page(lead(), FLOW), page(layout="SECTION")):
-            with self.subTest(middle=middle["layout"]):
+        storyline = page({"type": "storyline", "titles": ["a", "b"]})
+        for middle in (page(lead(), FLOW), page(layout="SECTION"), storyline):
+            with self.subTest(middle=middle["figures"] or middle["layout"]):
                 deck = {"slides": [page(lead()), page(lead()), middle,
                                    page(lead()), page(lead())]}
                 self.assertEqual(vd.audit(deck), [])

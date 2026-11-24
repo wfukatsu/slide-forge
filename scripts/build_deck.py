@@ -1863,9 +1863,10 @@ def min_table_row_h(size: float) -> float:
 
     Setting `minRowHeight` below this value doesn't shrink the row. This is
     the text line height plus cell padding, calibrated to measurements (about
-    0.34in at size 9, 0.32in at size 8.5). Use this as a lower bound when estimating height.
+    0.35in at size 9, 0.335in at size 8, read off LARGE thumbnails of 12-row
+    tables). Use this as a lower bound when estimating height.
     """
-    return max(0.28, size * 1.45 / 72 + 0.16)
+    return max(0.28, size * 1.45 / 72 + 0.175)
 
 
 def _snake(key: str) -> str:

@@ -1,5 +1,5 @@
 *[English](slide-pattern-catalog.md)*
-# スライドパターン カタログ（実物 52 種）
+# スライドパターン カタログ（実物 53 種）
 
 `examples/slide-pattern-index.json` を実際に生成して 1 枚ずつ書き出した画像カタログ。
 **どのページが作れるかを見て選ぶ**ためのもので、組み方の規則そのものは
@@ -25,7 +25,7 @@
 | [2. 構成ページ](#2-構成ページ) | 4 | デッキの骨組み |
 | [3. 定量ページ（推移・構成・増減）](#3-定量ページ推移構成増減) | 7 | 数字で主張する |
 | [4. 比較・評価ページ](#4-比較評価ページ) | 6 | 案を並べて選ばせる |
-| [5. 構造・論理ページ](#5-構造論理ページ) | 7 | 関係を図にする |
+| [5. 構造・論理ページ](#5-構造論理ページ) | 8 | 関係を図にする |
 | [6. 計画・体制ページ](#6-計画体制ページ) | 5 | 時間と人を示す |
 | [7. カレンダーページ](#7-カレンダーページ) | 9 | 日付で見せる |
 | [8. 定性・技術ページ](#8-定性技術ページ) | 5 | 数値以外で語る |
@@ -45,15 +45,15 @@
 
 ![骨格A｜全幅 1 図](images/slide-patterns/skeleton-a-full-width.png)
 
-示唆を置かず、図に全幅を使う。表や大きなツリーなど、要素が多くて縮めると読めない図に使う。
+示唆を置かず、図に全幅を使う。迷ったらこれ。縮めると読めない表や大きなツリーもここに置く。
 
-**figures**: `governing_message` / `lead_in` / `table` / `source_note`
+**figures**: `governing_message` / `lead_in` / `hbars` / `source_note`
 
 ### 骨格B｜左図＋右示唆
 
 ![骨格B｜左図＋右示唆](images/slide-patterns/skeleton-b-figure-left-kicker-right.png)
 
-図を左 2/3、示唆を右 1/3 に置く。読者の視線が図 → 示唆の順に流れ、読み方を迷わない。
+図を左 2/3、示唆を右 1/3 に置く。示唆は図だけでは読み落とすことに限り、全ページの 2 割までにする。
 
 **figures**: `governing_message` / `lead_in` / `vbars` / `so_what` / `source_note`
 
@@ -85,7 +85,7 @@
 
 ![骨格F｜文字のみ](images/slide-patterns/skeleton-f-text-only.png)
 
-定義・前提・条件など、正確さが要る内容は無理に図にしない。表で構造化して示す。
+定義・前提・条件など、正確な言い回しが要る内容だけ表で示す。2 枚続けない。
 
 **figures**: `governing_message` / `lead_in` / `table` / `source_note`
 
@@ -107,11 +107,11 @@
 
 ![アジェンダ](images/slide-patterns/agenda.png)
 
-章と枚数を先に示し、読者が全体量を把握できるようにする。行数が多いなら分野で割る。
+章と枚数を先に示し、読者が全体量を把握できるようにする。章ごとにピクトグラム付きのカードを 1 枚置く。
 
 見出しの例: 「章と枚数を先に示して読者の負荷を下げる」
 
-**figures**: `table` / `source_note`
+**figures**: `cards` / `source_note`
 
 ### ストーリーライン
 
@@ -302,6 +302,16 @@
 工程の流れと段階を示す。`flow` / `steps` / `icon_flow` を粒度で使い分ける。
 
 **figures**: `flow` / `steps` / `icon_flow` / `source_note`
+
+### 並列の項目
+
+![並列の項目](images/slide-patterns/icon-cards.png)
+
+並列の 3〜6 項目は「項目・説明」の表にせず、ピクトグラムを載せたカードにする。説明は 1 行に絞り、詳細はノートへ。
+
+見出しの例: 「3 本柱をアイコン付きカードで見せる」
+
+**figures**: `lead_in` / `cards` / `source_note`
 
 ### 中心と放射
 

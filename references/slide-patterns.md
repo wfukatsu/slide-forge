@@ -23,8 +23,8 @@ These are also usable by the same `type` names from a deck spec's (JSON)
 
 | File | Pages | What the deck is for |
 |---|---|---|
-| `examples/slide-pattern-index.json` | 59 | **Browse and pick which page to build.** A live index, one page per pattern (image version: [slide-pattern-catalog.md](slide-pattern-catalog.md)) |
-| `examples/read-alone-guide.json` | 30 | **Learn the conventions of a handout deck.** Component roles, good/bad examples, a collection of anti-patterns |
+| `examples/slide-pattern-index.json` | 72 | **Browse and pick which page to build.** A live index, one page per pattern (image version: [slide-pattern-catalog.md](slide-pattern-catalog.md)) |
+| `examples/read-alone-guide.json` | 31 | **Learn the conventions of a handout deck.** Component roles, good/bad examples, a collection of anti-patterns |
 
 When starting a new deck, it's fastest to generate `slide-pattern-index.json`
 first, have the user point at which pages to build, and write the spec using
@@ -43,7 +43,7 @@ A page is the product of two choices. **There are only 6 skeletons.**
 | E: Full-width figure + implication band below | Figure full width, `so_what` laid below it | Figures that need the full width, like `matrix` / `posmap` |
 | F: Text only | Table or bullet list only | Last resort: premises, definitions, conditions that need exact wording. Never two in a row |
 
-The content (what goes inside the figure frame) spans 8 families and 44
+The content (what goes inside the figure frame) spans 8 families and 45
 types; Chapters 2–9 of `slide-pattern-index.json` are the complete set of
 real examples. The families are: composition / quantitative / comparison
 & evaluation / structure & logic / planning & organization / calendar /

@@ -55,7 +55,8 @@ SLUGS = [
     ("多案 × 基準", "rating-matrix"), ("ポジショニング", "positioning-map"),
     ("天秤", "balance"), ("仕様比較表", "spec-table"),
     ("ロジックツリー", "logic-tree"), ("階層と絞り込み", "pyramid-funnel"),
-    ("積層", "layers"), ("プロセス", "process-flow"), ("中心と放射", "hub-radial"),
+    ("積層", "layers"), ("プロセス", "process-flow"), ("並列の項目", "icon-cards"),
+    ("中心と放射", "hub-radial"),
     ("4 象限", "quadrant-matrix"), ("重なりと深層", "venn-iceberg"),
     ("スケジュール", "gantt-schedule"), ("ロードマップ", "roadmap"),
     ("体制図", "org-chart"), ("市場規模", "market-sizing"),
@@ -82,7 +83,8 @@ NAME = {
     "rating-matrix": "多案 × 基準", "positioning-map": "ポジショニング",
     "balance": "天秤", "spec-table": "仕様比較表",
     "logic-tree": "ロジックツリー", "pyramid-funnel": "階層と絞り込み",
-    "layers": "積層", "process-flow": "プロセス", "hub-radial": "中心と放射",
+    "layers": "積層", "process-flow": "プロセス", "icon-cards": "並列の項目",
+    "hub-radial": "中心と放射",
     "quadrant-matrix": "4 象限", "venn-iceberg": "重なりと深層",
     "gantt-schedule": "スケジュール", "roadmap": "ロードマップ",
     "org-chart": "体制図", "market-sizing": "市場規模", "lean-canvas": "リーンキャンバス",
@@ -99,7 +101,7 @@ NAME = {
 
 USE = {
     "exec-summary": "冒頭専用。SCR（状況 → 課題 → 答え）で、この 1 枚だけ読めば意思決定できる状態にする。論点は 5 個まで。",
-    "agenda": "章と枚数を先に示し、読者が全体量を把握できるようにする。行数が多いなら分野で割る。",
+    "agenda": "章と枚数を先に示し、読者が全体量を把握できるようにする。章ごとにピクトグラム付きのカードを 1 枚置く。",
     "two-option-compare": "現行と提案を左右に対置する。2 案ならこれで足り、評価マトリクスは要らない。",
     "positioning-map": "2 軸上の位置関係を見せる。4 象限への「分類」を見せたいなら `matrix` を使う。",
     "balance": "2 案のトレードオフを重みとして見せる。定量比較ではなく、判断の傾きを示す図。",
@@ -108,6 +110,7 @@ USE = {
     "pyramid-funnel": "指標の階層（ピラミッド）と件数の減衰（ファネル）を並べる。",
     "layers": "システムの責務を層で示す。層の順序そのものが主張になる。",
     "process-flow": "工程の流れと段階を示す。`flow` / `steps` / `icon_flow` を粒度で使い分ける。",
+    "icon-cards": "並列の 3〜6 項目は表にせず、`cards` に `icons` を渡してピクトグラム付きで並べる。説明は 1 行まで。",
     "hub-radial": "1 つの基盤が複数業務を支える構図。放射の本数は 6 本前後まで。",
     "quadrant-matrix": "施策を 2 軸で位置づけて優先順位を作る。競合との位置関係なら `posmap`。",
     "venn-iceberg": "条件の交わり（ベン図）と、表に出ない要因（氷山）を組み合わせる。",
@@ -143,7 +146,7 @@ SECTION_INTRO = {
         "清書前に論旨を検証する設計の道具でもある。",
     "定量ページ（推移・構成・増減）":
         "数字で主張するページ。**すべて出典行が要る**（`source_note` は空出典で `ValueError`）。"
-        "二重軸・基線ずらしは部品が拒否する。",
+        "基線ずらしは部品が拒否する。二重軸は `combochart`（左軸が棒、右軸が折れ線、両軸とも 0 起点）だけで使え、単位の異なる関連する 2 指標に限る。",
     "比較・評価ページ":
         "案を並べて選ばせるページ。2 案なら対置、3 案以上なら `comparison`、"
         "3 案前後 × 基準 4 前後なら評価マトリクス、正確さが要るなら表。",
