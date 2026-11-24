@@ -14,6 +14,7 @@ d = Canvas(deck, ref["slideId"], template)
 
 d.flow(0.6, 1.0, 8.8, 0.8, ["Inner Loop", "Middle Loop", "Outer Loop"])   # process flow
 d.cards(0.5, 2.0, 9.0, 1.5, [("Heading", "Body"), ...])                   # cards in a row
+d.cards(0.5, 2.0, 9.0, 2.0, items, icons=["lock", "gear", "bulb"])        # pictogram above each heading (prefer this)
 d.hbars(0.5, 3.6, 7.4, [("Before", 1220, "1,220h"), ("With AI", 56, "56h")])  # bar chart
 d.metric(8.0, 3.6, 1.4, 1.0, "22x", "less effort", color=d.P.success)     # one big number
 d.box(...) / d.solid(...) / d.label(...) / d.band(...) / d.arrow(...)     # basic parts

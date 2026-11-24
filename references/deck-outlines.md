@@ -11,6 +11,10 @@ The procedure for deciding which one to use through dialogue is in
 `references/interactive-intake.md`. The headings here become the choices
 directly.
 
+Each section lists **figures first**. Pick a table only where a reader
+compares values across three or more attributes; everything else follows
+"Show Before You Tell" in `references/slide-patterns.md`.
+
 | Type | Best fit | Standard page count |
 |---|---|---|
 | [Problem-Solving Proposal](#problem-solving-proposal-sales-and-deployment-proposals) | Sales / deployment proposals. Starts from the counterpart's challenges | 12–20 |
@@ -28,9 +32,9 @@ company…" gets closed before anyone reads it.
 
 | # | Section | Main slides and components used |
 |---|---|---|
-| 0 | Cover and agenda | `COVER` + `table` (table of contents) |
+| 0 | Cover and agenda | `COVER` + `storyline` (agenda as the chain of section titles) |
 | 1 | Background and current state | `before_after`, `icon_flow` (current workflow), `metric` |
-| 2 | Challenges | `cards` (narrow down to 3 points), `hbars` / `vbars` (quantify the size of the challenge), `iceberg` (visible problems and root causes) |
+| 2 | Challenges | `cards` with `icons` (narrow down to 3 points), `hbars` / `vbars` (quantify the size of the challenge), `iceberg` (visible problems and root causes) |
 | 3 | Approach | `flow` / `steps` (overview of the approach), `layers` (composition), `cloud_zone` + `cloud_icon_row` (architecture diagram) |
 | 4 | Expected impact | `vbars_grouped` (before vs. proposed), `metric`, `table` (breakdown of quantitative impact) |
 | 5 | Timeline | `gantt`, `journey` (phases) |
@@ -50,9 +54,9 @@ company…" gets closed before anyone reads it.
 | # | Section | Main slides and components used |
 |---|---|---|
 | 0 | Cover | `COVER` |
-| 1 | Customer challenges | `cards`, `icon_flow` |
+| 1 | Customer challenges | `cards` with `icons`, `icon_flow` |
 | 2 | Product positioning | `posmap`, `venn` (value proposition) |
-| 3 | Key features (3) | `asset_icon_cards` / `cards` |
+| 3 | Key features (3) | `asset_icon_cards` / `cards` with `icons` |
 | 4 | Architecture | `layers`, `cloud_zone` + `cloud_icon_flow`, `code_block` |
 | 5 | Case studies | `testimonial`, `metric`, `before_after` |
 | 6 | Next steps | `flow`, `journey` |
@@ -68,17 +72,19 @@ company…" gets closed before anyone reads it.
 
 Use Presentation-family layouts (`CONTENT_PRESENTATION` /
 `TITLE_ONLY_PRESENTATION`). **One message per slide.** This isn't meant to
-be read like a document, so keep body text to at most 3 bullet lines.
+be read like a document, so keep body text to at most 3 bullet lines and
+put the explanation in the speaker notes. Set `"density": "presentation"` in
+the spec so the dry-run holds each page to 150 full-width characters.
 
 | # | Section | Main slides and components used |
 |---|---|---|
-| 0 | Cover and self-introduction | `COVER`, `asset_icon` + `cards` |
-| 1 | What we'll cover today | `table` (agenda), `flow` |
+| 0 | Cover and self-introduction | `COVER`, `asset_icon` + `cards` with `icons` |
+| 1 | What we'll cover today | `storyline` (agenda), `flow` |
 | 2 | Context and background | `icon_flow`, `timeline` |
 | 3 | Main content (3–5 chapters) | Divide chapters with `SECTION`. Per chapter: `layers` / `code_block` / `linechart` |
 | 4 | Demo and examples | `code_block`, `cloud_icon_flow` |
-| 5 | Summary | `cards` (3 takeaways) |
-| 6 | References | `table` (list of URLs) |
+| 5 | Summary | `cards` with `icons` (3 takeaways) |
+| 6 | References | `list` (URLs; the one text-only page a talk needs) |
 
 - Insert a `SECTION` between chapters. Without it, the audience loses track
   of where they are.
@@ -97,18 +103,18 @@ approvers' concerns.
 
 | # | Section | Main slides and components used |
 |---|---|---|
-| 0 | Cover and agenda | `COVER` layout + `table` (2-column table of contents) |
+| 0 | Cover and agenda | `COVER` layout + `storyline` (agenda) |
 | 1 | Background | `before_after` (current state → impact of the new business), `cards` |
-| 2 | Challenges and market potential | `table` (customer interviews, purchase examples), `cards` + `arrow` (pain points → challenges) |
+| 2 | Challenges and market potential | `testimonial` (customer interviews), `table` (purchase examples), `cards` + `arrow` (pain points → challenges) |
 | 3 | Target and market size | `posmap` (segmentation), `table` (persona comparison), `nested_circles` (TAM/SAM/SOM), `linechart` (market trend) |
 | 4 | Business overview | `lean_canvas`, `cards` (pricing plans), `venn` (value proposition), `table` (elevator pitch, journey map), `pyramid` (measures by customer segment), `steps` (staged rollout design) |
 | 5 | Voice of the customer | `testimonial`, `cards` + `arrow` (voices → insights) |
 | 6 | Competitive landscape | `table` (competitor list, KBF comparison), `posmap` (2 slides: current state / after entry) |
-| 7 | Schedule | `flow` or `journey` (mid- to long-term roadmap), `table` (list of initiatives), `gantt` (execution plan) |
+| 7 | Schedule | `flow` or `journey` (mid- to long-term roadmap), `gantt` (execution plan; the initiatives are its rows) |
 | 8 | Profitability | `vbars` / `linechart` (P&L, sales plan), `flow` + `metric` (KPI chain), `table` (KPI detail) |
 | 9 | Investment and cost | `table` (list of cost items), `vbars_stacked` (cost breakdown over time) |
 | 10 | Risk and exit line | `linechart` (best / worst case scenarios), `cards` + `arrow` (factors → countermeasures) |
-| 11 | Team structure | `orgchart` (project structure), `table` (role assignments) |
+| 11 | Team structure | `orgchart` (project structure), `cards` with `icons` (role assignments) |
 | 12 | Execution approach | `orgchart` (post-expansion structure), `table` (division of work) |
 | 13 | Related regulations | `table` (Q&A format) |
 | 14 | Voices of key people and experts | `testimonial` |

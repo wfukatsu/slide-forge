@@ -19,7 +19,7 @@ thumbnail review.
 | `line(x1, y1, x2, y2, color=, weight=, dashed=, end_arrow=, start_arrow=)` | A straight line |
 | `arrow(x1, y1, x2, y2, ...)` | An arrow (`end_arrow="FILL_ARROW"`) |
 | `arrow_shape(x, y, w, h, ...)` | A thick arrow shape (for process flow) |
-| `cards(x, y, w, h, items, accent=)` | Side-by-side cards. `items` is `(heading, body)` |
+| `cards(x, y, w, h, items, accent=, icons=)` | Side-by-side cards. `items` is `(heading, body)`; `icons` puts a pictogram (`illustrations.ICONS`, or `None`) above each heading |
 | `flow(x, y, w, h, steps)` | A left-to-right process flow (with arrows) |
 | `hbars(x, y, w, rows)` | A horizontal bar chart. `rows` is `(label, value, display string)` |
 | `metric(x, y, w, h, value, caption)` | A large number with a caption |
@@ -89,7 +89,7 @@ that value (don't compute y by hand).
 | A checklist with status | `checklist(d, x, y, w, items)` |
 | A large number (only when there's a source) | `stats(d, x, y, w, items)` |
 | Meaning of colors | `legend(d, x, y, w, items)` |
-| 3–4 items explained in parallel | `Canvas.cards(x, y, w, h, items)` |
+| 3–4 items explained in parallel | `Canvas.cards(x, y, w, h, items, icons=[…])` — give every card a pictogram when one fits |
 | Where data lives | `db(d, x, y, w, h, name, sub=…)` |
 | Grouping a region | `zone(d, x, y, w, h, label)` |
 | A full-width notice / summary | `banner(d, y, text, tone=…)` |

@@ -43,8 +43,8 @@ empty image frames in an existing deck.
   requires target/master verification plus explicit full-replacement approval.
 - Ask only for missing branch decisions; never ask again for supplied or
   delegated (`your call`) decisions.
-- Get explicit approval for page count, layout, and every action title before
-  authoring, unless that exact outline was already approved.
+- Get explicit approval for page count, layout, every action title and each
+  page's figure before authoring, unless that outline was already approved.
 - Run strict offline validation before every API write.
 - Template decorations, logos, and footers are inherited. Do not redraw them.
 - Fix the source spec and regenerate. Do not patch around a source defect only
@@ -115,9 +115,9 @@ List registered templates when needed:
 .venv/bin/python scripts/list_templates.py --json
 ```
 
-Present the proposed page count, layout for every page, and every action title.
-Stop for approval. After approval, continue through delivery without another
-routine gate.
+Present the page count and every page's layout, action title and figure (by
+shape: "Show Before You Tell" in `slide-patterns.md`). Stop for approval.
+After approval, continue through delivery without another routine gate.
 
 ## Phase 2: Register only when necessary
 
@@ -135,9 +135,9 @@ verified; do not guess role mappings from names alone.
 
 ## Phase 3: Author and validate
 
-Write one spec against the selected `templates/<id>.json`. Use an action title
-for every content page. Choose only the figure family needed for each message,
-then load its routed reference.
+Write one spec against the selected `templates/<id>.json`: an action title on
+every content page, and a figure rather than words in boxes wherever one fits.
+Load only the routed reference for each figure family.
 
 Validate before any API call:
 

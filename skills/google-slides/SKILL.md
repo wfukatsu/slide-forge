@@ -139,6 +139,7 @@ Contract rules (footer safe area, title height, connector attachment) are in `re
 ### Design principles (both paths)
 
 - **Action titles**: every content slide title is a conclusion sentence, not a label
+- **Show before you tell**: pick each page's figure from the content's shape (`references/slide-patterns.md` "Show Before You Tell") — parallel items → `cards` with `icons`, narrowing → `funnel`, steps → `flow`, numbers → a chart. Tables only for comparing 3+ attributes; detail goes to the speaker notes. Act on the dry-run's visual-density advice
 - **Connectors attach to shapes**, never drawn as free coordinates — the API does not validate line endpoints, so a detached arrow is invisible until QA
 - Body >= 12pt, title >= 20pt; WCAG AA contrast (4.5:1); max ~6 bullets, 1 slide = 1 message; 60-30-10 color rule
 - Do not guess cloud icon names — search with `scripts/cloud_icons.py --search <term>`; recoloring/rotating/flipping vendor icons is prohibited by their license terms

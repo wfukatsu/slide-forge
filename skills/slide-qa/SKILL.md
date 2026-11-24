@@ -100,6 +100,10 @@ Minimum checklist (the full table with fixes is in `references/validation.md`):
       年月, ID) centered, numbers right, sentences left
 - [ ] **Squint test**: the first thing that draws the eye is the page's main
       message; otherwise the emphasis (fill, bold, color) is wrong
+- [ ] **Show-or-tell test**: each content page shows its point as a picture,
+      not words in boxes — no run of text-only pages, no "item / description"
+      table, no page half-filled with words. Start from the pages the
+      dry-run's visual-density advice named
 
 ## Phase 3: The fix loop
 
