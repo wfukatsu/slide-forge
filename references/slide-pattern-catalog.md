@@ -1,5 +1,5 @@
 *[日本語](slide-pattern-catalog.ja.md)*
-# Slide Pattern Catalog (52 real examples)
+# Slide Pattern Catalog (53 real examples)
 
 An image catalog built by actually rendering `examples/slide-pattern-index.json` and exporting it one slide at a time.
 It's meant for **choosing a page by looking at what can be built**; the layout rules themselves live in
@@ -25,7 +25,7 @@ Each pattern's **figures** line is the exact `type` name you write into `figures
 | [2. Structural pages](#2-structural-pages) | 4 | The deck's framework |
 | [3. Quantitative pages (trend, composition, change)](#3-quantitative-pages-trend-composition-change) | 7 | Making a case with numbers |
 | [4. Comparison / evaluation pages](#4-comparison--evaluation-pages) | 6 | Putting options side by side for a decision |
-| [5. Structure / logic pages](#5-structure--logic-pages) | 7 | Turning relationships into a diagram |
+| [5. Structure / logic pages](#5-structure--logic-pages) | 8 | Turning relationships into a diagram |
 | [6. Planning / organization pages](#6-planning--organization-pages) | 5 | Showing time and people |
 | [7. Calendar pages](#7-calendar-pages) | 9 | Showing dates |
 | [8. Qualitative / technical pages](#8-qualitative--technical-pages) | 5 | Making a case without numbers |
@@ -45,15 +45,15 @@ The default is Skeleton A (one full-width figure); add the kicker of Skeleton B 
 
 ![Skeleton A | Full-width single figure](images/slide-patterns/skeleton-a-full-width.png)
 
-No kicker; the figure uses the full width. Use this for figures with many elements — such as tables or large trees — that become unreadable when shrunk.
+The default. No kicker; one figure uses the full width and proves the title. Tables and large trees that become unreadable when shrunk go here too.
 
-**figures**: `governing_message` / `lead_in` / `table` / `source_note`
+**figures**: `governing_message` / `lead_in` / `hbars` / `source_note`
 
 ### Skeleton B | Figure left + kicker right
 
 ![Skeleton B | Figure left + kicker right](images/slide-patterns/skeleton-b-figure-left-kicker-right.png)
 
-Places the figure in the left 2/3 and the kicker in the right 1/3. The reader's eye flows figure → kicker, so there's no ambiguity about reading order.
+Places the figure in the left 2/3 and the kicker in the right 1/3. Use it only for an implication the figure alone would let the reader miss — on at most 20% of pages.
 
 **figures**: `governing_message` / `lead_in` / `vbars` / `so_what` / `source_note`
 
@@ -85,7 +85,7 @@ For figures that need full width, such as four-quadrant charts or positioning ma
 
 ![Skeleton F | Text only](images/slide-patterns/skeleton-f-text-only.png)
 
-For content that needs precision — definitions, premises, conditions — don't force it into a figure. Structure it with a table instead.
+The last resort. Only for definitions, premises and conditions that need exact wording; structure them with a table, and never use two in a row.
 
 **figures**: `governing_message` / `lead_in` / `table` / `source_note`
 
@@ -107,11 +107,11 @@ Example heading: "Make the decision from this one slide"
 
 ![Agenda](images/slide-patterns/agenda.png)
 
-Shows the chapters and page counts up front so readers can grasp the overall scope. If there are many rows, split them by area.
+Shows the chapters and page counts up front so readers can grasp the overall scope. One pictogram card per chapter.
 
 Example heading: "Show chapters and page counts up front to lower the reader's load"
 
-**figures**: `table` / `source_note`
+**figures**: `cards` / `source_note`
 
 ### Storyline
 
@@ -302,6 +302,16 @@ Shows a system's responsibilities as layers. The order of the layers itself is t
 Shows a process's flow and stages. Use `flow` / `steps` / `icon_flow` depending on the level of granularity.
 
 **figures**: `flow` / `steps` / `icon_flow` / `source_note`
+
+### Parallel items
+
+![Parallel items](images/slide-patterns/icon-cards.png)
+
+Lay out 3–6 parallel items as `cards` with `icons` instead of an item/description table. Keep each description to one line.
+
+Example heading: "3 本柱をアイコン付きカードで見せる"
+
+**figures**: `lead_in` / `cards` / `source_note`
 
 ### Hub and spokes
 

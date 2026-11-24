@@ -19,8 +19,8 @@
 
 | ファイル | 枚数 | 何のためのデッキか |
 |---|---|---|
-| `examples/slide-pattern-index.json` | 59 | **作れるページを見て選ぶ。** 1 枚 = 1 パターンの実物索引（画像版: [slide-pattern-catalog.md](slide-pattern-catalog.ja.md)） |
-| `examples/read-alone-guide.json` | 30 | **配布資料の作法を学ぶ。** 部品の役割・良い例と悪い例・アンチパターン集 |
+| `examples/slide-pattern-index.json` | 72 | **作れるページを見て選ぶ。** 1 枚 = 1 パターンの実物索引（画像版: [slide-pattern-catalog.md](slide-pattern-catalog.ja.md)） |
+| `examples/read-alone-guide.json` | 31 | **配布資料の作法を学ぶ。** 部品の役割・良い例と悪い例・アンチパターン集 |
 
 新規にデッキを作るときは、まず `slide-pattern-index.json` を生成して
 「どのページで組むか」をユーザーに指させ、選ばれたパターンで仕様を書くのが速い。
@@ -38,7 +38,7 @@
 | E 全幅図＋下示唆帯 | 図を全幅、`so_what` を下に敷く | `matrix` / `posmap` など横幅が要る図 |
 | F 文字のみ | 表・箇条書きのみ | 最後の手段。正確な言い回しが要る前提・定義・条件だけ。2 枚続けない |
 
-中身（図表の枠に何を入れるか）は 8 分野 44 種で、`slide-pattern-index.json` の
+中身（図表の枠に何を入れるか）は 8 分野 45 種で、`slide-pattern-index.json` の
 第 2〜9 章がその全実物。分野は 構成 / 定量 / 比較・評価 / 構造・論理 / 計画・体制 /
 カレンダー / 定性・技術 / 締め・付録。
 

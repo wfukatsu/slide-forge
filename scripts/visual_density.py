@@ -41,6 +41,9 @@ TEXT_FIGURES = frozenset({
     "table", "exec_summary", "ghost", "band", "exhibit_frame", "storyline",
     "label", "text", "banner", "kv_rows", "checklist",
 })
+# Figures that are the deck's own map (summary, storyline, skeleton): a page
+# carrying one frames the deck, like a section divider, and is not counted
+DECK_MAP_FIGURES = frozenset({"exec_summary", "storyline", "ghost"})
 # Layout names that frame the deck rather than carry content
 _STRUCTURAL = ("COVER", "SECTION", "CLOSING", "TITLE_SLIDE", "AGENDA")
 
@@ -73,7 +76,10 @@ def _density_name(density) -> str:
 
 def is_structural(slide: dict) -> bool:
     layout = str(slide.get("layout", "")).upper()
-    return any(k in layout for k in _STRUCTURAL)
+    if any(k in layout for k in _STRUCTURAL):
+        return True
+    return any(isinstance(f, dict) and f.get("type") in DECK_MAP_FIGURES
+               for f in slide.get("figures") or [])
 
 
 def _kind(fig: dict) -> str:
