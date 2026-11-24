@@ -13,6 +13,7 @@ d = Canvas(deck, ref["slideId"], template)
 
 d.flow(0.6, 1.0, 8.8, 0.8, ["Inner Loop", "Middle Loop", "Outer Loop"])   # 工程フロー
 d.cards(0.5, 2.0, 9.0, 1.5, [("見出し", "本文"), ...])                      # 横並びカード
+d.cards(0.5, 2.0, 9.0, 2.0, items, icons=["lock", "gear", "bulb"])        # 見出しの上にピクトグラム（こちらを優先）
 d.hbars(0.5, 3.6, 7.4, [("従来", 1220, "1,220h"), ("AI駆動", 56, "56h")])   # 横棒グラフ
 d.metric(8.0, 3.6, 1.4, 1.0, "22x", "工数削減", color=d.P.success)          # 大きな数値
 d.box(...) / d.solid(...) / d.label(...) / d.band(...) / d.arrow(...)       # 基本部品

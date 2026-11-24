@@ -39,7 +39,7 @@ Each pattern's **figures** line is the exact `type` name you write into `figures
 ## 1. 6 Skeletons
 
 The **layout** itself for a page. Before deciding which figure to use, decide which of these 6 skeletons to build with.
-The default is Skeleton B (figure left + kicker right). Coordinates you can use as-is are in "Skeleton standard coordinates" in [slide-patterns.md](slide-patterns.md).
+The default is Skeleton A (one full-width figure); add the kicker of Skeleton B on at most 20% of pages. Coordinates you can use as-is are in "Skeleton standard coordinates" in [slide-patterns.md](slide-patterns.md).
 
 ### Skeleton A | Full-width single figure
 

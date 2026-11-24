@@ -164,7 +164,7 @@ reasoning about coordinates.
 |---|---|---|
 | `COVER` / `SECTION` / `CLOSING` / `CONTENT` (text only) | `haiku` | No figure. Just flows text in |
 | Skeleton A/F (one table, bullet list) with data passed verbatim | `haiku` | Standard coordinates apply directly |
-| Skeleton B (figure + implication), 1–2 standard charts | `sonnet` | **Most pages fall here.** Coordinates are the standard form; only value formatting needs judgment |
+| Skeleton A or B (figure, optional implication), 1–2 standard charts | `sonnet` | **Most pages fall here.** Coordinates are the standard form; only value formatting needs judgment |
 | Skeleton C/D/E (multi-figure layout), nested `exhibit_frame` | `sonnet` | Combines standard coordinates, but height allocation needs judgment |
 | Composition diagrams built directly with Canvas, cloud architecture diagrams, 3+ mixed systems | `opus` | Coordinates must be designed from scratch. Passing the audit takes iteration |
 | QA (eyeballing thumbnails, listing findings) | `sonnet` | Detecting visual anomalies. `haiku` misses overflow |

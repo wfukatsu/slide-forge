@@ -36,18 +36,51 @@ A page is the product of two choices. **There are only 6 skeletons.**
 
 | Skeleton | Composition | When to use it |
 |---|---|---|
-| A: One full-width figure | Title + intro + figure (full width) + source | A table or large tree — anything that becomes unreadable when shrunk |
-| B: Figure left + implication right | Figure on the left 2/3, `so_what` on the right 1/3 | **Most common. This is the default** |
+| A: One full-width figure | Title + intro + figure (full width) + source | **The default.** One picture that proves the title; also tables and large trees that become unreadable when shrunk |
+| B: Figure left + implication right | Figure on the left 2/3, `so_what` on the right 1/3 | Only when the figure hides an implication the reader would miss — kickers stay on ≤ 20% of pages |
 | C: Two figures side by side | Two figures placed next to each other | Pairing two facts. If it takes two claims, split into two pages instead |
 | D: Two rows, top and bottom | A flow (`flow`/`gantt`) on top, detail below | Overlaying a wide figure with a breakdown |
 | E: Full-width figure + implication band below | Figure full width, `so_what` laid below it | Figures that need the full width, like `matrix` / `posmap` |
-| F: Text only | Table or bullet list only | Content that needs precision — premises, definitions, conditions |
+| F: Text only | Table or bullet list only | Last resort: premises, definitions, conditions that need exact wording. Never two in a row |
 
 The content (what goes inside the figure frame) spans 8 families and 44
 types; Chapters 2–9 of `slide-pattern-index.json` are the complete set of
 real examples. The families are: composition / quantitative / comparison
 & evaluation / structure & logic / planning & organization / calendar /
 qualitative & technical / closing & appendix.
+
+## Show Before You Tell — Choose the Figure From the Content's Shape
+
+A slide is looked at before it is read. Before writing any text figure,
+decide what **shape** the content has and draw that shape. Words in boxes
+(`cards` without icons, `table`, `lead_in`, `so_what`) are the fallback, not
+the starting point.
+
+| The content is… | Draw it as | Not as |
+|---|---|---|
+| 3–6 parallel items (pillars, features, limitations) | `cards` with `icons`, `icon_grid`, `asset_icon_cards` | a 2-column "item / description" table |
+| Steps in order | `flow`, `steps`, `icon_flow` | numbered bullets |
+| Narrowing down (collect wide, then drop) | `funnel` | cards |
+| Layers / foundation → application | `layers`, `pyramid` | a table |
+| Before → after, A vs. B, 3+ options | `before_after`, `balance`, `comparison` | two text columns |
+| Numbers | a chart (`vbars`, `linechart`, `combochart`, `hbars`, `pie`) or `metric` | numbers in a sentence |
+| Time | `timeline`, `gantt`, `journey` | a table of dates |
+| Who / what connects to what | `hub`, `orgchart`, a diagram | prose |
+| Options on two axes | `matrix`, `posmap` | a table |
+
+- **A table earns its place** when a reader compares values across three or
+  more attributes, or reads exact numbers. An "item / description" table is a
+  list; draw the list.
+- **Detail goes to the speaker notes**, not onto the page. A talk page
+  carries one message; a handout page closes conclusion, evidence and source
+  — and both still lead with a figure.
+- `build_deck.py --dry-run` prints **visual-density advice**
+  (`scripts/visual_density.py`): pages with more words than the deck's
+  density allows (presentation 150 / print 320 / unset 220 full-width
+  characters), three or more content pages in a row with no picture,
+  item/description tables, and `so_what` on more than 20% of pages. It
+  never fails the build; act on it unless the page is a deliberate
+  definition page.
 
 ## Standard Coordinates by Skeleton (10 × 5.625in — use as-is)
 
@@ -95,7 +128,7 @@ content goes on one page.
 |---|---|---|
 | Reader | The speaker fills in the gaps | The reader has to finish reading alone |
 | Components used | `governing_message` and `source_note` | Everything (intro line, implication, figure numbers too) |
-| Skeleton bias | A and F (a single figure, or text only) | B is most common. C, D, and E are used too |
+| Skeleton bias | A (one picture per page) | A and B. C, D, and E are used too |
 | Content per page | One message, up to 3 bullet lines | Conclusion, evidence, and source all close on one page |
 | Layout family | `*_PRESENTATION` | `*_PROPOSAL` |
 

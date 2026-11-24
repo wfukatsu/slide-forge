@@ -9,6 +9,10 @@
 対話でどれを使うか決める手順は [references/interactive-intake.md](interactive-intake.ja.md)。
 ここの見出しがそのまま選択肢になる。
 
+各章の部品は**図を先に**挙げている。表を選ぶのは、3 つ以上の属性で値を
+見比べる箇所だけ。それ以外は `references/slide-patterns.ja.md` の
+「語る前に見せる」に従う。
+
 | 型 | 向いている場面 | 標準の枚数 |
 |---|---|---|
 | [課題解決型の提案](#課題解決型の提案営業導入提案) | 営業・導入提案。相手の課題が起点 | 12〜20 |
@@ -25,9 +29,9 @@
 
 | # | セクション | 主なスライドと使う部品 |
 |---|---|---|
-| 0 | 表紙・アジェンダ | `COVER` + `table`（目次） |
+| 0 | 表紙・アジェンダ | `COVER` + `storyline`（章タイトルを並べたアジェンダ） |
 | 1 | 背景と現状 | `before_after`、`icon_flow`（現状の業務フロー）、`metric` |
-| 2 | 課題 | `cards`（3 点に絞る）、`hbars` / `vbars`（課題の大きさを数値で）、`iceberg`（見えている問題と根本原因） |
+| 2 | 課題 | `icons` 付きの `cards`（3 点に絞る）、`hbars` / `vbars`（課題の大きさを数値で）、`iceberg`（見えている問題と根本原因） |
 | 3 | 打ち手 | `flow` / `steps`（打ち手の全体像）、`layers`（構成）、`cloud_zone` + `cloud_icon_row`（構成図） |
 | 4 | 期待効果 | `vbars_grouped`（従来 vs 提案）、`metric`、`table`（定量効果の内訳） |
 | 5 | 進め方 | `gantt`、`journey`（フェーズ） |
@@ -45,9 +49,9 @@
 | # | セクション | 主なスライドと使う部品 |
 |---|---|---|
 | 0 | 表紙 | `COVER` |
-| 1 | 顧客の課題 | `cards`、`icon_flow` |
+| 1 | 顧客の課題 | `icons` 付きの `cards`、`icon_flow` |
 | 2 | 製品の位置づけ | `posmap`、`venn`（バリュープロポジション） |
-| 3 | 特長（3 つ） | `asset_icon_cards` / `cards` |
+| 3 | 特長（3 つ） | `asset_icon_cards` / `icons` 付きの `cards` |
 | 4 | 仕組み・アーキテクチャ | `layers`、`cloud_zone` + `cloud_icon_flow`、`code_block` |
 | 5 | 導入事例 | `testimonial`、`metric`、`before_after` |
 | 6 | 次のステップ | `flow`、`journey` |
@@ -60,17 +64,19 @@
 ## 登壇・勉強会（技術解説）
 
 Presentation 系レイアウト（`CONTENT_PRESENTATION` / `TITLE_ONLY_PRESENTATION`）を使う。
-**1 枚 1 メッセージ**。読み物ではないので本文は箇条書き 3 行まで。
+**1 枚 1 メッセージ**。読み物ではないので本文は箇条書き 3 行までにし、説明は
+スピーカーノートへ移す。仕様に `"density": "presentation"` を書くと、dry-run が
+1 ページ全角 150 文字を目安に助言する。
 
 | # | セクション | 主なスライドと使う部品 |
 |---|---|---|
-| 0 | 表紙・自己紹介 | `COVER`、`asset_icon` + `cards` |
-| 1 | 今日話すこと | `table`（アジェンダ）、`flow` |
+| 0 | 表紙・自己紹介 | `COVER`、`asset_icon` + `icons` 付きの `cards` |
+| 1 | 今日話すこと | `storyline`（アジェンダ）、`flow` |
 | 2 | 前提・背景 | `icon_flow`、`timeline` |
 | 3 | 本題（3〜5 章） | `SECTION` で章を区切る。章ごとに `layers` / `code_block` / `linechart` |
 | 4 | デモ・実例 | `code_block`、`cloud_icon_flow` |
-| 5 | まとめ | `cards`（持ち帰ってほしい 3 点） |
-| 6 | 参考資料 | `table`（URL 一覧） |
+| 5 | まとめ | `icons` 付きの `cards`（持ち帰ってほしい 3 点） |
+| 6 | 参考資料 | `list`（URL 一覧。登壇デッキで文字だけにしてよい唯一のページ） |
 
 - 章ごとに `SECTION` を挟む。挟まないと聴衆が現在地を見失う。
 - コードは**画面で読める分量**まで削る（[references/code-blocks.md](code-blocks.ja.md) の高さ見積もり）。
@@ -85,18 +91,18 @@ Presentation 系レイアウト（`CONTENT_PRESENTATION` / `TITLE_ONLY_PRESENTAT
 
 | # | セクション | 主なスライドと使う部品 |
 |---|---|---|
-| 0 | 表紙・アジェンダ | `COVER` レイアウト + `table`（2 列の目次） |
+| 0 | 表紙・アジェンダ | `COVER` レイアウト + `storyline`（アジェンダ） |
 | 1 | 背景 | `before_after`（現状 → 新規事業の影響）、`cards` |
-| 2 | 課題と市場性 | `table`（顧客インタビュー・購買事例）、`cards` + `arrow`（悩み → 課題） |
+| 2 | 課題と市場性 | `testimonial`（顧客インタビュー）、`table`（購買事例）、`cards` + `arrow`（悩み → 課題） |
 | 3 | ターゲット・市場規模 | `posmap`（セグメンテーション）、`table`（ペルソナ比較）、`nested_circles`（TAM/SAM/SOM）、`linechart`（市場推移） |
 | 4 | 事業内容 | `lean_canvas`、`cards`（料金プラン）、`venn`（バリュープロポジション）、`table`（エレベーターピッチ・ジャーニーマップ）、`pyramid`（顧客層別施策）、`steps`（階段設計） |
 | 5 | 顧客の生の声 | `testimonial`、`cards` + `arrow`（声 → インサイト） |
 | 6 | 競争環境 | `table`（競合一覧・KBF 比較）、`posmap`（現状 / 参入後の 2 枚） |
-| 7 | スケジュール | `flow` か `journey`（中長期ロードマップ）、`table`（施策一覧）、`gantt`（進め方） |
+| 7 | スケジュール | `flow` か `journey`（中長期ロードマップ）、`gantt`（進め方。施策はその行にする） |
 | 8 | 収益性 | `vbars` / `linechart`（損益・販売計画）、`flow` + `metric`（KPI の連鎖）、`table`（KPI 詳細） |
 | 9 | 投資・コスト | `table`（費目一覧）、`vbars_stacked`（コスト構成の推移） |
 | 10 | リスクと撤退ライン | `linechart`（ベスト / ワーストシナリオ）、`cards` + `arrow`（要因 → 対策） |
-| 11 | 体制 | `orgchart`（プロジェクト体制）、`table`（役割分担） |
+| 11 | 体制 | `orgchart`（プロジェクト体制）、`icons` 付きの `cards`（役割分担） |
 | 12 | 実行方法 | `orgchart`（拡大後体制）、`table`（業務分担） |
 | 13 | 関連法規 | `table`（Q&A 形式） |
 | 14 | キーマン・有識者の声 | `testimonial` |

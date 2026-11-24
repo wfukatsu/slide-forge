@@ -18,7 +18,7 @@
 | `line(x1, y1, x2, y2, color=, weight=, dashed=, end_arrow=, start_arrow=)` | 直線 |
 | `arrow(x1, y1, x2, y2, ...)` | 矢印（`end_arrow="FILL_ARROW"`） |
 | `arrow_shape(x, y, w, h, ...)` | 太い矢印図形（工程の流れ） |
-| `cards(x, y, w, h, items, accent=)` | 横並びカード。`items` は `(見出し, 本文)` |
+| `cards(x, y, w, h, items, accent=, icons=)` | 横並びカード。`items` は `(見出し, 本文)`。`icons` で見出しの上にピクトグラム（`illustrations.ICONS` の名前か `None`）を置く |
 | `flow(x, y, w, h, steps)` | 左→右の工程フロー（矢印つき） |
 | `hbars(x, y, w, rows)` | 横棒グラフ。`rows` は `(ラベル, 数値, 表示文字列)` |
 | `metric(x, y, w, h, value, caption)` | 大きな数値＋説明 |
@@ -85,7 +85,7 @@
 | 状態つきの確認項目 | `checklist(d, x, y, w, items)` |
 | 大きな数値（出典がある場合のみ） | `stats(d, x, y, w, items)` |
 | 色の意味 | `legend(d, x, y, w, items)` |
-| 3〜4項目の並列説明 | `Canvas.cards(x, y, w, h, items)` |
+| 3〜4項目の並列説明 | `Canvas.cards(x, y, w, h, items, icons=[…])`。合うピクトグラムがあれば全カードに付ける |
 | データの所在 | `db(d, x, y, w, h, name, sub=…)` |
 | 領域のグループ化 | `zone(d, x, y, w, h, label)` |
 | 全幅の注意書き・要約 | `banner(d, y, text, tone=…)` |

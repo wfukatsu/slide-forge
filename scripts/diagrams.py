@@ -74,6 +74,8 @@ from calendars import CalendarMixin  # noqa: E402
 from sheets_link import SheetsChartMixin  # noqa: E402
 
 register({
+    "cards: icons has {got} entries for {n} cards":
+        "cards: カード {n} 枚に対して icons が {got} 個あります",
     "unknown text_fit '{mode}' (use one of: {modes})":
         "未知の text_fit '{mode}' です（{modes} のいずれか）",
     "Box grown to fit its text (height {h0:.2f}→{h1:.2f}in): \"{text}\"":
@@ -1505,9 +1507,15 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     # ---- Composite parts ----
 
     def cards(self, x, y, w, h, items, *, gap=0.22, fill=None, stroke=None,
-              title_size=12, body_size=10, accent=None, fit_height=False):
+              title_size=12, body_size=10, accent=None, fit_height=False,
+              icons=None, icon_size=0.42):
         """Side-by-side cards. items is a list of (heading, body) pairs. Returns
         the bottom edge y.
+
+        `icons` puts a pictogram (an `illustrations.ICONS` name, or None to
+        leave a card bare) above each heading, in the card's accent color. A
+        card row with pictograms reads as a picture first; plain text cards are
+        the fallback when no pictogram fits.
 
         Japanese body text wraps between phrases. With `fit_height`, `h` is an
         upper limit: all cards shrink together to what the longest body needs,
@@ -1524,7 +1532,13 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         col = cw - 0.28 - TEXT_INSET_X * 2
         # A large heading needs more than the default 0.34in above the body
         head_h = max(0.34, title_size * 1.2 / 72.0 + 0.14)
-        body_top = 0.16 + head_h
+        icons = list(icons or [])
+        if icons and len(icons) != n:
+            raise ValueError(t("cards: icons has {got} entries for {n} cards",
+                               got=len(icons), n=n))
+        icon_h = icon_size + 0.10 if any(icons) else 0.0
+        head_top = 0.16 + icon_h
+        body_top = head_top + head_h
         pairs = [(head, wrap_phrases(body, col, body_size) if body else body)
                  for head, body in pairs]
         if fit_height:
@@ -1539,7 +1553,9 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                                   stroke=stroke or self.P.border))
             bar_c = accent[i] if isinstance(accent, (list, tuple)) else (accent or self.P.primary)
             self.shape(cx, y, cw, 0.06, kind="RECTANGLE", fill=bar_c, stroke=None)
-            self.label(cx + 0.14, y + 0.16, cw - 0.28, head_h, head,
+            if icons and icons[i]:
+                self.icon(icons[i], cx + 0.14, y + 0.18, icon_size, color=bar_c)
+            self.label(cx + 0.14, y + head_top, cw - 0.28, head_h, head,
                        size=title_size, bold=True, align="START", color=self.P.text)
             if body:
                 # Body text starts right below the heading. Subtracting a fixed

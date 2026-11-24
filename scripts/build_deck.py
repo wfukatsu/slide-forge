@@ -29,6 +29,7 @@ import uuid
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import _auth  # noqa: E402
 import reading_level  # noqa: E402
+import visual_density  # noqa: E402
 import settings  # noqa: E402
 from _i18n import t, register  # noqa: E402
 from _text import (  # noqa: E402
@@ -230,6 +231,8 @@ register({
     "figure audit (connectors / overlaps / text overflow): no problems":
         "図の検査（コネクタ・重なり・文字溢れ）: 問題なし",
     "(dry-run: nothing was generated)": "(dry-run: 生成していません)",
+    "Visual-density advice ({n}; does not fail the build):":
+        "見た目の密度についての助言（{n} 件。ビルドは止めません）:",
     "Figure audit found {n} findings:": "図の検査で {n} 件:",
     "{where}: {slot} does not fit its slot ({size:g}pt). Reduce the text, "
     "lower the font size, or split the slide":
@@ -2870,6 +2873,14 @@ def main() -> int:
             else:
                 print(t("Text fitted to its box ({n}); --verbose to list them",
                         n=len(fit_notes)))
+        # Advisory only: a page of words where a picture would do. Never
+        # changes the exit code (visual_density.py, slide-patterns.md)
+        visual_notes = visual_density.audit(spec)
+        if visual_notes:
+            print("\n" + t("Visual-density advice ({n}; does not fail the "
+                           "build):", n=len(visual_notes)))
+            for msg in visual_notes:
+                print(f"  - {msg}")
         if findings:
             print("\n" + t("Figure audit found {n} findings (images excluded; "
                            "they need the real file):", n=len(findings)),

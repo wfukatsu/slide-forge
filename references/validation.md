@@ -186,6 +186,17 @@ Look with your eyes narrowed (or at the SMALL thumbnail). **Is the first thing
 that catches the eye the page's main message?** If not, the emphasis — fill,
 bold, color — is wrong.
 
+### Show-or-tell test
+
+Flip through the SMALL thumbnails in order. **Does each content page show
+its point as a picture — a chart, flow, funnel, pictogram cards — or is it
+words in boxes?** A run of text-only pages, a two-column "item /
+description" table, or a page whose words fill more than half the area is
+a defect even when nothing overflows. Fix it by redrawing the content in
+its shape ("Show Before You Tell" in `slide-patterns.md`) and moving
+explanation to the speaker notes. The dry-run's visual-density advice names
+the likely pages before you look.
+
 ---
 
 ## The Fix Loop
