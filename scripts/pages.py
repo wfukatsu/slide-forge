@@ -238,11 +238,12 @@ class PageMixin:
                    size=9, bold=True, color=c)
         body_y = y + 0.12 + head_h
         body_h = h - (body_y - y) - 0.14
+        start = None
         if points:
-            lines = "\n".join(f"・{p}" for p in points)
-            text = f"{text}\n\n{lines}"
+            start = len(text) + 2
+            text = f"{text}\n\n" + "\n".join(map(str, points))
         self.label(x + pad_l, body_y, w - pad_l - 0.16, body_h, text,
-                   size=size, color=self.P.text, line_spacing=130)
+                   size=size, color=self.P.text, line_spacing=130, bullets=start)
         return y + h
 
     # ---- 3b. Native bullet / numbered list ----

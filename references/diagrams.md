@@ -17,6 +17,7 @@ d.cards(0.5, 2.0, 9.0, 1.5, [("Heading", "Body"), ...])                   # card
 d.hbars(0.5, 3.6, 7.4, [("Before", 1220, "1,220h"), ("With AI", 56, "56h")])  # bar chart
 d.metric(8.0, 3.6, 1.4, 1.0, "22x", "less effort", color=d.P.success)     # one big number
 d.box(...) / d.solid(...) / d.label(...) / d.band(...) / d.arrow(...)     # basic parts
+d.label(x, y, w, h, "\n".join(items), bullets=0)  # native list; wrapped lines align under the text
 ```
 
 There are 9 approaches (structural diagrams, tables/charts, illustration

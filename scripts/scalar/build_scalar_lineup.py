@@ -104,8 +104,8 @@ def _two_col_bullets(d, y, h, items, *, x0=2.0, size=9):
     for i, col in enumerate([items[:half], items[half:]]):
         if col:
             d.label(x0 + i * 3.7, y + 0.10, 3.55, h - 0.20,
-                    "\n".join(f"・{u}" for u in col), size=size, align="START",
-                    valign="MIDDLE", color=d.P.text, line_spacing=128)
+                    "\n".join(map(str, col)), size=size, align="START",
+                    valign="MIDDLE", color=d.P.text, line_spacing=128, bullets=0)
 
 
 def _value_band(d, y, heading, text, accent, *, h=0.62):
@@ -199,8 +199,8 @@ def fig_lineup(d, accent):
                 bold=True, align="CENTER", color=a, line_spacing=110)
         d.icon(icon, xs[i] + colw / 2 - 0.19, top + 0.72, 0.38, color=a)
         d.label(xs[i] + 0.12, top + 1.24, colw - 0.24, 1.00,
-                "\n".join(f"・{b}" for b in bullets), size=8.5, align="START",
-                color=P.text, line_spacing=132)
+                "\n".join(map(str, bullets)), size=8.5, align="START",
+                color=P.text, line_spacing=132, bullets=0)
 
     _value_band(d, 4.14,
                 "位置づけ",

@@ -627,15 +627,15 @@ class IllustrationMixin:
                    size=size + 1, bold=True,
                    align="START", color=self.P.primary)
         self.label(tx, y + 0.32, tw, max(0.3, water - y - 0.34),
-                   "\n".join(f"・{t}" for t in above), size=size, align="START",
-                   color=self.P.text, line_spacing=125)
+                   "\n".join(map(str, above)), size=size, align="START",
+                   color=self.P.text, line_spacing=125, bullets=0)
         self.label(tx, water + 0.06, tw, 0.28,
                    self._label("iceberg.below", below_title),
                    size=size + 1, bold=True,
                    align="START", color=self.P.primaryDark)
         self.label(tx, water + 0.38, tw, max(0.3, (y + h) - water - 0.40),
-                   "\n".join(f"・{t}" for t in below), size=size, align="START",
-                   color=self.P.text, line_spacing=125)
+                   "\n".join(map(str, below)), size=size, align="START",
+                   color=self.P.text, line_spacing=125, bullets=0)
         return y + h
 
     def balance(self, x, y, w, h, left, right, *, size=11, tilt=0) -> float:
@@ -673,9 +673,9 @@ class IllustrationMixin:
             if items:
                 self.label(pan_cx - pw / 2 + 0.10, pan_y + 0.44, pw - 0.20,
                            max(0.3, (y + h) - (pan_y + 0.46)),
-                           "\n".join(f"・{t}" for t in items), size=size - 1,
+                           "\n".join(map(str, items)), size=size - 1,
                            align="START", valign="TOP", color=self.P.text,
-                           line_spacing=125)
+                           line_spacing=125, bullets=0)
         return y + h
 
     def steps(self, x, y, w, h, items, *, size=11, captions=None) -> float:
@@ -861,9 +861,9 @@ class IllustrationMixin:
             # characters that fit per line, causing bullet items to spill a
             # single character onto the next line
             self.label(px + 0.10, y + 0.60, pw - 0.20, h - 0.74,
-                       "\n".join(f"・{s}" for s in items), size=size,
+                       "\n".join(map(str, items)), size=size,
                        align="START", valign="TOP", color=self.P.text,
-                       line_spacing=130)
+                       line_spacing=130, bullets=0)
             if arrows and i < n - 1:
                 self.shape(px + pw + 0.06, y + h / 2 - 0.22, gap_w - 0.12, 0.44,
                            kind="RIGHT_ARROW", fill=lighten(self.P.primary, 0.45),
