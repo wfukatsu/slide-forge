@@ -1293,6 +1293,18 @@ class TemplateDeck:
             self._queue_slot_fit(ph_ids[name], fits.get(name), size,
                                  drawn=name in drawn,
                                  align=(draw_specs.get(name) or {}).get("align"))
+            # A master can place two slots so their text starts at different
+            # x. The master is not ours to edit, so the slide's copy is moved
+            offset = ((layout.get("elements") or {}).get(name.lower()) or {}
+                      ).get("textOffsetX")
+            if offset and name not in drawn:
+                self.requests.append({"updatePageElementTransform": {
+                    "objectId": ph_ids[name],
+                    "applyMode": "RELATIVE",
+                    "transform": {"scaleX": 1, "scaleY": 1, "shearX": 0,
+                                  "shearY": 0, "translateX": offset * 914400,
+                                  "translateY": 0, "unit": "EMU"},
+                }})
 
         # Each body line can have its own role and inline emphasis, so build it while tracking ranges
         body_spans: dict[str, list[dict]] = {}
@@ -1776,6 +1788,8 @@ FIGURES: dict[str, tuple[str, list[str]]] = {
     "linechart":     ("linechart",     ["x", "y", "w", "h", "labels", "series"]),
     "pie":           ("pie",           ["x", "y", "size", "items"]),
     "pareto":        ("pareto",        ["x", "y", "w", "h", "items"]),
+    "combochart":    ("combochart",    ["x", "y", "w", "h", "labels", "bars",
+                                        "line"]),
     # Business-framework diagrams (patterns.py; drawn purely from shapes, no network needed)
     "posmap":         ("posmap",         ["x", "y", "w", "h", "points"]),
     "gantt":          ("gantt",          ["x", "y", "w", "h", "columns", "rows"]),

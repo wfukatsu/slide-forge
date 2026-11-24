@@ -113,6 +113,68 @@ def wrapped_lines(text: str, width_in: float, size: float) -> int:
     return n
 
 
+# Where a Japanese line may break without splitting a word: after a particle
+# or punctuation, and before an opening bracket. A space next to a digit
+# separates a number from its unit ("年 4,800 時間") and is not a break.
+_PARTICLES = "をにはがでとのへも"
+_CLOSERS = "、。，．）」』】"
+_OPENERS = "（「『【"
+
+
+def _is_cjk_content(ch: str) -> bool:
+    """Kanji, katakana, or an alphanumeric: what can start a new phrase."""
+    return ch.isascii() and ch.isalnum() or "\u30a0" <= ch <= "\u30ff" \
+        or "\u3400" <= ch <= "\u9fff"
+
+
+def _phrases(text: str) -> list[str]:
+    """Split *text* into the pieces a line may break between."""
+    out, cur = [], ""
+    for i, ch in enumerate(text):
+        nxt = text[i + 1] if i + 1 < len(text) else ""
+        prev = text[i - 1] if i else ""
+        if ch in _OPENERS and cur:
+            out.append(cur)
+            cur = ""
+        cur += ch
+        if not nxt or nxt in _CLOSERS:
+            continue
+        if ch in _CLOSERS or (ch in _PARTICLES and _is_cjk_content(nxt)):
+            out.append(cur)
+            cur = ""
+        elif ch == " " and not (prev.isdigit() or nxt.isdigit()):
+            out.append(cur)
+            cur = ""
+    if cur:
+        out.append(cur)
+    return out
+
+
+def wrap_phrases(text: str, width_in: float, size: float) -> str:
+    """Insert line breaks so Japanese *text* wraps between phrases.
+
+    Slides breaks Japanese at any character, so "4,800 時間" can end up with
+    "間" alone on the next line, and the API has no word-break setting. Text
+    that already fits, has its own line breaks, or has no Japanese comes back
+    unchanged. A phrase wider than the column is left for Slides to break.
+    """
+    if "\n" in text or em(text) == len(text) * 0.5:
+        return text
+    per = max(width_in, 0.01) * FIT_WIDTH * 72.0 / size
+    if em(text) <= per:
+        return text
+    lines, cur = [], ""
+    for phrase in _phrases(text):
+        if cur and em((cur + phrase).rstrip()) > per:
+            lines.append(cur.rstrip())
+            cur = phrase.lstrip()
+        else:
+            cur += phrase
+    if cur:
+        lines.append(cur.rstrip())
+    return "\n".join(lines)
+
+
 def text_height(text: str, w: float, size: float, *, line_spacing: float = 100,
                 inset: float = TEXT_INSET_X, line_em: float = LINE_EM) -> float:
     """Height in inches *text* needs in a box *w* wide with *inset* per side."""

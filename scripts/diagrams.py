@@ -56,7 +56,7 @@ import _auth  # noqa: E402
 from _i18n import t, register  # noqa: E402
 from _text import (  # noqa: E402
     DEFAULT_FIT, FIT_INSET_Y, FIT_MODES, LINE_EM as _LINE_EM, describe_fit, em,
-    fit_box, grow_box, text_height)
+    TEXT_INSET_X, fit_box, grow_box, text_height, wrap_phrases)
 # Color utilities were moved to colors.py. Re-exported from here so existing
 # imports like `from diagrams import lighten` keep working.
 from colors import (  # noqa: E402,F401
@@ -1411,9 +1411,13 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     # ---- Composite parts ----
 
     def cards(self, x, y, w, h, items, *, gap=0.22, fill=None, stroke=None,
-              title_size=12, body_size=10, accent=None):
+              title_size=12, body_size=10, accent=None, fit_height=False):
         """Side-by-side cards. items is a list of (heading, body) pairs. Returns
         the bottom edge y.
+
+        Japanese body text wraps between phrases. With `fit_height`, `h` is an
+        upper limit: all cards shrink together to what the longest body needs,
+        and the returned y is the bottom of the shrunken cards.
 
         Corners are not rounded (RECTANGLE), because a straight accent bar is
         overlaid at the top edge. A rounded corner and the straight bar's edge
@@ -1421,21 +1425,32 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
         """
         n = len(items)
         cw = (w - gap * (n - 1)) / n
+        pairs = [(item if isinstance(item, (tuple, list)) else (item, None))
+                 for item in items]
+        col = cw - 0.28 - TEXT_INSET_X * 2
+        # A large heading needs more than the default 0.34in above the body
+        head_h = max(0.34, title_size * 1.2 / 72.0 + 0.14)
+        body_top = 0.16 + head_h
+        pairs = [(head, wrap_phrases(body, col, body_size) if body else body)
+                 for head, body in pairs]
+        if fit_height:
+            need = max((text_height(body, cw - 0.28, body_size, line_spacing=130)
+                        for _, body in pairs if body), default=0.0)
+            h = min(h, body_top + need + 0.20 if need else body_top + 0.12)
         out = []
-        for i, item in enumerate(items):
-            head, body = (item if isinstance(item, (tuple, list)) else (item, None))
+        for i, (head, body) in enumerate(pairs):
             cx = x + i * (cw + gap)
             out.append(self.shape(cx, y, cw, h, kind="RECTANGLE",
                                   fill=fill or self.P.surface,
                                   stroke=stroke or self.P.border))
             bar_c = accent[i] if isinstance(accent, (list, tuple)) else (accent or self.P.primary)
             self.shape(cx, y, cw, 0.06, kind="RECTANGLE", fill=bar_c, stroke=None)
-            self.label(cx + 0.14, y + 0.16, cw - 0.28, 0.34, head,
+            self.label(cx + 0.14, y + 0.16, cw - 0.28, head_h, head,
                        size=title_size, bold=True, align="START", color=self.P.text)
             if body:
                 # Body text starts right below the heading. Subtracting a fixed
                 # 0.7 would nearly crush the body and clip its text when h is small
-                self.label(cx + 0.14, y + 0.50, cw - 0.28, h - 0.58, body,
+                self.label(cx + 0.14, y + body_top, cw - 0.28, h - body_top - 0.08, body,
                            size=body_size, align="START", color=self.P.muted,
                            line_spacing=130)
         return y + h        # stacking convention: return the bottom edge y of the drawn area
