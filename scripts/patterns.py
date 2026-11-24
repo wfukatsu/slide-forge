@@ -399,9 +399,9 @@ class PatternMixin:
                 continue
             items = [content] if isinstance(content, str) else list(content)
             self.label(bx + 0.08, by + 0.30, bw - 0.16, bh - 0.36,
-                       "\n".join(f"・{t}" for t in items), size=size,
+                       "\n".join(map(str, items)), size=size,
                        align="START", valign="TOP", color=self.P.text,
-                       line_spacing=118)
+                       line_spacing=118, bullets=0)
         return y + h
 
     # ---- Nested circles (TAM / SAM / SOM) ----
@@ -506,9 +506,9 @@ class PatternMixin:
                       free=True)
             self.label(qx, y + pad + quote_h + 0.12, qw,
                        h - pad * 2 - quote_h - 0.12,
-                       "\n".join(f"・{t}" for t in points), size=size,
+                       "\n".join(map(str, points)), size=size,
                        align="START", valign="TOP", color=self.P.text,
-                       line_spacing=122)
+                       line_spacing=122, bullets=0)
         return y + h
 
     def journey_map(self, x, y, w, h, stages, rows, emotions, *,
@@ -966,8 +966,8 @@ class PatternMixin:
                           weight=1.6, free=True)
                 if txt_h > 0.2:
                     self.label(bx, txt_y, max(0.8, bw - 0.5), txt_h,
-                               "\n".join(f"・{c}" for c in causes),
+                               "\n".join(map(str, causes)),
                                size=size - 0.5, align="START",
                                valign=txt_valign, color=self.P.muted,
-                               line_spacing=125)
+                               line_spacing=125, bullets=0)
         return y + h

@@ -665,8 +665,8 @@ def quadrant(d, x, y, w, h, quads, *, x_label="", y_label="",
                 align="START", valign="TOP", color=col)
         if items:
             d.label(qx + 0.16, qy + 0.36, cw - 0.32, ch - 0.46,
-                    "\n".join("・" + s for s in items), size=8, align="START",
-                    valign="TOP", color=d.P.text, line_spacing=125)
+                    "\n".join(map(str, items)), size=8, align="START",
+                    valign="TOP", color=d.P.text, line_spacing=125, bullets=0)
     # axes
     d.label(x, gy, pad - 0.06, gh, y_label, size=8, bold=True, align="CENTER",
             valign="MIDDLE", color=d.P.muted)

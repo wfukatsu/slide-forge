@@ -344,8 +344,16 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
               flip_x: bool = False, flip_y: bool = False,
               font: str | None = None,
               text_margin: float | None = None,
-              text_fit: str | None = None) -> str:
+              text_fit: str | None = None,
+              bullets: int | None = None) -> str:
         """Draw a shape and return its objectId. fill=None means no fill.
+
+        bullets makes the paragraphs from that character index on (0 = all)
+        a native Slides list instead of lines starting with a typed "・", so a
+        wrapped item lines up under its own text rather than under the glyph.
+        Left-aligned text whose lines start with "・" gets the same treatment
+        without asking: the typed glyph is dropped and those lines become list
+        items. Fitting and the audits count the hanging indent the glyph takes.
 
         A rounded rectangle whose shorter side runs past MAX_ROUND_SIDE is drawn
         square-cornered instead: Slides scales the corner radius with the shape,
@@ -382,9 +390,16 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                     "overlay a label()", rotation=rotation, head=str(text)[:12]),
                   file=sys.stderr)
         inset = self._text_inset(text_margin)
+        spans: list[tuple[int, int]] = []
+        if text:
+            text, spans = self._bullet_spans(str(text), bullets, align)
+        hang = self._bullet_hang(size) if spans else 0.0
+        if hang:
+            # Fitting must also leave room for the glyph's minimum inset
+            hang += max(0.0, self.BULLET_MIN_INSET - self._text_inset(text_margin))
         if text:
             y, h, size, inset_start, inset_end = self._fit_text(
-                text, y, w, h, size=size, inset=inset,
+                text, y, w - hang, h, size=size, inset=inset,
                 line_spacing=line_spacing, valign=valign, rotation=rotation,
                 mode=text_fit, align=align)
         else:
@@ -430,6 +445,12 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
         if text:
             reqs.append({"insertText": {"objectId": oid, "text": text}})
+            if hang:
+                # Before the text style, which then also sizes and colors the
+                # glyph (bullets created after it keep the preset's 14pt Arial)
+                reqs += [{"createParagraphBullets": {
+                    "objectId": oid, "textRange": self._api_range(text, s, e),
+                    "bulletPreset": "BULLET_DISC_CIRCLE_SQUARE"}} for s, e in spans]
             fg = color or (readable_on(fill) if fill else self.P.text)
             reqs.append({"updateTextStyle": {
                 "objectId": oid,
@@ -456,6 +477,21 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                 reqs.append({"updateParagraphStyle": {
                     "objectId": oid, "style": pstyle,
                     "textRange": {"type": "ALL"}, "fields": ",".join(pfields)}})
+            if hang:
+                # The glyph sits where a plain line would start and the text
+                # hangs one glyph width further in, on every wrapped line
+                # A tightly packed cell would put the glyph on its border, so
+                # it keeps at least BULLET_MIN_INSET from the frame's edge
+                base = (-(self.TEXT_INSET_X - inset_start)
+                        + max(0.0, self.BULLET_MIN_INSET - inset_start)) * 72.0
+                first = base + self.BULLET_GLYPH_SHIFT * 72.0
+                reqs += [{"updateParagraphStyle": {
+                    "objectId": oid,
+                    "style": {"indentFirstLine": {"magnitude": first, "unit": "PT"},
+                              "indentStart": {"magnitude": base + hang * 72.0,
+                                              "unit": "PT"}},
+                    "textRange": self._api_range(text, s, e),
+                    "fields": "indentFirstLine,indentStart"}} for s, e in spans]
 
         self.deck.requests += reqs
         self._seq += 1
@@ -478,7 +514,7 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
                                "align": align, "valign": valign,
                                # the audit subtracts inset per side; the mean
                                # of the two sides gives the same column width
-                               "inset": (inset_start + inset_end) / 2,
+                               "inset": (inset_start + inset_end + hang) / 2,
                                "seq": self._seq}
         return oid
 
@@ -501,12 +537,15 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
 
     def label(self, x, y, w, h, text, *, size=10, color=None, bold=False,
               align="START", valign="TOP", line_spacing=None, rotation=0,
-              font=None, text_fit=None) -> str:
-        """Text with no outline or fill. rotation=270 can be used for things like a vertical axis label."""
+              font=None, text_fit=None, bullets=None) -> str:
+        """Text with no outline or fill. rotation=270 can be used for things like a vertical axis label.
+
+        bullets=0 makes every line a native list item (see shape)."""
         return self.shape(x, y, w, h, kind="TEXT_BOX", fill=None, stroke=None,
                           text=text, size=size, color=color or self.P.text, bold=bold,
                           align=align, valign=valign, line_spacing=line_spacing,
-                          rotation=rotation, font=font, text_fit=text_fit)
+                          rotation=rotation, font=font, text_fit=text_fit,
+                          bullets=bullets)
 
     def band(self, x, y, w, h, *, fill=None, kind="ROUND_RECTANGLE",
              stroke=None) -> str:
@@ -944,6 +983,61 @@ class Canvas(IllustrationMixin, IconLibraryMixin, CloudIconMixin, ImageMixin,
     # make single-line labels false-positive across the board (measured: a single
     # line at 9.5pt renders fine in a 0.24in box).
     TEXT_INSET_X = 0.10
+
+    # Indent of the text after a list glyph, as a multiple of the font size
+    BULLET_HANG_EM = 1.15
+    # How far right of the paragraph's start the glyph's indent is set. Slides
+    # draws a list glyph about this far left of where a plain line starts
+    # (measured at 8, 9 and 12pt), so without it the glyph juts out
+    BULLET_GLYPH_SHIFT = 0.07
+
+    BULLET_MIN_INSET = 0.06
+
+    def _bullet_hang(self, size: float) -> float:
+        """Width in inches a list glyph and its gap take at *size* pt."""
+        return size * self.BULLET_HANG_EM / 72.0
+
+    TYPED_BULLET = "・"
+
+    @classmethod
+    def _bullet_spans(cls, text: str, start: int | None,
+                      align: str) -> tuple[str, list[tuple[int, int]]]:
+        """The text to insert and the (start, end) character spans to list.
+
+        With *start*, every paragraph from that index on is a list item. Without
+        it, runs of left-aligned lines starting with a typed "・" are, and the
+        typed glyph is dropped. Centered or right-aligned text is left alone: a
+        list there would not line up with anything.
+        """
+        if start is not None:
+            return text, [(start, len(text))]
+        if align != "START" or cls.TYPED_BULLET not in text:
+            return text, []
+        lines, spans, pos, run = [], [], 0, None
+        for ln in text.split("\n"):
+            typed = ln.startswith(cls.TYPED_BULLET) and ln[1:].strip()
+            if typed:
+                ln = ln[1:].lstrip()
+                run = pos if run is None else run
+            elif run is not None:
+                spans.append((run, pos - 1))
+                run = None
+            lines.append(ln)
+            pos += len(ln) + 1
+        if run is not None:
+            spans.append((run, pos - 1))
+        return "\n".join(lines), spans
+
+    @staticmethod
+    def _api_range(text: str, start: int, end: int) -> dict:
+        """The API text range for characters *start*..*end* of *text*.
+
+        API indexes count UTF-16 code units, not Python characters.
+        """
+        if start == 0 and end >= len(text):
+            return {"type": "ALL"}
+        u = lambda i: len(text[:i].encode("utf-16-le")) // 2  # noqa: E731
+        return {"type": "FIXED_RANGE", "startIndex": u(start), "endIndex": u(end)}
 
     def _text_inset(self, override: float | None = None) -> float:
         """The inner margin to assume for text, in inches (per side).

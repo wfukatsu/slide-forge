@@ -502,8 +502,8 @@ def draw_feature(d: Canvas, f: dict, accent) -> None:
     for i, col in enumerate([us[:half], us[half:]]):
         if col:
             d.label(2.0 + i * 3.7, uy + 0.10, 3.55, 0.66,
-                    "\n".join(f"・{u}" for u in col), size=9, align="START",
-                    valign="MIDDLE", color=d.P.text, line_spacing=128)
+                    "\n".join(map(str, col)), size=9, align="START",
+                    valign="MIDDLE", color=d.P.text, line_spacing=128, bullets=0)
 
     vy = 4.40
     d.shape(0.5, vy, 9.0, 0.62, kind="RECTANGLE",
@@ -525,8 +525,8 @@ def draw_feature_map(d: Canvas, groups, accent) -> None:
         d.label(gx + 0.16, gy + 0.13, 4.05, 0.28, head, size=11, bold=True,
                 align="START", color=accent)
         d.label(gx + 0.16, gy + 0.48, 4.07, 1.3,
-                "\n".join(f"・{x}" for x in items), size=9.5, align="START",
-                color=d.P.text, line_spacing=128)
+                "\n".join(map(str, items)), size=9.5, align="START",
+                color=d.P.text, line_spacing=128, bullets=0)
 
 
 # ---------------------------------------------------------------- ScalarDB
