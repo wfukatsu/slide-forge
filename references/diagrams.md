@@ -117,6 +117,9 @@ d.vbars_grouped(0.5, 1.2, 9.0, 3.4, ["Q1", "Q2"],
                 [("Today", [40, 42]), ("Proposed", [18, 12])], unit="h")
 d.linechart(0.5, 1.2, 9.0, 3.2, ["Jan", "Feb", "Mar"],
             [("p95", [320, 180, 90])], unit="ms")
+d.combochart(0.5, 1.2, 9.0, 3.2, ["Jan", "Feb", "Mar"],
+             ("Orders", [100, 120, 160]), ("p95", [420, 510, 740]),
+             line_unit="ms")   # bars left, line right; both axes start at 0
 d.pie(0.7, 1.3, 2.8, [("Migrated", 62), ("In progress", 23), ("Not started", 15)])
 ```
 

@@ -135,13 +135,13 @@ Example heading: "Confirm the outline and data sources before finalizing"
 
 ## 3. Quantitative pages (trend, composition, change)
 
-Pages that make a case with numbers. **All of them require a source line** (`source_note` raises `ValueError` on an empty source). The components reject dual axes and truncated baselines.
+Pages that make a case with numbers. **All of them require a source line** (`source_note` raises `ValueError` on an empty source). Charts reject truncated baselines. Dual axes exist only as `combochart` (bars left, line right, both from 0), for two related quantities with different units.
 
 ### Trend
 
 ![Trend](images/slide-patterns/trend.png)
 
-The basic form for showing change over time. A single axis only (no dual axes). Attach values only at the endpoint.
+The basic form for showing change over time. `linechart` has a single axis. For two related quantities with different units, use `combochart`. Attach values only at the endpoint.
 
 Example heading: "Operating margin has fallen for three straight years, below the median"
 

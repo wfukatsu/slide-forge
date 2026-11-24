@@ -53,6 +53,9 @@ register({
         "col_widths の要素数が headers と合いません",
     "aligns length does not match headers": "aligns の要素数が headers と合いません",
     "table {head}": "表 {head}",
+    "combochart needs non-negative values with a positive maximum "
+    "(series \"{name}\")":
+        "combochart の値は 0 以上で、最大値が正である必要があります（系列「{name}」）",
     "h={h} leaves no room for the plot area (use at least 0.94in)":
         "h={h} ではプロット領域が確保できません（0.94in 以上に）",
     "vbars cannot take negative values (the baseline is fixed at zero)":
@@ -504,8 +507,9 @@ class ChartMixin:
                   axis_w=0.6, end_values=False) -> float:
         """Line chart. labels are the x-axis ticks, series is [(series name, [values, ...]), ...].
 
-        There is only one axis (dual axes aren't supported by design). Two
-        series with different scales should be split into separate charts.
+        There is only one axis. Two series with different scales should be
+        split into separate charts, or drawn with `combochart` when they are
+        related quantities over the same periods.
         `grid` is the number of horizontal grid divisions; tick values are
         shown in the `axis_w`-wide area on the left (the unit is only
         attached to the topmost tick). If `y_max` is omitted, an upper bound
@@ -596,6 +600,90 @@ class ChartMixin:
                            fill=self.P.page, stroke=None)
                 self.label(xs[-1] - 0.5, ly, 1.0, 0.2, txt, size=9, bold=True,
                            align="CENTER", valign="BOTTOM", color=self.P.text)
+        return y + h
+
+    # ---- Bars + line on two axes ----
+
+    def combochart(self, x, y, w, h, labels, bars, line, *, bar_unit="",
+                   line_unit="", grid=4, size=9.5, axis_w=0.6) -> float:
+        """Bars on the left axis and a line on the right. Returns the bottom y.
+
+        For two related quantities with different units over the same periods
+        (orders and response time). `bars` and `line` are (name, values).
+        Both axes start at 0 and cannot be truncated or given a chosen top,
+        because rescaling one axis is how a dual-axis chart invents a crossing
+        or a correlation. Each axis is colored like its series and the legend
+        names its side. A source is required on the page, as for any chart.
+        """
+        npt = len(labels)
+        named = [(str(bars[0]), list(bars[1])), (str(line[0]), list(line[1]))]
+        for name, vs in named:
+            if len(vs) != npt:
+                raise ValueError(t("series \"{name}\" has {n} values but labels "
+                                   "has {npt}", name=name, n=len(vs), npt=npt))
+            if not vs or min(vs) < 0 or max(vs) <= 0:
+                raise ValueError(t("combochart needs non-negative values with "
+                                   "a positive maximum (series \"{name}\")",
+                                   name=name))
+        bar_c, line_c = self.P.primary, self.P.info
+        bar_fill = lighten(bar_c, 0.6)
+        tops = [_nice_ceil(max(vs) / grid) * grid for _, vs in named]
+        left = [_fmt(g / grid * tops[0]) + (bar_unit if g == grid else "")
+                for g in range(grid + 1)]
+        right = [_fmt(g / grid * tops[1]) + (line_unit if g == grid else "")
+                 for g in range(grid + 1)]
+        lw = max(axis_w, max(self._em(s) for s in left) * 8.5 / 72.0 * 1.2 + 0.34)
+        rw = max(axis_w, max(self._em(s) for s in right) * 8.5 / 72.0 * 1.2 + 0.34)
+        leg_h, lab_h = 0.28, 0.28
+        px0, pw = x + lw, w - lw - rw
+        py0 = y + leg_h + 0.08
+        ph = h - leg_h - lab_h - 0.08
+        if ph < 0.6 or pw < 1.0:
+            raise ValueError(t("w={w} h={h} leaves no room for the plot area",
+                               w=w, h=h))
+        # Slide text follows the deck's language, not the CLI's (GSLIDES_LANG)
+        def side(name, ja, en):
+            wide = self._em(name) != len(name) * 0.5
+            return f"{name}（{ja}）" if wide else f"{name} ({en})"
+
+        self._legend_row(px0, y, pw,
+                         [(side(named[0][0], "左軸", "left axis"), bar_fill),
+                          (side(named[1][0], "右軸", "right axis"), line_c)],
+                         size=size)
+
+        def ypos(v, top):
+            return py0 + ph - v / top * ph
+
+        for g in range(grid + 1):
+            gy = py0 + ph - g / grid * ph
+            self.line(px0, gy, px0 + pw, gy,
+                      color=self.P.border if g == 0 else lighten(self.P.border, 0.5),
+                      weight=1.0 if g == 0 else 0.75, dashed=g > 0, free=True)
+            self.label(x, gy - 0.10, lw - 0.08, 0.2, left[g], size=8.5,
+                       align="END", valign="MIDDLE", color=bar_c)
+            self.label(px0 + pw + 0.08, gy - 0.10, rw - 0.08, 0.2, right[g],
+                       size=8.5, align="START", valign="MIDDLE", color=line_c)
+
+        cell = pw / npt
+        bw = cell * 0.62
+        xs = [px0 + (i + 0.5) * cell for i in range(npt)]
+        for i, lab in enumerate(labels):
+            bh = named[0][1][i] / tops[0] * ph
+            if bh > 0.005:
+                self.shape(xs[i] - bw / 2, py0 + ph - bh, bw, bh,
+                           kind="RECTANGLE", fill=bar_fill, stroke=None)
+            self.label(xs[i] - cell / 2, py0 + ph + 0.05, cell, lab_h - 0.05,
+                       str(lab), size=size, align="CENTER", valign="TOP",
+                       color=self.P.text)
+        vs = named[1][1]
+        for i in range(npt - 1):
+            self.line(xs[i], ypos(vs[i], tops[1]), xs[i + 1], ypos(vs[i + 1], tops[1]),
+                      color=line_c, weight=2.0, free=True)
+        mr = 0.05
+        for i in range(npt):
+            self.shape(xs[i] - mr, ypos(vs[i], tops[1]) - mr, mr * 2, mr * 2,
+                       kind="ELLIPSE", fill=line_c, stroke=self.P.white,
+                       stroke_weight=1.0)
         return y + h
 
     # ---- Pie / donut chart ----
